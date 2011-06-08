@@ -33,10 +33,12 @@ public class StaticVarAccessor implements AccessorNode {
     try {
       if (nextNode != null) {
         return nextNode.getValue(field.get(null), elCtx, vars);
-      } else {
+      }
+      else {
         return field.get(null);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new OptimizationFailure("unable to access static field", e);
     }
   }
@@ -57,10 +59,12 @@ public class StaticVarAccessor implements AccessorNode {
     try {
       if (nextNode == null) {
         field.set(null, value);
-      } else {
+      }
+      else {
         return nextNode.setValue(field.get(null), elCtx, variableFactory, value);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("error accessing static variable", e);
     }
     return value;

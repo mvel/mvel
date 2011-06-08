@@ -108,10 +108,12 @@ public class ASTNode implements Cloneable, Serializable {
     if (accessor != null) {
       try {
         return accessor.getValue(ctx, thisValue, factory);
-      } catch (ClassCastException ce) {
+      }
+      catch (ClassCastException ce) {
         return deop(ctx, thisValue, factory, ce);
       }
-    } else {
+    }
+    else {
       return optimize(ctx, thisValue, factory);
     }
   }
@@ -124,7 +126,8 @@ public class ASTNode implements Cloneable, Serializable {
       synchronized (this) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
       }
-    } else {
+    }
+    else {
       throw e;
     }
   }
@@ -139,7 +142,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     if ((fields & NOJIT) != 0 || factory != null && factory.isResolveable(nameCache)) {
       optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-    } else {
+    }
+    else {
       optimizer = getDefaultAccessorCompiler();
     }
 
@@ -147,14 +151,16 @@ public class ASTNode implements Cloneable, Serializable {
 
     if ((fields & PCTX_STORED) != 0) {
       pCtx = (ParserContext) literal;
-    } else {
+    }
+    else {
       pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
     }
 
     try {
       pCtx.optimizationNotify();
       setAccessor(optimizer.optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, egressType));
-    } catch (OptimizationNotSupported ne) {
+    }
+    catch (OptimizationNotSupported ne) {
       setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
               .optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, null));
     }
@@ -178,7 +184,8 @@ public class ASTNode implements Cloneable, Serializable {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if ((fields & (LITERAL)) != 0) {
       return literal;
-    } else {
+    }
+    else {
       return get(expr, start, offset, ctx, factory, thisValue);
     }
   }
@@ -206,9 +213,11 @@ public class ASTNode implements Cloneable, Serializable {
     if ((fields & COLLECTION) != 0) {
       if (firstUnion < 0 || endOfName < firstUnion) return endOfName;
       else return firstUnion;
-    } else if ((fields & DEEP_PROPERTY) != 0) {
+    }
+    else if ((fields & DEEP_PROPERTY) != 0) {
       return firstUnion;
-    } else {
+    }
+    else {
       return -1;
     }
   }
@@ -216,7 +225,8 @@ public class ASTNode implements Cloneable, Serializable {
   public String getAbsoluteName() {
     if (firstUnion > start) {
       return new String(expr, start, getAbsoluteFirstPart() - start);
-    } else {
+    }
+    else {
       return getName();
     }
   }
@@ -224,7 +234,8 @@ public class ASTNode implements Cloneable, Serializable {
   public String getName() {
     if (nameCache != null) {
       return nameCache;
-    } else if (expr != null) {
+    }
+    else if (expr != null) {
       return nameCache = new String(expr, start, offset);
     }
     return "";
@@ -269,7 +280,8 @@ public class ASTNode implements Cloneable, Serializable {
 
                 return get(new String(expr, last, end - last),
                         Class.forName(new String(expr, start, last), true, currentThread().getContextClassLoader()), factory, thisRef);
-              } catch (ClassNotFoundException e) {
+              }
+              catch (ClassNotFoundException e) {
                 return get(new String(expr, i + 1, end - i - 1),
                         Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader()), factory, thisRef);
               }
@@ -285,7 +297,8 @@ public class ASTNode implements Cloneable, Serializable {
             break;
         }
       }
-    } catch (Exception cnfe) {
+    }
+    catch (Exception cnfe) {
       // do nothing.
     }
 
@@ -299,7 +312,8 @@ public class ASTNode implements Cloneable, Serializable {
       if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
         try {
           literal = ~((Integer) literal);
-        } catch (ClassCastException e) {
+        }
+        catch (ClassCastException e) {
           throw new CompileException("bitwise (~) operator can only be applied to integers", expr, start);
         }
       }
@@ -337,7 +351,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     if (firstUnion > start) {
       fields |= DEEP_PROPERTY | IDENTIFIER;
-    } else {
+    }
+    else {
       fields |= IDENTIFIER;
     }
   }

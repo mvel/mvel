@@ -112,9 +112,11 @@ public abstract class AbstractTest extends TestCase {
 
     if (Boolean.getBoolean("mvel.tests.quick")) {
       threads = new Thread[1];
-    } else if (getProperty("mvel.tests.threadcount") != null) {
+    }
+    else if (getProperty("mvel.tests.threadcount") != null) {
       threads = new Thread[parseInt(getProperty("mvel.tests.threadcount"))];
-    } else {
+    }
+    else {
       threads = new Thread[5];
     }
 
@@ -136,7 +138,8 @@ public abstract class AbstractTest extends TestCase {
         System.out.println("Start Thread.");
         thread1.setPriority(Thread.MIN_PRIORITY);
         thread1.start();
-      } else {
+      }
+      else {
         thread1.run();
       }
     }
@@ -155,7 +158,8 @@ public abstract class AbstractTest extends TestCase {
 
         try {
           Thread.sleep(250);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
           break;
         }
       }
@@ -178,7 +182,8 @@ public abstract class AbstractTest extends TestCase {
         for (Object o : results) {
           if (o == null) {
             throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
-          } else if (!o.equals(last)) {
+          }
+          else if (!o.equals(last)) {
             if (o.getClass().isArray()) {
 //                            Object[] a1 = (Object[]) o;
 //                            Object[] a2 = (Object[]) last;
@@ -196,7 +201,8 @@ public abstract class AbstractTest extends TestCase {
 //                            else {
 //                                throw new AssertionError("differing result in multi-thread test: array sizes differ.");
 //                            }
-            } else {
+            }
+            else {
               throw new AssertionError("differing result in multi-thread test (last was: " + valueOf(last) + "; current is: " + valueOf(o) + ")");
             }
           }
@@ -225,7 +231,8 @@ public abstract class AbstractTest extends TestCase {
       try {
         Object result = runSingleTest(expression);
         results.add(result);
-      } catch (Throwable e) {
+      }
+      catch (Throwable e) {
         System.out.println("thread terminating due to exception");
         e.printStackTrace();
         return;
@@ -265,7 +272,8 @@ public abstract class AbstractTest extends TestCase {
 
       try {
         first = executeExpression(compiled, new Base(), createTestMap());
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
         CharArrayWriter writer = new CharArrayWriter();
@@ -276,7 +284,8 @@ public abstract class AbstractTest extends TestCase {
 
       try {
         second = executeExpression(compiled, new Base(), createTestMap());
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
         CharArrayWriter writer = new CharArrayWriter();
@@ -289,7 +298,8 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       third = MVEL.eval(ex, new Base(), createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       failErrors.append("\nTHIRD TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
       CharArrayWriter writer = new CharArrayWriter();
@@ -319,7 +329,8 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       fourth = executeExpression(compiled2, new Base(), createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       if (failErrors == null) failErrors = new StringAppender();
       failErrors.append("\nFOURTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -331,7 +342,8 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       fifth = executeExpression(compiled2, new Base(), createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       if (failErrors == null) failErrors = new StringAppender();
       failErrors.append("\nFIFTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
@@ -360,7 +372,8 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       sixth = executeExpression(compiledD, new Base(), createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       if (failErrors == null) failErrors = new StringAppender();
       failErrors.append("\nSIXTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -388,7 +401,8 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       seventh = executeExpression(compiledD, new Base(), createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       if (failErrors == null) failErrors = new StringAppender();
       failErrors.append("\nSEVENTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -409,7 +423,8 @@ public abstract class AbstractTest extends TestCase {
       Serializable xx = serializationTest(compiledD);
       AbstractParser.resetParserContext();
       eighth = executeExpression(xx, new Base(), new MapVariableResolverFactory(createTestMap()));
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       if (failErrors == null) failErrors = new StringAppender();
       failErrors.append("\nEIGHTH TEST (Serializability): { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -456,7 +471,8 @@ public abstract class AbstractTest extends TestCase {
       objectIn = new ObjectInputStream(inputStream);
 
       return (Serializable) objectIn.readObject();
-    } finally {
+    }
+    finally {
       if (inputStream != null) inputStream.close();
       if (objectIn != null) objectIn.close();
       // file.delete();
@@ -830,11 +846,13 @@ public abstract class AbstractTest extends TestCase {
         if (!(compare <= 0.0001d && compare >= -0.0001d)) {
           throw new AssertionFailedError("expected <" + String.valueOf(obj) + "> but was <" + String.valueOf(obj) + ">");
         }
-      } else {
+      }
+      else {
         assertEquals(obj, obj2);
       }
 
-    } else {
+    }
+    else {
       obj = DataConversion.convert(obj, obj2.getClass());
 
       if (!obj.equals(obj2)) {
@@ -843,7 +861,8 @@ public abstract class AbstractTest extends TestCase {
           obj2 = DataConversion.convert(obj2, Integer.class);
 
           assertEquals(obj, obj2);
-        } else {
+        }
+        else {
           throw new AssertionFailedError("expected <" + String.valueOf(obj) + "> but was <" + String.valueOf(obj) + ">");
         }
       }

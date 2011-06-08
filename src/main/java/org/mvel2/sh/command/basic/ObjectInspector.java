@@ -73,7 +73,8 @@ public class ObjectInspector implements Command {
       outStream.flush();
 
       serializedSize = outStream.size();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       serialized = false;
     }
 
@@ -140,7 +141,8 @@ public class ObjectInspector implements Command {
       for (int y = 0; y < parmTypes.length; y++) {
         if (parmTypes[y].isArray()) {
           appender.append(parmTypes[y].getComponentType().getName() + "[]");
-        } else {
+        }
+        else {
           appender.append(parmTypes[y].getName());
         }
         if ((y + 1) < parmTypes.length) appender.append(", ");

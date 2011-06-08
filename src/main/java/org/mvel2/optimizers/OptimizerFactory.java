@@ -47,9 +47,11 @@ public class OptimizerFactory {
     try {
       currentThread().getContextClassLoader().loadClass("org.mvel2.asm.ClassWriter");
       accessorCompilers.put("ASM", new ASMAccessorOptimizer());
-    } catch (ClassNotFoundException e) {
+    }
+    catch (ClassNotFoundException e) {
       defaultOptimizer = SAFE_REFLECTIVE;
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       e.printStackTrace();
       System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
               "Disabling JIT compiler.  Reflective Optimizer will be used.");
@@ -65,7 +67,8 @@ public class OptimizerFactory {
   public static AccessorOptimizer getDefaultAccessorCompiler() {
     try {
       return accessorCompilers.get(defaultOptimizer).getClass().newInstance();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
     }
   }
@@ -73,7 +76,8 @@ public class OptimizerFactory {
   public static AccessorOptimizer getAccessorCompiler(String name) {
     try {
       return accessorCompilers.get(name).getClass().newInstance();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
     }
   }
@@ -84,7 +88,8 @@ public class OptimizerFactory {
     }
     try {
       return threadOptimizer.get().newInstance();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
     }
   }
@@ -100,7 +105,8 @@ public class OptimizerFactory {
       AccessorOptimizer ao = accessorCompilers.get(defaultOptimizer = name);
       ao.init();
       setThreadAccessorOptimizer(ao.getClass());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
     }
   }

@@ -123,7 +123,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
     if (!seenParameter) {
       seenParameter = true;
       declaration.append('(');
-    } else {
+    }
+    else {
       declaration.append(", ");
     }
     startType();
@@ -134,7 +135,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
     endFormals();
     if (!seenParameter) {
       declaration.append('(');
-    } else {
+    }
+    else {
       seenParameter = false;
     }
     declaration.append(')');
@@ -145,7 +147,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
   public SignatureVisitor visitExceptionType() {
     if (exceptions == null) {
       exceptions = new StringBuffer();
-    } else {
+    }
+    else {
       exceptions.append(", ");
     }
     // startType();
@@ -200,7 +203,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
   public void visitClassType(final String name) {
     if (!"java/lang/Object".equals(name)) {
       declaration.append(separator).append(name.replace('/', '.'));
-    } else {
+    }
+    else {
       // Map<java.lang.Object,java.util.List>
       // or
       // abstract public V get(Object key); (seen in Dictionary.class)
@@ -230,7 +234,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
     if (argumentStack % 2 == 0) {
       ++argumentStack;
       declaration.append('<');
-    } else {
+    }
+    else {
       declaration.append(", ");
     }
     declaration.append('?');
@@ -240,13 +245,15 @@ public class TraceSignatureVisitor implements SignatureVisitor {
     if (argumentStack % 2 == 0) {
       ++argumentStack;
       declaration.append('<');
-    } else {
+    }
+    else {
       declaration.append(", ");
     }
 
     if (tag == SignatureVisitor.EXTENDS) {
       declaration.append("? extends ");
-    } else if (tag == SignatureVisitor.SUPER) {
+    }
+    else if (tag == SignatureVisitor.SUPER) {
       declaration.append("? super ");
     }
 
@@ -293,7 +300,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
         arrayStack /= 2;
         declaration.append("[]");
       }
-    } else {
+    }
+    else {
       arrayStack /= 2;
     }
   }

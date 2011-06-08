@@ -45,19 +45,22 @@ public class ImportNode extends ASTNode {
       if (_offset == -1) {
         _offset = 0;
       }
-    } else {
+    }
+    else {
       String clsName = new String(expr, start, offset);
 
       try {
         this.importClass = Class.forName(clsName, true,
                 Thread.currentThread().getContextClassLoader());
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         int idx;
         clsName = (clsName.substring(0, idx = clsName.lastIndexOf('.')) + "$" + clsName.substring(idx + 1)).trim();
 
         try {
           this.importClass = Class.forName(clsName, true, Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e2) {
+        }
+        catch (ClassNotFoundException e2) {
           throw new CompileException("class not found: " + new String(expr), expr, start);
         }
       }
@@ -68,7 +71,8 @@ public class ImportNode extends ASTNode {
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if (!packageImport) {
       return findClassImportResolverFactory(factory).addClass(importClass);
-    } else {
+    }
+    else {
       findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
       return null;
     }

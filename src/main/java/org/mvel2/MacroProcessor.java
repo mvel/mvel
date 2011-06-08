@@ -57,7 +57,8 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
       if (cursor > start) {
         if (macros.containsKey(token = new String(expr, start, cursor - start)) && macroArmed) {
           appender.append(macros.get(token).doMacro());
-        } else {
+        }
+        else {
           appender.append(token);
         }
       }

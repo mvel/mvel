@@ -216,24 +216,33 @@ public class Type {
     if (c.isPrimitive()) {
       if (c == Integer.TYPE) {
         return INT_TYPE;
-      } else if (c == Void.TYPE) {
+      }
+      else if (c == Void.TYPE) {
         return VOID_TYPE;
-      } else if (c == Boolean.TYPE) {
+      }
+      else if (c == Boolean.TYPE) {
         return BOOLEAN_TYPE;
-      } else if (c == Byte.TYPE) {
+      }
+      else if (c == Byte.TYPE) {
         return BYTE_TYPE;
-      } else if (c == Character.TYPE) {
+      }
+      else if (c == Character.TYPE) {
         return CHAR_TYPE;
-      } else if (c == Short.TYPE) {
+      }
+      else if (c == Short.TYPE) {
         return SHORT_TYPE;
-      } else if (c == Double.TYPE) {
+      }
+      else if (c == Double.TYPE) {
         return DOUBLE_TYPE;
-      } else if (c == Float.TYPE) {
+      }
+      else if (c == Float.TYPE) {
         return FLOAT_TYPE;
-      } else /* if (c == Long.TYPE) */ {
+      }
+      else /* if (c == Long.TYPE) */ {
         return LONG_TYPE;
       }
-    } else {
+    }
+    else {
       return getType(getDescriptor(c));
     }
   }
@@ -272,11 +281,13 @@ public class Type {
       char car = buf[off++];
       if (car == ')') {
         break;
-      } else if (car == 'L') {
+      }
+      else if (car == 'L') {
         while (buf[off++] != ';') {
         }
         ++size;
-      } else if (car != '[') {
+      }
+      else if (car != '[') {
         ++size;
       }
     }
@@ -626,29 +637,39 @@ public class Type {
         char car;
         if (d == Integer.TYPE) {
           car = 'I';
-        } else if (d == Void.TYPE) {
+        }
+        else if (d == Void.TYPE) {
           car = 'V';
-        } else if (d == Boolean.TYPE) {
+        }
+        else if (d == Boolean.TYPE) {
           car = 'Z';
-        } else if (d == Byte.TYPE) {
+        }
+        else if (d == Byte.TYPE) {
           car = 'B';
-        } else if (d == Character.TYPE) {
+        }
+        else if (d == Character.TYPE) {
           car = 'C';
-        } else if (d == Short.TYPE) {
+        }
+        else if (d == Short.TYPE) {
           car = 'S';
-        } else if (d == Double.TYPE) {
+        }
+        else if (d == Double.TYPE) {
           car = 'D';
-        } else if (d == Float.TYPE) {
+        }
+        else if (d == Float.TYPE) {
           car = 'F';
-        } else /* if (d == Long.TYPE) */ {
+        }
+        else /* if (d == Long.TYPE) */ {
           car = 'J';
         }
         buf.append(car);
         return;
-      } else if (d.isArray()) {
+      }
+      else if (d.isArray()) {
         buf.append('[');
         d = d.getComponentType();
-      } else {
+      }
+      else {
         buf.append('L');
         String name = d.getName();
         int len = name.length();
@@ -709,7 +730,8 @@ public class Type {
         default:
           return opcode + 4;
       }
-    } else {
+    }
+    else {
       switch (sort) {
         case VOID:
           return opcode + 5;

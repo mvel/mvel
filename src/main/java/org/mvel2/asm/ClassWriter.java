@@ -630,7 +630,8 @@ public class ClassWriter implements ClassVisitor {
     if (visible) {
       aw.next = anns;
       anns = aw;
-    } else {
+    }
+    else {
       aw.next = ianns;
       ianns = aw;
     }
@@ -850,35 +851,45 @@ public class ClassWriter implements ClassVisitor {
     if (cst instanceof Integer) {
       int val = ((Integer) cst).intValue();
       return newInteger(val);
-    } else if (cst instanceof Byte) {
+    }
+    else if (cst instanceof Byte) {
       int val = ((Byte) cst).intValue();
       return newInteger(val);
-    } else if (cst instanceof Character) {
+    }
+    else if (cst instanceof Character) {
       int val = ((Character) cst).charValue();
       return newInteger(val);
-    } else if (cst instanceof Short) {
+    }
+    else if (cst instanceof Short) {
       int val = ((Short) cst).intValue();
       return newInteger(val);
-    } else if (cst instanceof Boolean) {
+    }
+    else if (cst instanceof Boolean) {
       int val = ((Boolean) cst).booleanValue() ? 1 : 0;
       return newInteger(val);
-    } else if (cst instanceof Float) {
+    }
+    else if (cst instanceof Float) {
       float val = ((Float) cst).floatValue();
       return newFloat(val);
-    } else if (cst instanceof Long) {
+    }
+    else if (cst instanceof Long) {
       long val = ((Long) cst).longValue();
       return newLong(val);
-    } else if (cst instanceof Double) {
+    }
+    else if (cst instanceof Double) {
       double val = ((Double) cst).doubleValue();
       return newDouble(val);
-    } else if (cst instanceof String) {
+    }
+    else if (cst instanceof String) {
       return newString((String) cst);
-    } else if (cst instanceof Type) {
+    }
+    else if (cst instanceof Type) {
       Type t = (Type) cst;
       return newClassItem(t.getSort() == Type.OBJECT
               ? t.getInternalName()
               : t.getDescriptor());
-    } else {
+    }
+    else {
       throw new IllegalArgumentException("value " + cst);
     }
   }
@@ -1251,7 +1262,8 @@ public class ClassWriter implements ClassVisitor {
     try {
       c = Thread.currentThread().getContextClassLoader().loadClass(type1.replace('/', '.'));
       d = Thread.currentThread().getContextClassLoader().loadClass(type2.replace('/', '.'));
-    } catch (ClassNotFoundException e) {
+    }
+    catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
     if (c.isAssignableFrom(d)) {
@@ -1262,7 +1274,8 @@ public class ClassWriter implements ClassVisitor {
     }
     if (c.isInterface() || d.isInterface()) {
       return "java/lang/Object";
-    } else {
+    }
+    else {
       do {
         c = c.getSuperclass();
       }

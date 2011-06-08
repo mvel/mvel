@@ -279,14 +279,17 @@ public class Label {
     if ((status & RESOLVED) != 0) {
       if (wideOffset) {
         out.putInt(position - source);
-      } else {
+      }
+      else {
         out.putShort(position - source);
       }
-    } else {
+    }
+    else {
       if (wideOffset) {
         addReference(-1 - source, out.length);
         out.putInt(-1);
-      } else {
+      }
+      else {
         addReference(source, out.length);
         out.putShort(-1);
       }
@@ -371,7 +374,8 @@ public class Label {
           if (opcode <= Opcodes.JSR) {
             // changes IFEQ ... JSR to opcodes 202 to 217
             data[reference - 1] = (byte) (opcode + 49);
-          } else {
+          }
+          else {
             // changes IFNULL and IFNONNULL to opcodes 218 and 219
             data[reference - 1] = (byte) (opcode + 20);
           }
@@ -379,7 +383,8 @@ public class Label {
         }
         data[reference++] = (byte) (offset >>> 8);
         data[reference] = (byte) offset;
-      } else {
+      }
+      else {
         offset = position + source + 1;
         data[reference++] = (byte) (offset >>> 24);
         data[reference++] = (byte) (offset >>> 16);

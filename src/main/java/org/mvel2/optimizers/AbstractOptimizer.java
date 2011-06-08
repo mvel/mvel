@@ -75,13 +75,15 @@ public class AbstractOptimizer extends AbstractParser {
 
                 return Class.forName(test, true, pCtx != null ?
                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
-              } catch (ClassNotFoundException e) {
+              }
+              catch (ClassNotFoundException e) {
                 Class cls = Class.forName(new String(expr, start, i - start), true, pCtx != null ?
                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                 String name = new String(expr, i + 1, end - i - 1);
                 try {
                   return cls.getField(name);
-                } catch (NoSuchFieldException nfe) {
+                }
+                catch (NoSuchFieldException nfe) {
                   for (Method m : cls.getMethods()) {
                     if (name.equals(m.getName())) return m;
                   }
@@ -152,7 +154,8 @@ public class AbstractOptimizer extends AbstractParser {
             break;
         }
       }
-    } catch (Exception cnfe) {
+    }
+    catch (Exception cnfe) {
       cursor = begin;
     }
 
@@ -191,7 +194,8 @@ public class AbstractOptimizer extends AbstractParser {
                 tkStart = cursor;
               }
           }
-        } else {
+        }
+        else {
           throw new CompileException("unexpected end of statement", expr, start);
         }
         break;

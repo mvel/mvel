@@ -364,7 +364,8 @@ public class PropertyHandlerTests extends TestCase {
       WorkObject wob = (WorkObject) arg1;
       if (wob.hasFieldName(arg0)) {
         return wob.getFieldValue(arg0);
-      } else
+      }
+      else
         return null;
     }
 

@@ -39,7 +39,8 @@ public class DynamicSetterAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     try {
       return method.invoke(ctx, convert(value, targetType));
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("error binding property", e);
     }
   }

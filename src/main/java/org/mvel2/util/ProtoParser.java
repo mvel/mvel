@@ -105,7 +105,8 @@ public class ProtoParser {
              */
             enqueueReceiverForLateResolution(deferredName,
                     proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), null);
-          } else {
+          }
+          else {
             proto.declareReceiver(name, type, null);
           }
           break;
@@ -139,7 +140,8 @@ public class ProtoParser {
           if (interpreted && type == DeferredTypeResolve.class) {
             enqueueReceiverForLateResolution(deferredName,
                     proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), initString);
-          } else {
+          }
+          else {
             proto.declareReceiver(name, type, (ExecutableStatement)
                     subCompileExpression(initString, pCtx));
           }
@@ -175,21 +177,25 @@ public class ProtoParser {
         if (pCtx.hasProtoImport(tk1)) {
           type = Proto.class;
 
-        } else {
+        }
+        else {
           type = ParseTools.findClass(null, tk1, pCtx);
         }
         name = tk2;
 
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         if (interpreted) {
           type = DeferredTypeResolve.class;
           deferredName = tk1;
           name = tk2;
-        } else {
+        }
+        else {
           throw new CompileException("could not resolve class: " + tk1, expr, cursor, e);
         }
       }
-    } else {
+    }
+    else {
       type = Object.class;
       name = tk1;
     }

@@ -19,7 +19,8 @@ public class SimpleVariableSpaceModel extends VariableSpaceModel {
     for (int i = 0; i < resolvers.length; i++) {
       if (i >= vals.length) {
         resolvers[i] = new SimpleValueResolver(null);
-      } else {
+      }
+      else {
         resolvers[i] = new IndexVariableResolver(i, vals);
       }
     }

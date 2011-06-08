@@ -37,7 +37,8 @@ public class ArrayAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(Array.get(ctx, index), elCtx, vars);
-    } else {
+    }
+    else {
       return Array.get(ctx, index);
     }
   }
@@ -45,7 +46,8 @@ public class ArrayAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(Array.get(ctx, index), elCtx, variableFactory, value);
-    } else {
+    }
+    else {
       Array.set(ctx, index, value);
       return value;
     }

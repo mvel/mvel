@@ -522,7 +522,8 @@ final class Frame {
       // this local has never been assigned in this basic ast,
       // so it is still equal to its value in the input frame
       return LOCAL | local;
-    } else {
+    }
+    else {
       int type = outputLocals[local];
       if (type == 0) {
         // this local has never been assigned in this basic ast,
@@ -677,7 +678,8 @@ final class Frame {
   private int pop() {
     if (outputStackTop > 0) {
       return outputStack[--outputStackTop];
-    } else {
+    }
+    else {
       // if the output frame stack is empty, pops from the input stack
       return STACK | -(--owner.inputStackTop);
     }
@@ -691,7 +693,8 @@ final class Frame {
   private void pop(final int elements) {
     if (outputStackTop >= elements) {
       outputStackTop -= elements;
-    } else {
+    }
+    else {
       // if the number of elements to be popped is greater than the number
       // of elements in the output stack, clear it, and pops the remaining
       // elements from the input stack.
@@ -711,9 +714,11 @@ final class Frame {
     char c = desc.charAt(0);
     if (c == '(') {
       pop((MethodWriter.getArgumentsAndReturnSizes(desc) >> 2) - 1);
-    } else if (c == 'J' || c == 'D') {
+    }
+    else if (c == 'J' || c == 'D') {
       pop(2);
-    } else {
+    }
+    else {
       pop(1);
     }
   }
@@ -752,10 +757,12 @@ final class Frame {
     int s;
     if (t == UNINITIALIZED_THIS) {
       s = OBJECT | cw.addType(cw.thisName);
-    } else if ((t & (DIM | BASE_KIND)) == UNINITIALIZED) {
+    }
+    else if ((t & (DIM | BASE_KIND)) == UNINITIALIZED) {
       String type = cw.typeTable[t & BASE_VALUE].strVal1;
       s = OBJECT | cw.addType(type);
-    } else {
+    }
+    else {
       return t;
     }
     for (int j = 0; j < initializationCount; ++j) {
@@ -764,7 +771,8 @@ final class Frame {
       int kind = u & KIND;
       if (kind == LOCAL) {
         u = dim + inputLocals[u & VALUE];
-      } else if (kind == STACK) {
+      }
+      else if (kind == STACK) {
         u = dim + inputStack[inputStack.length - (u & VALUE)];
       }
       if (t == u) {
@@ -794,7 +802,8 @@ final class Frame {
     if ((access & Opcodes.ACC_STATIC) == 0) {
       if ((access & MethodWriter.ACC_CONSTRUCTOR) == 0) {
         inputLocals[i++] = OBJECT | cw.addType(cw.thisName);
-      } else {
+      }
+      else {
         inputLocals[i++] = UNINITIALIZED_THIS;
       }
     }
@@ -1208,7 +1217,8 @@ final class Frame {
         pop();
         if (s.charAt(0) == '[') {
           push(cw, "[" + s);
-        } else {
+        }
+        else {
           push(ARRAY_OF | OBJECT | cw.addType(s));
         }
         break;
@@ -1217,7 +1227,8 @@ final class Frame {
         pop();
         if (s.charAt(0) == '[') {
           push(cw, s);
-        } else {
+        }
+        else {
           push(OBJECT | cw.addType(s));
         }
         break;
@@ -1257,18 +1268,22 @@ final class Frame {
         s = outputLocals[i];
         if (s == 0) {
           t = inputLocals[i];
-        } else {
+        }
+        else {
           dim = s & DIM;
           kind = s & KIND;
           if (kind == LOCAL) {
             t = dim + inputLocals[s & VALUE];
-          } else if (kind == STACK) {
+          }
+          else if (kind == STACK) {
             t = dim + inputStack[nStack - (s & VALUE)];
-          } else {
+          }
+          else {
             t = s;
           }
         }
-      } else {
+      }
+      else {
         t = inputLocals[i];
       }
       if (initializations != null) {
@@ -1309,9 +1324,11 @@ final class Frame {
       kind = s & KIND;
       if (kind == LOCAL) {
         t = dim + inputLocals[s & VALUE];
-      } else if (kind == STACK) {
+      }
+      else if (kind == STACK) {
         t = dim + inputStack[nStack - (s & VALUE)];
-      } else {
+      }
+      else {
         t = s;
       }
       if (initializations != null) {
@@ -1361,31 +1378,37 @@ final class Frame {
       if (t == NULL) {
         // if t is the NULL type, merge(u,t)=u, so there is no change
         return false;
-      } else if ((t & (DIM | BASE_KIND)) == (u & (DIM | BASE_KIND))) {
+      }
+      else if ((t & (DIM | BASE_KIND)) == (u & (DIM | BASE_KIND))) {
         if ((u & BASE_KIND) == OBJECT) {
           // if t is also a reference type, and if u and t have the
           // same dimension merge(u,t) = dim(t) | common parent of the
           // element types of u and t
           v = (t & DIM) | OBJECT
                   | cw.getMergedType(t & BASE_VALUE, u & BASE_VALUE);
-        } else {
+        }
+        else {
           // if u and t are array types, but not with the same element
           // type, merge(u,t)=java/lang/Object
           v = OBJECT | cw.addType("java/lang/Object");
         }
-      } else if ((t & BASE_KIND) == OBJECT || (t & DIM) != 0) {
+      }
+      else if ((t & BASE_KIND) == OBJECT || (t & DIM) != 0) {
         // if t is any other reference or array type,
         // merge(u,t)=java/lang/Object
         v = OBJECT | cw.addType("java/lang/Object");
-      } else {
+      }
+      else {
         // if t is any other type, merge(u,t)=TOP
         v = TOP;
       }
-    } else if (u == NULL) {
+    }
+    else if (u == NULL) {
       // if u is the NULL type, merge(u,t)=t,
       // or TOP if t is not a reference type
       v = (t & BASE_KIND) == OBJECT || (t & DIM) != 0 ? t : TOP;
-    } else {
+    }
+    else {
       // if u is any other type, merge(u,t)=TOP whatever t
       v = TOP;
     }

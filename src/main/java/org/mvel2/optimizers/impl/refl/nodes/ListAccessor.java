@@ -38,7 +38,8 @@ public class ListAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(((List) ctx).get(index), elCtx, vars);
-    } else {
+    }
+    else {
       return ((List) ctx).get(index);
     }
   }
@@ -46,7 +47,8 @@ public class ListAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(((List) ctx).get(index), elCtx, vars, value);
-    } else {
+    }
+    else {
       //noinspection unchecked
       ((List) ctx).set(index, value);
       return value;

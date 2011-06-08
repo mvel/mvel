@@ -49,7 +49,8 @@ public class ExprValueAccessor implements Accessor {
         try {
           stmt = new ExecutableLiteral(convert(stmt.getValue(ctx, factory), tt));
           return;
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
           // fall through;
         }
       }

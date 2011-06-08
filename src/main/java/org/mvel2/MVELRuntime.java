@@ -78,12 +78,14 @@ public class MVELRuntime {
           if (debugger || (debugger = hasDebuggerContext())) {
             try {
               debuggerContext.get().checkBreak((LineLabel) tk, variableFactory, expression);
-            } catch (NullPointerException e) {
+            }
+            catch (NullPointerException e) {
               // do nothing for now.  this isn't as calus as it seems.
             }
           }
           continue;
-        } else if (stk.isEmpty()) {
+        }
+        else if (stk.isEmpty()) {
           stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
         }
 
@@ -135,28 +137,35 @@ public class MVELRuntime {
               if (!isEmpty(v2) || !isEmpty(v1)) {
                 stk.clear();
                 stk.push(!isEmpty(v2) ? v2 : v1);
-              } else stk.push(null);
-            } else {
+              }
+              else stk.push(null);
+            }
+            else {
               stk.op();
             }
           }
-        } catch (ClassCastException e) {
+        }
+        catch (ClassCastException e) {
           throw new CompileException("syntax error or incomptable types", new char[0], 0, e);
-        } catch (CompileException e) {
+        }
+        catch (CompileException e) {
           System.out.println();
           throw e;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           throw new CompileException("failed to compileShared sub expression", new char[0], 0, e);
         }
       }
       while ((tk = tk.nextASTNode) != null);
 
       return stk.peek();
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       if (tk != null && tk.isOperator() && tk.nextASTNode != null) {
         throw new CompileException("incomplete statement: "
                 + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", tk.getExpr(), tk.getStart());
-      } else {
+      }
+      else {
         throw e;
       }
     }

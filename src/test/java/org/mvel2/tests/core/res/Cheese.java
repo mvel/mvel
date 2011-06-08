@@ -88,7 +88,8 @@ public class Cheese
     if (price != other.price) return false;
     if (type == null) {
       if (other.type != null) return false;
-    } else if (!type.equals(other.type)) return false;
+    }
+    else if (!type.equals(other.type)) return false;
     return true;
   }
 

@@ -29,7 +29,8 @@ public class PresentationElements {
     PresentationElements other = (PresentationElements) obj;
     if (names == null) {
       if (other.names != null) return false;
-    } else if (!names.equals(other.names)) return false;
+    }
+    else if (!names.equals(other.names)) return false;
     return true;
   }
 

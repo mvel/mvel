@@ -92,7 +92,8 @@ public class ParserConfiguration implements Serializable {
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
       if ((o = entry.getValue()) instanceof Method) {
         this.imports.put(entry.getKey(), new MethodStub((Method) o));
-      } else {
+      }
+      else {
         this.imports.put(entry.getKey(), o);
       }
     }
@@ -111,13 +112,16 @@ public class ParserConfiguration implements Serializable {
       try {
         cls = Class.forName(pkg + "." + className, true, classLoader);
         found++;
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         // do nothing.
-      } catch (NoClassDefFoundError e) {
+      }
+      catch (NoClassDefFoundError e) {
         if (PropertyTools.contains(e.getMessage(), "wrong name")) {
           // do nothing.  this is a weirdness in the jvm.
           // see MVEL-43
-        } else {
+        }
+        else {
           throw e;
         }
       }
@@ -125,10 +129,12 @@ public class ParserConfiguration implements Serializable {
 
     if (found > 1) {
       throw new RuntimeException("ambiguous class name: " + className);
-    } else if (found == 1) {
+    }
+    else if (found == 1) {
       addImport(className, cls);
       return true;
-    } else {
+    }
+    else {
       return false;
     }
   }
@@ -184,13 +190,17 @@ public class ParserConfiguration implements Serializable {
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
       if ((val = entry.getValue()) instanceof Class) {
         addImport(entry.getKey(), (Class) val);
-      } else if (val instanceof Method) {
+      }
+      else if (val instanceof Method) {
         addImport(entry.getKey(), (Method) val);
-      } else if (val instanceof MethodStub) {
+      }
+      else if (val instanceof MethodStub) {
         addImport(entry.getKey(), (MethodStub) val);
-      } else if (val instanceof Proto) {
+      }
+      else if (val instanceof Proto) {
         addImport(entry.getKey(), (Proto) entry.getValue());
-      } else {
+      }
+      else {
         throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
       }
     }

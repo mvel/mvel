@@ -52,7 +52,8 @@ public class InlineCollectionNode extends ASTNode {
         AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
         accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, expr, trailingStart, trailingOffset, null, null, null);
         egressType = ao.getEgressType();
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -69,7 +70,8 @@ public class InlineCollectionNode extends ASTNode {
         AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
         accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, expr, this.trailingStart, trailingOffset, null, null, null);
         egressType = ao.getEgressType();
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -78,7 +80,8 @@ public class InlineCollectionNode extends ASTNode {
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if (accessor != null) {
       return accessor.getValue(ctx, thisValue, factory);
-    } else {
+    }
+    else {
       try {
         AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
         if (collectionGraph == null) parseGraph(true, null, null);
@@ -88,7 +91,8 @@ public class InlineCollectionNode extends ASTNode {
         egressType = ao.getEgressType();
 
         return accessor.getValue(ctx, thisValue, factory);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -106,7 +110,8 @@ public class InlineCollectionNode extends ASTNode {
 
     if (type == null) {
       collectionGraph = ((List) parser.parseCollection(expr, start, offset, compile, pCtx)).get(0);
-    } else {
+    }
+    else {
       collectionGraph = ((List) parser.parseCollection(expr, start, offset, compile, type, pCtx)).get(0);
     }
 
@@ -125,7 +130,8 @@ public class InlineCollectionNode extends ASTNode {
       }
 
       return list;
-    } else if (o instanceof Map) {
+    }
+    else if (o instanceof Map) {
       HashMap map = new HashMap();
 
       for (Object item : ((Map) o).keySet()) {
@@ -133,13 +139,15 @@ public class InlineCollectionNode extends ASTNode {
       }
 
       return map;
-    } else if (o instanceof Object[]) {
+    }
+    else if (o instanceof Object[]) {
       int dim = 0;
 
       if (type != null) {
         String nm = type.getName();
         while (nm.charAt(dim) == '[') dim++;
-      } else {
+      }
+      else {
         type = Object[].class;
         dim = 1;
       }
@@ -156,15 +164,19 @@ public class InlineCollectionNode extends ASTNode {
         }
 
         return newArray;
-      } catch (IllegalArgumentException e) {
+      }
+      catch (IllegalArgumentException e) {
         throw new CompileException("type mismatch in array", expr, start, e);
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);
       }
-    } else {
+    }
+    else {
       if (type.isArray()) {
         return MVEL.eval((String) o, ctx, factory, getBaseComponentType(type));
-      } else {
+      }
+      else {
         return MVEL.eval((String) o, ctx, factory);
       }
     }

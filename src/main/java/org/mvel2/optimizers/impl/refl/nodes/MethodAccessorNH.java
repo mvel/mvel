@@ -51,10 +51,12 @@ public class MethodAccessorNH implements AccessorNode {
 
         if (nextNode != null) {
           return nextNode.getValue(v, elCtx, vars);
-        } else {
+        }
+        else {
           return v;
         }
-      } catch (IllegalArgumentException e) {
+      }
+      catch (IllegalArgumentException e) {
         if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
           Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
           if (o != null) {
@@ -64,18 +66,22 @@ public class MethodAccessorNH implements AccessorNode {
 
         coercionNeeded = true;
         return getValue(ctx, elCtx, vars);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("cannot invoke method", e);
       }
 
-    } else {
+    }
+    else {
       try {
         if (nextNode != null) {
           return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
-        } else {
+        }
+        else {
           return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("cannot invoke method", e);
       }
     }
@@ -88,10 +94,12 @@ public class MethodAccessorNH implements AccessorNode {
 
       if (nextNode != null) {
         return nextNode.getValue(v, elCtx, vars);
-      } else {
+      }
+      else {
         return v;
       }
-    } catch (Exception e2) {
+    }
+    catch (Exception e2) {
       throw new RuntimeException("unable to invoke method", e2);
     }
   }

@@ -73,11 +73,14 @@ public class IfNode extends BlockNode implements NestedStatement {
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
       return nestedStatement.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-    } else if (elseIf != null) {
+    }
+    else if (elseIf != null) {
       return elseIf.getReducedValueAccelerated(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-    } else if (elseBlock != null) {
+    }
+    else if (elseBlock != null) {
       return elseBlock.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-    } else {
+    }
+    else {
       return null;
     }
   }
@@ -85,11 +88,14 @@ public class IfNode extends BlockNode implements NestedStatement {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if ((Boolean) eval(expr, start, offset, ctx, factory)) {
       return eval(expr, blockStart, blockOffset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
-    } else if (elseIf != null) {
+    }
+    else if (elseIf != null) {
       return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
-    } else if (elseBlock != null) {
+    }
+    else if (elseBlock != null) {
       return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
-    } else {
+    }
+    else {
       return null;
     }
   }

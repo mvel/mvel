@@ -216,15 +216,18 @@ public class ByteVector {
       char c = s.charAt(i);
       if (c >= '\001' && c <= '\177') {
         data[len++] = (byte) c;
-      } else {
+      }
+      else {
         int byteLength = i;
         for (int j = i; j < charLength; ++j) {
           c = s.charAt(j);
           if (c >= '\001' && c <= '\177') {
             byteLength++;
-          } else if (c > '\u07FF') {
+          }
+          else if (c > '\u07FF') {
             byteLength += 3;
-          } else {
+          }
+          else {
             byteLength += 2;
           }
         }
@@ -239,11 +242,13 @@ public class ByteVector {
           c = s.charAt(j);
           if (c >= '\001' && c <= '\177') {
             data[len++] = (byte) c;
-          } else if (c > '\u07FF') {
+          }
+          else if (c > '\u07FF') {
             data[len++] = (byte) (0xE0 | c >> 12 & 0xF);
             data[len++] = (byte) (0x80 | c >> 6 & 0x3F);
             data[len++] = (byte) (0x80 | c & 0x3F);
-          } else {
+          }
+          else {
             data[len++] = (byte) (0xC0 | c >> 6 & 0x1F);
             data[len++] = (byte) (0x80 | c & 0x3F);
           }

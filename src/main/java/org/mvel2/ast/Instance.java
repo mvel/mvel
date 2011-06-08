@@ -29,7 +29,8 @@ public class Instance extends ASTNode {
       if (i == null) throw new ClassCastException();
 
       return i.isInstance(stmt.getReducedValue(ctx, thisValue, factory));
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new RuntimeException("not a class reference: " + clsStmt.getName());
     }
 

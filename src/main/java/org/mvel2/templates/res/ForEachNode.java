@@ -72,9 +72,11 @@ public class ForEachNode extends Node {
     for (int i = 0; i < iters.length; i++) {
       if ((o = MVEL.eval(expression[i], ctx, factory)) instanceof Iterable) {
         iters[i] = ((Iterable) o).iterator();
-      } else if (o instanceof Object[]) {
+      }
+      else if (o instanceof Object[]) {
         iters[i] = new ArrayIterator((Object[]) o);
-      } else {
+      }
+      else {
         throw new TemplateRuntimeError("cannot iterate object type: " + o.getClass().getName());
       }
     }
@@ -89,7 +91,8 @@ public class ForEachNode extends Node {
         if (!iters[i].hasNext()) {
           iterate--;
           locals.put(item[i], "");
-        } else {
+        }
+        else {
           locals.put(item[i], iters[i].next());
         }
       }
@@ -104,7 +107,8 @@ public class ForEachNode extends Node {
             }
           }
         }
-      } else break;
+      }
+      else break;
     }
 
     return next != null ? next.eval(runtime, appender, ctx, factory) : null;

@@ -40,23 +40,28 @@ public class ConstructorAccessor extends BaseAccessor {
         try {
           if (nextNode != null) {
             return nextNode.getValue(constructor.newInstance(executeAll(elCtx, variableFactory)), elCtx, variableFactory);
-          } else {
+          }
+          else {
             return constructor.newInstance(executeAll(elCtx, variableFactory));
           }
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
           coercionNeeded = true;
           return getValue(ctx, elCtx, variableFactory);
         }
 
-      } else {
+      }
+      else {
         if (nextNode != null) {
           return nextNode.getValue(constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory)),
                   elCtx, variableFactory);
-        } else {
+        }
+        else {
           return constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory));
         }
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("cannot construct object", e);
     }
   }

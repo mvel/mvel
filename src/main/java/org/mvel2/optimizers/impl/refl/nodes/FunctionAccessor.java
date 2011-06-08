@@ -44,7 +44,8 @@ public class FunctionAccessor extends BaseAccessor {
 
     if (nextNode != null) {
       return nextNode.getValue(function.call(ctx, elCtx, variableFactory, parms), elCtx, variableFactory);
-    } else {
+    }
+    else {
       return function.call(ctx, elCtx, variableFactory, parms);
     }
   }

@@ -55,7 +55,8 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
       this.egressType = ((statement =
               (ExecutableStatement) subCompileExpression(
                       createShortFormOperativeAssignment(this.property = name, expr, start, offset, operation), pCtx))).getKnownEgressType();
-    } else if ((mark = find(expr, start, offset, '=')) != -1) {
+    }
+    else if ((mark = find(expr, start, offset, '=')) != -1) {
       property = createStringTrimmed(expr, start, mark - start);
 
       // this.start = mark + 1;
@@ -70,7 +71,8 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
       if ((fields & COMPILE_IMMEDIATE) != 0) {
         statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
       }
-    } else {
+    }
+    else {
       property = new String(expr);
     }
 

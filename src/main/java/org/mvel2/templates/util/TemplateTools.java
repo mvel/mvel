@@ -81,7 +81,8 @@ public class TemplateTools {
           for (; read != 0; read--) {
             appender.append((char) buf.get());
           }
-        } else {
+        }
+        else {
           break;
         }
       }
@@ -89,9 +90,11 @@ public class TemplateTools {
       fc.close();
 
       return appender.toString();
-    } catch (FileNotFoundException e) {
+    }
+    catch (FileNotFoundException e) {
       throw new TemplateError("cannot include template '" + file.getName() + "': file not found.");
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new TemplateError("unknown I/O exception while including '" + file.getName() + "' (stacktrace nested)", e);
     }
   }
@@ -108,13 +111,16 @@ public class TemplateTools {
       }
 
       return appender.toString();
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       if (instream == null) {
         throw new TemplateError("null input stream", e);
-      } else {
+      }
+      else {
         throw e;
       }
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new TemplateError("unknown I/O exception while including (stacktrace nested)", e);
     }
   }

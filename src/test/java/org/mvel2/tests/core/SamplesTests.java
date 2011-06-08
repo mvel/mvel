@@ -34,7 +34,8 @@ public class SamplesTests extends AbstractTest {
     for (Object o : sorted) {
       if (last == -1) {
         last = (Integer) o;
-      } else {
+      }
+      else {
         assertTrue(((Integer) o) > last);
         last = (Integer) o;
       }
@@ -47,7 +48,8 @@ public class SamplesTests extends AbstractTest {
     for (Object o : sorted) {
       if (last == -1) {
         last = (Integer) o;
-      } else {
+      }
+      else {
         assertTrue(((Integer) o) > last);
         last = (Integer) o;
       }
@@ -60,7 +62,8 @@ public class SamplesTests extends AbstractTest {
     for (Object o : sorted) {
       if (last == -1) {
         last = (Integer) o;
-      } else {
+      }
+      else {
         assertTrue(((Integer) o) > last);
         last = (Integer) o;
       }
@@ -73,7 +76,8 @@ public class SamplesTests extends AbstractTest {
     for (Object o : sorted) {
       if (last == -1) {
         last = (Integer) o;
-      } else {
+      }
+      else {
         assertTrue(((Integer) o) > last);
         last = (Integer) o;
       }

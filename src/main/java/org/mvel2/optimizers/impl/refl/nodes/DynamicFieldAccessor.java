@@ -42,10 +42,12 @@ public class DynamicFieldAccessor implements AccessorNode {
     try {
       if (nextNode != null) {
         return nextNode.getValue(field.get(ctx), elCtx, vars);
-      } else {
+      }
+      else {
         return field.get(ctx);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
 
@@ -55,11 +57,13 @@ public class DynamicFieldAccessor implements AccessorNode {
     try {
       if (nextNode != null) {
         return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
-      } else {
+      }
+      else {
         field.set(ctx, DataConversion.convert(value, targetType));
         return value;
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
   }

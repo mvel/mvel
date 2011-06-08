@@ -100,7 +100,8 @@ public class TypeDescriptor implements Serializable {
       }
 
       className = new String(name, start, offset).trim();
-    } else {
+    }
+    else {
       className = new String(name, start, endRange - start).trim();
     }
   }
@@ -162,12 +163,14 @@ public class TypeDescriptor implements Serializable {
       if (tDescr.isArray()) {
         cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
       }
-    } else if (ctx == null && hasContextFreeImport(tDescr.className)) {
+    }
+    else if (ctx == null && hasContextFreeImport(tDescr.className)) {
       cls = getContextFreeImport(tDescr.className);
       if (tDescr.isArray()) {
         cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
       }
-    } else {
+    }
+    else {
       cls = createClass(tDescr.getClassName(), ctx);
       if (tDescr.isArray()) {
         cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);

@@ -66,7 +66,8 @@ public class ArrayHandler implements ConversionHandler {
       }
 
       return newArray;
-    } else {
+    }
+    else {
       int len = getLength(input);
       Object target = newInstance(targType, len);
 

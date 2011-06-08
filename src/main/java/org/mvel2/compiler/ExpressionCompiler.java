@@ -67,7 +67,8 @@ public class ExpressionCompiler extends AbstractParser {
       this.debugSymbols = (this.pCtx = ctx).isDebugSymbols();
       newContext(ctx);
       return _compile();
-    } finally {
+    }
+    finally {
       //noinspection ThrowFromFinallyBlock
       removeContext();
 
@@ -85,7 +86,8 @@ public class ExpressionCompiler extends AbstractParser {
 
           if (e.getExpr() != expr) {
             iter.remove();
-          } else {
+          }
+          else {
             err.append("\n - ").append("(").append(e.getLineNumber()).append(",").append(e.getColumn()).append(")")
                     .append(" ").append(e.getMessage());
           }
@@ -175,7 +177,8 @@ public class ExpressionCompiler extends AbstractParser {
                */
               if (isArithmeticOperator(op)) {
                 if (!compileReduce(op, astBuild)) continue;
-              } else {
+              }
+              else {
                 reduce();
               }
 
@@ -189,17 +192,20 @@ public class ExpressionCompiler extends AbstractParser {
                 if (isBooleanOperator(tkOp2.getOperator())) {
                   astBuild.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
                   break;
-                } else if ((tkLA2 = nextTokenSkipSymbols()) != null) {
+                }
+                else if ((tkLA2 = nextTokenSkipSymbols()) != null) {
 
                   if (tkLA2.isLiteral()) {
                     stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
                     if (isArithmeticOperator(op)) {
                       compileReduce(op, astBuild);
-                    } else {
+                    }
+                    else {
                       reduce();
                     }
-                  } else {
+                  }
+                  else {
                     /**
                      * A reducable line of literals has ended.  We must now terminate here and
                      * leave the rest to be determined at runtime.
@@ -214,14 +220,16 @@ public class ExpressionCompiler extends AbstractParser {
 
                   firstLA = false;
                   literalOnly = 0;
-                } else {
+                }
+                else {
                   if (firstLA) {
                     /**
                      * There are more tokens, but we can't reduce anymore.  So
                      * we create a reduced token for what we've got.
                      */
                     astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
-                  } else {
+                  }
+                  else {
                     /**
                      * We have reduced additional tokens, but we can't reduce
                      * anymore.
@@ -245,23 +253,28 @@ public class ExpressionCompiler extends AbstractParser {
                 astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
 
               continue;
-            } else {
+            }
+            else {
               astBuild.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
               if (tkLA != null) astBuild.addTokenNode(verify(pCtx, tkLA));
               continue;
             }
-          } else if (tkOp != null && !tkOp.isOperator() && !(tk.getLiteralValue() instanceof Class)) {
+          }
+          else if (tkOp != null && !tkOp.isOperator() && !(tk.getLiteralValue() instanceof Class)) {
             throw new CompileException("unexpected token: " + tkOp.getName(), expr, tkOp.getStart());
-          } else {
+          }
+          else {
             literalOnly = 0;
             astBuild.addTokenNode(verify(pCtx, tk));
             if (tkOp != null) astBuild.addTokenNode(verify(pCtx, tkOp));
             continue;
           }
-        } else {
+        }
+        else {
           if (tk.isOperator()) {
             lastOp = tk.getOperator();
-          } else {
+          }
+          else {
             literalOnly = 0;
           }
 
@@ -283,16 +296,20 @@ public class ExpressionCompiler extends AbstractParser {
 
       if (!verifyOnly) {
         return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
-      } else {
+      }
+      else {
         returnType = CompilerTools.getReturnType(astBuild);
         return null;
       }
 
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       throw new CompileException("not a statement, or badly formed structure", expr, st, e);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       parserContext.set(null);
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       else {
@@ -347,13 +364,15 @@ public class ExpressionCompiler extends AbstractParser {
     }
     if (tk.isDiscard() || tk.isOperator()) {
       return tk;
-    } else if (tk.isLiteral()) {
+    }
+    else if (tk.isLiteral()) {
       /**
        * Convert literal values from the default ASTNode to the more-efficient LiteralNode.
        */
       if ((fields & COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
         return new LiteralNode(tk.getLiteralValue());
-      } else {
+      }
+      else {
         return tk;
       }
     }
@@ -366,7 +385,8 @@ public class ExpressionCompiler extends AbstractParser {
         if (tk instanceof Union) {
           propVerifier.setCtx(((Union) tk).getLeftEgressType());
           tk.setEgressType(returnType = propVerifier.analyze());
-        } else {
+        }
+        else {
           tk.setEgressType(returnType = propVerifier.analyze());
 
           if (propVerifier.isFqcn()) {
@@ -386,7 +406,8 @@ public class ExpressionCompiler extends AbstractParser {
           }
 
         }
-      } else if (tk.isAssignment()) {
+      }
+      else if (tk.isAssignment()) {
         Assignment a = (Assignment) tk;
 
         if (a.getAssignmentVar() != null) {
@@ -415,10 +436,12 @@ public class ExpressionCompiler extends AbstractParser {
                 try {
                   a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
                   return tk;
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                   // fall through.
                 }
-              } else if (returnType.isPrimitive()
+              }
+              else if (returnType.isPrimitive()
                       && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
                 /**
                  * We ignore boxed primitive cases, since MVEL does not recognize primitives.
@@ -432,7 +455,8 @@ public class ExpressionCompiler extends AbstractParser {
             }
           }
         }
-      } else if (tk instanceof NewObjectNode) {
+      }
+      else if (tk instanceof NewObjectNode) {
         // this is a bit of a hack for now.
         NewObjectNode n = (NewObjectNode) tk;
         List<char[]> parms = ParseTools.parseMethodOrConstructor(tk.getNameAsArray());

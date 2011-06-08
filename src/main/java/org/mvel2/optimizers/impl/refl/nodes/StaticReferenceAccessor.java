@@ -29,7 +29,8 @@ public class StaticReferenceAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(literal, elCtx, vars);
-    } else {
+    }
+    else {
       return literal;
     }
   }

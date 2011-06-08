@@ -13,7 +13,8 @@ public class MyClass implements MyInterface {
   public void setType(MY_ENUM myenum, boolean flag) {
     if (flag == true) {
       m_myEnumSet.add(myenum);
-    } else {
+    }
+    else {
       m_myEnumSet.remove(myenum);
     }
   }

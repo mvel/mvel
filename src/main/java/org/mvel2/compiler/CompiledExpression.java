@@ -103,7 +103,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
       setupOptimizers();
       try {
         return getValue(ctx, variableFactory);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -115,13 +116,15 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
       setupOptimizers();
       try {
         return getValue(staticContext, factory);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
     if (importInjectionRequired) {
       return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
-    } else {
+    }
+    else {
       return execute(false, this, staticContext, factory);
     }
   }
@@ -129,7 +132,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
     if (importInjectionRequired) {
       return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
-    } else {
+    }
+    else {
       return execute(false, this, staticContext, factory);
     }
   }

@@ -17,7 +17,8 @@ public class FailureTests extends AbstractTest {
   public void testBadParserConstruct() {
     try {
       MVEL.eval("a = 0; a =+++ 5;");
-    } catch (RuntimeException e) {
+    }
+    catch (RuntimeException e) {
       return;
     }
 
@@ -27,7 +28,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail() {
     try {
       MVEL.eval("i = 0; i < 99 dksadlka", new HashMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -37,7 +39,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail2() {
     try {
       MVEL.compileExpression("i = 0; i < 99 dksadlka");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -47,7 +50,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail3() {
     try {
       MVEL.compileExpression("def foo() { 'bar' }; foo(123);");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       return;
     }
@@ -58,7 +62,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail4() {
     try {
       MVEL.eval("hour zzz", createTestMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -68,7 +73,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail5() {
     try {
       MVEL.eval("[");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -80,7 +86,8 @@ public class FailureTests extends AbstractTest {
       ParserContext pctx = new ParserContext();
       pctx.setStrongTyping(true);
       MVEL.compileExpression("new int[] {1.5}", pctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -92,7 +99,8 @@ public class FailureTests extends AbstractTest {
       ParserContext pctx = new ParserContext();
       pctx.setStrongTyping(true);
       MVEL.compileExpression("String x = 'foo'; int y = 2; new int[] { x, y }", pctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
 //            e.printStackTrace();
       return;
     }
@@ -106,7 +114,8 @@ public class FailureTests extends AbstractTest {
       pCtx.setStrongTyping(true);
 
       MVEL.compileExpression("for (String s : new java.util.HashMap()) { }", pCtx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       //   e.printStackTrace();
       return;
     }
@@ -118,7 +127,8 @@ public class FailureTests extends AbstractTest {
     try {
 
       MVEL.compileExpression("foo = ", new HashMap());
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       return;
     }
@@ -129,7 +139,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail10() {
     try {
       MVEL.compileExpression("foo = [1,1,qq,zz]", ParserContext.create().stronglyTyped());
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       e.printStackTrace();
       return;
     }
@@ -147,9 +158,11 @@ public class FailureTests extends AbstractTest {
               "<b<9l9XV9-9 X9h7#9Ln?FnnLXLkg5<V-Z%bb-n&Et<B-X[n\"jbvg&@b{X0?*9eC{%zU\n" +
               "L\t{RPX\tbwhY&L`z<`Oh`<8pH\n" +
               "b:y:#H-;&,PzXw\ttHicFbs");
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       return;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       fail("Unclean failure");
     }
@@ -158,7 +171,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail11() {
     try {
       MVEL.eval("for (int i = 0; i--; i++) {}");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       return;
     }
@@ -169,7 +183,8 @@ public class FailureTests extends AbstractTest {
   public void testShouldFail12() {
     try {
       MVEL.eval("def x(_");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       return;
     }

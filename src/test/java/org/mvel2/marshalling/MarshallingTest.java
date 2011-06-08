@@ -188,7 +188,8 @@ public class MarshallingTest extends TestCase {
         marshallValue(object,
                 type,
                 ctx);
-      } else {
+      }
+      else {
         Class cls = object.getClass();
         ObjectConverter converter = this.converters.get(cls);
         if (converter == null) {
@@ -212,7 +213,8 @@ public class MarshallingTest extends TestCase {
                     entry.getType(),
                     ctx);
           }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           throw new IllegalStateException("Unable to marshall object " + object,
                   e);
         }
@@ -292,7 +294,8 @@ public class MarshallingTest extends TestCase {
 
       try {
         beanInfo = Introspector.getBeanInfo(cls);
-      } catch (IntrospectionException e) {
+      }
+      catch (IntrospectionException e) {
         throw new RuntimeException(e);
       }
 
@@ -318,25 +321,35 @@ public class MarshallingTest extends TestCase {
       Type type = null;
       if (cls.isPrimitive() || Number.class.isAssignableFrom(cls)) {
         type = Type.PRIMITIVE;
-      } else if (Character.class.isAssignableFrom(cls)) {
+      }
+      else if (Character.class.isAssignableFrom(cls)) {
         type = Type.CHAR;
-      } else if (String.class.isAssignableFrom(cls)) {
+      }
+      else if (String.class.isAssignableFrom(cls)) {
         type = Type.STRING;
-      } else if (Date.class.isAssignableFrom(cls)) {
+      }
+      else if (Date.class.isAssignableFrom(cls)) {
         type = Type.DATE;
-      } else if (Calendar.class.isAssignableFrom(cls)) {
+      }
+      else if (Calendar.class.isAssignableFrom(cls)) {
         type = Type.CALENDAR;
-      } else if (BigInteger.class.isAssignableFrom(cls)) {
+      }
+      else if (BigInteger.class.isAssignableFrom(cls)) {
         type = Type.BIG_INTEGER;
-      } else if (BigDecimal.class.isAssignableFrom(cls)) {
+      }
+      else if (BigDecimal.class.isAssignableFrom(cls)) {
         type = Type.BIG_DECIMAL;
-      } else if (cls.isArray()) {
+      }
+      else if (cls.isArray()) {
         type = Type.ARRAY;
-      } else if (Map.class.isAssignableFrom(cls)) {
+      }
+      else if (Map.class.isAssignableFrom(cls)) {
         type = Type.MAP;
-      } else if (Collection.class.isAssignableFrom(cls)) {
+      }
+      else if (Collection.class.isAssignableFrom(cls)) {
         type = Type.COLLECTION;
-      } else {
+      }
+      else {
         type = Type.OBJECT;
       }
       return type;
@@ -607,10 +620,12 @@ public class MarshallingTest extends TestCase {
       SomeNumers other = (SomeNumers) obj;
       if (aBigDecimal == null) {
         if (other.aBigDecimal != null) return false;
-      } else if (!aBigDecimal.equals(other.aBigDecimal)) return false;
+      }
+      else if (!aBigDecimal.equals(other.aBigDecimal)) return false;
       if (aBigInteger == null) {
         if (other.aBigInteger != null) return false;
-      } else if (!aBigInteger.equals(other.aBigInteger)) return false;
+      }
+      else if (!aBigInteger.equals(other.aBigInteger)) return false;
       if (Double.doubleToLongBits(aDouble) != Double.doubleToLongBits(other.aDouble)) return false;
       if (Float.floatToIntBits(aFloat) != Float.floatToIntBits(other.aFloat)) return false;
       if (aInt != other.aInt) return false;
@@ -713,22 +728,28 @@ public class MarshallingTest extends TestCase {
       if (age != other.age) return false;
       if (cal == null) {
         if (other.cal != null) return false;
-      } else if (!cal.equals(other.cal)) return false;
+      }
+      else if (!cal.equals(other.cal)) return false;
       if (map == null) {
         if (other.map != null) return false;
-      } else if (!map.equals(other.map)) return false;
+      }
+      else if (!map.equals(other.map)) return false;
       if (name == null) {
         if (other.name != null) return false;
-      } else if (!name.equals(other.name)) return false;
+      }
+      else if (!name.equals(other.name)) return false;
       if (nullTest == null) {
         if (other.nullTest != null) return false;
-      } else if (!nullTest.equals(other.nullTest)) return false;
+      }
+      else if (!nullTest.equals(other.nullTest)) return false;
       if (pet == null) {
         if (other.pet != null) return false;
-      } else if (!pet.equals(other.pet)) return false;
+      }
+      else if (!pet.equals(other.pet)) return false;
       if (someDate == null) {
         if (other.someDate != null) return false;
-      } else if (!someDate.equals(other.someDate)) return false;
+      }
+      else if (!someDate.equals(other.someDate)) return false;
       return true;
     }
 
@@ -792,15 +813,18 @@ public class MarshallingTest extends TestCase {
       Pet other = (Pet) obj;
       if (age == null) {
         if (other.age != null) return false;
-      } else if (!age.equals(other.age)) return false;
+      }
+      else if (!age.equals(other.age)) return false;
       if (!Arrays.equals(array,
               other.array)) return false;
       if (list == null) {
         if (other.list != null) return false;
-      } else if (!list.equals(other.list)) return false;
+      }
+      else if (!list.equals(other.list)) return false;
       if (name == null) {
         if (other.name != null) return false;
-      } else if (!name.equals(other.name)) return false;
+      }
+      else if (!name.equals(other.name)) return false;
       return true;
     }
 
@@ -865,7 +889,8 @@ public class MarshallingTest extends TestCase {
       if (edible != other.edible) return false;
       if (type == null) {
         if (other.type != null) return false;
-      } else if (!type.equals(other.type)) return false;
+      }
+      else if (!type.equals(other.type)) return false;
       return true;
     }
 

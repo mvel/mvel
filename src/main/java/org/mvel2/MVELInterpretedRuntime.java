@@ -46,20 +46,25 @@ public class MVELInterpretedRuntime extends AbstractParser {
       variableFactory.setTiltFlag(false);
       cursor = start;
       return parseAndExecuteInterpreted();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    }
+    catch (ArrayIndexOutOfBoundsException e) {
       e.printStackTrace();
       throw new CompileException("unexpected end of statement", expr, length);
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       e.printStackTrace();
 
       if (cursor >= length) {
         throw new CompileException("unexpected end of statement", expr, length);
-      } else {
+      }
+      else {
         throw e;
       }
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
-    } finally {
+    }
+    finally {
       if (parserContext != null) contextControl(REMOVE, null, null);
     }
   }
@@ -105,7 +110,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
               else
                 continue;
             }
-          } else {
+          }
+          else {
             continue;
           }
         }
@@ -148,9 +154,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
       if (holdOverRegister != null) {
         return holdOverRegister;
       }
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, expr, start);
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       if (tk != null && tk.isOperator()) {
         CompileException ce = new CompileException("incomplete statement: "
                 + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")"
@@ -160,7 +168,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
         ce.setLineNumber(line);
         ce.setCursor(cursor);
         throw ce;
-      } else {
+      }
+      else {
         throw e;
       }
     }
@@ -180,11 +189,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (!stk.peekBoolean()) {
           if (unwindStatement(operator)) {
             return -1;
-          } else {
+          }
+          else {
             stk.clear();
             return 0;
           }
-        } else {
+        }
+        else {
           stk.discard();
           return 0;
         }
@@ -195,11 +206,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (stk.peekBoolean()) {
           if (unwindStatement(operator)) {
             return -1;
-          } else {
+          }
+          else {
             stk.clear();
             return 0;
           }
-        } else {
+        }
+        else {
           stk.discard();
           return 0;
         }
@@ -357,7 +370,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     if (pCtx.hasImport(name)) {
       return true;
-    } else {
+    }
+    else {
       VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
       return vrf != null && vrf.isResolveable(name);
     }

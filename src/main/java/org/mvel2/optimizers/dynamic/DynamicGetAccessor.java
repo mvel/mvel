@@ -62,7 +62,8 @@ public class DynamicGetAccessor implements DynamicAccessor {
         if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
           return optimize(ctx, elCtx, variableFactory);
-        } else {
+        }
+        else {
           runcount = 0;
           stamp = currentTimeMillis();
         }

@@ -32,7 +32,8 @@ public class LiteralNode extends ASTNode {
   public LiteralNode(Object literal) {
     if ((this.literal = literal) != null) {
       if ((this.egressType = literal.getClass()) == BlankLiteral.class) this.egressType = Object.class;
-    } else {
+    }
+    else {
       this.egressType = Object.class;
     }
   }

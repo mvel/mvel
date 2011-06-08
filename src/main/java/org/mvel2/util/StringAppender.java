@@ -170,7 +170,8 @@ public class StringAppender implements CharSequence {
       String s;
       try {
         s = new String(btr, encoding);
-      } catch (UnsupportedEncodingException e) {
+      }
+      catch (UnsupportedEncodingException e) {
         s = new String(btr);
       }
       return s.toCharArray();
@@ -187,7 +188,8 @@ public class StringAppender implements CharSequence {
       String s;
       try {
         s = new String(btr, 0, size, encoding);
-      } catch (UnsupportedEncodingException e) {
+      }
+      catch (UnsupportedEncodingException e) {
         s = new String(btr, 0, size);
       }
       return s;

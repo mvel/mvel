@@ -90,7 +90,8 @@ public class ForNode extends BlockNode {
       ParserContext spCtx = pCtx;
       if (pCtx != null) {
         spCtx = pCtx.createSubcontext().createColoringSubcontext();
-      } else {
+      }
+      else {
         spCtx = new ParserContext();
       }
 
@@ -103,7 +104,8 @@ public class ForNode extends BlockNode {
       try {
         expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
                 (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
-      } catch (CompileException e) {
+      }
+      catch (CompileException e) {
         if (e.getExpr().length == 0) {
           e.setExpr(expr);
 
@@ -122,13 +124,15 @@ public class ForNode extends BlockNode {
       if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
         if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
         varsEscape = true;
-      } else if (spCtx != null && pCtx != null) {
+      }
+      else if (spCtx != null && pCtx != null) {
         pCtx.addVariables(spCtx.getVariables());
       }
 
       this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
 
-    } catch (NegativeArraySizeException e) {
+    }
+    catch (NegativeArraySizeException e) {
       throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);
     }
     return varsEscape;

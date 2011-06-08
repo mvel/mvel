@@ -30,7 +30,8 @@ public class Soundslike extends ASTNode {
       if (x == null) throw new CompileException("not a string: " + stmt.getName(), stmt.getExpr(), stmt.getStart());
 
       return soundex(i).equals(soundex(x));
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new CompileException("not a string: " + soundslike.getName(), soundslike.getExpr(), soundslike.getStart());
     }
 

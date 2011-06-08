@@ -410,10 +410,12 @@ public class WithTests extends AbstractTest {
       final Recipient other = (Recipient) obj;
       if (email == null) {
         if (other.email != null) return false;
-      } else if (!email.equals(other.email)) return false;
+      }
+      else if (!email.equals(other.email)) return false;
       if (name == null) {
         if (other.name != null) return false;
-      } else if (!name.equals(other.name)) return false;
+      }
+      else if (!name.equals(other.name)) return false;
       return true;
     }
   }
@@ -512,10 +514,12 @@ public class WithTests extends AbstractTest {
       final EmailMessage other = (EmailMessage) obj;
       if (from == null) {
         if (other.from != null) return false;
-      } else if (!from.equals(other.from)) return false;
+      }
+      else if (!from.equals(other.from)) return false;
       if (recipients == null) {
         if (other.recipients != null) return false;
-      } else if (!recipients.equals(other.recipients)) return false;
+      }
+      else if (!recipients.equals(other.recipients)) return false;
       return true;
     }
   }

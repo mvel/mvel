@@ -68,7 +68,8 @@ public class CompiledForEachNode extends Node {
     sepExpr = terminatingnode.getContents();
     if (sepExpr.length == 0) {
       sepExpr = null;
-    } else {
+    }
+    else {
       cSepExpr = MVEL.compileExpression(sepExpr, context);
     }
 
@@ -82,11 +83,14 @@ public class CompiledForEachNode extends Node {
     for (int i = 0; i < iters.length; i++) {
       if ((o = MVEL.executeExpression(ce[i], ctx, factory)) instanceof Iterable) {
         iters[i] = ((Iterable) o).iterator();
-      } else if (o instanceof Object[]) {
+      }
+      else if (o instanceof Object[]) {
         iters[i] = new ArrayIterator((Object[]) o);
-      } else if (o instanceof Integer) {
+      }
+      else if (o instanceof Integer) {
         iters[i] = new CountIterator((Integer) o);
-      } else {
+      }
+      else {
         throw new TemplateRuntimeError("cannot iterate object type: " + o.getClass().getName());
       }
     }
@@ -101,7 +105,8 @@ public class CompiledForEachNode extends Node {
         if (!iters[i].hasNext()) {
           iterate--;
           locals.put(item[i], "");
-        } else {
+        }
+        else {
           locals.put(item[i], iters[i].next());
         }
       }
@@ -116,7 +121,8 @@ public class CompiledForEachNode extends Node {
             }
           }
         }
-      } else break;
+      }
+      else break;
     }
 
     return next != null ? next.eval(runtime, appender, ctx, factory) : null;

@@ -63,9 +63,11 @@ public class ParseTools {
       if (version < 1.5) {
         throw new RuntimeException("unsupported java version: " + version);
       }
-    } catch (RuntimeException e) {
+    }
+    catch (RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to initialize math processor", e);
     }
   }
@@ -141,7 +143,8 @@ public class ParseTools {
         checkNameSafety(s);
         list.add(s);
       }
-    } else if (list.size() == 0) {
+    }
+    else if (list.size() == 0) {
       if ((s = createStringTrimmed(parm, start, length)).length() > 0) {
         checkNameSafety(s);
         list.add(s);
@@ -197,7 +200,8 @@ public class ParseTools {
       char[] s = subsetTrimmed(parm, start, i - start);
       if (s.length > 0)
         list.add(s);
-    } else if (list.size() == 0) {
+    }
+    else if (list.size() == 0) {
       char[] s = subsetTrimmed(parm, start, length);
       if (s.length > 0)
         list.add(s);
@@ -250,7 +254,8 @@ public class ParseTools {
         if (method.equals(meth.getName())) {
           if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !meth.isVarArgs()) {
             continue;
-          } else if (arguments.length == 0 && parmTypes.length == 0) {
+          }
+          else if (arguments.length == 0 && parmTypes.length == 0) {
             bestCandidate = meth;
             break;
           }
@@ -259,28 +264,37 @@ public class ParseTools {
             if (arguments[i] == null) {
               if (!parmTypes[i].isPrimitive()) {
                 score += 5;
-              } else {
+              }
+              else {
                 score = 0;
                 break;
               }
-            } else if (parmTypes[i] == arguments[i]) {
+            }
+            else if (parmTypes[i] == arguments[i]) {
               score += 6;
-            } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+            }
+            else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
               score += 5;
-            } else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+            }
+            else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
               score += 5;
-            } else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+            }
+            else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
               score += 4;
-            } else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
+            }
+            else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
               score += 3 + scoreInterface(parmTypes[i], arguments[i]);
-            } else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
+            }
+            else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
               if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
               else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
 
               score += 1;
-            } else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
+            }
+            else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
               score += 1;
-            } else {
+            }
+            else {
               score = 0;
               break;
             }
@@ -317,7 +331,8 @@ public class ParseTools {
         methods = nMethods;
 
         retry = true;
-      } else {
+      }
+      else {
         break;
       }
     }
@@ -394,7 +409,8 @@ public class ParseTools {
     Class[] parms;
     if (ref != null && (parms = ref.get()) != null) {
       return parms;
-    } else {
+    }
+    else {
       CONSTRUCTOR_PARMS_CACHE.put(cns, new WeakReference<Class[]>(parms = cns.getParameterTypes()));
       return parms;
     }
@@ -430,7 +446,8 @@ public class ParseTools {
     for (Constructor construct : getConstructors(cls)) {
       if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
         continue;
-      } else if (arguments.length == 0 && parmTypes.length == 0) {
+      }
+      else if (arguments.length == 0 && parmTypes.length == 0) {
         return construct;
       }
 
@@ -438,28 +455,37 @@ public class ParseTools {
         if (arguments[i] == null) {
           if (!parmTypes[i].isPrimitive()) {
             score += 5;
-          } else {
+          }
+          else {
             score = 0;
             break;
           }
-        } else if (parmTypes[i] == arguments[i]) {
+        }
+        else if (parmTypes[i] == arguments[i]) {
           score += 6;
-        } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+        }
+        else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
           score += 5;
-        } else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+        }
+        else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
           score += 5;
-        } else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+        }
+        else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
           score += 4;
-        } else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && parmTypes[i] != Object.class) {
+        }
+        else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && parmTypes[i] != Object.class) {
           score += 3 + scoreInterface(parmTypes[i], arguments[i]);
-        } else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
+        }
+        else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
           if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
           else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
 
           score += 1;
-        } else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
+        }
+        else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
           score += 1;
-        } else {
+        }
+        else {
           score = 0;
           break;
         }
@@ -503,11 +529,13 @@ public class ParseTools {
 
     if ((ref = cache.get(className)) != null && (cls = ref.get()) != null) {
       return cls;
-    } else {
+    }
+    else {
       try {
         cls = pCtx == null ? Class.forName(className, true, Thread.currentThread().getContextClassLoader()) :
                 Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         /**
          * Now try the system classloader.
          */
@@ -526,7 +554,8 @@ public class ParseTools {
 
     if (ref != null && (cns = ref.get()) != null) {
       return cns;
-    } else {
+    }
+    else {
       CLASS_CONSTRUCTOR_CACHE.put(cls, new WeakReference<Constructor[]>(cns = cls.getConstructors()));
       return cns;
     }
@@ -554,35 +583,50 @@ public class ParseTools {
   public static Class boxPrimitive(Class cls) {
     if (cls == int.class || cls == Integer.class) {
       return Integer.class;
-    } else if (cls == int[].class || cls == Integer[].class) {
+    }
+    else if (cls == int[].class || cls == Integer[].class) {
       return Integer[].class;
-    } else if (cls == char.class || cls == Character.class) {
+    }
+    else if (cls == char.class || cls == Character.class) {
       return Character.class;
-    } else if (cls == char[].class || cls == Character[].class) {
+    }
+    else if (cls == char[].class || cls == Character[].class) {
       return Character[].class;
-    } else if (cls == long.class || cls == Long.class) {
+    }
+    else if (cls == long.class || cls == Long.class) {
       return Long.class;
-    } else if (cls == long[].class || cls == Long[].class) {
+    }
+    else if (cls == long[].class || cls == Long[].class) {
       return Long[].class;
-    } else if (cls == short.class || cls == Short.class) {
+    }
+    else if (cls == short.class || cls == Short.class) {
       return Short.class;
-    } else if (cls == short[].class || cls == Short[].class) {
+    }
+    else if (cls == short[].class || cls == Short[].class) {
       return Short[].class;
-    } else if (cls == double.class || cls == Double.class) {
+    }
+    else if (cls == double.class || cls == Double.class) {
       return Double.class;
-    } else if (cls == double[].class || cls == Double[].class) {
+    }
+    else if (cls == double[].class || cls == Double[].class) {
       return Double[].class;
-    } else if (cls == float.class || cls == Float.class) {
+    }
+    else if (cls == float.class || cls == Float.class) {
       return Float.class;
-    } else if (cls == float[].class || cls == Float[].class) {
+    }
+    else if (cls == float[].class || cls == Float[].class) {
       return Float[].class;
-    } else if (cls == boolean.class || cls == Boolean.class) {
+    }
+    else if (cls == boolean.class || cls == Boolean.class) {
       return Boolean.class;
-    } else if (cls == boolean[].class || cls == Boolean[].class) {
+    }
+    else if (cls == boolean[].class || cls == Boolean[].class) {
       return Boolean[].class;
-    } else if (cls == byte.class || cls == Byte.class) {
+    }
+    else if (cls == byte.class || cls == Byte.class) {
       return Byte.class;
-    } else if (cls == byte[].class || cls == Byte[].class) {
+    }
+    else if (cls == byte[].class || cls == Byte[].class) {
       return Byte[].class;
     }
 
@@ -592,35 +636,50 @@ public class ParseTools {
   public static Class unboxPrimitive(Class cls) {
     if (cls == Integer.class || cls == int.class) {
       return int.class;
-    } else if (cls == Integer[].class || cls == int[].class) {
+    }
+    else if (cls == Integer[].class || cls == int[].class) {
       return int[].class;
-    } else if (cls == Long.class || cls == long.class) {
+    }
+    else if (cls == Long.class || cls == long.class) {
       return long.class;
-    } else if (cls == Long[].class || cls == long[].class) {
+    }
+    else if (cls == Long[].class || cls == long[].class) {
       return long[].class;
-    } else if (cls == Character.class || cls == char.class) {
+    }
+    else if (cls == Character.class || cls == char.class) {
       return char.class;
-    } else if (cls == Character[].class || cls == char[].class) {
+    }
+    else if (cls == Character[].class || cls == char[].class) {
       return char[].class;
-    } else if (cls == Short.class || cls == short.class) {
+    }
+    else if (cls == Short.class || cls == short.class) {
       return short.class;
-    } else if (cls == Short[].class || cls == short[].class) {
+    }
+    else if (cls == Short[].class || cls == short[].class) {
       return short[].class;
-    } else if (cls == Double.class || cls == double.class) {
+    }
+    else if (cls == Double.class || cls == double.class) {
       return double.class;
-    } else if (cls == Double[].class || cls == double[].class) {
+    }
+    else if (cls == Double[].class || cls == double[].class) {
       return double[].class;
-    } else if (cls == Float.class || cls == float.class) {
+    }
+    else if (cls == Float.class || cls == float.class) {
       return float.class;
-    } else if (cls == Float[].class || cls == float[].class) {
+    }
+    else if (cls == Float[].class || cls == float[].class) {
       return float[].class;
-    } else if (cls == Boolean.class || cls == boolean.class) {
+    }
+    else if (cls == Boolean.class || cls == boolean.class) {
       return boolean.class;
-    } else if (cls == Boolean[].class || cls == boolean[].class) {
+    }
+    else if (cls == Boolean[].class || cls == boolean[].class) {
       return boolean[].class;
-    } else if (cls == Byte.class || cls == byte.class) {
+    }
+    else if (cls == Byte.class || cls == byte.class) {
       return byte.class;
-    } else if (cls == Byte[].class || cls == byte[].class) {
+    }
+    else if (cls == Byte[].class || cls == byte[].class) {
       return byte[].class;
     }
 
@@ -702,7 +761,8 @@ public class ParseTools {
           while (++pos - s != 5) {
             if ((escapeStr[pos] > ('0' - 1) && escapeStr[pos] < ('9' + 1)) ||
                     (escapeStr[pos] > ('A' - 1) && escapeStr[pos] < ('F' + 1))) {
-            } else {
+            }
+            else {
               throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
             }
           }
@@ -727,7 +787,8 @@ public class ParseTools {
             escapeStr[s] = 0;
             escapeStr[s + 1] = 0;
             return 2;
-          } else if ((pos - s) == 2) {
+          }
+          else if ((pos - s) == 2) {
             escapeStr[s - 1] = (char) Integer.decode("0" + new String(escapeStr, s, pos - s + 1)).intValue();
             escapeStr[s] = 0;
             escapeStr[s + 1] = 0;
@@ -809,7 +870,8 @@ public class ParseTools {
 
     if (factory == null) {
       throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-    } else {
+    }
+    else {
       return insertFactory(factory, new ClassImportResolverFactory());
     }
   }
@@ -818,16 +880,21 @@ public class ParseTools {
     try {
       if (LITERALS.containsKey(name)) {
         return (Class) LITERALS.get(name);
-      } else if (factory != null && factory.isResolveable(name)) {
+      }
+      else if (factory != null && factory.isResolveable(name)) {
         return (Class) factory.getVariableResolver(name).getValue();
-      } else if (ctx != null && ctx.hasImport(name)) {
+      }
+      else if (ctx != null && ctx.hasImport(name)) {
         return ctx.getImport(name);
-      } else {
+      }
+      else {
         return createClass(name, ctx);
       }
-    } catch (ClassNotFoundException e) {
+    }
+    catch (ClassNotFoundException e) {
       throw e;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("class not found: " + name, e);
     }
   }
@@ -958,7 +1025,8 @@ public class ParseTools {
     if (code == null) {
       if (cls != null && Collection.class.isAssignableFrom(cls)) {
         return DataTypes.COLLECTION;
-      } else {
+      }
+      else {
         return DataTypes.OBJECT;
       }
     }
@@ -1029,9 +1097,11 @@ public class ParseTools {
   public static Object narrowType(final BigDecimal result, int returnTarget) {
     if (returnTarget == DataTypes.W_DOUBLE || result.scale() > 0) {
       return result.doubleValue();
-    } else if (returnTarget == DataTypes.W_LONG || result.longValue() > Integer.MAX_VALUE) {
+    }
+    else if (returnTarget == DataTypes.W_LONG || result.longValue() > Integer.MAX_VALUE) {
       return result.longValue();
-    } else {
+    }
+    else {
       return result.intValue();
     }
   }
@@ -1260,14 +1330,16 @@ public class ParseTools {
           return start;
         }
       }
-    } else {
+    }
+    else {
       for (start++; start < end; start++) {
         if (start < end && chars[start] == '/') {
           if (start + 1 == end) return start;
           if (chars[start + 1] == '/') {
             start++;
             while (start < end && chars[start] != '\n') start++;
-          } else if (chars[start + 1] == '*') {
+          }
+          else if (chars[start + 1] == '*') {
             start += 2;
             while (start < end) {
               switch (chars[start]) {
@@ -1287,9 +1359,11 @@ public class ParseTools {
         if (start == end) return start;
         if (chars[start] == '\'' || chars[start] == '"') {
           start = captureStringLiteral(chars[start], chars, start, end);
-        } else if (chars[start] == type) {
+        }
+        else if (chars[start] == type) {
           depth++;
-        } else if (chars[start] == term && --depth == 0) {
+        }
+        else if (chars[start] == term && --depth == 0) {
           return start;
         }
       }
@@ -1329,7 +1403,8 @@ public class ParseTools {
           return start;
         }
       }
-    } else {
+    }
+    else {
       int lines = 0;
       for (start++; start < end; start++) {
         if (isWhitespace(chars[start])) {
@@ -1340,12 +1415,14 @@ public class ParseTools {
               if (pCtx != null) pCtx.setLineOffset((short) start);
               lines++;
           }
-        } else if (start < end && chars[start] == '/') {
+        }
+        else if (start < end && chars[start] == '/') {
           if (start + 1 == end) return start;
           if (chars[start + 1] == '/') {
             start++;
             while (start < end && chars[start] != '\n') start++;
-          } else if (chars[start + 1] == '*') {
+          }
+          else if (chars[start + 1] == '*') {
             start += 2;
             Skiploop:
             while (start != end) {
@@ -1367,9 +1444,11 @@ public class ParseTools {
         if (start == end) return start;
         if (chars[start] == '\'' || chars[start] == '"') {
           start = captureStringLiteral(chars[start], chars, start, end);
-        } else if (chars[start] == type) {
+        }
+        else if (chars[start] == type) {
           depth++;
-        } else if (chars[start] == term && --depth == 0) {
+        }
+        else if (chars[start] == term && --depth == 0) {
           if (pCtx != null) pCtx.incrementLineCount(lines);
           return start;
         }
@@ -1451,7 +1530,8 @@ public class ParseTools {
           if (i < end && block[i + 1] == '/') {
             while (i < end && block[i] != '\n') block[i++] = ' ';
             if (parm == null) _st = i;
-          } else if (i < end && block[i + 1] == '*') {
+          }
+          else if (i < end && block[i + 1] == '*') {
             int len = end - 1;
             while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
               block[i++] = ' ';
@@ -1460,7 +1540,8 @@ public class ParseTools {
             block[i++] = ' ';
 
             if (parm == null) _st = i;
-          } else if (i < end && block[i + 1] == '=') {
+          }
+          else if (i < end && block[i + 1] == '=') {
             oper = Operator.DIV;
           }
           continue;
@@ -1487,11 +1568,13 @@ public class ParseTools {
             try {
               if (nestParm == null) {
                 MVEL.eval(new String(block, _st, _end - _st), ctx, factory);
-              } else {
+              }
+              else {
                 MVEL.eval(new StringBuilder(nestParm).append('.')
                         .append(block, _st, _end - _st).toString(), ctx, factory);
               }
-            } catch (CompileException e) {
+            }
+            catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
               e.setExpr(block);
               throw e;
@@ -1499,7 +1582,8 @@ public class ParseTools {
 
             oper = -1;
             _st = ++i;
-          } else {
+          }
+          else {
             try {
               if (oper != -1) {
                 if (nestParm == null) {
@@ -1512,10 +1596,12 @@ public class ParseTools {
                                 block, _st, _end - _st, oper));
 
                 MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
-              } else {
+              }
+              else {
                 MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, _end - _st, ctx, factory));
               }
-            } catch (CompileException e) {
+            }
+            catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
               e.setExpr(block);
               throw e;
@@ -1536,11 +1622,13 @@ public class ParseTools {
         if (parm == null || "".equals(parm)) {
           if (nestParm == null) {
             MVEL.eval(new String(block, _st, _end - _st), ctx, factory);
-          } else {
+          }
+          else {
             MVEL.eval(new StringAppender(nestParm).append('.')
                     .append(block, _st, _end - _st).toString(), ctx, factory);
           }
-        } else {
+        }
+        else {
           if (oper != -1) {
             if (nestParm == null) {
               throw new CompileException("operative assignment not possible here", block, start);
@@ -1551,11 +1639,13 @@ public class ParseTools {
                     block, _st, _end - _st, oper));
 
             MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
-          } else {
+          }
+          else {
             MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));
           }
         }
-      } catch (CompileException e) {
+      }
+      catch (CompileException e) {
         e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
         e.setExpr(block);
         throw e;
@@ -1579,7 +1669,8 @@ public class ParseTools {
       }
 
       return Integer.decode(new String(val));
-    } else if (!isDigit(val[start + offset - 1])) {
+    }
+    else if (!isDigit(val[start + offset - 1])) {
       switch (val[start + offset - 1]) {
         case 'l':
         case 'L':
@@ -1597,7 +1688,8 @@ public class ParseTools {
           return new BigDecimal(new String(val, start, offset - 1));
       }
       throw new CompileException("unrecognized numeric literal", val, start);
-    } else {
+    }
+    else {
       switch (numericTest(val, start, offset)) {
         case DataTypes.FLOAT:
           return java.lang.Float.parseFloat(new String(val, start, offset));
@@ -1621,7 +1713,8 @@ public class ParseTools {
     Class clz;
     if (val instanceof Class) {
       clz = (Class) val;
-    } else {
+    }
+    else {
       clz = val.getClass();
     }
 
@@ -1665,9 +1758,11 @@ public class ParseTools {
     if (offset != 0) {
       if (fp) {
         return DOUBLE;
-      } else if (offset > 9) {
+      }
+      else if (offset > 9) {
         return LONG;
-      } else {
+      }
+      else {
         return INTEGER;
       }
     }
@@ -1699,7 +1794,8 @@ public class ParseTools {
       if (!isDigit(c = val.charAt(i))) {
         if (c == '.' && f) {
           f = false;
-        } else {
+        }
+        else {
           return false;
         }
       }
@@ -1725,7 +1821,8 @@ public class ParseTools {
       if (!isDigit(c = val[i])) {
         if (f && c == '.') {
           f = false;
-        } else if (offset != 1 && i == start + offset - 1) {
+        }
+        else if (offset != 1 && i == start + offset - 1) {
           switch (c) {
             case 'l':
             case 'L':
@@ -1740,7 +1837,8 @@ public class ParseTools {
               throw new CompileException("invalid number literal: " + new String(val), val, start);
           }
           return false;
-        } else if (i == start + 1 && c == 'x' && val[start] == '0') {
+        }
+        else if (i == start + 1 && c == 'x' && val[start] == '0') {
           for (i++; i < end; i++) {
             if (!isDigit(c = val[i])) {
               if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
@@ -1760,9 +1858,11 @@ public class ParseTools {
           }
           return offset - 2 > 0;
 
-        } else if (i != start && (i + 1) < offset && (c == 'E' || c == 'e')) {
+        }
+        else if (i != start && (i + 1) < offset && (c == 'E' || c == 'e')) {
           if (val[++i] == '-' || val[i] == '+') i++;
-        } else {
+        }
+        else {
           if (i != start)
             throw new CompileException("invalid number literal: " + new String(val, start, offset), val, start);
           return false;
@@ -1845,7 +1945,8 @@ public class ParseTools {
       baselength = c1.length;
       comp = c1;
       against = c2;
-    } else {
+    }
+    else {
       baselength = c2.length;
       comp = c2;
       against = c1;
@@ -1979,7 +2080,8 @@ public class ParseTools {
     public void eval(Object ctx, VariableResolverFactory vrf) {
       if (parm == null) {
         MVEL.eval(value, ctx, vrf);
-      } else {
+      }
+      else {
         MVEL.setProperty(ctx, parm, MVEL.eval(value, ctx, vrf));
       }
     }
@@ -1988,7 +2090,8 @@ public class ParseTools {
   public static void checkNameSafety(String name) {
     if (isReservedWord(name)) {
       throw new RuntimeException("illegal use of reserved word: " + name);
-    } else if (isDigit(name.charAt(0))) {
+    }
+    else if (isDigit(name.charAt(0))) {
       throw new RuntimeException("not an identifier: " + name);
     }
   }
@@ -2101,9 +2204,11 @@ public class ParseTools {
 
       //noinspection unchecked
       return sb.toChars();
-    } catch (FileNotFoundException e) {
+    }
+    catch (FileNotFoundException e) {
       // this can't be thrown, we check for this explicitly.
-    } finally {
+    }
+    finally {
       if (inStream != null) inStream.close();
       if (fc != null) fc.close();
     }
@@ -2126,7 +2231,8 @@ public class ParseTools {
 
       //noinspection unchecked
       return sb.toChars();
-    } finally {
+    }
+    finally {
       if (inStream != null) inStream.close();
     }
   }

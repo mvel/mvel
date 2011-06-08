@@ -76,7 +76,8 @@ public strictfp class MathProcessor {
           default:
             if (type2 > 99) {
               return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
-            } else {
+            }
+            else {
               return _doOperations(type1, val1, operation, type2, val2);
             }
         }
@@ -150,40 +151,46 @@ public strictfp class MathProcessor {
       case ADD:
         if (iNumber) {
           return narrowType(val1.add(val2, MATH_CONTEXT), returnTarget);
-        } else {
+        }
+        else {
           return val1.add(val2, MATH_CONTEXT);
         }
       case DIV:
         if (iNumber) {
           return narrowType(val1.divide(val2, MATH_CONTEXT), returnTarget);
-        } else {
+        }
+        else {
           return val1.divide(val2, MATH_CONTEXT);
         }
 
       case SUB:
         if (iNumber) {
           return narrowType(val1.subtract(val2, MATH_CONTEXT), returnTarget);
-        } else {
+        }
+        else {
           return val1.subtract(val2, MATH_CONTEXT);
         }
       case MULT:
         if (iNumber) {
           return narrowType(val1.multiply(val2, MATH_CONTEXT), returnTarget);
-        } else {
+        }
+        else {
           return val1.multiply(val2, MATH_CONTEXT);
         }
 
       case POWER:
         if (iNumber) {
           return narrowType(val1.pow(val2.intValue(), MATH_CONTEXT), returnTarget);
-        } else {
+        }
+        else {
           return val1.pow(val2.intValue(), MATH_CONTEXT);
         }
 
       case MOD:
         if (iNumber) {
           return narrowType(val1.remainder(val2), returnTarget);
-        } else {
+        }
+        else {
           return val1.remainder(val2);
         }
 
@@ -207,12 +214,14 @@ public strictfp class MathProcessor {
     if (operation < 20) {
       if (type1 > 49 && type1 == type2) {
         return doOperationsSameType(type1, val1, operation, val2);
-      } else if ((type1 > 99 && (type2 > 99))
+      }
+      else if ((type1 > 99 && (type2 > 99))
               || (operation != 0 && isNumber(val1) && isNumber(val2))) {
         return doPrimWrapperArithmetic(getNumber(val1, type1),
                 operation,
                 getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
-      } else if (operation != ADD &&
+      }
+      else if (operation != ADD &&
               (type1 == 15 || type2 == 15) &&
               type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
 
@@ -222,7 +231,8 @@ public strictfp class MathProcessor {
       else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 112 || type2 == 8 || type2 == 112)) {
         if (type1 == 1) {
           return doOperationNonNumeric(type1, val1, operation, valueOf(val2));
-        } else {
+        }
+        else {
           return doOperationNonNumeric(type1, valueOf(val1), operation, val2);
         }
       }
@@ -237,7 +247,8 @@ public strictfp class MathProcessor {
           List list = new ArrayList((Collection) val1);
           list.add(val2);
           return list;
-        } else {
+        }
+        else {
           return valueOf(val1) + valueOf(val2);
         }
 
@@ -255,10 +266,12 @@ public strictfp class MathProcessor {
         if (val1 instanceof Comparable) {
           try {
             return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
-          } catch (ClassCastException e) {
+          }
+          catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
           }
-        } else {
+        }
+        else {
           return Boolean.FALSE;
         }
         //     break;
@@ -268,11 +281,13 @@ public strictfp class MathProcessor {
           //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
-          } catch (ClassCastException e) {
+          }
+          catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
           }
 
-        } else {
+        }
+        else {
           return Boolean.FALSE;
         }
 
@@ -282,11 +297,13 @@ public strictfp class MathProcessor {
           //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
-          } catch (ClassCastException e) {
+          }
+          catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
           }
 
-        } else {
+        }
+        else {
           return Boolean.FALSE;
         }
 
@@ -296,11 +313,13 @@ public strictfp class MathProcessor {
           //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
-          } catch (ClassCastException e) {
+          }
+          catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
           }
 
-        } else {
+        }
+        else {
           return Boolean.FALSE;
         }
 
@@ -321,13 +340,15 @@ public strictfp class MathProcessor {
   private static Boolean safeEquals(final Object val1, final Object val2) {
     if (val1 != null) {
       return val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
-    } else return val2 == null || (val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE);
+    }
+    else return val2 == null || (val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE);
   }
 
   private static Boolean safeNotEquals(final Object val1, final Object val2) {
     if (val1 != null) {
       return !val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
-    } else return (val2 != null && !val2.equals(val1)) ? Boolean.TRUE : Boolean.FALSE;
+    }
+    else return (val2 != null && !val2.equals(val1)) ? Boolean.TRUE : Boolean.FALSE;
   }
 
   private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {

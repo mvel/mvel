@@ -49,7 +49,8 @@ public class ListAccessorNest implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);
-    } else {
+    }
+    else {
       return ((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars));
     }
   }
@@ -59,10 +60,12 @@ public class ListAccessorNest implements AccessorNode {
 
     if (nextNode != null) {
       return nextNode.setValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars, value);
-    } else {
+    }
+    else {
       if (conversionType != null) {
         ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
-      } else {
+      }
+      else {
         ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value);
       }
       return value;

@@ -113,7 +113,8 @@ final class FieldWriter implements FieldVisitor {
           final Object value) {
     if (cw.firstField == null) {
       cw.firstField = this;
-    } else {
+    }
+    else {
       cw.lastField.next = this;
     }
     cw.lastField = this;
@@ -143,7 +144,8 @@ final class FieldWriter implements FieldVisitor {
     if (visible) {
       aw.next = anns;
       anns = aw;
-    } else {
+    }
+    else {
       aw.next = ianns;
       ianns = aw;
     }

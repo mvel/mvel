@@ -139,7 +139,8 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
     if (args[i].endsWith(".class") || args[i].indexOf('\\') > -1
             || args[i].indexOf('/') > -1) {
       cr = new ClassReader(new FileInputStream(args[i]));
-    } else {
+    }
+    else {
       cr = new ClassReader(args[i]);
     }
     cr.accept(new TraceClassVisitor(new PrintWriter(System.out)),
@@ -208,9 +209,11 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
     appendAccess(access & ~Opcodes.ACC_SUPER);
     if ((access & Opcodes.ACC_ANNOTATION) != 0) {
       buf.append("@interface ");
-    } else if ((access & Opcodes.ACC_INTERFACE) != 0) {
+    }
+    else if ((access & Opcodes.ACC_INTERFACE) != 0) {
       buf.append("interface ");
-    } else if ((access & Opcodes.ACC_ENUM) == 0) {
+    }
+    else if ((access & Opcodes.ACC_ENUM) == 0) {
       buf.append("class ");
     }
     appendDescriptor(INTERNAL_NAME, name);
@@ -358,7 +361,8 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
       buf.append(" = ");
       if (value instanceof String) {
         buf.append("\"").append(value).append("\"");
-      } else {
+      }
+      else {
         buf.append(value);
       }
     }

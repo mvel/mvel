@@ -132,7 +132,8 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
 
     if (attr instanceof Traceable) {
       ((Traceable) attr).trace(buf, null);
-    } else {
+    }
+    else {
       buf.append(" : unknown\n");
     }
 
@@ -169,7 +170,8 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
       if (desc != null) {
         buf.append("// signature ").append(desc).append('\n');
       }
-    } else {
+    }
+    else {
       buf.append(desc);
     }
   }

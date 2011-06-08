@@ -115,7 +115,8 @@ public class ErrorDetail {
   public String toString() {
     if (critical) {
       return "(" + lineNumber + "," + column + ") " + message;
-    } else {
+    }
+    else {
       return "(" + lineNumber + "," + column + ") WARNING: " + message;
     }
   }

@@ -507,7 +507,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     Serializable expr = null;
     try {
       expr = MVEL.compileExpression("Cheese c = new Cheese( $likes, 15 );\nresults.add( c ); ", ctx);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       e.printStackTrace();
       fail("This should not fail:\n" + e.getMessage());
     }
@@ -573,7 +574,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       new ExpressionCompiler("foo.toUC(100.5").compile(ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       // should fail.
       return;
     }
@@ -646,7 +648,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
       compiler.compile(ctx);
       fail("This should not compileShared");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
     }
   }
 
@@ -660,7 +663,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     try {
       MVEL.compileExpression("x_a = new Foo244( $ba ); x_a.equals($ba);", ctx);
       fail("This should not compileShared");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -706,7 +710,8 @@ public class TypesAndInferenceTests extends AbstractTest {
             "person.getName2();";
     try {
       CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
 
@@ -728,7 +733,8 @@ public class TypesAndInferenceTests extends AbstractTest {
       CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);
       HashMap<String, Object> map = new HashMap<String, Object>();
       MVEL.executeExpression(compiled, map);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       fail("should now throw an exception");
     }
@@ -749,7 +755,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(buffer.toString(), ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       fail(e.getMessage());
     }
   }
@@ -769,7 +776,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     try {
       Serializable compiled = (Serializable) MVEL.compileExpression(buffer.toString(), ctx);
       System.out.println(compiled);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       fail(e.getMessage());
     }
   }
@@ -787,7 +795,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(buffer.toString(), ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       fail(e.getMessage());
     }
   }
@@ -902,7 +911,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       new ExpressionCompiler("blah").compile(ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       // should fail
       return;
     }
@@ -919,7 +929,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       new ExpressionCompiler("1-blah").compile(ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       return;
     }
@@ -946,7 +957,8 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     try {
       CompiledExpression expr = new ExpressionCompiler("foo.aValue = 'bar'").compile(ctx);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       assertTrue(false);
     }
   }
@@ -986,10 +998,12 @@ public class TypesAndInferenceTests extends AbstractTest {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
         if (o instanceof String) {
           return sdf.parse((String) o);
-        } else {
+        }
+        else {
           return o;
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("Exception was thrown",
                 e);
       }
@@ -1403,7 +1417,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     try {
       MVEL.executeExpression(expr);
       fail("this should throw an exception");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
     }
   }

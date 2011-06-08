@@ -150,7 +150,8 @@ public class TemplateTests extends TestCase {
     String s = "<<@include{'src/test/java/org/mvel2/tests/templates/templateError.mv'}>>";
     try {
       test(s);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       System.out.println(e.toString()
       );
       return;
@@ -162,7 +163,8 @@ public class TemplateTests extends TestCase {
     String s = "<<@foreach{arrayList}@{item}@end{}>>";
     try {
       test(s);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       System.out.println(e.toString());
       return;
     }
@@ -173,7 +175,8 @@ public class TemplateTests extends TestCase {
     String s = "<<@foreach{item:arrayList}@{item}>>";
     try {
       test(s);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       System.out.println(e.toString());
       return;
     }

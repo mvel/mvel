@@ -55,7 +55,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
 
       //     variableResolvers.put(name, this.indexedVariableResolvers[idx] = new SimpleValueResolver(value));
       return this.indexedVariableResolvers[idx];
-    } else {
+    }
+    else {
       resolver.setValue(value);
       return resolver;
     }
@@ -65,7 +66,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
     if (vr != null && vr.getType() != null) {
       throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-    } else {
+    }
+    else {
       return createIndexedVariable(variableIndexOf(name), name, value);
     }
   }
@@ -74,7 +76,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     index = index - indexOffset;
     if (indexedVariableResolvers[index] != null) {
       indexedVariableResolvers[index].setValue(value);
-    } else {
+    }
+    else {
       indexedVariableResolvers[index] = new SimpleValueResolver(value);
     }
 
@@ -87,7 +90,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     index = index - indexOffset;
     if (indexedVariableResolvers[index] != null) {
       indexedVariableResolvers[index].setValue(value);
-    } else {
+    }
+    else {
       indexedVariableResolvers[index] = new SimpleValueResolver(value);
     }
     return indexedVariableResolvers[index];

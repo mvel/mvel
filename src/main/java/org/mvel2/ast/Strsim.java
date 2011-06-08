@@ -30,7 +30,8 @@ public class Strsim extends ASTNode {
       if (x == null) throw new CompileException("not a string: " + stmt.getName(), stmt.getExpr(), getStart());
 
       return similarity(i, x);
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new CompileException("not a string: " + soundslike.getName(), soundslike.getExpr(), soundslike.getStart());
     }
 

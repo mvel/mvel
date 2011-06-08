@@ -44,7 +44,8 @@ public class MacroProcessorTest extends TestCase {
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(raw, result);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       fail("there shouldn't be any exception: " + ex.getMessage());
     }
@@ -56,7 +57,8 @@ public class MacroProcessorTest extends TestCase {
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(raw, result);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       fail("there shouldn't be any exception: " + ex.getMessage());
     }
@@ -211,7 +213,8 @@ public class MacroProcessorTest extends TestCase {
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(raw, result);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       fail("there shouldn't be any exception: " + ex.getMessage());
     }
@@ -244,7 +247,8 @@ public class MacroProcessorTest extends TestCase {
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(expected, result);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       fail("there shouldn't be any exception: " + ex.getMessage());
     }
@@ -257,7 +261,8 @@ public class MacroProcessorTest extends TestCase {
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(expected, result);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       ex.printStackTrace();
       fail("there shouldn't be any exception: " + ex.getMessage());
     }

@@ -66,7 +66,8 @@ public class NewObjectNode extends ASTNode {
 
     if (offset < expr.length) {
       this.name = subArray(expr, start, start + offset);
-    } else {
+    }
+    else {
       this.name = expr;
     }
 
@@ -74,10 +75,12 @@ public class NewObjectNode extends ASTNode {
       if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
         pCtx.setAllowBootstrapBypass(false);
         egressType = pCtx.getImport(typeDescr.getClassName());
-      } else {
+      }
+      else {
         try {
           egressType = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
           if (pCtx != null && pCtx.isStrongTyping())
             pCtx.addError(new ErrorDetail(expr, start, true, "could not resolve class: " + typeDescr.getClassName()));
           return;
@@ -91,7 +94,8 @@ public class NewObjectNode extends ASTNode {
           try {
             egressType = findClass(null,
                     repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
-          } catch (Exception e) {
+          }
+          catch (Exception e) {
             e.printStackTrace();
             // for now, don't handle this.
           }
@@ -134,7 +138,8 @@ public class NewObjectNode extends ASTNode {
         this.name = new char[idx = fqcn.length];
         for (int i = 0; i < idx; i++)
           this.name[i] = fqcn[i];
-      } else {
+      }
+      else {
         char[] newName = new char[fqcn.length + (name.length - idx)];
 
         for (int i = 0; i < fqcn.length; i++)
@@ -169,12 +174,14 @@ public class NewObjectNode extends ASTNode {
               try {
                 egressType = findClass(factory,
                         repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", null);
-              } catch (Exception e) {
+              }
+              catch (Exception e) {
                 // for now, don't handle this.
               }
             }
 
-          } catch (ClassCastException e) {
+          }
+          catch (ClassCastException e) {
             throw new CompileException("cannot construct object: " + typeDescr.getClassName()
                     + " is not a class reference", expr, start, e);
           }
@@ -202,9 +209,11 @@ public class NewObjectNode extends ASTNode {
           egressType = optimizer.getEgressType();
           return optimizer.getResultOptPass();
         }
-      } catch (CompileException e) {
+      }
+      catch (CompileException e) {
         throw ErrorUtil.rewriteIfNeeded(e, expr, start);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -227,7 +236,8 @@ public class NewObjectNode extends ASTNode {
         }
 
         return newInstance(cls, s);
-      } else {
+      }
+      else {
         String[] cnsRes = captureContructorAndResidual(name, 0, name.length);
         List<char[]> constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
@@ -251,27 +261,34 @@ public class NewObjectNode extends ASTNode {
 
           if (cnsRes.length > 1) {
             return PropertyAccessor.get(cnsRes[1], cns.newInstance(parms), factory, thisValue);
-          } else {
+          }
+          else {
             return cns.newInstance(parms);
           }
-        } else {
+        }
+        else {
           Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader())
                   .getConstructor(EMPTYCLS);
 
           if (cnsRes.length > 1) {
             return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue);
-          } else {
+          }
+          else {
             return cns.newInstance();
           }
         }
       }
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       throw e;
-    } catch (ClassNotFoundException e) {
+    }
+    catch (ClassNotFoundException e) {
       throw new CompileException("unable to resolve class: " + e.getMessage(), expr, start, e);
-    } catch (NoSuchMethodException e) {
+    }
+    catch (NoSuchMethodException e) {
       throw new CompileException("cannot resolve constructor: " + e.getMessage(), expr, start, e);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new CompileException("could not instantiate class: " + e.getMessage(), expr, start, e);
     }
   }
@@ -305,7 +322,8 @@ public class NewObjectNode extends ASTNode {
     public Class getKnownEgressType() {
       try {
         return Class.forName("[L" + arrayType.getName() + ";");
-      } catch (ClassNotFoundException cne) {
+      }
+      catch (ClassNotFoundException cne) {
         return null;
       }
     }

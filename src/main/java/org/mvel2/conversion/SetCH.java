@@ -31,9 +31,11 @@ public class SetCH implements ConversionHandler {
     Set newSet = new LinkedHashSet();
     if (type.isArray()) {
       newSet.addAll(Arrays.asList(((Object[]) in)));
-    } else if (Collection.class.isAssignableFrom(type)) {
+    }
+    else if (Collection.class.isAssignableFrom(type)) {
       newSet.addAll((Collection) in);
-    } else if (Iterable.class.isAssignableFrom(type)) {
+    }
+    else if (Iterable.class.isAssignableFrom(type)) {
       for (Object o : (Iterable) in) {
         newSet.add(o);
       }

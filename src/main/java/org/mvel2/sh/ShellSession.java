@@ -101,7 +101,8 @@ public class ShellSession {
       while (enumer.hasMoreElements()) {
         env.put(key = enumer.nextElement(), bundle.getString(key));
       }
-    } catch (MissingResourceException e) {
+    }
+    catch (MissingResourceException e) {
       System.out.println("No config file found.  Loading default config.");
 
       if (!contains(getProperty("os.name").toLowerCase(), "windows")) {
@@ -143,34 +144,40 @@ public class ShellSession {
       String[] passParameters;
       if (inTokens.length > 1) {
         arraycopy(inTokens, 1, passParameters = new String[inTokens.length - 1], 0, passParameters.length);
-      } else {
+      }
+      else {
         passParameters = EMPTY;
       }
 
       try {
         commands.get(inTokens[0]).execute(this, passParameters);
-      } catch (CommandException e) {
+      }
+      catch (CommandException e) {
         out.append("Error: ").append(e.getMessage()).append("\n");
       }
-    } else {
+    }
+    else {
       commandBuffer = null;
 
       try {
         if (shouldDefer(inBuffer)) {
           multi = true;
           return;
-        } else {
+        }
+        else {
           multi = false;
         }
 
         if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
           outputBuffer = executeExpression(compileExpression(inBuffer.toString()), ctxObject, lvrf);
-        } else {
+        }
+        else {
           MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(inBuffer.toString(), ctxObject, lvrf);
           runtime.newContext(pCtx);
           outputBuffer = runtime.parse();
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         if ("true".equals(env.get("$COMMAND_PASSTHRU"))) {
 
           String[] paths;
@@ -179,7 +186,8 @@ public class ShellSession {
             s = new File(env.get("$CWD")).getAbsolutePath() + s.substring(s.indexOf('/'));
 
             paths = new String[]{s};
-          } else {
+          }
+          else {
             paths = env.get("$PATH").split("(:|;)");
           }
 
@@ -219,7 +227,8 @@ public class ShellSession {
                         }
 
                         if (!runState.isRunning()) break;
-                      } catch (Exception e) {
+                      }
+                      catch (Exception e) {
                         break;
                       }
                     }
@@ -229,7 +238,8 @@ public class ShellSession {
                     if (!multi) {
                       multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
                       out.append(prompt);
-                    } else {
+                    }
+                    else {
                       out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
                     }
 
@@ -250,7 +260,8 @@ public class ShellSession {
                                 for (char c : read.toCharArray()) {
                                   outStream.write((byte) c);
                                 }
-                              } else {
+                              }
+                              else {
                                 runState.getSession().setCommandBuffer(read);
                                 break;
                               }
@@ -259,7 +270,8 @@ public class ShellSession {
 
                           outStream.write((byte) '\n');
                           outStream.flush();
-                        } catch (Exception e2) {
+                        }
+                        catch (Exception e2) {
 
                         }
                       }
@@ -271,7 +283,8 @@ public class ShellSession {
 
                     try {
                       p.waitFor();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                       // nothing;
                     }
 
@@ -280,7 +293,8 @@ public class ShellSession {
 
                     try {
                       runningThread.join();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                       // nothing;�
                     }
                   }
@@ -296,11 +310,13 @@ public class ShellSession {
 
                 try {
                   pollingThread.notify();
-                } catch (Exception ne) {
+                }
+                catch (Exception ne) {
 
                 }
 
-              } catch (Exception e2) {
+              }
+              catch (Exception e2) {
                 // fall through;
               }
             }
@@ -321,7 +337,8 @@ public class ShellSession {
         env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
         if (parseBoolean(env.get("$SHOW_TRACE"))) {
           out.println(env.get("$LAST_STACK_TRACE"));
-        } else {
+        }
+        else {
           out.println(e.toString());
         }
 
@@ -334,7 +351,8 @@ public class ShellSession {
       if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
         if (outputBuffer.getClass().isArray()) {
           out.println(Arrays.toString((Object[]) outputBuffer));
-        } else {
+        }
+        else {
           out.println(String.valueOf(outputBuffer));
         }
       }
@@ -362,7 +380,8 @@ public class ShellSession {
 
         _exec();
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
       System.out.println("unexpected exception. exiting.");
     }
@@ -373,7 +392,8 @@ public class ShellSession {
     if (!multi) {
       multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
       out.append(prompt);
-    } else {
+    }
+    else {
       out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
     }
   }

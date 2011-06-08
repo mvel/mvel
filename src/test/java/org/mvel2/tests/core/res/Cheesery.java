@@ -48,10 +48,12 @@ public class Cheesery {
     final Cheesery other = (Cheesery) obj;
     if (cheese == null) {
       if (other.cheese != null) return false;
-    } else if (!cheese.equals(other.cheese)) return false;
+    }
+    else if (!cheese.equals(other.cheese)) return false;
     if (name == null) {
       if (other.name != null) return false;
-    } else if (!name.equals(other.name)) return false;
+    }
+    else if (!name.equals(other.name)) return false;
     return true;
   }
 

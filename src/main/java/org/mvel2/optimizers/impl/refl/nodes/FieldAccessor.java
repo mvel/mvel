@@ -46,10 +46,12 @@ public class FieldAccessor implements AccessorNode {
     try {
       if (nextNode != null) {
         return nextNode.getValue(field.get(ctx), elCtx, vars);
-      } else {
+      }
+      else {
         return field.get(ctx);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field: " + field.getName(), e);
     }
   }
@@ -58,7 +60,8 @@ public class FieldAccessor implements AccessorNode {
     if (nextNode != null) {
       try {
         return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(field.getType()) : value);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("unable to access field", e);
       }
     }
@@ -68,17 +71,20 @@ public class FieldAccessor implements AccessorNode {
       if (coercionRequired) {
         field.set(ctx, value = convert(ctx, field.getClass()));
         return value;
-      } else {
+      }
+      else {
         field.set(ctx, value);
         return value;
       }
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       if (!coercionRequired) {
         coercionRequired = true;
         return setValue(ctx, elCtx, variableFactory, value);
       }
       throw new RuntimeException("unable to bind property", e);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
   }

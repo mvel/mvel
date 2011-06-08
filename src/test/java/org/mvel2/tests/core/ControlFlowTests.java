@@ -260,7 +260,8 @@ public class ControlFlowTests extends AbstractTest {
     try {
       val = executeExpression(compileExpression(expression),
               JIRA124_CTX);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       System.out.println("FailedCompiled[" + i + "]:" + expression);
       throw e;
     }
@@ -268,7 +269,8 @@ public class ControlFlowTests extends AbstractTest {
     try {
       val2 = MVEL.eval(expression,
               JIRA124_CTX);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       System.out.println("FailedEval[" + i + "]:" + expression);
       throw e;
     }

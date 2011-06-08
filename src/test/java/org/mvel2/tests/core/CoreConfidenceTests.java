@@ -265,7 +265,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     try {
       compiler.compile(ctx);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       e.printStackTrace();
       return;
     }
@@ -1092,7 +1093,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     try {
       executeExpression(s);
-    } catch (AssertionError e) {
+    }
+    catch (AssertionError e) {
       return;
     }
 
@@ -1231,7 +1233,8 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       compiler.compile(context);
       fail("Compilation must fail with duplicate variable declaration exception.");
-    } catch (RuntimeException ce) {
+    }
+    catch (RuntimeException ce) {
       // success
     }
   }
@@ -1331,7 +1334,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ExpressionCompiler compiler = new ExpressionCompiler("a[");
     try {
       compiler.compile(ctx);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       return;
     }
     assertTrue(false);
@@ -1455,7 +1459,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     try {
       CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       // should fail.
 
       e.printStackTrace();
@@ -2064,7 +2069,8 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       ExpressionCompiler compiler = new ExpressionCompiler(ex);
       compiler.compile(ctx);
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       e.printStackTrace();
       fail("Should not raise exception: " + e.getMessage());
     }
@@ -2081,7 +2087,8 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       ExpressionCompiler compiler = new ExpressionCompiler(ex);
       compiler.compile(ctx);
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       e.printStackTrace();
       fail("Should not raise exception: " + e.getMessage());
     }
@@ -2116,7 +2123,8 @@ public class CoreConfidenceTests extends AbstractTest {
       vars.put("$pr", 10.0);
 
       MVEL.executeExpression(compiledExpression, vars);
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       e.printStackTrace();
       fail("Should not raise exception: " + e.getMessage());
     }
@@ -2465,7 +2473,8 @@ public class CoreConfidenceTests extends AbstractTest {
       // the following fails
       result = (Boolean) MVEL.eval(expressionNaked, st);
       assertTrue(result);
-    } finally {
+    }
+    finally {
       MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = before;
     }
   }
@@ -2831,7 +2840,8 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       MVEL.compileExpression(ex, ctx);
       fail("Constructor should not have been found.");
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       // yay.
     }
     // fail( "The Person constructor used in the expression does not exist, so an error should have been raised during compilation." );
@@ -3197,7 +3207,8 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
       fail("This should not compileShared, as o is not of a type Collection");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
 
     }
   }

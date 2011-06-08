@@ -33,7 +33,8 @@ public class ResolverTools {
   public static <T extends VariableResolverFactory> T appendFactory(VariableResolverFactory root, T newFactory) {
     if (root.getNextFactory() == null) {
       root.setNextFactory(newFactory);
-    } else {
+    }
+    else {
       VariableResolverFactory vrf = root;
 
       while (vrf.getNextFactory() != null) {
@@ -55,7 +56,8 @@ public class ResolverTools {
   public static <T extends VariableResolverFactory> T insertFactory(VariableResolverFactory root, T newFactory) {
     if (root.getNextFactory() == null) {
       root.setNextFactory(newFactory);
-    } else {
+    }
+    else {
       newFactory.setNextFactory(root.getNextFactory());
       root.setNextFactory(newFactory);
     }

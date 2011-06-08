@@ -58,7 +58,8 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     try {
       (vr = getVariableResolver(name)).setValue(value);
       return vr;
-    } catch (UnresolveablePropertyException e) {
+    }
+    catch (UnresolveablePropertyException e) {
       addResolver(name, vr = new MapVariableResolver(variables, name)).setValue(value);
       return vr;
     }
@@ -68,13 +69,15 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     VariableResolver vr;
     try {
       vr = getVariableResolver(name);
-    } catch (UnresolveablePropertyException e) {
+    }
+    catch (UnresolveablePropertyException e) {
       vr = null;
     }
 
     if (vr != null && vr.getType() != null) {
       throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-    } else {
+    }
+    else {
       addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
       return vr;
     }
@@ -84,10 +87,12 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     VariableResolver vr = variableResolvers.get(name);
     if (vr != null) {
       return vr;
-    } else if (variables.containsKey(name)) {
+    }
+    else if (variables.containsKey(name)) {
       variableResolvers.put(name, vr = new MapVariableResolver(variables, name));
       return vr;
-    } else if (nextFactory != null) {
+    }
+    else if (nextFactory != null) {
       return nextFactory.getVariableResolver(name);
     }
 
@@ -115,7 +120,8 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     if (nextFactory == null) {
       if (variables != null) return new HashSet<String>(variables.keySet());
       return new HashSet<String>(0);
-    } else {
+    }
+    else {
       if (variables != null) return new HashSet<String>(variables.keySet());
       return new HashSet<String>(0);
     }

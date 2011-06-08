@@ -480,29 +480,38 @@ public class ClassReader {
       // (based on frequencies observed on typical classes)
       if (attrName.equals("SourceFile")) {
         sourceFile = readUTF8(v + 6, c);
-      } else if (attrName.equals("InnerClasses")) {
+      }
+      else if (attrName.equals("InnerClasses")) {
         w = v + 6;
-      } else if (attrName.equals("EnclosingMethod")) {
+      }
+      else if (attrName.equals("EnclosingMethod")) {
         enclosingOwner = readClass(v + 6, c);
         int item = readUnsignedShort(v + 8);
         if (item != 0) {
           enclosingName = readUTF8(items[item], c);
           enclosingDesc = readUTF8(items[item] + 2, c);
         }
-      } else if (attrName.equals("Signature")) {
+      }
+      else if (attrName.equals("Signature")) {
         signature = readUTF8(v + 6, c);
-      } else if (attrName.equals("RuntimeVisibleAnnotations")) {
+      }
+      else if (attrName.equals("RuntimeVisibleAnnotations")) {
         anns = v + 6;
-      } else if (attrName.equals("Deprecated")) {
+      }
+      else if (attrName.equals("Deprecated")) {
         access |= Opcodes.ACC_DEPRECATED;
-      } else if (attrName.equals("Synthetic")) {
+      }
+      else if (attrName.equals("Synthetic")) {
         access |= Opcodes.ACC_SYNTHETIC;
-      } else if (attrName.equals("SourceDebugExtension")) {
+      }
+      else if (attrName.equals("SourceDebugExtension")) {
         int len = readInt(v + 2);
         sourceDebug = readUTF(v + 6, len, new char[len]);
-      } else if (attrName.equals("RuntimeInvisibleAnnotations")) {
+      }
+      else if (attrName.equals("RuntimeInvisibleAnnotations")) {
         ianns = v + 6;
-      } else {
+      }
+      else {
         attr = readAttribute(attrs,
                 attrName,
                 v + 6,
@@ -599,17 +608,23 @@ public class ClassReader {
         // (based on frequencies observed on typical classes)
         if (attrName.equals("ConstantValue")) {
           fieldValueItem = readUnsignedShort(u + 6);
-        } else if (attrName.equals("Signature")) {
+        }
+        else if (attrName.equals("Signature")) {
           signature = readUTF8(u + 6, c);
-        } else if (attrName.equals("Deprecated")) {
+        }
+        else if (attrName.equals("Deprecated")) {
           access |= Opcodes.ACC_DEPRECATED;
-        } else if (attrName.equals("Synthetic")) {
+        }
+        else if (attrName.equals("Synthetic")) {
           access |= Opcodes.ACC_SYNTHETIC;
-        } else if (attrName.equals("RuntimeVisibleAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeVisibleAnnotations")) {
           anns = u + 6;
-        } else if (attrName.equals("RuntimeInvisibleAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeInvisibleAnnotations")) {
           ianns = u + 6;
-        } else {
+        }
+        else {
           attr = readAttribute(attrs,
                   attrName,
                   u + 6,
@@ -686,25 +701,35 @@ public class ClassReader {
           if (!skipCode) {
             v = u;
           }
-        } else if (attrName.equals("Exceptions")) {
+        }
+        else if (attrName.equals("Exceptions")) {
           w = u;
-        } else if (attrName.equals("Signature")) {
+        }
+        else if (attrName.equals("Signature")) {
           signature = readUTF8(u, c);
-        } else if (attrName.equals("Deprecated")) {
+        }
+        else if (attrName.equals("Deprecated")) {
           access |= Opcodes.ACC_DEPRECATED;
-        } else if (attrName.equals("RuntimeVisibleAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeVisibleAnnotations")) {
           anns = u;
-        } else if (attrName.equals("AnnotationDefault")) {
+        }
+        else if (attrName.equals("AnnotationDefault")) {
           dann = u;
-        } else if (attrName.equals("Synthetic")) {
+        }
+        else if (attrName.equals("Synthetic")) {
           access |= Opcodes.ACC_SYNTHETIC;
-        } else if (attrName.equals("RuntimeInvisibleAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeInvisibleAnnotations")) {
           ianns = u;
-        } else if (attrName.equals("RuntimeVisibleParameterAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeVisibleParameterAnnotations")) {
           mpanns = u;
-        } else if (attrName.equals("RuntimeInvisibleParameterAnnotations")) {
+        }
+        else if (attrName.equals("RuntimeInvisibleParameterAnnotations")) {
           impanns = u;
-        } else {
+        }
+        else {
           attr = readAttribute(attrs,
                   attrName,
                   u,
@@ -723,7 +748,8 @@ public class ClassReader {
       String[] exceptions;
       if (w == 0) {
         exceptions = null;
-      } else {
+      }
+      else {
         exceptions = new String[readUnsignedShort(w)];
         w += 2;
         for (j = 0; j < exceptions.length; ++j) {
@@ -758,7 +784,8 @@ public class ClassReader {
               boolean sameExceptions = false;
               if (exceptions == null) {
                 sameExceptions = mw.exceptionCount == 0;
-              } else {
+              }
+              else {
                 if (exceptions.length == mw.exceptionCount) {
                   sameExceptions = true;
                   for (j = exceptions.length - 1; j >= 0; --j) {
@@ -858,7 +885,8 @@ public class ClassReader {
               opcode = b[v + 1] & 0xFF;
               if (opcode == Opcodes.IINC) {
                 v += 6;
-              } else {
+              }
+              else {
                 v += 4;
               }
               break;
@@ -943,7 +971,8 @@ public class ClassReader {
           int type = readUnsignedShort(v + 6);
           if (type == 0) {
             mv.visitTryCatchBlock(start, end, handler, null);
-          } else {
+          }
+          else {
             mv.visitTryCatchBlock(start,
                     end,
                     handler,
@@ -987,9 +1016,11 @@ public class ClassReader {
                 w += 10;
               }
             }
-          } else if (attrName.equals("LocalVariableTypeTable")) {
+          }
+          else if (attrName.equals("LocalVariableTypeTable")) {
             varTypeTable = v + 6;
-          } else if (attrName.equals("LineNumberTable")) {
+          }
+          else if (attrName.equals("LineNumberTable")) {
             if (!skipDebug) {
               k = readUnsignedShort(v + 6);
               w = v + 8;
@@ -1002,7 +1033,8 @@ public class ClassReader {
                 w += 4;
               }
             }
-          } else if (attrName.equals("StackMapTable")) {
+          }
+          else if (attrName.equals("StackMapTable")) {
             if ((flags & SKIP_FRAMES) == 0) {
               stackMap = v + 8;
               frameCount = readUnsignedShort(v + 6);
@@ -1023,7 +1055,8 @@ public class ClassReader {
             */
             //
             // but for UNINITIALIZED type offsets?
-          } else if (attrName.equals("StackMap")) {
+          }
+          else if (attrName.equals("StackMap")) {
             if ((flags & SKIP_FRAMES) == 0) {
               stackMap = v + 8;
               frameCount = readUnsignedShort(v + 6);
@@ -1034,7 +1067,8 @@ public class ClassReader {
             * ordered, as in the StackMapTable attribute, although
             * this is not guaranteed by the attribute format.
             */
-          } else {
+          }
+          else {
             for (k = 0; k < attrs.length; ++k) {
               if (attrs[k].type.equals(attrName)) {
                 attr = attrs[k].read(this,
@@ -1064,7 +1098,8 @@ public class ClassReader {
             if ((access & Opcodes.ACC_STATIC) == 0) {
               if (name.equals("<init>")) {
                 frameLocal[local++] = Opcodes.UNINITIALIZED_THIS;
-              } else {
+              }
+              else {
                 frameLocal[local++] = readClass(header + 2, c);
               }
             }
@@ -1146,7 +1181,8 @@ public class ClassReader {
                       frameLocal,
                       frameStackCount,
                       frameStack);
-            } else if (frameOffset != -1) {
+            }
+            else if (frameOffset != -1) {
               mv.visitFrame(frameMode,
                       frameLocalDiff,
                       frameLocal,
@@ -1158,7 +1194,8 @@ public class ClassReader {
               int tag, delta, n;
               if (zip) {
                 tag = b[stackMap++] & 0xFF;
-              } else {
+              }
+              else {
                 tag = MethodWriter.FULL_FRAME;
                 frameOffset = -1;
               }
@@ -1167,7 +1204,8 @@ public class ClassReader {
                 delta = tag;
                 frameMode = Opcodes.F_SAME;
                 frameStackCount = 0;
-              } else if (tag < MethodWriter.RESERVED) {
+              }
+              else if (tag < MethodWriter.RESERVED) {
                 delta = tag
                         - MethodWriter.SAME_LOCALS_1_STACK_ITEM_FRAME;
                 stackMap = readFrameType(frameStack,
@@ -1177,7 +1215,8 @@ public class ClassReader {
                         labels);
                 frameMode = Opcodes.F_SAME1;
                 frameStackCount = 1;
-              } else {
+              }
+              else {
                 delta = readUnsignedShort(stackMap);
                 stackMap += 2;
                 if (tag == MethodWriter.SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED) {
@@ -1188,17 +1227,20 @@ public class ClassReader {
                           labels);
                   frameMode = Opcodes.F_SAME1;
                   frameStackCount = 1;
-                } else if (tag >= MethodWriter.CHOP_FRAME
+                }
+                else if (tag >= MethodWriter.CHOP_FRAME
                         && tag < MethodWriter.SAME_FRAME_EXTENDED) {
                   frameMode = Opcodes.F_CHOP;
                   frameLocalDiff = MethodWriter.SAME_FRAME_EXTENDED
                           - tag;
                   frameLocalCount -= frameLocalDiff;
                   frameStackCount = 0;
-                } else if (tag == MethodWriter.SAME_FRAME_EXTENDED) {
+                }
+                else if (tag == MethodWriter.SAME_FRAME_EXTENDED) {
                   frameMode = Opcodes.F_SAME;
                   frameStackCount = 0;
-                } else if (tag < MethodWriter.FULL_FRAME) {
+                }
+                else if (tag < MethodWriter.FULL_FRAME) {
                   j = unzip ? frameLocalCount : 0;
                   for (k = tag
                           - MethodWriter.SAME_FRAME_EXTENDED; k > 0; k--) {
@@ -1213,7 +1255,8 @@ public class ClassReader {
                           - MethodWriter.SAME_FRAME_EXTENDED;
                   frameLocalCount += frameLocalDiff;
                   frameStackCount = 0;
-                } else { // if (tag == FULL_FRAME) {
+                }
+                else { // if (tag == FULL_FRAME) {
                   frameMode = Opcodes.F_FULL;
                   n = frameLocalDiff = frameLocalCount = readUnsignedShort(stackMap);
                   stackMap += 2;
@@ -1241,7 +1284,8 @@ public class ClassReader {
               }
 
               --frameCount;
-            } else {
+            }
+            else {
               frameLocal = null;
             }
           }
@@ -1257,7 +1301,8 @@ public class ClassReader {
                 opcode -= 59; // ISTORE_0
                 mv.visitVarInsn(Opcodes.ISTORE + (opcode >> 2),
                         opcode & 0x3);
-              } else {
+              }
+              else {
                 opcode -= 26; // ILOAD_0
                 mv.visitVarInsn(Opcodes.ILOAD + (opcode >> 2),
                         opcode & 0x3);
@@ -1280,7 +1325,8 @@ public class ClassReader {
                 mv.visitIincInsn(readUnsignedShort(v + 2),
                         readShort(v + 4));
                 v += 6;
-              } else {
+              }
+              else {
                 mv.visitVarInsn(opcode,
                         readUnsignedShort(v + 2));
                 v += 4;
@@ -1352,12 +1398,14 @@ public class ClassReader {
               String idesc = readUTF8(cpIndex + 2, c);
               if (opcode < Opcodes.INVOKEVIRTUAL) {
                 mv.visitFieldInsn(opcode, iowner, iname, idesc);
-              } else {
+              }
+              else {
                 mv.visitMethodInsn(opcode, iowner, iname, idesc);
               }
               if (opcode == Opcodes.INVOKEINTERFACE) {
                 v += 5;
-              } else {
+              }
+              else {
                 v += 3;
               }
               break;
@@ -1494,7 +1542,8 @@ public class ClassReader {
       for (; i > 0; --i) {
         v = readAnnotationValue(v + 2, buf, readUTF8(v, buf), av);
       }
-    } else {
+    }
+    else {
       for (; i > 0; --i) {
         v = readAnnotationValue(v, buf, null, av);
       }

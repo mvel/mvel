@@ -499,7 +499,8 @@ public class DebuggerTests extends AbstractTest {
       // executing the following line with a MVEL.executeExpression() works fine
       // but executeDebugger() fails
       MVEL.executeDebugger(expr, null, (VariableResolverFactory) null);
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       e.printStackTrace();
       fail("Should not raise exception: " + e.getMessage());
     }

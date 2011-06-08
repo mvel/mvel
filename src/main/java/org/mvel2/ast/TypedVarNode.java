@@ -52,7 +52,8 @@ public class TypedVarNode extends ASTNode implements Assignment {
       if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
         statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
       }
-    } else {
+    }
+    else {
       checkNameSafety(name = new String(expr, start, offset));
     }
 

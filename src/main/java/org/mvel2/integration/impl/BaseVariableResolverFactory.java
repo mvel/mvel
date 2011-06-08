@@ -53,7 +53,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     if (isResolveable(name)) {
       if (variableResolvers.containsKey(name)) {
         return variableResolvers.get(name);
-      } else if (nextFactory != null) {
+      }
+      else if (nextFactory != null) {
         return nextFactory.getVariableResolver(name);
       }
     }
@@ -68,7 +69,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public void appendFactory(VariableResolverFactory resolverFactory) {
     if (nextFactory == null) {
       nextFactory = resolverFactory;
-    } else {
+    }
+    else {
       VariableResolverFactory vrf = nextFactory;
       while (vrf.getNextFactory() != null) {
         vrf = vrf.getNextFactory();
@@ -80,7 +82,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public void insertFactory(VariableResolverFactory resolverFactory) {
     if (nextFactory == null) {
       nextFactory = resolverFactory;
-    } else {
+    }
+    else {
       resolverFactory.setNextFactory(nextFactory = resolverFactory);
     }
   }
@@ -90,7 +93,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     if (nextFactory == null) {
       return new HashSet<String>(variableResolvers.keySet());
       //   return new HashSet<String>(0);
-    } else {
+    }
+    else {
       HashSet<String> vars = new HashSet<String>(variableResolvers.keySet());
       vars.addAll(nextFactory.getKnownVariables());
       return vars;
@@ -100,7 +104,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public VariableResolver createIndexedVariable(int index, String name, Object value) {
     if (nextFactory != null) {
       return nextFactory.createIndexedVariable(index - indexOffset, name, value);
-    } else {
+    }
+    else {
       throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
     }
   }
@@ -108,7 +113,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public VariableResolver getIndexedVariableResolver(int index) {
     if (nextFactory != null) {
       return nextFactory.getIndexedVariableResolver(index - indexOffset);
-    } else {
+    }
+    else {
       throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver: " + this.getClass().getName());
     }
   }
@@ -116,7 +122,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
     if (nextFactory != null) {
       return nextFactory.createIndexedVariable(index - indexOffset, name, value, type);
-    } else {
+    }
+    else {
       throw new RuntimeException("cannot access indexed variable: " + name + "(" + index + ").  operation not supported by resolver.: " + this.getClass().getName());
     }
   }
@@ -150,7 +157,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   public VariableResolver setIndexedVariableResolver(int index, VariableResolver resolver) {
     if (indexedVariableResolvers == null) {
       return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index - indexOffset] = resolver;
-    } else {
+    }
+    else {
       return indexedVariableResolvers[index - indexOffset] = resolver;
     }
   }

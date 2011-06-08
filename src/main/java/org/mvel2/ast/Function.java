@@ -143,15 +143,18 @@ public class Function extends ASTNode implements Safe {
           fvrf.updateParameters(parms);
           try {
             return compiledBlock.getValue(ctx, thisValue, fvrf);
-          } finally {
+          }
+          finally {
             fvrf.setIndexedVariableResolvers(swapVR);
           }
         }
       }
       return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
-    } else if (cMode) {
+    }
+    else if (cMode) {
       return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
-    } else {
+    }
+    else {
       return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory).setNoTilt(true));
     }
   }

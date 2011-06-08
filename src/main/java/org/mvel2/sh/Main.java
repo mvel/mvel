@@ -27,7 +27,8 @@ public class Main {
   public static void main(String[] args) throws IOException {
     if (args.length != 0) {
       MVEL.evalFile(new File(args[0]));
-    } else {
+    }
+    else {
       showSplash();
       new ShellSession().run();
     }

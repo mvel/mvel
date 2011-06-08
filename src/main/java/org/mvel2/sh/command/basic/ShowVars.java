@@ -42,7 +42,8 @@ public class ShowVars implements Command {
       for (String key : vars.keySet()) {
         System.out.println(key + " => " + String.valueOf(vars.get(key)));
       }
-    } else {
+    }
+    else {
       for (String key : vars.keySet()) {
         System.out.println(key);
       }

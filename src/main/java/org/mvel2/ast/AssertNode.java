@@ -47,10 +47,12 @@ public class AssertNode extends ASTNode {
     try {
       if (!((Boolean) assertion.getValue(ctx, thisValue, factory))) {
         throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
-      } else {
+      }
+      else {
         return true;
       }
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new CompileException("assertion does not contain a boolean statement", expr, start);
     }
   }
@@ -59,10 +61,12 @@ public class AssertNode extends ASTNode {
     try {
       if (!((Boolean) MVEL.eval(this.expr, ctx, factory))) {
         throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
-      } else {
+      }
+      else {
         return true;
       }
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new CompileException("assertion does not contain a boolean statement", expr, start);
     }
   }

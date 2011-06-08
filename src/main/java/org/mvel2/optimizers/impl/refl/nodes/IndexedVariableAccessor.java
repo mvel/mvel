@@ -32,7 +32,8 @@ public class IndexedVariableAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
     if (nextNode != null) {
       return nextNode.getValue(vrf.getIndexedVariableResolver(register).getValue(), elCtx, vrf);
-    } else {
+    }
+    else {
       return vrf.getIndexedVariableResolver(register).getValue();
     }
   }
@@ -40,7 +41,8 @@ public class IndexedVariableAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(variableFactory.getIndexedVariableResolver(register).getValue(), elCtx, variableFactory, value);
-    } else {
+    }
+    else {
       variableFactory.getIndexedVariableResolver(register).setValue(value);
       return value;
     }

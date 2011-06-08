@@ -34,7 +34,8 @@ public class SimpleIndexHashMapWrapper<K, V> implements Map<K, V> {
         indexBasedLookup.add(vc);
         wrappedMap.put(key.getKey(), vc);
       }
-    } else {
+    }
+    else {
       for (ValueContainer<K, V> key : wrapper.indexBasedLookup) {
         vc = new ValueContainer<K, V>(index++, key.getKey(), key.getValue());
         indexBasedLookup.add(vc);

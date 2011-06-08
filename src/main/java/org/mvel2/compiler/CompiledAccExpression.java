@@ -54,7 +54,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
       accessor = getThreadAccessorOptimizer()
               .optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, ingressType);
 
-    } else {
+    }
+    else {
       accessor.setValue(ctx, elCtx, vrf, value);
     }
     return value;
@@ -66,7 +67,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         accessor = getThreadAccessorOptimizer()
                 .optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
         return getValue(staticContext, factory);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
@@ -110,7 +112,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx,
                 variableFactory, false, ingressType);
         return getValue(ctx, elCtx, variableFactory);
-      } finally {
+      }
+      finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }

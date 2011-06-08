@@ -204,7 +204,8 @@ public class Proto extends ASTNode {
       try {
         (vr = getVariableResolver(name)).setValue(value);
         return vr;
-      } catch (UnresolveablePropertyException e) {
+      }
+      catch (UnresolveablePropertyException e) {
         addResolver(name, vr = new ProtoResolver(variables, name)).setValue(value);
         return vr;
       }
@@ -215,13 +216,15 @@ public class Proto extends ASTNode {
       VariableResolver vr;
       try {
         vr = getVariableResolver(name);
-      } catch (UnresolveablePropertyException e) {
+      }
+      catch (UnresolveablePropertyException e) {
         vr = null;
       }
 
       if (vr != null && vr.getType() != null) {
         throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name, expr, start);
-      } else {
+      }
+      else {
         addResolver(name, vr = new ProtoResolver(variables, name, type)).setValue(value);
         return vr;
       }
@@ -243,7 +246,8 @@ public class Proto extends ASTNode {
       VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.getByIndex(index) : null;
       if (vr != null && vr.getType() != null) {
         throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name, expr, start);
-      } else {
+      }
+      else {
         return createIndexedVariable(variableIndexOf(name), name, value);
       }
     }
@@ -255,7 +259,8 @@ public class Proto extends ASTNode {
       if (vr == null) {
         vr = new SimpleValueResolver(value);
         variableResolvers.putAtIndex(index, vr);
-      } else {
+      }
+      else {
         vr.setValue(value);
       }
 
@@ -283,10 +288,12 @@ public class Proto extends ASTNode {
       VariableResolver vr = variableResolvers.get(name);
       if (vr != null) {
         return vr;
-      } else if (variables.containsKey(name)) {
+      }
+      else if (variables.containsKey(name)) {
         variableResolvers.put(name, vr = new ProtoResolver(variables, name));
         return vr;
-      } else if (nextFactory != null) {
+      }
+      else if (nextFactory != null) {
         return nextFactory.getVariableResolver(name);
       }
 
@@ -334,7 +341,8 @@ public class Proto extends ASTNode {
         }
         try {
           value = convert(value, knownType);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           throw new CompileException("cannot convert value of " + value.getClass().getName()
                   + " to: " + knownType.getName(), expr, start);
         }
@@ -364,7 +372,8 @@ public class Proto extends ASTNode {
     public VariableResolver createVariable(String name, Object value) {
       if (isResolveable(name) && !protoContext.isResolveable(name)) {
         return nextFactory.createVariable(name, value);
-      } else {
+      }
+      else {
         return protoContext.createVariable(name, value);
       }
     }
@@ -373,7 +382,8 @@ public class Proto extends ASTNode {
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
       if (isResolveable(name) && !protoContext.isResolveable(name)) {
         return nextFactory.createVariable(name, value, type);
-      } else {
+      }
+      else {
         return protoContext.createVariable(name, value, type);
       }
     }
@@ -382,7 +392,8 @@ public class Proto extends ASTNode {
     public VariableResolver getVariableResolver(String name) {
       if (isResolveable(name) && !protoContext.isResolveable(name)) {
         return nextFactory.getVariableResolver(name);
-      } else {
+      }
+      else {
         return protoContext.getVariableResolver(name);
       }
     }

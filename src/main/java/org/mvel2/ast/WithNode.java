@@ -104,7 +104,8 @@ public class WithNode extends BlockNode implements NestedStatement {
           if (i < end && block[i + 1] == '/') {
             while (i < end && block[i] != '\n') block[i++] = ' ';
             if (parm == null) _st = i;
-          } else if (i < end && block[i + 1] == '*') {
+          }
+          else if (i < end && block[i + 1] == '*') {
             int len = end - 1;
             while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
               block[i++] = ' ';
@@ -113,7 +114,8 @@ public class WithNode extends BlockNode implements NestedStatement {
             block[i++] = ' ';
 
             if (parm == null) _st = i;
-          } else if (i < end && block[i + 1] == '=') {
+          }
+          else if (i < end && block[i + 1] == '=') {
             oper = Operator.DIV;
           }
           continue;
@@ -141,7 +143,8 @@ public class WithNode extends BlockNode implements NestedStatement {
               String expr;
               if (nestParm == null) {
                 expr = new String(block, _st, _end - _st);
-              } else {
+              }
+              else {
                 expr = new StringBuilder(nestParm).append('.')
                         .append(new String(block, _st, _end - _st)).toString();
               }
@@ -152,7 +155,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                               block, _st, egressType, pCtx)
               );
 
-            } catch (CompileException e) {
+            }
+            catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
               e.setExpr(block);
               throw e;
@@ -160,7 +164,8 @@ public class WithNode extends BlockNode implements NestedStatement {
 
             oper = -1;
             _st = ++i;
-          } else {
+          }
+          else {
             if (nestParm == null) {
               throw new CompileException("operative assignment not possible here", block, start);
             }
@@ -175,7 +180,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                               //or
                               : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
                       , block, _st, Object.class, pCtx));
-            } catch (CompileException e) {
+            }
+            catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
               e.setExpr(block);
               throw e;
@@ -198,7 +204,8 @@ public class WithNode extends BlockNode implements NestedStatement {
           String expr;
           if (nestParm == null) {
             expr = new String(block, _st, _end - _st);
-          } else {
+          }
+          else {
             expr = new StringBuilder(nestParm).append('.')
                     .append(new String(block, _st, _end - _st)).toString();
           }
@@ -208,7 +215,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                           subCompileExpression(expr, pCtx),
                           block, _st, egressType, pCtx)
           );
-        } else {
+        }
+        else {
           if (nestParm == null) {
             throw new CompileException("operative assignment not possible here", block, start);
           }
@@ -223,7 +231,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                           : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
                   , block, _st, Object.class, pCtx));
         }
-      } catch (CompileException e) {
+      }
+      catch (CompileException e) {
         throw ErrorUtil.rewriteIfNeeded(e, block, _st);
 
 //                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
@@ -285,7 +294,8 @@ public class WithNode extends BlockNode implements NestedStatement {
     public void eval(Object ctx, VariableResolverFactory factory) {
       if (setExpression == null) {
         this.statement.getValue(ctx, factory);
-      } else {
+      }
+      else {
         MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
       }
     }

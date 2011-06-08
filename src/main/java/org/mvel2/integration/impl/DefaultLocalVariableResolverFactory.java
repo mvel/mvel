@@ -100,17 +100,20 @@ public class DefaultLocalVariableResolverFactory extends MapVariableResolverFact
         vr = indexedVariableResolvers[idx];
 
         newVar = true;
-      } else {
+      }
+      else {
         return super.createVariable(name, value, type);
       }
 
-    } catch (UnresolveablePropertyException e) {
+    }
+    catch (UnresolveablePropertyException e) {
       vr = null;
     }
 
     if (!newVar && vr != null && vr.getType() != null) {
       throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-    } else {
+    }
+    else {
       addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
       return vr;
     }

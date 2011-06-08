@@ -59,15 +59,20 @@ public class Fuzzer {
 
       try {
         MVEL.eval(append.toString());
-      } catch (UnresolveablePropertyException e) {
+      }
+      catch (UnresolveablePropertyException e) {
         //ignore
-      } catch (CompileException e) {
+      }
+      catch (CompileException e) {
         //ignore
-      } catch (ArithmeticException e) {
+      }
+      catch (ArithmeticException e) {
         //ignore
-      } catch (ScriptRuntimeException e) {
+      }
+      catch (ScriptRuntimeException e) {
         //ignore
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         System.out.println("untrapped error!\n---\n" + append.toString() + "\n---\n");
         System.out.flush();
         e.printStackTrace();

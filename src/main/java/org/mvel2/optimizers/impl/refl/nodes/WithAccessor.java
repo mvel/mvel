@@ -47,7 +47,8 @@ public class WithAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (this.nextNode == null) {
       return processWith(ctx, elCtx, variableFactory);
-    } else {
+    }
+    else {
       return this.nextNode.getValue(processWith(ctx, elCtx, variableFactory), elCtx, variableFactory);
     }
   }
@@ -60,7 +61,8 @@ public class WithAccessor implements AccessorNode {
     for (WithNode.ParmValuePair pvp : withExpressions) {
       if (pvp.getSetExpression() != null) {
         executeSetExpression(pvp.getSetExpression(), ctx, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
-      } else {
+      }
+      else {
         pvp.getStatement().getValue(ctx, thisValue, factory);
       }
     }

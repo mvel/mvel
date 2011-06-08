@@ -39,7 +39,8 @@ public class PropertyTools {
       if (o instanceof Object[]) {
         return ((Object[]) o).length == 0 ||
                 (((Object[]) o).length == 1 && isEmpty(((Object[]) o)[0]));
-      } else {
+      }
+      else {
         return ("".equals(valueOf(o)))
                 || "null".equals(valueOf(o))
                 || (o instanceof Collection && ((Collection) o).size() == 0)
@@ -122,9 +123,11 @@ public class PropertyTools {
               isPublic(field.getModifiers())) {
         return field;
       }
-    } catch (NullPointerException e) {
+    }
+    catch (NullPointerException e) {
       return null;
-    } catch (NoSuchFieldException e) {
+    }
+    catch (NoSuchFieldException e) {
       // do nothing.
     }
 
@@ -163,21 +166,29 @@ public class PropertyTools {
   public static Object getPrimitiveInitialValue(Class type) {
     if (type == int.class) {
       return 0;
-    } else if (type == boolean.class) {
+    }
+    else if (type == boolean.class) {
       return false;
-    } else if (type == char.class) {
+    }
+    else if (type == char.class) {
       return (char) 0;
-    } else if (type == double.class) {
+    }
+    else if (type == double.class) {
       return 0d;
-    } else if (type == long.class) {
+    }
+    else if (type == long.class) {
       return 0l;
-    } else if (type == float.class) {
+    }
+    else if (type == float.class) {
       return 0f;
-    } else if (type == short.class) {
+    }
+    else if (type == short.class) {
       return (short) 0;
-    } else if (type == byte.class) {
+    }
+    else if (type == byte.class) {
       return (byte) 0;
-    } else {
+    }
+    else {
       return 0;
     }
   }

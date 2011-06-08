@@ -64,7 +64,8 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
           opt = true;
 
           return optimize(AbstractParser.getCurrentThreadParserContext(), ctx, elCtx, variableFactory);
-        } else {
+        }
+        else {
           runcount = 0;
           stamp = currentTimeMillis();
         }

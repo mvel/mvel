@@ -26,9 +26,11 @@ public class UnitConversion implements ConversionHandler {
   public Object convertFrom(Object in) {
     try {
       return Unit.class.newInstance().convertFrom(in);
-    } catch (InstantiationException e) {
+    }
+    catch (InstantiationException e) {
       e.printStackTrace();
-    } catch (IllegalAccessException e) {
+    }
+    catch (IllegalAccessException e) {
       e.printStackTrace();
     }
     return null;
@@ -38,9 +40,11 @@ public class UnitConversion implements ConversionHandler {
     if (Unit.class.isAssignableFrom(cls) || Number.class.isAssignableFrom(cls)) {
       try {
         return Unit.class.newInstance().canConvertFrom(cls);
-      } catch (InstantiationException e) {
+      }
+      catch (InstantiationException e) {
         e.printStackTrace();
-      } catch (IllegalAccessException e) {
+      }
+      catch (IllegalAccessException e) {
         e.printStackTrace();
       }
     }

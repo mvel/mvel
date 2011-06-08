@@ -49,7 +49,8 @@ public class Invert extends ASTNode {
     Object o = MVEL.eval(expr, start, offset, ctx, factory);
     if (o instanceof Integer) {
       return ~((Integer) o);
-    } else {
+    }
+    else {
       throw new CompileException("was expecting type: Integer; but found type: "
               + (o == null ? "null" : o.getClass().getName()), expr, start);
     }

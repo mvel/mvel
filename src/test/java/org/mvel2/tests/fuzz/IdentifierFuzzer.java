@@ -12,7 +12,8 @@ public class IdentifierFuzzer {
       for (int i = 0; i < 1000000; i++) {
         MVEL.compileExpression(getIndentifierSample());
       }
-    } catch (Throwable t) {
+    }
+    catch (Throwable t) {
       t.printStackTrace();
     }
     System.out.println("**Done**");

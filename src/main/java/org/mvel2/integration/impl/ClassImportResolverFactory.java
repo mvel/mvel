@@ -78,14 +78,17 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     if ((imports != null && imports.containsKey(name)) || (dynImports != null && dynImports.containsKey(name))
             || isNextResolveable(name)) {
       return true;
-    } else if (packageImports != null) {
+    }
+    else if (packageImports != null) {
       for (String s : packageImports) {
         try {
           addClass(classLoader.loadClass(s + "." + name));
           return true;
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
           // do nothing;
-        } catch (NoClassDefFoundError e) {
+        }
+        catch (NoClassDefFoundError e) {
           // do nothing;
         }
       }
@@ -98,9 +101,11 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     if (isResolveable(name)) {
       if (imports != null && imports.containsKey(name)) {
         return new SimpleValueResolver(imports.get(name));
-      } else if (dynImports != null && dynImports.containsKey(name)) {
+      }
+      else if (dynImports != null && dynImports.containsKey(name)) {
         return new SimpleValueResolver(dynImports.get(name));
-      } else if (nextFactory != null) {
+      }
+      else if (nextFactory != null) {
         return nextFactory.getVariableResolver(name);
       }
     }

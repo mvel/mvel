@@ -53,7 +53,8 @@ public class ProtoVarNode extends ASTNode implements Assignment {
       if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
         statement = (ExecutableStatement) subCompileExpression(expr, assignStart + 1, offset, pCtx);
       }
-    } else {
+    }
+    else {
       checkNameSafety(name = new String(expr, start, offset));
     }
 

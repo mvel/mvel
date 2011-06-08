@@ -42,7 +42,8 @@ public class DirList implements Command {
     for (File file : current.listFiles()) {
       if (file.isDirectory()) {
         System.out.append(file.getName()).append("/");
-      } else {
+      }
+      else {
         System.out.append(file.getName());
       }
       System.out.append("\n");

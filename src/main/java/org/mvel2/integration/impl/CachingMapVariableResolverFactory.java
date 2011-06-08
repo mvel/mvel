@@ -53,7 +53,8 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
     try {
       (vr = getVariableResolver(name)).setValue(value);
       return vr;
-    } catch (UnresolveablePropertyException e) {
+    }
+    catch (UnresolveablePropertyException e) {
       addResolver(name, vr = new SimpleSTValueResolver(value, null, true));
       return vr;
     }
@@ -63,13 +64,15 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
     VariableResolver vr;
     try {
       vr = getVariableResolver(name);
-    } catch (UnresolveablePropertyException e) {
+    }
+    catch (UnresolveablePropertyException e) {
       vr = null;
     }
 
     if (vr != null && vr.getType() != null) {
       throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-    } else {
+    }
+    else {
       addResolver(name, vr = new SimpleSTValueResolver(value, type, true));
       return vr;
     }
@@ -79,10 +82,12 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
     VariableResolver vr = variableResolvers.get(name);
     if (vr != null) {
       return vr;
-    } else if (variables.containsKey(name)) {
+    }
+    else if (variables.containsKey(name)) {
       variableResolvers.put(name, vr = new SimpleSTValueResolver(variables.get(name), null));
       return vr;
-    } else if (nextFactory != null) {
+    }
+    else if (nextFactory != null) {
       return nextFactory.getVariableResolver(name);
     }
 
@@ -115,7 +120,8 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
     if (nextFactory == null) {
       if (variables != null) return new HashSet<String>(variables.keySet());
       return new HashSet<String>(0);
-    } else {
+    }
+    else {
       if (variables != null) return new HashSet<String>(variables.keySet());
       return new HashSet<String>(0);
     }

@@ -178,7 +178,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return new MVELInterpretedRuntime(expression, null, factory).parse();
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -198,7 +199,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return new MVELInterpretedRuntime(expression, ctx, factory).parse();
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -267,7 +269,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return convert(new MVELInterpretedRuntime(expression, null, factory).parse(), toType);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -304,7 +307,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return convert(new MVELInterpretedRuntime(expression, ctx, factory).parse(), toType);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -559,7 +563,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return _evalFile(file, null, factory);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -577,7 +582,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return _evalFile(file, ctx, factory);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -586,7 +592,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return _evalFile(file, encoding, ctx, factory);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -943,7 +950,8 @@ public class MVEL {
 
     try {
       return ((ExecutableStatement) compiledExpression).getValue(ctx, factory);
-    } finally {
+    }
+    finally {
       if (factory != null) factory.externalize();
     }
   }
@@ -989,7 +997,8 @@ public class MVEL {
     CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
     try {
       return ((ExecutableStatement) compiledExpression).getValue(null, factory);
-    } finally {
+    }
+    finally {
       factory.externalize();
     }
   }
@@ -1082,7 +1091,8 @@ public class MVEL {
     if (expression.isImportInjectionRequired()) {
       return execute(true, expression, ctx, new ClassImportResolverFactory(expression
               .getParserContext().getParserConfiguration(), vars, false));
-    } else {
+    }
+    else {
       return execute(true, expression, ctx, vars);
     }
   }
@@ -1128,7 +1138,8 @@ public class MVEL {
         throw new RuntimeException("method not a static method: " + methodName);
 
       return m;
-    } catch (NoSuchMethodException e) {
+    }
+    catch (NoSuchMethodException e) {
       throw new RuntimeException("no such method: " + methodName);
     }
   }

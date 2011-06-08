@@ -40,7 +40,8 @@ public class ExecutionStack {
         el = el.next;
       }
       el.next = new StackElement(null, o);
-    } else {
+    }
+    else {
       element = new StackElement(null, o);
     }
   }
@@ -101,7 +102,8 @@ public class ExecutionStack {
     }
     try {
       return element.value;
-    } finally {
+    }
+    finally {
       element = element.next;
     }
   }
@@ -113,7 +115,8 @@ public class ExecutionStack {
     try {
       if (element.value instanceof Boolean) return (Boolean) element.value;
       throw new ScriptRuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
-    } finally {
+    }
+    finally {
       element = element.next;
     }
   }
@@ -122,7 +125,8 @@ public class ExecutionStack {
     try {
       size -= 2;
       return element.value;
-    } finally {
+    }
+    finally {
       element = element.next.next;
     }
   }

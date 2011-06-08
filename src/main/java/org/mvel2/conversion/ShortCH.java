@@ -104,7 +104,8 @@ public class ShortCH implements ConversionHandler {
                 if (((Integer) o) > Short.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Integer to Short since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Integer) o).shortValue();
                 }
               }
@@ -117,7 +118,8 @@ public class ShortCH implements ConversionHandler {
                 if (((Float) o) > Short.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Float to Short since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Float) o).shortValue();
                 }
               }
@@ -130,7 +132,8 @@ public class ShortCH implements ConversionHandler {
                 if (((Double) o) > Short.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Double to Short since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Double) o).shortValue();
                 }
               }
@@ -143,7 +146,8 @@ public class ShortCH implements ConversionHandler {
                 if (((Long) o) > Short.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Integer to Short since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Long) o).shortValue();
                 }
               }

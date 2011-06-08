@@ -36,7 +36,8 @@ public class VariableAccessor implements AccessorNode {
 
     if (nextNode != null) {
       return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);
-    } else {
+    }
+    else {
       return vrf.getVariableResolver(property).getValue();
     }
   }
@@ -44,7 +45,8 @@ public class VariableAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(variableFactory.getVariableResolver(property).getValue(), elCtx, variableFactory, value);
-    } else {
+    }
+    else {
       variableFactory.getVariableResolver(property).setValue(value);
     }
 

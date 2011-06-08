@@ -79,13 +79,16 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
       try {
         checkNameSafety(this.varName);
-      } catch (RuntimeException e) {
+      }
+      catch (RuntimeException e) {
         throw new CompileException(e.getMessage(), expr, start);
       }
-    } else {
+    }
+    else {
       try {
         checkNameSafety(this.varName = new String(expr, start, offset));
-      } catch (RuntimeException e) {
+      }
+      catch (RuntimeException e) {
         throw new CompileException(e.getMessage(), expr, start);
       }
     }
@@ -102,11 +105,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
     if (col) {
       return accExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
-    } else if (statement != null) {
+    }
+    else if (statement != null) {
       if (factory == null)
         throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
       return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
-    } else {
+    }
+    else {
       if (factory == null)
         throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
       factory.createVariable(varName, null);
@@ -119,7 +124,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
     if (col) {
       PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory));
-    } else {
+    }
+    else {
       return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();
     }
 

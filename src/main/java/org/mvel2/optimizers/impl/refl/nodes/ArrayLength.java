@@ -30,7 +30,8 @@ public class ArrayLength extends BaseAccessor {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (nextNode != null) {
       return nextNode.getValue(getLength(ctx), elCtx, variableFactory);
-    } else {
+    }
+    else {
       return getLength(ctx);
     }
   }

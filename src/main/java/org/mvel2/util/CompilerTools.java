@@ -58,10 +58,12 @@ public class CompilerTools {
     while (astLinkedList.hasMoreNodes()) {
       if ((tk = astLinkedList.nextNode()).getFields() == -1) {
         optimizedAst.addTokenNode(tk);
-      } else if (astLinkedList.hasMoreNodes()) {
+      }
+      else if (astLinkedList.hasMoreNodes()) {
         if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
           optimizedAst.addTokenNode(tk, tkOp);
-        } else if (tkOp.isOperator() && tkOp.getOperator() < 21) {
+        }
+        else if (tkOp.isOperator() && tkOp.getOperator() < 21) {
           int op = tkOp.getOperator();
           int op2;
 
@@ -75,7 +77,8 @@ public class CompilerTools {
 
           if (tk.getEgressType() == Integer.class && tk2.getEgressType() == Integer.class) {
             bo = boOptimize(op, tk, tk2, ctx);
-          } else {
+          }
+          else {
             /**
              * Let's see if we can simply the expression more.
              */
@@ -109,7 +112,8 @@ public class CompilerTools {
 
               if (!reduc) {
                 bo = new BinaryOperation(tkOp.getOperator(), tk, new LiteralNode(p_inv ? signNumber(val) : val));
-              } else {
+              }
+              else {
                 tk2 = new LiteralNode(val);
               }
             }
@@ -130,11 +134,13 @@ public class CompilerTools {
             if (PTABLE[op2] > PTABLE[op]) {
               //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
               bo.setRightMost(boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
-            } else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
+            }
+            else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
               if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
                 //     bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                 bo = boOptimize(op2, bo, astLinkedList.nextNode(), ctx);
-              } else {
+              }
+              else {
                 tk2 = astLinkedList.nextNode();
 
                 if (isIntOptimizationviolation(bo, tk2)) {
@@ -143,9 +149,11 @@ public class CompilerTools {
 
                 bo.setRight(new BinaryOperation(op2, bo.getRight(), tk2, ctx));
               }
-            } else if (PTABLE[bo.getOperation()] >= PTABLE[op2]) {
+            }
+            else if (PTABLE[bo.getOperation()] >= PTABLE[op2]) {
               bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
-            } else {
+            }
+            else {
               tk2 = astLinkedList.nextNode();
 
               if (isIntOptimizationviolation(bo, tk2)) {
@@ -162,25 +170,32 @@ public class CompilerTools {
 
           if (tkOp2 != null && tkOp2 != tkOp) {
             optimizeOperator(tkOp2.getOperator(), bo, tkOp2, astLinkedList, optimizedAst);
-          } else {
+          }
+          else {
             optimizedAst.addTokenNode(bo);
           }
-        } else if (tkOp.isOperator()) {
+        }
+        else if (tkOp.isOperator()) {
           optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
-        } else if (!tkOp.isAssignment() && !tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
+        }
+        else if (!tkOp.isAssignment() && !tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
           optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), tkOp.getExpr(), tkOp.getStart(), tk.getOffset(), (Class) tk.getLiteralValue(), 0, ctx));
-        } else if (tkOp.isAssignment() && tk.getLiteralValue() instanceof Class) {
+        }
+        else if (tkOp.isAssignment() && tk.getLiteralValue() instanceof Class) {
           tk.discard();
           optimizedAst.addTokenNode(tkOp);
-        } else if (astLinkedList.hasMoreNodes() && tkOp.getLiteralValue() instanceof Class
+        }
+        else if (astLinkedList.hasMoreNodes() && tkOp.getLiteralValue() instanceof Class
                 && astLinkedList.peekNode().isAssignment()) {
           tkOp.discard();
           optimizedAst.addTokenNode(tk, astLinkedList.nextNode());
-        } else {
+        }
+        else {
           astLinkedList.back();
           optimizedAst.addTokenNode(tk);
         }
-      } else {
+      }
+      else {
         optimizedAst.addTokenNode(tk);
       }
     }
@@ -195,10 +210,12 @@ public class CompilerTools {
       while (astLinkedList.hasMoreNodes()) {
         if ((tk = astLinkedList.nextNode()).getFields() == -1) {
           optimizedAst.addTokenNode(tk);
-        } else if (astLinkedList.hasMoreNodes()) {
+        }
+        else if (astLinkedList.hasMoreNodes()) {
           if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
             optimizedAst.addTokenNode(tk, tkOp);
-          } else if (tkOp.isOperator()
+          }
+          else if (tkOp.isOperator()
                   && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
 
             tkOp2 = null;
@@ -206,7 +223,8 @@ public class CompilerTools {
 
             if (tkOp.getOperator() == Operator.AND) {
               bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
-            } else {
+            }
+            else {
               bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
             }
 
@@ -215,7 +233,8 @@ public class CompilerTools {
 
               if ((tkOp = tkOp2).getOperator() == Operator.AND) {
                 bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));
-              } else {
+              }
+              else {
                 bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
               }
 
@@ -226,10 +245,12 @@ public class CompilerTools {
             if (tkOp2 != null && tkOp2 != tkOp) {
               optimizedAst.addTokenNode(tkOp2);
             }
-          } else {
+          }
+          else {
             optimizedAst.addTokenNode(tk, tkOp);
           }
-        } else {
+        }
+        else {
           optimizedAst.addTokenNode(tk);
         }
       }
@@ -256,7 +277,8 @@ public class CompilerTools {
         default:
           return new BinaryOperation(op, tk, tk2, ctx);
       }
-    } else {
+    }
+    else {
       return new BinaryOperation(op, tk, tk2, ctx);
     }
   }
@@ -324,7 +346,8 @@ public class CompilerTools {
         if (iter.hasMoreNodes()) {
           begin = iter.nextNode();
         }
-      } else if (n instanceof OperatorNode) {
+      }
+      else if (n instanceof OperatorNode) {
         if (n.isOperator(Operator.ADD)) {
           if (iter.hasMoreNodes()) {
             n = iter.nextNode();
@@ -367,7 +390,8 @@ public class CompilerTools {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                 + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
-    } else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
+    }
+    else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
               + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
@@ -382,7 +406,8 @@ public class CompilerTools {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                 + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
-    } else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
+    }
+    else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
               + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
@@ -451,13 +476,17 @@ public class CompilerTools {
   public static Number signNumber(Object number) {
     if (number instanceof Integer) {
       return ((Integer) number) * -1;
-    } else if (number instanceof Double) {
+    }
+    else if (number instanceof Double) {
       return ((Double) number) * -1;
-    } else if (number instanceof Float) {
+    }
+    else if (number instanceof Float) {
       return ((Float) number) * -1;
-    } else if (number instanceof Short) {
+    }
+    else if (number instanceof Short) {
       return ((Short) number) * -1;
-    } else {
+    }
+    else {
       throw new CompileException("expected a numeric type but found: " + number.getClass().getName(), new char[0], 0);
     }
   }

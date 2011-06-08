@@ -58,7 +58,8 @@ public class DynamicSetAccessor implements DynamicAccessor {
         if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
           return optimize(ctx, elCtx, variableFactory, value);
-        } else {
+        }
+        else {
           runcount = 0;
           stamp = currentTimeMillis();
         }

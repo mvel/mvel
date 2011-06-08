@@ -32,9 +32,11 @@ public class ListCH implements ConversionHandler {
     List newList = new ArrayList();
     if (type.isArray()) {
       newList.addAll(Arrays.asList(((Object[]) in)));
-    } else if (Collection.class.isAssignableFrom(type)) {
+    }
+    else if (Collection.class.isAssignableFrom(type)) {
       newList.addAll((Collection) in);
-    } else if (Iterable.class.isAssignableFrom(type)) {
+    }
+    else if (Iterable.class.isAssignableFrom(type)) {
       for (Object o : (Iterable) in) {
         newList.add(o);
       }

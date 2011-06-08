@@ -212,7 +212,8 @@ public class TemplateCompiler {
                             codeCache ?
                                     new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                     : new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
-                  } else if (customNodes != null && customNodes.containsKey(name)) {
+                  }
+                  else if (customNodes != null && customNodes.containsKey(name)) {
                     Class<? extends Node> customNode = customNodes.get(name);
 
                     try {
@@ -227,12 +228,15 @@ public class TemplateCompiler {
                       if (n.isOpenNode()) {
                         stack.push(n);
                       }
-                    } catch (InstantiationException e) {
-                      throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
-                    } catch (IllegalAccessException e) {
+                    }
+                    catch (InstantiationException e) {
                       throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
                     }
-                  } else {
+                    catch (IllegalAccessException e) {
+                      throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
+                    }
+                  }
+                  else {
                     throw new RuntimeException("unknown token type: " + name);
                   }
               }
@@ -242,7 +246,8 @@ public class TemplateCompiler {
         }
         cursor++;
       }
-    } catch (RuntimeException e) {
+    }
+    catch (RuntimeException e) {
       CompileException ce = new CompileException(e.getMessage(), template, cursor, e);
       ce.setExpr(template);
 
@@ -282,7 +287,8 @@ public class TemplateCompiler {
     if (n != null && n.getLength() == template.length - 1) {
       if (n instanceof ExpressionNode) {
         return codeCache ? new CompiledTerminalExpressionNode(n, parserContext) : new TerminalExpressionNode(n);
-      } else {
+      }
+      else {
         return n;
       }
     }
@@ -311,7 +317,8 @@ public class TemplateCompiler {
       int ret = start + 1;
       start = cursor + 1;
       return ret;
-    } catch (CompileException e) {
+    }
+    catch (CompileException e) {
       e.setLineNumber(line);
       e.setColumn((cursor - colStart) + 1);
       throw e;

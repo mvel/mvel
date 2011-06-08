@@ -74,7 +74,8 @@ public class SimpleSTValueResolver implements VariableResolver {
       }
       try {
         return convert(value, type);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("cannot convert value of " + value.getClass().getName()
                 + " to: " + type.getName());
       }

@@ -37,7 +37,8 @@ public class MapAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
     if (nextNode != null) {
       return nextNode.getValue(((Map) ctx).get(property), elCtx, vrf);
-    } else {
+    }
+    else {
       return ((Map) ctx).get(property);
     }
   }
@@ -45,7 +46,8 @@ public class MapAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(((Map) ctx).get(property), elCtx, vars, value);
-    } else {
+    }
+    else {
       //noinspection unchecked
       ((Map) ctx).put(property, value);
       return value;

@@ -34,9 +34,11 @@ public class Set implements Command {
       for (String var : env.keySet()) {
         System.out.println(var + " = " + env.get(var));
       }
-    } else if (args.length == 1) {
+    }
+    else if (args.length == 1) {
       throw new CommandException("incorrect number of parameters");
-    } else {
+    }
+    else {
       StringAppender sbuf = new StringAppender();
       for (int i = 1; i < args.length; i++) {
         sbuf.append(args[i]);

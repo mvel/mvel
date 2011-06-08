@@ -18,7 +18,8 @@ public class ScopeTests extends TestCase {
     try {
       MVEL.eval(ex, new HashMap<String, Object>());
       fail("should have failed");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       // good!
     }
   }
@@ -29,7 +30,8 @@ public class ScopeTests extends TestCase {
     try {
       MVEL.compileExpression(ex, ParserContext.create().stronglyTyped());
       fail("should have failed");
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       e.printStackTrace();
     }
   }

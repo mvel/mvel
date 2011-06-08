@@ -25,10 +25,12 @@ public class SetterAccessor implements AccessorNode {
     try {
       if (coercionRequired) {
         return method.invoke(ctx, convert(value, targetType));
-      } else {
+      }
+      else {
         return method.invoke(ctx, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(targetType) : value);
       }
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
         Method o = getBestCandidate(EMPTY, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
         if (o != null) {
@@ -41,7 +43,8 @@ public class SetterAccessor implements AccessorNode {
         return setValue(ctx, elCtx, variableFactory, value);
       }
       throw new RuntimeException("unable to bind property", e);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("error calling method: " + method.getDeclaringClass().getName() + "." + method.getName(), e);
     }
   }
@@ -79,7 +82,8 @@ public class SetterAccessor implements AccessorNode {
   private Object executeOverrideTarget(Method o, Object ctx, Object value) {
     try {
       return o.invoke(ctx, convert(value, targetType));
-    } catch (Exception e2) {
+    }
+    catch (Exception e2) {
       throw new RuntimeException("unable to invoke method", e2);
     }
   }

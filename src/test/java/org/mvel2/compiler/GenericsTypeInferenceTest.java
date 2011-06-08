@@ -191,7 +191,8 @@ public class GenericsTypeInferenceTest extends TestCase {
 
       assertEquals(new Integer(0), MVEL.executeExpression(stmt, a2));
 
-    } finally {
+    }
+    finally {
       MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
   }

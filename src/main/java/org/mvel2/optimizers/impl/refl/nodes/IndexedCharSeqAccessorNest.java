@@ -36,7 +36,8 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(((String) ctx).charAt((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);
-    } else {
+    }
+    else {
       return ((String) ctx).charAt((Integer) index.getValue(ctx, elCtx, vars));
     }
   }

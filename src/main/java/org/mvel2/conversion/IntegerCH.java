@@ -97,7 +97,8 @@ public class IntegerCH implements ConversionHandler {
                 if (((Long) o) > Integer.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Long to Integer since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Long) o).intValue();
                 }
               }
@@ -112,7 +113,8 @@ public class IntegerCH implements ConversionHandler {
                 if (((Float) o) > Integer.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Float to Integer since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Float) o).intValue();
                 }
               }
@@ -126,7 +128,8 @@ public class IntegerCH implements ConversionHandler {
                 if (((Double) o) > Integer.MAX_VALUE) {
                   throw new ConversionException("cannot coerce Long to Integer since the value ("
                           + valueOf(o) + ") exceeds that maximum precision of Integer.");
-                } else {
+                }
+                else {
                   return ((Double) o).intValue();
                 }
               }

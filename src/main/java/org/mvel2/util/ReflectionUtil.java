@@ -48,7 +48,8 @@ public class ReflectionUtil {
 
     if (s.charAt(0) > 'Z') {
       chars[3] = (char) (s.charAt(0) - CASE_OFFSET);
-    } else {
+    }
+    else {
       chars[3] = s.charAt(0);
     }
 
@@ -70,7 +71,8 @@ public class ReflectionUtil {
 
     if (c[0] > 'Z') {
       chars[3] = (char) (c[0] - CASE_OFFSET);
-    } else {
+    }
+    else {
       chars[3] = (c[0]);
     }
 
@@ -89,7 +91,8 @@ public class ReflectionUtil {
 
     if (c[0] > 'Z') {
       chars[2] = (char) (c[0] - CASE_OFFSET);
-    } else {
+    }
+    else {
       chars[2] = c[0];
     }
 
@@ -108,7 +111,8 @@ public class ReflectionUtil {
       if (c[0] == 'g' || c[0] == 's') {
         if (c[3] < 'a') {
           chars[0] = (char) (c[3] + CASE_OFFSET);
-        } else {
+        }
+        else {
           chars[0] = c[3];
         }
 
@@ -117,15 +121,18 @@ public class ReflectionUtil {
         }
 
         return new String(chars);
-      } else {
+      }
+      else {
         return s;
       }
-    } else if (c.length > 2 && c[0] == 'i' && c[1] == 's') {
+    }
+    else if (c.length > 2 && c[0] == 'i' && c[1] == 's') {
       chars = new char[c.length - 2];
 
       if (c[2] < 'a') {
         chars[0] = (char) (c[2] + CASE_OFFSET);
-      } else {
+      }
+      else {
         chars[0] = c[2];
       }
 

@@ -58,7 +58,8 @@ public class RegExMatch extends ASTNode {
 
         try {
           p = compile(valueOf(patternStmt.getValue(null, null)));
-        } catch (PatternSyntaxException e) {
+        }
+        catch (PatternSyntaxException e) {
           throw new CompileException("bad regular expression", expr, patternStart, e);
         }
       }
@@ -69,7 +70,8 @@ public class RegExMatch extends ASTNode {
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if (p == null) {
       return compile(valueOf(patternStmt.getValue(ctx, thisValue, factory))).matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
-    } else {
+    }
+    else {
       return p.matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
     }
   }
@@ -77,7 +79,8 @@ public class RegExMatch extends ASTNode {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     try {
       return compile(valueOf(eval(expr, patternStart, patternOffset, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
-    } catch (PatternSyntaxException e) {
+    }
+    catch (PatternSyntaxException e) {
       throw new CompileException("bad regular expression", expr, patternStart, e);
     }
   }

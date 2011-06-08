@@ -104,7 +104,8 @@ public class DataConversion {
     if (toType.isAssignableFrom(convertFrom)) return true;
     if (CONVERTERS.containsKey(toType)) {
       return CONVERTERS.get(toType).canConvertFrom(convertFrom);
-    } else if (toType.isArray() && canConvert(toType.getComponentType(), convertFrom)) {
+    }
+    else if (toType.isArray() && canConvert(toType.getComponentType(), convertFrom)) {
       return true;
     }
     return false;
@@ -121,7 +122,8 @@ public class DataConversion {
       ArrayHandler ah;
       CONVERTERS.put(toType, ah = new ArrayHandler(toType));
       return (T) ah.convertFrom(in);
-    } else {
+    }
+    else {
       return (T) h.convertFrom(in);
     }
   }

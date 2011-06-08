@@ -72,7 +72,8 @@ public class IncludeNode extends Node {
 
     if (next != null) {
       return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readInFile(runtime, file), ctx, factory))), ctx, factory);
-    } else {
+    }
+    else {
       return appender.append(String.valueOf(MVEL.eval(readInFile(runtime, file), ctx, factory)));
     }
   }
@@ -110,9 +111,11 @@ public class IncludeNode extends Node {
 
       return appender.toString();
 
-    } catch (FileNotFoundException e) {
+    }
+    catch (FileNotFoundException e) {
       throw new TemplateError("cannot include template '" + fileName + "': file not found.");
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new TemplateError("unknown I/O exception while including '" + fileName + "' (stacktrace nested)", e);
     }
   }

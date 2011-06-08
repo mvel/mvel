@@ -39,7 +39,8 @@ public class StringArrayCH implements ConversionHandler {
       }
 
       return n;
-    } else {
+    }
+    else {
       return new String[]{String.valueOf(in)};
     }
 

@@ -48,10 +48,12 @@ public class User implements Serializable {
     User other = (User) obj;
     if (firstName == null) {
       if (other.firstName != null) return false;
-    } else if (!firstName.equals(other.firstName)) return false;
+    }
+    else if (!firstName.equals(other.firstName)) return false;
     if (lastName == null) {
       if (other.lastName != null) return false;
-    } else if (!lastName.equals(other.lastName)) return false;
+    }
+    else if (!lastName.equals(other.lastName)) return false;
     return true;
   }
 

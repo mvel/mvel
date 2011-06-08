@@ -59,14 +59,17 @@ public class FunctionParser {
 
       if (cursor >= end) {
         throw new CompileException("incomplete statement", expr, cursor);
-      } else if (expr[cursor] == '{') {
+      }
+      else if (expr[cursor] == '{') {
         blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, end, '{', pCtx);
-      } else {
+      }
+      else {
         blockStart = cursor - 1;
         cursor = ParseTools.captureToEOS(expr, cursor, end, pCtx);
         blockEnd = cursor;
       }
-    } else {
+    }
+    else {
       /**
        * This function has not parameters.
        */
@@ -75,7 +78,8 @@ public class FunctionParser {
          * This function is bracketed.  We capture the entire range in the brackets.
          */
         blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, end, '{', pCtx);
-      } else {
+      }
+      else {
         /**
          * This is a single statement function declaration.  We only capture the statement.
          */

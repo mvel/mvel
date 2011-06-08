@@ -68,7 +68,8 @@ public class CompiledNamedIncludeNode extends Node {
 
 //            return next.eval(runtime,
 //                    appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory))), ctx, factory);
-    } else {
+    }
+    else {
       return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory, runtime.getNamedTemplateRegistry())));
     }
   }

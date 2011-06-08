@@ -113,7 +113,8 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
 
     if (attr instanceof Traceable) {
       ((Traceable) attr).trace(buf, labelNames);
-    } else {
+    }
+    else {
       buf.append(" : unknown\n");
     }
 
@@ -247,7 +248,8 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
     buf.append(tab2).append(OPCODES[opcode]).append(' ');
     if (desc.startsWith("[")) {
       appendDescriptor(FIELD_DESCRIPTOR, desc);
-    } else {
+    }
+    else {
       appendDescriptor(INTERNAL_NAME, desc);
     }
     buf.append('\n');
@@ -323,9 +325,11 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
     buf.append(tab2).append("LDC ");
     if (cst instanceof String) {
       AbstractVisitor.appendString(buf, (String) cst);
-    } else if (cst instanceof Type) {
+    }
+    else if (cst instanceof Type) {
       buf.append(((Type) cst).getDescriptor() + ".class");
-    } else {
+    }
+    else {
       buf.append(cst);
     }
     buf.append('\n');
@@ -510,10 +514,12 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
         String desc = (String) o[i];
         if (desc.startsWith("[")) {
           appendDescriptor(FIELD_DESCRIPTOR, desc);
-        } else {
+        }
+        else {
           appendDescriptor(INTERNAL_NAME, desc);
         }
-      } else if (o[i] instanceof Integer) {
+      }
+      else if (o[i] instanceof Integer) {
         switch (((Integer) o[i]).intValue()) {
           case 0:
             appendDescriptor(FIELD_DESCRIPTOR, "T");
@@ -537,7 +543,8 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
             appendDescriptor(FIELD_DESCRIPTOR, "U");
             break;
         }
-      } else {
+      }
+      else {
         appendLabel((Label) o[i]);
       }
     }

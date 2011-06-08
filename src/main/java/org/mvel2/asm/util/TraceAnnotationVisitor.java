@@ -70,25 +70,35 @@ public class TraceAnnotationVisitor extends TraceAbstractVisitor implements
 
     if (value instanceof String) {
       visitString((String) value);
-    } else if (value instanceof Type) {
+    }
+    else if (value instanceof Type) {
       visitType((Type) value);
-    } else if (value instanceof Byte) {
+    }
+    else if (value instanceof Byte) {
       visitByte(((Byte) value).byteValue());
-    } else if (value instanceof Boolean) {
+    }
+    else if (value instanceof Boolean) {
       visitBoolean(((Boolean) value).booleanValue());
-    } else if (value instanceof Short) {
+    }
+    else if (value instanceof Short) {
       visitShort(((Short) value).shortValue());
-    } else if (value instanceof Character) {
+    }
+    else if (value instanceof Character) {
       visitChar(((Character) value).charValue());
-    } else if (value instanceof Integer) {
+    }
+    else if (value instanceof Integer) {
       visitInt(((Integer) value).intValue());
-    } else if (value instanceof Float) {
+    }
+    else if (value instanceof Float) {
       visitFloat(((Float) value).floatValue());
-    } else if (value instanceof Long) {
+    }
+    else if (value instanceof Long) {
       visitLong(((Long) value).longValue());
-    } else if (value instanceof Double) {
+    }
+    else if (value instanceof Double) {
       visitDouble(((Double) value).doubleValue());
-    } else if (value.getClass().isArray()) {
+    }
+    else if (value.getClass().isArray()) {
       buf.append('{');
       if (value instanceof byte[]) {
         byte[] v = (byte[]) value;
@@ -96,43 +106,50 @@ public class TraceAnnotationVisitor extends TraceAbstractVisitor implements
           appendComa(i);
           visitByte(v[i]);
         }
-      } else if (value instanceof boolean[]) {
+      }
+      else if (value instanceof boolean[]) {
         boolean[] v = (boolean[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitBoolean(v[i]);
         }
-      } else if (value instanceof short[]) {
+      }
+      else if (value instanceof short[]) {
         short[] v = (short[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitShort(v[i]);
         }
-      } else if (value instanceof char[]) {
+      }
+      else if (value instanceof char[]) {
         char[] v = (char[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitChar(v[i]);
         }
-      } else if (value instanceof int[]) {
+      }
+      else if (value instanceof int[]) {
         int[] v = (int[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitInt(v[i]);
         }
-      } else if (value instanceof long[]) {
+      }
+      else if (value instanceof long[]) {
         long[] v = (long[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitLong(v[i]);
         }
-      } else if (value instanceof float[]) {
+      }
+      else if (value instanceof float[]) {
         float[] v = (float[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);
           visitFloat(v[i]);
         }
-      } else if (value instanceof double[]) {
+      }
+      else if (value instanceof double[]) {
         double[] v = (double[]) value;
         for (int i = 0; i < v.length; i++) {
           appendComa(i);

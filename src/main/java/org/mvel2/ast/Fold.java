@@ -90,7 +90,8 @@ public class Fold extends ASTNode {
         }
       }
 
-    } else {
+    }
+    else {
       Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
       list = new ArrayList(col.size());
       for (Object o : col) {
@@ -120,7 +121,8 @@ public class Fold extends ASTNode {
           list.add(subEx.getValue(o, thisValue, itemFactory));
         }
       }
-    } else {
+    }
+    else {
       Object x = dataEx.getValue(ctx, thisValue, factory);
 
       if (!(x instanceof Collection))

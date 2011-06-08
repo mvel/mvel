@@ -48,7 +48,8 @@ public class ArrayAccessorNest implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return nextNode.getValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars);
-    } else {
+    }
+    else {
       return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)];
     }
   }
@@ -56,7 +57,8 @@ public class ArrayAccessorNest implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
-    } else {
+    }
+    else {
       if (baseComponentType == null) {
         baseComponentType = ParseTools.getBaseComponentType(ctx.getClass());
         requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
@@ -66,7 +68,8 @@ public class ArrayAccessorNest implements AccessorNode {
         Object o = convert(value, baseComponentType);
         Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), o);
         return o;
-      } else {
+      }
+      else {
         Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), value);
         return value;
       }

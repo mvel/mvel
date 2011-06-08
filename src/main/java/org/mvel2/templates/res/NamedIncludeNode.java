@@ -73,7 +73,8 @@ public class NamedIncludeNode extends Node {
               appender.append(String.valueOf(TemplateRuntime.execute(runtime
                       .getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset,
                               ctx, factory, String.class)), ctx, factory))), ctx, factory);
-    } else {
+    }
+    else {
       return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry()
               .getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class)),
               ctx, factory)));

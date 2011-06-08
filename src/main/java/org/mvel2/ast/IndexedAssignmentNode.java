@@ -62,7 +62,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
       this.egressType = (statement = (ExecutableStatement)
               subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, start, offset, operation), pCtx)).getKnownEgressType();
-    } else if ((assignStart = find(expr, start, offset, '=')) != -1) {
+    }
+    else if ((assignStart = find(expr, start, offset, '=')) != -1) {
       this.name = createStringTrimmed(expr, start, assignStart - start);
 
       this.start = skipWhitespace(expr, assignStart + 1, pCtx);
@@ -88,7 +89,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
       }
 
       checkNameSafety(this.name);
-    } else {
+    }
+    else {
       checkNameSafety(this.name = new String(expr));
     }
 
@@ -108,16 +110,20 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
     if (col) {
       accExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
-    } else if (statement != null) {
+    }
+    else if (statement != null) {
       if (factory.isIndexedFactory()) {
         factory.createIndexedVariable(register, name, ctx = statement.getValue(ctx, thisValue, factory));
-      } else {
+      }
+      else {
         factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory));
       }
-    } else {
+    }
+    else {
       if (factory.isIndexedFactory()) {
         factory.createIndexedVariable(register, name, null);
-      } else {
+      }
+      else {
         factory.createVariable(name, statement.getValue(ctx, thisValue, factory));
       }
       return Void.class;
@@ -131,7 +137,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
     if (col) {
       MVEL.setProperty(factory.getIndexedVariableResolver(register).getValue(), new String(index), ctx = MVEL.eval(stmt, ctx, factory));
-    } else {
+    }
+    else {
       factory.createIndexedVariable(register, name, ctx = MVEL.eval(stmt, ctx, factory));
     }
 

@@ -28,7 +28,8 @@ public class ThisValueAccessor implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
     if (nextNode != null) {
       return this.nextNode.getValue(elCtx, elCtx, vars);
-    } else {
+    }
+    else {
       return elCtx;
     }
   }

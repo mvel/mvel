@@ -155,13 +155,16 @@ public class PropertyVerifier extends AbstractOptimizer {
           recordTypeParmsForProperty(property);
         }
         return pCtx.getVarOrInputType(property);
-      } else if (pCtx.hasImport(property)) {
+      }
+      else if (pCtx.hasImport(property)) {
         resolvedExternally = false;
         return pCtx.getImport(property);
-      } else if (!pCtx.isStrongTyping()) {
+      }
+      else if (!pCtx.isStrongTyping()) {
         return Object.class;
 
-      } else if (pCtx.hasVarOrInput("this")) {
+      }
+      else if (pCtx.hasVarOrInput("this")) {
         if (pCtx.isStrictTypeEnforcement()) {
           recordTypeParmsForProperty("this");
         }
@@ -199,10 +202,12 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         return f.getType();
-      } else {
+      }
+      else {
         return ((Field) member).getType();
       }
-    } else if (member != null) {
+    }
+    else if (member != null) {
       Method method = (Method) member;
 
       if (pCtx.isStrictTypeEnforcement()) {
@@ -226,17 +231,21 @@ public class PropertyVerifier extends AbstractOptimizer {
 
       Class rt = method.getReturnType();
       return rt.isPrimitive() ? boxPrimitive(rt) : rt;
-    } else if (pCtx != null && pCtx.hasImport(property)) {
+    }
+    else if (pCtx != null && pCtx.hasImport(property)) {
       return pCtx.getImport(property);
-    } else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
+    }
+    else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
             && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
             || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
       Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
       pCtx.setLastTypeParameters(null);
       return parm;
-    } else if (pCtx != null && "length".equals(property) && ctx.isArray()) {
+    }
+    else if (pCtx != null && "length".equals(property) && ctx.isArray()) {
       return Integer.class;
-    } else {
+    }
+    else {
       Object tryStaticMethodRef = tryStaticAccess();
 
       if (tryStaticMethodRef != null) {
@@ -245,20 +254,25 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (tryStaticMethodRef instanceof Class) {
           classLiteral = true;
           return (Class) tryStaticMethodRef;
-        } else if (tryStaticMethodRef instanceof Field) {
+        }
+        else if (tryStaticMethodRef instanceof Field) {
           try {
             return ((Field) tryStaticMethodRef).get(null).getClass();
-          } catch (Exception e) {
-            throw new CompileException("in verifier: ", expr, start, e);
           }
-        } else {
-          try {
-            return ((Method) tryStaticMethodRef).getReturnType();
-          } catch (Exception e) {
+          catch (Exception e) {
             throw new CompileException("in verifier: ", expr, start, e);
           }
         }
-      } else if (ctx != null && ctx.getClass() == Class.class) {
+        else {
+          try {
+            return ((Method) tryStaticMethodRef).getReturnType();
+          }
+          catch (Exception e) {
+            throw new CompileException("in verifier: ", expr, start, e);
+          }
+        }
+      }
+      else if (ctx != null && ctx.getClass() == Class.class) {
         for (Method m : ctx.getMethods()) {
           if (property.equals(m.getName())) {
             return m.getReturnType();
@@ -296,10 +310,12 @@ public class PropertyVerifier extends AbstractOptimizer {
     if (first) {
       if (pCtx.hasVarOrInput(property)) {
         ctx = getSubComponentType(pCtx.getVarOrInputType(property));
-      } else if (pCtx.hasImport(property)) {
+      }
+      else if (pCtx.hasImport(property)) {
         resolvedExternally = false;
         ctx = getSubComponentType(pCtx.getImport(property));
-      } else {
+      }
+      else {
         ctx = Object.class;
       }
     }
@@ -307,14 +323,18 @@ public class PropertyVerifier extends AbstractOptimizer {
     if (pCtx.isStrictTypeEnforcement()) {
       if (Map.class.isAssignableFrom(property.length() != 0 ? ctx = getBeanProperty(ctx, property) : ctx)) {
         ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
-      } else if (Collection.class.isAssignableFrom(ctx)) {
+      }
+      else if (Collection.class.isAssignableFrom(ctx)) {
         ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[0] : Object.class);
-      } else if (ctx.isArray()) {
+      }
+      else if (ctx.isArray()) {
         ctx = getBaseComponentType(ctx);
-      } else if (pCtx.isStrongTyping()) {
+      }
+      else if (pCtx.isStrongTyping()) {
         throw new CompileException("unknown collection type: " + ctx + "; property=" + property, expr, start);
       }
-    } else {
+    }
+    else {
       ctx = Object.class;
     }
 
@@ -370,7 +390,8 @@ public class PropertyVerifier extends AbstractOptimizer {
          */
         ctx = m.getDeclaringClass();
         name = m.getName();
-      } else if (pCtx.hasFunction(name)) {
+      }
+      else if (pCtx.hasFunction(name)) {
         resolvedExternally = false;
         Function f = pCtx.getFunction(name);
         f.checkArgumentCount(
@@ -379,7 +400,8 @@ public class PropertyVerifier extends AbstractOptimizer {
                                 ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
         return f.getEgressType();
-      } else if (pCtx.hasVarOrInput("this")) {
+      }
+      else if (pCtx.hasVarOrInput("this")) {
         if (pCtx.isStrictTypeEnforcement()) {
           recordTypeParmsForProperty("this");
         }
@@ -395,7 +417,8 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     if (cursor < end && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1) {
       tk = new String(expr, st + 1, cursor - st - 1);
-    } else {
+    }
+    else {
       tk = "";
     }
 
@@ -411,7 +434,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     if (subtokens.size() == 0) {
       args = new Class[0];
       subtokens = Collections.emptyList();
-    } else {
+    }
+    else {
       //   ParserContext subCtx = pCtx.createSubcontext();
       args = new Class[subtokens.size()];
 
@@ -432,7 +456,8 @@ public class PropertyVerifier extends AbstractOptimizer {
             args[i] = NullType.class;
           }
 
-        } catch (CompileException e) {
+        }
+        catch (CompileException e) {
           rethrow = ErrorUtil.rewriteIfNeeded(e, expr, this.st);
         }
 
@@ -514,7 +539,8 @@ public class PropertyVerifier extends AbstractOptimizer {
                * If this is an instance of Class, we deal with the special parameterization case.
                */
               typeArgs.put(pt.getActualTypeArguments()[0].toString(), z);
-            } else {
+            }
+            else {
               typeArgs.put(gpt[i].toString(), z);
             }
           }
@@ -537,7 +563,8 @@ public class PropertyVerifier extends AbstractOptimizer {
          * If the paramTypes Map contains the known type, return that type.
          */
         return paramTypes.get(returnTypeArg);
-      } else if (typeArgs.containsKey(returnTypeArg)) {
+      }
+      else if (typeArgs.containsKey(returnTypeArg)) {
         /**
          * If the generic type was declared as part of the method, it will be in this
          * Map.

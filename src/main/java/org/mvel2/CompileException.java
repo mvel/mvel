@@ -129,7 +129,8 @@ public class CompileException extends RuntimeException {
 
     try {
       cs = copyValueOf(expr, start, end - start);
-    } catch (StringIndexOutOfBoundsException e) {
+    }
+    catch (StringIndexOutOfBoundsException e) {
       throw e;
     }
 
@@ -174,12 +175,15 @@ public class CompileException extends RuntimeException {
       if (firstCr != -1 && firstCr == lastCr) {
         if (firstCr > matchIndex) {
           cs = cs.substring(0, firstCr);
-        } else if (firstCr < matchIndex) {
+        }
+        else if (firstCr < matchIndex) {
           cs = cs.substring(firstCr + 1, cs.length());
         }
-      } else if (firstCr < matchIndex) {
+      }
+      else if (firstCr < matchIndex) {
         cs = cs.substring(firstCr + 1, lastCr);
-      } else {
+      }
+      else {
         cs = cs.substring(0, firstCr);
       }
     }
@@ -189,7 +193,8 @@ public class CompileException extends RuntimeException {
 
     if (match != null) {
       msgOffset = trimmed.indexOf(match) + matchOffset;
-    } else {
+    }
+    else {
       msgOffset = cs.length() - (cs.length() - trimmed.length());
     }
 

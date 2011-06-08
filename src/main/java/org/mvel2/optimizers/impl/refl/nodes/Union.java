@@ -45,7 +45,8 @@ public class Union implements Accessor {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (nextAccessor == null) {
       return get(ctx, elCtx, variableFactory);
-    } else {
+    }
+    else {
       return nextAccessor.getValue(get(ctx, elCtx, variableFactory), elCtx, variableFactory);
     }
   }
@@ -63,7 +64,8 @@ public class Union implements Accessor {
       nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, start, offset, o, elCtx, variableFactory,
               false, ingress);
       return ao.getResultOptPass();
-    } else {
+    }
+    else {
       return accessor.getValue(ctx, elCtx, variableFactory);
     }
   }

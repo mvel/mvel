@@ -47,7 +47,8 @@ public class ASTLinkedList implements ASTIterator {
 
     if (this.firstASTNode == null) {
       this.firstASTNode = this.current = astNode;
-    } else {
+    }
+    else {
       this.last = this.current = (this.current.nextASTNode = astNode);
     }
   }
@@ -57,7 +58,8 @@ public class ASTLinkedList implements ASTIterator {
 
     if (this.firstASTNode == null) {
       this.last = this.current = ((this.firstASTNode = astNode).nextASTNode = token2);
-    } else {
+    }
+    else {
       this.last = this.current = (this.current.nextASTNode = astNode).nextASTNode = token2;
     }
   }
@@ -73,7 +75,8 @@ public class ASTLinkedList implements ASTIterator {
   public ASTNode firstNonSymbol() {
     if (firstASTNode.fields == -1) {
       return firstASTNode.nextASTNode;
-    } else {
+    }
+    else {
       return firstASTNode;
     }
   }
@@ -90,7 +93,8 @@ public class ASTLinkedList implements ASTIterator {
     if (current == null) return null;
     try {
       return current;
-    } finally {
+    }
+    finally {
       last = current;
       current = current.nextASTNode;
     }
@@ -167,7 +171,8 @@ public class ASTLinkedList implements ASTIterator {
       if ((curr = nextNode()).isDiscard()) {
         if (last == null) {
           last = firstASTNode = nextNode();
-        } else {
+        }
+        else {
           last.nextASTNode = nextNode();
         }
         continue;

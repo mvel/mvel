@@ -40,7 +40,8 @@ public class ThisWithNode extends WithNode {
     for (ParmValuePair pvp : withExpressions) {
       if (pvp.getSetExpression() != null) {
         executeSetExpression(pvp.getSetExpression(), thisValue, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
-      } else {
+      }
+      else {
         pvp.getStatement().getValue(thisValue, thisValue, factory);
       }
     }

@@ -50,7 +50,8 @@ public class PropertyHandlerFactory {
       }
       while ((clazzWalk = clazzWalk.getSuperclass()) != null && clazzWalk != Object.class);
       return false;
-    } else {
+    }
+    else {
       return true;
     }
   }

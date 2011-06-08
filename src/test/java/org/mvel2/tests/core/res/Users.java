@@ -29,7 +29,8 @@ public class Users {
     Users other = (Users) obj;
     if (users == null) {
       if (other.users != null) return false;
-    } else if (!users.equals(other.users)) return false;
+    }
+    else if (!users.equals(other.users)) return false;
     return true;
   }
 

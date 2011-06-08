@@ -20,7 +20,8 @@ public class StandardOutputStream implements TemplateOutputStream {
       }
 
       return this;
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new RuntimeException("failed to write to stream", e);
     }
   }
@@ -32,7 +33,8 @@ public class StandardOutputStream implements TemplateOutputStream {
         outputStream.write(i);
       }
       return this;
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new RuntimeException("failed to write to stream", e);
     }
   }

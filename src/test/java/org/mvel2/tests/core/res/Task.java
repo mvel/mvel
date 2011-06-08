@@ -49,11 +49,13 @@ public class Task {
     Task other = (Task) obj;
     if (names == null) {
       if (other.names != null) return false;
-    } else if (!names.equals(other.names)) return false;
+    }
+    else if (!names.equals(other.names)) return false;
     if (priority != other.priority) return false;
     if (users == null) {
       if (other.users != null) return false;
-    } else if (!users.equals(other.users)) return false;
+    }
+    else if (!users.equals(other.users)) return false;
     return true;
   }
 

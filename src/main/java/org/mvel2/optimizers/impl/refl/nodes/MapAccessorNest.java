@@ -52,7 +52,8 @@ public class MapAccessorNest implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
     if (nextNode != null) {
       return nextNode.getValue(((Map) ctx).get(property.getValue(ctx, elCtx, vrf)), elCtx, vrf);
-    } else {
+    }
+    else {
       return ((Map) ctx).get(property.getValue(ctx, elCtx, vrf));
     }
   }
@@ -60,10 +61,12 @@ public class MapAccessorNest implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(((Map) ctx).get(property.getValue(ctx, elCtx, vars)), elCtx, vars, value);
-    } else {
+    }
+    else {
       if (conversionType != null) {
         ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
-      } else {
+      }
+      else {
         ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
       }
       return value;

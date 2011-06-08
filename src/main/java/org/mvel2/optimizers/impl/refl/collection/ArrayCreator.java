@@ -41,7 +41,8 @@ public class ArrayCreator implements Accessor {
       }
 
       return newArray;
-    } else {
+    }
+    else {
       Object newArray = newInstance(arrayType, template.length);
       for (int i = 0; i < template.length; i++) {
         Array.set(newArray, i, template[i].getValue(ctx, elCtx, variableFactory));

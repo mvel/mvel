@@ -47,10 +47,12 @@ public class FieldAccessorNH implements AccessorNode {
 
       if (nextNode != null) {
         return nextNode.getValue(v, elCtx, vars);
-      } else {
+      }
+      else {
         return v;
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
   }
@@ -59,20 +61,24 @@ public class FieldAccessorNH implements AccessorNode {
     try {
       if (nextNode != null) {
         return nextNode.setValue(ctx, elCtx, variableFactory, value);
-      } else if (coercionRequired) {
+      }
+      else if (coercionRequired) {
         field.set(ctx, value = convert(ctx, field.getClass()));
         return value;
-      } else {
+      }
+      else {
         field.set(ctx, value);
         return value;
       }
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       if (!coercionRequired) {
         coercionRequired = true;
         return setValue(ctx, elCtx, variableFactory, value);
       }
       throw new RuntimeException("unable to bind property", e);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
   }

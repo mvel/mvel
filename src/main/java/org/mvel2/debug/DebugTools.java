@@ -47,7 +47,8 @@ public class DebugTools {
       return "CANNOT DECOMPILE OPTIMIZED STATEMENT (Run with -Dmvel.optimizer=false)";
     else if (expr instanceof ExecutableLiteral) {
       return "LITERAL: " + ((ExecutableLiteral) expr).getValue(null, null);
-    } else return "NOT A KNOWN PAYLOAD: " + expr.getClass().getName();
+    }
+    else return "NOT A KNOWN PAYLOAD: " + expr.getClass().getName();
   }
 
   public static String decompile(CompiledExpression cExp) {
@@ -90,20 +91,25 @@ public class DebugTools {
       else if (tk.isDebuggingSymbol()) {
         //noinspection StringConcatenationInsideStringBufferAppend
         sbuf.append("DEBUG_SYMBOL :: " + tk.toString());
-      } else if (tk.isLiteral()) {
+      }
+      else if (tk.isLiteral()) {
         sbuf.append("LITERAL :: ").append(tk.getLiteralValue()).append("'");
-      } else if (tk.isOperator()) {
+      }
+      else if (tk.isOperator()) {
         sbuf.append("OPERATOR [").append(getOperatorName(tk.getOperator())).append("]: ")
                 .append(tk.getName());
 
         if (tk.isOperator(Operator.END_OF_STMT)) sbuf.append("\n");
-      } else if (tk.isIdentifier()) {
+      }
+      else if (tk.isIdentifier()) {
         sbuf.append("REFERENCE :: ").append(tk.getClass().getSimpleName()).append(":").append(tk.getName());
-      } else if (tk instanceof BinaryOperation) {
+      }
+      else if (tk instanceof BinaryOperation) {
         BinaryOperation bo = (BinaryOperation) tk;
         sbuf.append("OPERATION [" + getOperatorName(bo.getOperation()) + "] {").append(bo.getLeft().getName())
                 .append("} {").append(bo.getRight().getName()).append("}");
-      } else {
+      }
+      else {
         //noinspection StringConcatenationInsideStringBufferAppend
         sbuf.append("NODE [" + tk.getClass().getSimpleName() + "] :: " + tk.getName());
       }

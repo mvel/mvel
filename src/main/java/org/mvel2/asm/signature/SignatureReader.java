@@ -89,12 +89,14 @@ public class SignatureReader {
         for (; ; ) {
           if ((c = signature.charAt(pos++)) == ':') {
             pos = parseType(signature, pos, v.visitInterfaceBound());
-          } else {
+          }
+          else {
             break;
           }
         }
       } while (c != '>');
-    } else {
+    }
+    else {
       pos = 0;
     }
 
@@ -107,7 +109,8 @@ public class SignatureReader {
       while (pos < len) {
         pos = parseType(signature, pos + 1, v.visitExceptionType());
       }
-    } else {
+    }
+    else {
       pos = parseType(signature, pos, v.visitSuperclass());
       while (pos < len) {
         pos = parseType(signature, pos, v.visitInterface());
@@ -183,7 +186,8 @@ public class SignatureReader {
                 name = signature.substring(start, pos - 1);
                 if (inner) {
                   v.visitInnerClassType(name);
-                } else {
+                }
+                else {
                   v.visitClassType(name);
                 }
               }
@@ -200,7 +204,8 @@ public class SignatureReader {
               name = signature.substring(start, pos - 1);
               if (inner) {
                 v.visitInnerClassType(name);
-              } else {
+              }
+              else {
                 v.visitClassType(name);
               }
               visited = true;

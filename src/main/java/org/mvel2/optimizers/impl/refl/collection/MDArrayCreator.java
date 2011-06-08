@@ -41,7 +41,8 @@ public class MDArrayCreator implements Accessor {
         newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
 
       return newArray;
-    } else {
+    }
+    else {
       Object newArray = newInstance(arrayType, template.length);
 
       for (int i = 0; i < template.length; i++) {

@@ -34,7 +34,8 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
     if (isTarget(name)) {
       resolver.setValue(value);
       return resolver;
-    } else {
+    }
+    else {
       return nextFactory.createVariable(name, value);
     }
   }
@@ -42,7 +43,8 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
   public VariableResolver createVariable(String name, Object value, Class<?> type) {
     if (isTarget(name)) {
       throw new RuntimeException("variable already defined in scope: " + name);
-    } else {
+    }
+    else {
       return nextFactory.createVariable(name, value);
     }
   }

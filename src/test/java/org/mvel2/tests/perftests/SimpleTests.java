@@ -26,7 +26,8 @@ public class SimpleTests {
       for (int i = 0; i < 10000; i++) {
         testQuickSortMVEL(ps);
       }
-    } catch (Throwable t) {
+    }
+    catch (Throwable t) {
       t.printStackTrace();
     }
 

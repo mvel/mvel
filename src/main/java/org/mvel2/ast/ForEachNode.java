@@ -139,27 +139,31 @@ public class ForEachNode extends BlockNode {
         v = compiledBlock.getValue(ctx, thisValue, itemFactory);
         if (itemFactory.tiltFlag()) return v;
       }
-    } else if (iterCond != null && iterCond.getClass().isArray()) {
+    }
+    else if (iterCond != null && iterCond.getClass().isArray()) {
       int len = Array.getLength(iterCond);
       for (int i = 0; i < len; i++) {
         itemR.setValue(Array.get(iterCond, i));
         v = compiledBlock.getValue(ctx, thisValue, itemFactory);
         if (itemFactory.tiltFlag()) return v;
       }
-    } else if (iterCond instanceof CharSequence) {
+    }
+    else if (iterCond instanceof CharSequence) {
       for (Object o : iterCond.toString().toCharArray()) {
         itemR.setValue(o);
         v = compiledBlock.getValue(ctx, thisValue, itemFactory);
         if (itemFactory.tiltFlag()) return v;
       }
-    } else if (iterCond instanceof Integer) {
+    }
+    else if (iterCond instanceof Integer) {
       int max = (Integer) iterCond + 1;
       for (int i = 1; i != max; i++) {
         itemR.setValue(i);
         v = compiledBlock.getValue(ctx, thisValue, itemFactory);
         if (itemFactory.tiltFlag()) return v;
       }
-    } else {
+    }
+    else {
       throw new CompileException("non-iterable type: "
               + (iterCond != null ? iterCond.getClass().getName() : "null"), expr, start);
     }
@@ -182,7 +186,8 @@ public class ForEachNode extends BlockNode {
         itemType = ParseTools.findClass(null, tk, pCtx);
         item = new String(condition, start + x, (cursor - start) - x).trim();
 
-      } catch (ClassNotFoundException e) {
+      }
+      catch (ClassNotFoundException e) {
         throw new CompileException("cannot resolve identifier: " + tk, condition, start);
       }
     }
@@ -197,7 +202,8 @@ public class ForEachNode extends BlockNode {
 
       if (itemType != null && egress.isArray()) {
         enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));
-      } else if (pCtx.isStrongTyping()) {
+      }
+      else if (pCtx.isStrongTyping()) {
         determineIterType(egress);
       }
     }
@@ -206,13 +212,17 @@ public class ForEachNode extends BlockNode {
   private void determineIterType(Class t) {
     if (Iterable.class.isAssignableFrom(t)) {
       type = ITERABLE;
-    } else if (t.isArray()) {
+    }
+    else if (t.isArray()) {
       type = ARRAY;
-    } else if (CharSequence.class.isAssignableFrom(t)) {
+    }
+    else if (CharSequence.class.isAssignableFrom(t)) {
       type = CHARSEQUENCE;
-    } else if (Integer.class.isAssignableFrom(t)) {
+    }
+    else if (Integer.class.isAssignableFrom(t)) {
       type = INTEGER;
-    } else {
+    }
+    else {
       throw new CompileException("non-iterable type: " + t.getName(), expr, start);
     }
   }

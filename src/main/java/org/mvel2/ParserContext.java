@@ -224,7 +224,8 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputType(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    } else if (inputs != null && inputs.containsKey(name)) {
+    }
+    else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return Object.class;
@@ -233,7 +234,8 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputTypeOrNull(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    } else if (inputs != null && inputs.containsKey(name)) {
+    }
+    else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return null;
@@ -449,7 +451,8 @@ public class ParserContext implements Serializable {
                     || (m.getName().startsWith("is")
                     && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
               scope.add(ReflectionUtil.getPropertyFromAccessor(m.getName()));
-            } else {
+            }
+            else {
               scope.add(m.getName());
             }
           }
@@ -644,11 +647,14 @@ public class ParserContext implements Serializable {
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
       if ((val = entry.getValue()) instanceof Class) {
         addImport(entry.getKey(), (Class) val);
-      } else if (val instanceof Method) {
+      }
+      else if (val instanceof Method) {
         addImport(entry.getKey(), (Method) val);
-      } else if (val instanceof MethodStub) {
+      }
+      else if (val instanceof MethodStub) {
         addImport(entry.getKey(), (MethodStub) val);
-      } else {
+      }
+      else {
         throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
       }
     }

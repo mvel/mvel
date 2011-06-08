@@ -21,17 +21,20 @@ public class PropertyHandlerAccessor extends BaseAccessor {
     if (!conversionType.isAssignableFrom(ctx.getClass())) {
       if (nextNode != null) {
         return nextNode.getValue(MVEL.getProperty(propertyName, ctx), elCtx, variableFactory);
-      } else {
+      }
+      else {
         return MVEL.getProperty(propertyName, ctx);
       }
     }
     try {
       if (nextNode != null) {
         return nextNode.getValue(propertyHandler.getProperty(propertyName, ctx, variableFactory), elCtx, variableFactory);
-      } else {
+      }
+      else {
         return propertyHandler.getProperty(propertyName, ctx, variableFactory);
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("unable to access field", e);
     }
   }
@@ -39,7 +42,8 @@ public class PropertyHandlerAccessor extends BaseAccessor {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
       return nextNode.setValue(propertyHandler.getProperty(propertyName, ctx, variableFactory), ctx, variableFactory, value);
-    } else {
+    }
+    else {
       return propertyHandler.setProperty(propertyName, ctx, variableFactory, value);
     }
   }

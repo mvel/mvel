@@ -46,10 +46,12 @@ public class MethodAccessor implements AccessorNode {
       try {
         if (nextNode != null) {
           return nextNode.getValue(method.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
-        } else {
+        }
+        else {
           return method.invoke(ctx, executeAll(elCtx, vars));
         }
-      } catch (IllegalArgumentException e) {
+      }
+      catch (IllegalArgumentException e) {
         if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
           Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
           if (o != null) {
@@ -59,27 +61,33 @@ public class MethodAccessor implements AccessorNode {
 
         coercionNeeded = true;
         return getValue(ctx, elCtx, vars);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("cannot invoke method: " + method.getName(), e);
       }
 
-    } else {
+    }
+    else {
       try {
         if (nextNode != null) {
           return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
-        } else {
+        }
+        else {
           return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
         }
-      } catch (IllegalArgumentException e) {
+      }
+      catch (IllegalArgumentException e) {
         Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
         Method newMeth;
         if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), ctx.getClass(),
                 ctx.getClass().getMethods(), false))) != null) {
           return executeOverrideTarget(newMeth, ctx, elCtx, vars);
-        } else {
+        }
+        else {
           throw e;
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         throw new RuntimeException("cannot invoke method: " + method.getName(), e);
       }
     }
@@ -91,29 +99,36 @@ public class MethodAccessor implements AccessorNode {
         try {
           if (nextNode != null) {
             return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
-          } else {
+          }
+          else {
             return o.invoke(ctx, executeAll(elCtx, vars));
           }
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
           if (coercionNeeded) throw e;
 
           coercionNeeded = true;
           return executeOverrideTarget(o, ctx, elCtx, vars);
         }
-      } catch (Exception e2) {
+      }
+      catch (Exception e2) {
         throw new RuntimeException("unable to invoke method", e2);
       }
-    } else {
+    }
+    else {
       try {
         if (nextNode != null) {
           return nextNode.getValue(o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars)), elCtx, vars);
-        } else {
+        }
+        else {
           return o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars));
         }
-      } catch (IllegalAccessException e) {
+      }
+      catch (IllegalAccessException e) {
         throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
                 "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
-      } catch (Exception e2) {
+      }
+      catch (Exception e2) {
         throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
                 "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
       }
@@ -177,7 +192,8 @@ public class MethodAccessor implements AccessorNode {
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     try {
       return nextNode.setValue(method.invoke(ctx, executeAll(elCtx, variableFactory)), elCtx, variableFactory, value);
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
         Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
         if (o != null) {
@@ -187,7 +203,8 @@ public class MethodAccessor implements AccessorNode {
 
       coercionNeeded = true;
       return setValue(ctx, elCtx, variableFactory, value);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new RuntimeException("cannot invoke method", e);
     }
   }

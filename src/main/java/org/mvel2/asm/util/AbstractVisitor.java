@@ -150,23 +150,30 @@ public abstract class AbstractVisitor {
       char c = s.charAt(i);
       if (c == '\n') {
         buf.append("\\n");
-      } else if (c == '\r') {
+      }
+      else if (c == '\r') {
         buf.append("\\r");
-      } else if (c == '\\') {
+      }
+      else if (c == '\\') {
         buf.append("\\\\");
-      } else if (c == '"') {
+      }
+      else if (c == '"') {
         buf.append("\\\"");
-      } else if (c < 0x20 || c > 0x7f) {
+      }
+      else if (c < 0x20 || c > 0x7f) {
         buf.append("\\u");
         if (c < 0x10) {
           buf.append("000");
-        } else if (c < 0x100) {
+        }
+        else if (c < 0x100) {
           buf.append("00");
-        } else if (c < 0x1000) {
+        }
+        else if (c < 0x1000) {
           buf.append('0');
         }
         buf.append(Integer.toString(c, 16));
-      } else {
+      }
+      else {
         buf.append(c);
       }
     }
@@ -185,7 +192,8 @@ public abstract class AbstractVisitor {
       Object o = l.get(i);
       if (o instanceof List) {
         printList(pw, (List) o);
-      } else {
+      }
+      else {
         pw.print(o.toString());
       }
     }

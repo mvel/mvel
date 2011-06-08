@@ -29,7 +29,8 @@ public class AccessorBMModel implements Accessor {
 
     if (value == null) {
       foo.charTestFld = 0;
-    } else {
+    }
+    else {
       foo.charTestFld = (Character) value;
     }
 

@@ -26,7 +26,8 @@ public class SharedVariableSpaceModel extends VariableSpaceModel {
     for (int i = 0; i < resolvers.length; i++) {
       if (i >= cachedGlobalResolvers.length) {
         resolvers[i] = new SimpleValueResolver(null);
-      } else {
+      }
+      else {
         resolvers[i] = cachedGlobalResolvers[i];
       }
     }

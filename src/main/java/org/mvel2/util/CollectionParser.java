@@ -142,7 +142,8 @@ public class CollectionParser {
 
           if (type == MAP) {
             map.put(curr, o);
-          } else {
+          }
+          else {
             list.add(curr = o);
           }
 
@@ -150,7 +151,8 @@ public class CollectionParser {
 
           if ((st = cursor) < end && property[cursor] == ',') {
             st = cursor + 1;
-          } else if (cursor < end) {
+          }
+          else if (cursor < end) {
             if (ParseTools.opLookup(property[cursor]) == -1) {
               throw new CompileException("unterminated collection element", property, cursor);
             }
@@ -172,7 +174,8 @@ public class CollectionParser {
         case ',':
           if (type != MAP) {
             list.add(new String(property, st, cursor - st).trim());
-          } else {
+          }
+          else {
             map.put(curr, createStringTrimmed(property, st, cursor - st));
           }
 
@@ -217,7 +220,8 @@ public class CollectionParser {
 
       if (type == MAP) {
         map.put(curr, createStringTrimmed(property, st, cursor - st));
-      } else {
+      }
+      else {
         if (cursor < end) cursor++;
         list.add(createStringTrimmed(property, st, cursor - st));
       }
@@ -238,7 +242,8 @@ public class CollectionParser {
   private void subCompile(int start, int offset) {
     if (colType == null) {
       subCompileExpression(property, start, offset, pCtx);
-    } else {
+    }
+    else {
       Class r = ((ExecutableStatement) subCompileExpression(property, start, offset, pCtx)).getKnownEgressType();
       if (!colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
         throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName(), property, cursor);

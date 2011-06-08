@@ -17,7 +17,8 @@ public class Make {
     public static <K, V> Map<K, V> start(Class<? extends java.util.Map> mapImpl) {
       try {
         return new Map(mapImpl.newInstance());
-      } catch (Throwable t) {
+      }
+      catch (Throwable t) {
         throw new RuntimeException("error creating instance", t);
       }
     }
@@ -93,7 +94,8 @@ public class Make {
     public static <V> List<V> start(Class<? extends java.util.List> listImpl) {
       try {
         return new List(listImpl.newInstance());
-      } catch (Throwable t) {
+      }
+      catch (Throwable t) {
         throw new RuntimeException("error creating instance", t);
       }
     }
@@ -130,7 +132,8 @@ public class Make {
     public static <V> Set<V> start(Class<? extends java.util.Set> listImpl) {
       try {
         return new Set(listImpl.newInstance());
-      } catch (Throwable t) {
+      }
+      catch (Throwable t) {
         throw new RuntimeException("error creating instance", t);
       }
     }
