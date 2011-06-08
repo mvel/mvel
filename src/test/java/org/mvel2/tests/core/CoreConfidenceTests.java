@@ -2996,6 +2996,51 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(foo.getCharArrayMulti()[2][2], 'i');
     }
 
+    //This one should compile and pass
+    public void testStrObjEqualsEquals() {
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Triangle.class);
+        pctx.setStrongTyping(true);
+        
+        String str = "strLabel == objLabel";
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertTrue( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
+    }
+    
+    //This one should fail to compile? JPW:IMO this one should compile too because equals is at the 
+    //object level any object should be able to evaluate equivalence on any other object
+    public void testStrTriangleEqualsEquals() {
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Triangle.class);
+        pctx.setStrongTyping(true);
+        
+        String str = "strLabel == this";
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertFalse( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
+    }
+    
+    //Should compile and fail
+    public void testStrDoubleEqualsEquals() {
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Triangle.class);
+        pctx.setStrongTyping(true);
+        
+        String str = "strLabel == doubleVal";
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertFalse( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
+    }
     public void testMVEL224() {
         ParserContext ctx = new ParserContext();
         MVEL.compileExpression("(pin == 1)", ctx);
@@ -3151,6 +3196,30 @@ public class CoreConfidenceTests extends AbstractTest {
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
         }
 
+        private Object objLabel = "Triangle";
+        private String strLabel = "Triangle";
+        private Double doubleVal = 29.0;
+        
+		public Object getObjLabel() {
+			return objLabel;
+		}
+		public void setObjLabel(Object objLabel) {
+			this.objLabel = objLabel;
+		}
+		public String getStrLabel() {
+			return strLabel;
+		}
+		public void setStrLabel(String strLabel) {
+			this.strLabel = strLabel;
+		}
+		public Double getDoubleVal() {
+			return doubleVal;
+		}
+		public void setDoubleVal(Double doubleVal) {
+			this.doubleVal = doubleVal;
+		}
+        
+        
 //        private Foo foo;
 //
 //        public Foo getFoo() {
