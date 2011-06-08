@@ -22,10 +22,6 @@ import org.mvel2.*;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
-
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
-
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
@@ -33,6 +29,9 @@ import org.mvel2.util.StringAppender;
 
 import java.lang.reflect.*;
 import java.util.*;
+
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
 /**
  * This verifier is used by the compiler to enforce rules such as type strictness.  It is, as side-effect, also
@@ -56,7 +55,7 @@ public class PropertyVerifier extends AbstractOptimizer {
   private boolean deepProperty = false;
   private boolean fqcn = false;
 
-  private Map<String, Class> paramTypes;
+  private Map<String, Type> paramTypes;
 
   private Class ctx = null;
 
@@ -195,7 +194,7 @@ public class PropertyVerifier extends AbstractOptimizer {
           Type[] gpt = pt.getActualTypeArguments();
           Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
 
-          if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Class>();
+          if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Type>();
           for (int i = 0; i < gpt.length; i++) {
             paramTypes.put(classArgs[i].toString(), (Class) gpt[i]);
           }
@@ -222,9 +221,9 @@ public class PropertyVerifier extends AbstractOptimizer {
           Type[] gpt = pt.getActualTypeArguments();
           Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
 
-          if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Class>();
+          if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Type>();
           for (int i = 0; i < gpt.length; i++) {
-            paramTypes.put(classArgs[i].toString(), (Class) gpt[i]);
+            paramTypes.put(classArgs[i].toString(), gpt[i]);
           }
         }
       }
@@ -238,9 +237,15 @@ public class PropertyVerifier extends AbstractOptimizer {
     else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
         && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
         || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
-      Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
+      Type parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
       pCtx.setLastTypeParameters(null);
-      return parm;
+
+      if (parm instanceof ParameterizedType) {
+        return Object.class;
+      }
+      else {
+        return (Class) parm;
+      }
     }
     else if (pCtx != null && "length".equals(property) && ctx.isArray()) {
       return Integer.class;
@@ -278,6 +283,13 @@ public class PropertyVerifier extends AbstractOptimizer {
             return m.getReturnType();
           }
         }
+        try {
+          return findClass(variableFactory, ctx.getName() + "$" + property, null);
+        }
+        catch (ClassNotFoundException cnfe) {
+          // fall through.
+        }
+
       }
 
       if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
@@ -558,7 +570,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If the paramTypes Map contains the known type, return that type.
          */
-        return paramTypes.get(returnTypeArg);
+        return (Class) paramTypes.get(returnTypeArg);
       }
       else if (typeArgs.containsKey(returnTypeArg)) {
         /**

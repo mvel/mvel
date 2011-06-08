@@ -3152,7 +3152,6 @@ public class CoreConfidenceTests extends AbstractTest {
     pconf.addImport("Triangle", Triangle.class);
     ParserContext pctx = new ParserContext(pconf);
     pctx.addInput("this", Person.class);
-    pctx.setStrictTypeEnforcement(true);
     pctx.setStrongTyping(true);
 
     Foo foo = new Foo();
@@ -3162,7 +3161,7 @@ public class CoreConfidenceTests extends AbstractTest {
     p.setObjectKeyMaptributes(map);
 
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-    MVEL.executeExpression(stmt, p, new HashMap());
+    Object o = MVEL.executeExpression(stmt, p, new HashMap());
   }
 
   public void testNestedClassWithNestedGenericsOnNakedMethod() {
@@ -3181,6 +3180,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
     assertTrue((Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));
+
+    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
   }
 
   public static class Triangle {

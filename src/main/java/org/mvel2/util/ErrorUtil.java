@@ -12,8 +12,10 @@ public class ErrorUtil {
       String innerExpr = new String(caught.getExpr()).substring(caught.getCursor());
       caught.setExpr(outer);
 
-      int newCursor = outerCursor;
-      newCursor += new String(outer).substring(outerCursor).indexOf(innerExpr);
+      String outerStr = new String(outer);
+
+      int newCursor = outerStr.substring(outerStr.indexOf(new String(caught.getExpr())))
+          .indexOf(innerExpr);
 
       caught.setCursor(newCursor);
     }

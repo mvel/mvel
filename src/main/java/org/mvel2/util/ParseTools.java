@@ -1522,6 +1522,8 @@ public class ParseTools {
         case '{':
         case '[':
         case '(':
+        case '\'':
+        case '"':
           i = balancedCapture(block, i, end, block[i]);
           continue;
 

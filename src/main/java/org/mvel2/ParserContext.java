@@ -58,7 +58,7 @@ public class ParserContext implements Serializable {
   private HashMap<String, Class> variables;
   private Map<String, Class> inputs;
 
-  private transient HashMap<String, Map<String, Class>> typeParameters;
+  private transient HashMap<String, Map<String, Type>> typeParameters;
   private transient Type[] lastTypeParameters;
   private HashMap<String, Function> globalFunctions;
 
@@ -502,13 +502,13 @@ public class ParserContext implements Serializable {
     addInput(name, type);
 
     if (this.typeParameters == null) {
-      this.typeParameters = new LinkedHashMap<String, Map<String, Class>>();
+      this.typeParameters = new LinkedHashMap<String, Map<String, Type>>();
     }
     if (this.typeParameters.get(name) == null) {
-      this.typeParameters.put(name, new LinkedHashMap<String, Class>());
+      this.typeParameters.put(name, new LinkedHashMap<String, Type>());
     }
 
-    Map<String, Class> t = this.typeParameters.get(name);
+    Map<String, Type> t = this.typeParameters.get(name);
 
     if (typeParameters.length != type.getTypeParameters().length) {
       throw new RuntimeException("wrong number of type parameters for: " + type.getName());
@@ -784,9 +784,9 @@ public class ParserContext implements Serializable {
   }
 
   public void addTypeParameters(String name, Class type) {
-    if (typeParameters == null) typeParameters = new HashMap<String, Map<String, Class>>();
+    if (typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
 
-    Map<String, Class> newPkg = new HashMap<String, Class>();
+    Map<String, Type> newPkg = new HashMap<String, Type>();
 
     for (Type t : type.getTypeParameters()) {
       newPkg.put(t.toString(), Object.class);
@@ -795,14 +795,14 @@ public class ParserContext implements Serializable {
     typeParameters.put(name, newPkg);
   }
 
-  public void addTypeParameters(Map<String, Map<String, Class>> typeParameters) {
+  public void addTypeParameters(Map<String, Map<String, Type>> typeParameters) {
     if (typeParameters == null) return;
-    if (this.typeParameters == null) typeParameters = new HashMap<String, Map<String, Class>>();
+    if (this.typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
 
     Map iMap;
-    for (Map.Entry<String, Map<String, Class>> e : typeParameters.entrySet()) {
+    for (Map.Entry<String, Map<String, Type>> e : typeParameters.entrySet()) {
       iMap = new HashMap<String, Class>();
-      for (Map.Entry<String, Class> ie : e.getValue().entrySet()) {
+      for (Map.Entry<String, Type> ie : e.getValue().entrySet()) {
         iMap.put(ie.getKey(), ie.getValue());
       }
       typeParameters.put(e.getKey(), iMap);
@@ -810,7 +810,7 @@ public class ParserContext implements Serializable {
 
   }
 
-  public Map<String, Class> getTypeParameters(String name) {
+  public Map<String, Type> getTypeParameters(String name) {
     if (typeParameters == null) return null;
     return typeParameters.get(name);
   }
@@ -822,7 +822,7 @@ public class ParserContext implements Serializable {
     Type[] tp = c.getTypeParameters();
     Type[] types = new Type[tp.length];
 
-    Map<String, Class> typeVars = getTypeParameters(name);
+    Map<String, Type> typeVars = getTypeParameters(name);
     if (typeVars == null) {
       return null;
     }
@@ -990,7 +990,7 @@ public class ParserContext implements Serializable {
     return this;
   }
 
-  public ParserContext withTypeParameters(Map<String, Map<String, Class>> typeParameters) {
+  public ParserContext withTypeParameters(Map<String, Map<String, Type>> typeParameters) {
     addTypeParameters(typeParameters);
     return this;
   }

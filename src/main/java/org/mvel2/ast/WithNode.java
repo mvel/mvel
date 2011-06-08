@@ -97,6 +97,8 @@ public class WithNode extends BlockNode implements NestedStatement {
         case '{':
         case '[':
         case '(':
+        case '\'':
+        case '"':
           i = balancedCapture(block, i, end, block[i]);
           continue;
 
@@ -128,7 +130,6 @@ public class WithNode extends BlockNode implements NestedStatement {
             oper = opLookup(block[i]);
           }
           continue;
-
 
         case '=':
           parm = createStringTrimmed(block, _st, i - _st - (oper != -1 ? 1 : 0));
