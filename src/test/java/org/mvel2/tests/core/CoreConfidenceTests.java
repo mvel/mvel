@@ -3144,22 +3144,56 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MVEL.eval("import " + Triangle.class.getCanonicalName() + "; Triangle.Foo.OBTUSE", new HashMap());
     }
+    
+    public void testNestedNumInMapKey() {
+        String str = "objectKeyMaptributes[Triangle.Foo.OBTUSE]";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.addImport( "Triangle", Triangle.class );
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Person.class);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+
+        Foo foo = new Foo();
+        Person p = new Person();
+        Map<Object, Foo> map = new HashMap<Object, Foo>();
+        map.put( Triangle.Foo.OBTUSE, foo );
+        p.setObjectKeyMaptributes( map );
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        MVEL.executeExpression(stmt, p, new HashMap());        
+    }
+    
+    public void testNestedClassWithNestedGenericsOnNakedMethod() {
+        String str = "deliveries.size";
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Triangle.class);
+        pctx.setStrongTyping(true);
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertEquals( Integer.valueOf( 0 ), (Integer) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));  
+        
+        str = "deliveries.size == 0";
+        
+        stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertTrue( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
+    }    
 
     public static class Triangle {
         public static enum Foo {
             INCOMPLETE, UNCLASSIFIED,
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
         }
+        
+        private List<Map<String, Object>> deliveries = new ArrayList<Map<String,Object>>();
 
-//        private Foo foo;
-//
-//        public Foo getFoo() {
-//            return foo;
-//        }
-//
-//        public void setFoo(Foo foo) {
-//            this.foo = foo;
-//        }
+        public List<Map<String, Object>> getDeliveries() {
+            return deliveries;
+        }
     }
 
     public void testStrictModeAddAll() {

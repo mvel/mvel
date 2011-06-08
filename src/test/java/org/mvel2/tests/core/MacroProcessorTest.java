@@ -110,7 +110,7 @@ public class MacroProcessorTest extends TestCase {
             }
         });
 
-        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros));
+        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo = poo', bValue = 'poo, poo' }; mod", macros));
 
         ParserContext ctx = new ParserContext(null, interceptors, null);
         ctx.setSourceFile("test.mv");
