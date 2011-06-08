@@ -44,7 +44,7 @@ public class Union extends ASTNode {
       try {
         AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
         accessor = o.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
-                main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
+            main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
         return o.getResultOptPass();
       }
       finally {
@@ -55,8 +55,8 @@ public class Union extends ASTNode {
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return PropertyAccessor.get(
-            expr, start, offset,
-            main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
+        expr, start, offset,
+        main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
   }
 
   public Class getLeftEgressType() {

@@ -74,11 +74,11 @@ public class AbstractOptimizer extends AbstractParser {
                 String test = new String(expr, start, (cursor = last) - start);
 
                 return Class.forName(test, true, pCtx != null ?
-                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
+                    pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
               }
               catch (ClassNotFoundException e) {
                 Class cls = Class.forName(new String(expr, start, i - start), true, pCtx != null ?
-                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
+                    pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                 String name = new String(expr, i + 1, end - i - 1);
                 try {
                   return cls.getField(name);

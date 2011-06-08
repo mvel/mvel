@@ -31,7 +31,7 @@ public class Or extends BooleanNode {
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
-            || ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
+        || ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

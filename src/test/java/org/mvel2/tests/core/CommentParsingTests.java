@@ -57,14 +57,14 @@ public class CommentParsingTests extends AbstractTest {
   public void testElseIfCommentBugPreCompiled() throws Exception {
     // Comments can't appear before else if() - compilation works, but evaluation fails
     executeExpression(compileExpression("// This is never true\n" + "if (1==0) {\n"
-            + "  // Never reached\n" + "}\n" + "// This is always true...\n" + "else if (1==1) {"
-            + "  System.out.println('Got here!');" + "}\n"));
+        + "  // Never reached\n" + "}\n" + "// This is always true...\n" + "else if (1==1) {"
+        + "  System.out.println('Got here!');" + "}\n"));
   }
 
   public void testElseIfCommentBugEvaluated() throws Exception {
     // Comments can't appear before else if()
     MVEL.eval("// This is never true\n" + "if (1==0) {\n" + "  // Never reached\n" + "}\n"
-            + "// This is always true...\n" + "else if (1==1) {" + "  System.out.println('Got here!');" + "}\n");
+        + "// This is always true...\n" + "else if (1==1) {" + "  System.out.println('Got here!');" + "}\n");
   }
 
 
@@ -72,53 +72,53 @@ public class CommentParsingTests extends AbstractTest {
 
   public void testSingleLineCommentSlash() {
     String result = fixer.fix("        //System.out.println( \"help\" );\r\n      " +
-            "  System.out.println( \"help\" );  \r\n     list.add( $person );");
+        "  System.out.println( \"help\" );  \r\n     list.add( $person );");
     assertEquals("        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n   " +
-            "  list.add( $person );",
-            result);
+        "  list.add( $person );",
+        result);
   }
 
   public void testSingleLineCommentHash() {
     String result = fixer.fix("        #System.out.println( \"help\" );\r\n    " +
-            "    System.out.println( \"help\" );  \r\n     list.add( $person );");
+        "    System.out.println( \"help\" );  \r\n     list.add( $person );");
     assertEquals("        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n    " +
-            " list.add( $person );",
-            result);
+        " list.add( $person );",
+        result);
   }
 
   public void testMultiLineComment() {
     String result = fixer.fix("        /*System.out.println( \"help\" );\r\n*/    " +
-            "   System.out.println( \"help\" );  \r\n     list.add( $person );");
+        "   System.out.println( \"help\" );  \r\n     list.add( $person );");
     assertEquals("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n    " +
-            " list.add( $person );",
-            result);
+        " list.add( $person );",
+        result);
   }
 
   public void testComments() {
     assertEquals(10,
-            test("// This is a comment\n5 + 5"));
+        test("// This is a comment\n5 + 5"));
   }
 
   public void testComments2() {
     assertEquals(20,
-            test("10 + 10; // This is a comment"));
+        test("10 + 10; // This is a comment"));
   }
 
   public void testComments3() {
     assertEquals(30,
-            test("/* This is a test of\r\n" + "MVEL's support for\r\n" + "multi-line comments\r\n" + "*/\r\n 15 + 15"));
+        test("/* This is a test of\r\n" + "MVEL's support for\r\n" + "multi-line comments\r\n" + "*/\r\n 15 + 15"));
   }
 
   public void testComments4() {
     assertEquals(((10 + 20) * 2) - 10,
-            test("/** This is a fun test script **/\r\n" + "a = 10;\r\n" + "/**\r\n"
-                    + "* Here is a useful variable\r\n" + "*/\r\n" + "b = 20; // set b to '20'\r\n"
-                    + "return ((a + b) * 2) - 10;\r\n" + "// last comment\n"));
+        test("/** This is a fun test script **/\r\n" + "a = 10;\r\n" + "/**\r\n"
+            + "* Here is a useful variable\r\n" + "*/\r\n" + "b = 20; // set b to '20'\r\n"
+            + "return ((a + b) * 2) - 10;\r\n" + "// last comment\n"));
   }
 
   public void testComments5() {
     assertEquals("dog",
-            test("foo./*Hey!*/name"));
+        test("foo./*Hey!*/name"));
   }
 
 }

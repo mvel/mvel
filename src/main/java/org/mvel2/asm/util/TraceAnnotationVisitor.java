@@ -39,7 +39,7 @@ import org.mvel2.asm.Type;
  * @author Eric Bruneton
  */
 public class TraceAnnotationVisitor extends TraceAbstractVisitor implements
-        AnnotationVisitor {
+    AnnotationVisitor {
 
   /**
    * The {@link AnnotationVisitor} to which this visitor delegates calls. May
@@ -207,9 +207,9 @@ public class TraceAnnotationVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitEnum(
-          final String name,
-          final String desc,
-          final String value) {
+      final String name,
+      final String desc,
+      final String value) {
     buf.setLength(0);
     appendComa(valueNumber++);
     if (name != null) {
@@ -225,8 +225,8 @@ public class TraceAnnotationVisitor extends TraceAbstractVisitor implements
   }
 
   public AnnotationVisitor visitAnnotation(
-          final String name,
-          final String desc) {
+      final String name,
+      final String desc) {
     buf.setLength(0);
     appendComa(valueNumber++);
     if (name != null) {

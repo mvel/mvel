@@ -145,9 +145,9 @@ public class SignatureReader {
    * @return the index of the first character after the parsed signature.
    */
   private static int parseType(
-          final String signature,
-          int pos,
-          final SignatureVisitor v) {
+      final String signature,
+      int pos,
+      final SignatureVisitor v) {
     char c;
     int start, end;
     boolean visited, inner;
@@ -221,13 +221,13 @@ public class SignatureReader {
                   case '+':
                   case '-':
                     pos = parseType(signature,
-                            pos + 1,
-                            v.visitTypeArgument(c));
+                        pos + 1,
+                        v.visitTypeArgument(c));
                     break;
                   default:
                     pos = parseType(signature,
-                            pos,
-                            v.visitTypeArgument('='));
+                        pos,
+                        v.visitTypeArgument('='));
                     break;
                 }
               }

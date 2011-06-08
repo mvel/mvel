@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class DataConversion {
   private static final Map<Class, ConversionHandler> CONVERTERS
-          = new HashMap<Class, ConversionHandler>(38 * 2, 0.5f);
+      = new HashMap<Class, ConversionHandler>(38 * 2, 0.5f);
 
   private interface ArrayTypeMarker {
   }

@@ -51,7 +51,7 @@ public class ImportNode extends ASTNode {
 
       try {
         this.importClass = Class.forName(clsName, true,
-                Thread.currentThread().getContextClassLoader());
+            Thread.currentThread().getContextClassLoader());
       }
       catch (ClassNotFoundException e) {
         int idx;

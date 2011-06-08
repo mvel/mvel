@@ -57,7 +57,7 @@ public class IfNode extends BlockNode implements NestedStatement {
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
       expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
-              Boolean.class, true);
+          Boolean.class, true);
 
       if (pCtx != null) {
         pCtx.pushVariableScope();

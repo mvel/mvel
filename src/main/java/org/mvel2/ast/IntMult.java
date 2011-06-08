@@ -14,13 +14,13 @@ public class IntMult extends BinaryOperation implements IntOptimized {
   @Override
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return ((Integer) left.getReducedValueAccelerated(ctx, thisValue, factory))
-            * ((Integer) right.getReducedValueAccelerated(ctx, thisValue, factory));
+        * ((Integer) right.getReducedValueAccelerated(ctx, thisValue, factory));
   }
 
   @Override
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return ((Integer) left.getReducedValue(ctx, thisValue, factory))
-            * ((Integer) right.getReducedValue(ctx, thisValue, factory));
+        * ((Integer) right.getReducedValue(ctx, thisValue, factory));
   }
 
   @Override

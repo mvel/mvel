@@ -70,14 +70,14 @@ public class SimpleSTValueResolver implements VariableResolver {
     if (type != null && value != null && value.getClass() != type) {
       if (!canConvert(type, value.getClass())) {
         throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
-                + type.getName());
+            + type.getName());
       }
       try {
         return convert(value, type);
       }
       catch (Exception e) {
         throw new RuntimeException("cannot convert value of " + value.getClass().getName()
-                + " to: " + type.getName());
+            + " to: " + type.getName());
       }
     }
     return value;

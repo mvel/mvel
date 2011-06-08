@@ -46,13 +46,13 @@ public class StaticImportNode extends ASTNode {
 
       int mark;
       declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
-              true, currentThread().getContextClassLoader());
+          true, currentThread().getContextClassLoader());
 
       methodName = new String(expr, ++mark, offset - (mark - start));
 
       if (resolveMethod() == null) {
         throw new CompileException("can not find method for static import: "
-                + declaringClass.getName() + "." + methodName, expr, start);
+            + declaringClass.getName() + "." + methodName, expr, start);
       }
     }
     catch (Exception e) {

@@ -138,7 +138,7 @@ public class CollectionParser {
            * Sub-parse nested collections.
            */
           Object o = new CollectionParser(newType).parseCollection(property, (st = cursor) + 1,
-                  (cursor = balancedCapture(property, st, end, property[st])) - st - 1, subcompile, colType, pCtx);
+              (cursor = balancedCapture(property, st, end, property[st])) - st - 1, subcompile, colType, pCtx);
 
           if (type == MAP) {
             map.put(curr, o);

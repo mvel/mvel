@@ -63,17 +63,17 @@ public class TemplateTests extends TestCase {
     map.put("variable_with_underscore", "HELLO");
 
     map.put("testImpl",
-            new TestInterface() {
+        new TestInterface() {
 
-              public String getName() {
-                return "FOOBAR!";
-              }
+          public String getName() {
+            return "FOOBAR!";
+          }
 
 
-              public boolean isFoo() {
-                return true;
-              }
-            });
+          public boolean isFoo() {
+            return true;
+          }
+        });
   }
 
   public Object test(String template) {
@@ -138,7 +138,7 @@ public class TemplateTests extends TestCase {
 
   public void testFileBasedEval() {
     assertEquals("Foo::Bar", TemplateRuntime.eval(new File("src/test/java/org/mvel2/tests/templates/templateTest.mv"),
-            base, new MapVariableResolverFactory(map), null));
+        base, new MapVariableResolverFactory(map), null));
   }
 
   public void testInclusionOfTemplateFile() {
@@ -185,7 +185,7 @@ public class TemplateTests extends TestCase {
 
   public void testTemplateFile() {
     String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel2/tests/templates/templateIfTest.mv"),
-            base, new MapVariableResolverFactory(map), null);
+        base, new MapVariableResolverFactory(map), null);
 
     System.out.println(s);
 
@@ -302,7 +302,7 @@ public class TemplateTests extends TestCase {
 
   public void testModulus() {
     assertEquals(38392 % 2,
-            test("@{38392 % 2}"));
+        test("@{38392 % 2}"));
   }
 
   public void testLessThan() {
@@ -378,29 +378,29 @@ public class TemplateTests extends TestCase {
 
   public void testControlLoopList() {
     assertEquals("HappyHappy!JoyJoy!",
-            test(
-                    "@foreach{item : list}" +
-                            "@{item}" +
-                            "@end{}"
-            ));
+        test(
+            "@foreach{item : list}" +
+                "@{item}" +
+                "@end{}"
+        ));
   }
 
   public void testControlLoopArray() {
     assertEquals("Happy0Happy!1Joy2Joy!3",
-            test(
-                    "@code{i=0}@foreach{item : array}" +
-                            "@{item}@{i++}" +
-                            "@end{}"
-            ));
+        test(
+            "@code{i=0}@foreach{item : array}" +
+                "@{item}@{i++}" +
+                "@end{}"
+        ));
   }
 
   public void testMultiCollectionControlLoop() {
     assertEquals("0=Happy:Happy,1=Happy!:Happy!,2=Joy:Joy,3=Joy!:Joy!",
-            test(
-                    "@code{i=0}@foreach{item : list, listItem : array}" +
-                            "@{i++}=@{item}:@{listItem}" +
-                            "@end{','}"
-            ));
+        test(
+            "@code{i=0}@foreach{item : list, listItem : array}" +
+                "@{i++}=@{item}:@{listItem}" +
+                "@end{','}"
+        ));
   }
 
   public void testControlLoopListMultiple() {
@@ -423,20 +423,20 @@ public class TemplateTests extends TestCase {
 
   public void testControlLoop2() {
     assertEquals("HappyHappy!JoyJoy!",
-            test(
-                    "@foreach{item : list}" +
-                            "@{item}" +
-                            "@end{}"
-            ));
+        test(
+            "@foreach{item : list}" +
+                "@{item}" +
+                "@end{}"
+        ));
   }
 
   public void testControlLoop3() {
     assertEquals("HappyHappy!JoyJoy!",
-            test(
-                    "@foreach{item : list }" +
-                            "@{item}" +
-                            "@end{}"
-            ));
+        test(
+            "@foreach{item : list }" +
+                "@{item}" +
+                "@end{}"
+        ));
   }
 
   public void testIfStatement6() {
@@ -791,12 +791,12 @@ public class TemplateTests extends TestCase {
   }
 
   String[] testCasesMVEL220 = {
-          //        "map[\"foundIt\"] = !(map['list']).contains(\"john\")",
-          "map[\"foundIt\"] = !(map['list'].contains(\"john\"))",
+      //        "map[\"foundIt\"] = !(map['list']).contains(\"john\")",
+      "map[\"foundIt\"] = !(map['list'].contains(\"john\"))",
   };
   String[] templateTestCasesMVEL220 = {
-          "@{map[\"foundIt\"] = !(map['list']).contains(\"john\")}",
-          "@{map[\"foundIt\"] = !(map['list'].contains(\"john\"))}"
+      "@{map[\"foundIt\"] = !(map['list']).contains(\"john\")}",
+      "@{map[\"foundIt\"] = !(map['list'].contains(\"john\"))}"
   };
 
   public void testEvalMVEL220() {
@@ -845,16 +845,16 @@ public class TemplateTests extends TestCase {
   }
 
   String[] testCasesMVEL219 = {
-          "map['foo']==map['foo']", // ok
-          "(map['one'] > 0)", // ok
-          "(map['one'] > 0) && (map['foo'] == map['foo'])", // ok
-          "(map['one'] > 0) && (map['foo']==map['foo'])", // broken
+      "map['foo']==map['foo']", // ok
+      "(map['one'] > 0)", // ok
+      "(map['one'] > 0) && (map['foo'] == map['foo'])", // ok
+      "(map['one'] > 0) && (map['foo']==map['foo'])", // broken
   };
   String[] templateTestCasesMVEL219 = {
-          "@{map['foo']==map['foo']}", // ok
-          "@(map['one'] > 0)}", // ok
-          "@{(map['one'] > 0) && (map['foo'] == map['foo'])}", // ok
-          "@{(map['one'] > 0) && (map['foo']==map['foo'])}" // broken
+      "@{map['foo']==map['foo']}", // ok
+      "@(map['one'] > 0)}", // ok
+      "@{(map['one'] > 0) && (map['foo'] == map['foo'])}", // ok
+      "@{(map['one'] > 0) && (map['foo']==map['foo'])}" // broken
   };
 
   public void testEvalMVEL219() {

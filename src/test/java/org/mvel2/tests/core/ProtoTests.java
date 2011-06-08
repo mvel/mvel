@@ -19,16 +19,16 @@ public class ProtoTests extends TestCase {
     if (!run) return;
 
     assertTrue(
-            MVEL.eval("proto Person { int age; String name; }; new Person();", new HashMap<String, Object>())
-                    instanceof
-                    Proto.ProtoInstance);
+        MVEL.eval("proto Person { int age; String name; }; new Person();", new HashMap<String, Object>())
+            instanceof
+            Proto.ProtoInstance);
   }
 
   public void testProtoFieldAccess() {
     if (!run) return;
 
     Object o = MVEL.eval("proto Person { int age = 5; String name; }; (p = new Person()).age",
-            new HashMap<String, Object>());
+        new HashMap<String, Object>());
     assertEquals(5, o);
   }
 
@@ -37,13 +37,13 @@ public class ProtoTests extends TestCase {
 
 
     Object o = MVEL.eval("proto Person { " +
-            "               int age = 2; " +
-            "               def multAge() { " +
-            "                   age * 10 " +
-            "               }; " +
-            "             };" +
-            "             p = new Person(); " +
-            "             p.multAge();", new HashMap<String, Object>());
+        "               int age = 2; " +
+        "               def multAge() { " +
+        "                   age * 10 " +
+        "               }; " +
+        "             };" +
+        "             p = new Person(); " +
+        "             p.multAge();", new HashMap<String, Object>());
     assertEquals(20, o);
   }
 
@@ -51,18 +51,18 @@ public class ProtoTests extends TestCase {
     if (!run) return;
 
     String ex = "proto Adder {" +
-            "int count = 0;" +
-            "def accumulate() {" +
-            "if (count < 10) {" +
-            "System.out.println('counting:' + count);" +
-            "count++;" +
-            "accumulate();" +
-            "}" +
-            "}" +
-            "};" +
-            "adder = new Adder();" +
-            "adder.accumulate();" +
-            "adder.count;";
+        "int count = 0;" +
+        "def accumulate() {" +
+        "if (count < 10) {" +
+        "System.out.println('counting:' + count);" +
+        "count++;" +
+        "accumulate();" +
+        "}" +
+        "}" +
+        "};" +
+        "adder = new Adder();" +
+        "adder.accumulate();" +
+        "adder.count;";
 
     Object o = MVEL.eval(ex, new HashMap<String, Object>());
     assertEquals(10, o);
@@ -73,7 +73,7 @@ public class ProtoTests extends TestCase {
 
 
     String ex = "proto Parent { Child child = new Child(); }; proto Child { Parent parent; }; " +
-            "Parent parent = new Parent(); if (parent.child.parent == null) { 'YEP' } else { 'NOPE' }";
+        "Parent parent = new Parent(); if (parent.child.parent == null) { 'YEP' } else { 'NOPE' }";
     Object o = MVEL.eval(ex, new HashMap<String, Object>());
     assertEquals("YEP", o);
   }

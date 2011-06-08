@@ -30,12 +30,12 @@ import java.util.Map;
 
 public class BigDecimalCH implements ConversionHandler {
   private static final Map<Class, Converter> CNV =
-          new HashMap<Class, Converter>();
+      new HashMap<Class, Converter>();
 
 
   public Object convertFrom(Object in) {
     if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-            + in.getClass().getName() + " to: " + Integer.class.getName());
+        + in.getClass().getName() + " to: " + Integer.class.getName());
     return CNV.get(in.getClass()).convert(in);
   }
 
@@ -46,93 +46,93 @@ public class BigDecimalCH implements ConversionHandler {
 
   static {
     CNV.put(Object.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(String.valueOf(o), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(String.valueOf(o), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(BigDecimal.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return (BigDecimal) o;
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return (BigDecimal) o;
+          }
+        }
     );
 
 
     CNV.put(BigInteger.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((BigInteger) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((BigInteger) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(String.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal((String) o, MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal((String) o, MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(Double.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((Double) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((Double) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(Float.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((Float) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((Float) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
 
     CNV.put(Short.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((Short) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((Short) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(Long.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((Long) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((Long) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(Integer.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal(((Integer) o).doubleValue(), MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal(((Integer) o).doubleValue(), MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(String.class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal((String) o, MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal((String) o, MathContext.DECIMAL128);
+          }
+        }
     );
 
     CNV.put(char[].class,
-            new Converter() {
-              public BigDecimal convert(Object o) {
-                return new BigDecimal((char[]) o, MathContext.DECIMAL128);
-              }
-            }
+        new Converter() {
+          public BigDecimal convert(Object o) {
+            return new BigDecimal((char[]) o, MathContext.DECIMAL128);
+          }
+        }
 
     );
   }

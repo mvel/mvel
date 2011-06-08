@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class DoubleCH implements ConversionHandler {
   private static final Map<Class, Converter> CNV =
-          new HashMap<Class, Converter>();
+      new HashMap<Class, Converter>();
 
   private static Converter stringConverter = new Converter() {
     public Object convert(Object o) {
@@ -43,7 +43,7 @@ public class DoubleCH implements ConversionHandler {
 
   public Object convertFrom(Object in) {
     if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-            + in.getClass().getName() + " to: " + Integer.class.getName());
+        + in.getClass().getName() + " to: " + Integer.class.getName());
     return CNV.get(in.getClass()).convert(in);
   }
 
@@ -54,89 +54,89 @@ public class DoubleCH implements ConversionHandler {
 
   static {
     CNV.put(String.class,
-            stringConverter
+        stringConverter
     );
 
     CNV.put(Object.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return stringConverter.convert(valueOf(o));
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            return stringConverter.convert(valueOf(o));
+          }
+        }
     );
 
     CNV.put(BigDecimal.class,
-            new Converter() {
-              public Double convert(Object o) {
-                return ((BigDecimal) o).doubleValue();
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            return ((BigDecimal) o).doubleValue();
+          }
+        }
     );
 
     CNV.put(BigInteger.class,
-            new Converter() {
-              public Double convert(Object o) {
-                return ((BigInteger) o).doubleValue();
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            return ((BigInteger) o).doubleValue();
+          }
+        }
     );
 
     CNV.put(Double.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return o;
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            return o;
+          }
+        }
     );
 
     CNV.put(Float.class,
-            new Converter() {
-              public Double convert(Object o) {
-                if (((Float) o) > Double.MAX_VALUE) {
-                  throw new ConversionException("cannot coerce Float to Double since the value ("
-                          + valueOf(o) + ") exceeds that maximum precision of Double.");
+        new Converter() {
+          public Double convert(Object o) {
+            if (((Float) o) > Double.MAX_VALUE) {
+              throw new ConversionException("cannot coerce Float to Double since the value ("
+                  + valueOf(o) + ") exceeds that maximum precision of Double.");
 
-                }
+            }
 
-                return ((Float) o).doubleValue();
-              }
-            });
+            return ((Float) o).doubleValue();
+          }
+        });
 
     CNV.put(Integer.class,
-            new Converter() {
-              public Double convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Integer) o).doubleValue();
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Integer) o).doubleValue();
+          }
+        }
     );
 
     CNV.put(Short.class,
-            new Converter() {
-              public Double convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Short) o).doubleValue();
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Short) o).doubleValue();
+          }
+        }
     );
 
     CNV.put(Long.class,
-            new Converter() {
-              public Double convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Long) o).doubleValue();
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Long) o).doubleValue();
+          }
+        }
     );
 
 
     CNV.put(Boolean.class,
-            new Converter() {
-              public Double convert(Object o) {
-                if ((Boolean) o) return 1d;
-                else return 0d;
-              }
-            }
+        new Converter() {
+          public Double convert(Object o) {
+            if ((Boolean) o) return 1d;
+            else return 0d;
+          }
+        }
     );
 
   }

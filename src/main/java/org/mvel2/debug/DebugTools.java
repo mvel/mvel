@@ -73,13 +73,13 @@ public class DebugTools {
       sbuf.append("(").append(context.node++).append(") ");
 
       if ((tk = iter.nextNode()) instanceof NestedStatement
-              && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
+          && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
         //noinspection StringConcatenationInsideStringBufferAppend
         sbuf.append("NEST [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }\n");
         sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true, context));
       }
       if (tk instanceof Substatement
-              && ((Substatement) tk).getStatement() instanceof CompiledExpression) {
+          && ((Substatement) tk).getStatement() instanceof CompiledExpression) {
         //noinspection StringConcatenationInsideStringBufferAppend
         sbuf.append("NEST [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }\n");
         sbuf.append(decompile((CompiledExpression) ((Substatement) tk).getStatement(), true, context));
@@ -97,7 +97,7 @@ public class DebugTools {
       }
       else if (tk.isOperator()) {
         sbuf.append("OPERATOR [").append(getOperatorName(tk.getOperator())).append("]: ")
-                .append(tk.getName());
+            .append(tk.getName());
 
         if (tk.isOperator(Operator.END_OF_STMT)) sbuf.append("\n");
       }
@@ -107,7 +107,7 @@ public class DebugTools {
       else if (tk instanceof BinaryOperation) {
         BinaryOperation bo = (BinaryOperation) tk;
         sbuf.append("OPERATION [" + getOperatorName(bo.getOperation()) + "] {").append(bo.getLeft().getName())
-                .append("} {").append(bo.getRight().getName()).append("}");
+            .append("} {").append(bo.getRight().getName()).append("}");
       }
       else {
         //noinspection StringConcatenationInsideStringBufferAppend

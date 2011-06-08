@@ -17,14 +17,14 @@ public class UtilsTests extends TestCase {
 
   public void testMain2() {
     assertEquals("foo bar test 1 2 3foo bar test 1 2 3",
-            new StringAppender(0).append("foo bar ").append("test").append(" 1 2 3")
-                    .append("foo bar").append(" ").append("test").append(" 1 2 3").toString());
+        new StringAppender(0).append("foo bar ").append("test").append(" 1 2 3")
+            .append("foo bar").append(" ").append("test").append(" 1 2 3").toString());
   }
 
   public void testMain3() {
     assertEquals("C:/projects/webcat/exploded/resources/productimages/",
-            new StringAppender(10).append("C:/projects/webcat/exploded/")
-                    .append("resources/productimages/").toString());
+        new StringAppender(10).append("C:/projects/webcat/exploded/")
+            .append("resources/productimages/").toString());
   }
 
   public void testFastList1() {

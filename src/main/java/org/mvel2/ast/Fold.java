@@ -70,7 +70,7 @@ public class Fold extends ASTNode {
     }
 
     expectType(dataEx = (ExecutableStatement) subCompileExpression(expr, st, cursor - st, pCtx),
-            Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
+        Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -112,7 +112,7 @@ public class Fold extends ASTNode {
 
       if (!(x instanceof Collection))
         throw new CompileException("was expecting type: Collection; but found type: "
-                + (x == null ? "null" : x.getClass().getName()), expr, start);
+            + (x == null ? "null" : x.getClass().getName()), expr, start);
 
       list = new ArrayList(((Collection) x).size());
       for (Object o : (Collection) x) {
@@ -127,7 +127,7 @@ public class Fold extends ASTNode {
 
       if (!(x instanceof Collection))
         throw new CompileException("was expecting type: Collection; but found type: "
-                + (x == null ? "null" : x.getClass().getName()), expr, start);
+            + (x == null ? "null" : x.getClass().getName()), expr, start);
 
       list = new ArrayList(((Collection) x).size());
       for (Object o : (Collection) x) {

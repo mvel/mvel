@@ -40,7 +40,7 @@ import org.mvel2.asm.FieldVisitor;
  * @author Eric Bruneton
  */
 public class TraceFieldVisitor extends TraceAbstractVisitor implements
-        FieldVisitor {
+    FieldVisitor {
 
   /**
    * The {@link FieldVisitor} to which this visitor delegates calls. May be
@@ -49,8 +49,8 @@ public class TraceFieldVisitor extends TraceAbstractVisitor implements
   protected FieldVisitor fv;
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     AnnotationVisitor av = super.visitAnnotation(desc, visible);
     if (fv != null) {
       ((TraceAnnotationVisitor) av).av = fv.visitAnnotation(desc, visible);

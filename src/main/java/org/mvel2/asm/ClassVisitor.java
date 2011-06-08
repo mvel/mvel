@@ -60,12 +60,12 @@ public interface ClassVisitor {
    *                   <tt>null</tt>.
    */
   void visit(
-          int version,
-          int access,
-          String name,
-          String signature,
-          String superName,
-          String[] interfaces);
+      int version,
+      int access,
+      String name,
+      String signature,
+      String superName,
+      String[] interfaces);
 
   /**
    * Visits the source of the class.
@@ -125,10 +125,10 @@ public interface ClassVisitor {
    *                  in the enclosing class.
    */
   void visitInnerClass(
-          String name,
-          String outerName,
-          String innerName,
-          int access);
+      String name,
+      String outerName,
+      String innerName,
+      int access);
 
   /**
    * Visits a field of the class.
@@ -154,11 +154,11 @@ public interface ClassVisitor {
    *         visiting these annotations and attributes.
    */
   FieldVisitor visitField(
-          int access,
-          String name,
-          String desc,
-          String signature,
-          Object value);
+      int access,
+      String name,
+      String desc,
+      String signature,
+      Object value);
 
   /**
    * Visits a method of the class. This method <i>must</i> return a new
@@ -181,11 +181,11 @@ public interface ClassVisitor {
    *         this method.
    */
   MethodVisitor visitMethod(
-          int access,
-          String name,
-          String desc,
-          String signature,
-          String[] exceptions);
+      int access,
+      String name,
+      String desc,
+      String signature,
+      String[] exceptions);
 
   /**
    * Visits the end of the class. This method, which is the last one to be

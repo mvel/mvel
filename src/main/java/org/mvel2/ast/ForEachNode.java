@@ -165,7 +165,7 @@ public class ForEachNode extends BlockNode {
     }
     else {
       throw new CompileException("non-iterable type: "
-              + (iterCond != null ? iterCond.getClass().getName() : "null"), expr, start);
+          + (iterCond != null ? iterCond.getClass().getName() : "null"), expr, start);
     }
 
     return null;
@@ -230,7 +230,7 @@ public class ForEachNode extends BlockNode {
   private void enforceTypeSafety(Class required, Class actual) {
     if (!required.isAssignableFrom(actual) && !DataConversion.canConvert(actual, required)) {
       throw new CompileException("type mismatch in foreach: expected: "
-              + required.getName() + "; but found: " + getBaseComponentType(actual), expr, start);
+          + required.getName() + "; but found: " + getBaseComponentType(actual), expr, start);
     }
   }
 }

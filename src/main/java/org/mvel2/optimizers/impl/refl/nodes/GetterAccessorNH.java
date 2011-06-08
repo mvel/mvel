@@ -56,8 +56,8 @@ public class GetterAccessorNH implements AccessorNode {
     }
     catch (Exception e) {
       throw new RuntimeException("cannot invoke getter: " + method.getName()
-              + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
-              + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
+          + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
+          + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
     }
   }
 

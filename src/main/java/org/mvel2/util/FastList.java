@@ -51,7 +51,7 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
   }
 
   public void readExternal(ObjectInput in) throws IOException,
-          ClassNotFoundException {
+      ClassNotFoundException {
     elements = (E[]) new Object[size = in.readInt()];
     for (int i = 0; i < size; i++) {
       elements[i] = (E) in.readObject();

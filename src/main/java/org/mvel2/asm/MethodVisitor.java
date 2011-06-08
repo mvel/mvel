@@ -84,9 +84,9 @@ public interface MethodVisitor {
    *         this visitor is not interested in visiting this annotation.
    */
   AnnotationVisitor visitParameterAnnotation(
-          int parameter,
-          String desc,
-          boolean visible);
+      int parameter,
+      String desc,
+      boolean visible);
 
   /**
    * Visits a non standard attribute of this method.
@@ -150,11 +150,11 @@ public interface MethodVisitor {
    *               be modified. Its content has the same format as the "local" array.
    */
   void visitFrame(
-          int type,
-          int nLocal,
-          Object[] local,
-          int nStack,
-          Object[] stack);
+      int type,
+      int nLocal,
+      Object[] local,
+      int nStack,
+      Object[] stack);
 
   // -------------------------------------------------------------------------
   // Normal instructions
@@ -359,12 +359,12 @@ public interface MethodVisitor {
    *                                  {@link #visitLabel visitLabel} method).
    */
   void visitLocalVariable(
-          String name,
-          String desc,
-          String signature,
-          Label start,
-          Label end,
-          int index);
+      String name,
+      String desc,
+      String signature,
+      Label start,
+      Label end,
+      int index);
 
   /**
    * Visits a line number declaration.

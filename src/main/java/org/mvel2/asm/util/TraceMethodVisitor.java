@@ -46,7 +46,7 @@ import java.util.HashMap;
  * @author Eric Bruneton
  */
 public class TraceMethodVisitor extends TraceAbstractVisitor implements
-        MethodVisitor {
+    MethodVisitor {
 
   /**
    * The {@link MethodVisitor} to which this visitor delegates calls. May be
@@ -97,8 +97,8 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   // ------------------------------------------------------------------------
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     AnnotationVisitor av = super.visitAnnotation(desc, visible);
     if (mv != null) {
       ((TraceAnnotationVisitor) av).av = mv.visitAnnotation(desc, visible);
@@ -136,9 +136,9 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public AnnotationVisitor visitParameterAnnotation(
-          final int parameter,
-          final String desc,
-          final boolean visible) {
+      final int parameter,
+      final String desc,
+      final boolean visible) {
     buf.setLength(0);
     buf.append(tab2).append('@');
     appendDescriptor(FIELD_DESCRIPTOR, desc);
@@ -162,11 +162,11 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitFrame(
-          final int type,
-          final int nLocal,
-          final Object[] local,
-          final int nStack,
-          final Object[] stack) {
+      final int type,
+      final int nLocal,
+      final Object[] local,
+      final int nStack,
+      final Object[] stack) {
     buf.setLength(0);
     buf.append(ltab);
     buf.append("FRAME ");
@@ -216,12 +216,12 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   public void visitIntInsn(final int opcode, final int operand) {
     buf.setLength(0);
     buf.append(tab2)
-            .append(OPCODES[opcode])
-            .append(' ')
-            .append(opcode == Opcodes.NEWARRAY
-                    ? TYPES[operand]
-                    : Integer.toString(operand))
-            .append('\n');
+        .append(OPCODES[opcode])
+        .append(' ')
+        .append(opcode == Opcodes.NEWARRAY
+            ? TYPES[operand]
+            : Integer.toString(operand))
+        .append('\n');
     text.add(buf.toString());
 
     if (mv != null) {
@@ -232,10 +232,10 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   public void visitVarInsn(final int opcode, final int var) {
     buf.setLength(0);
     buf.append(tab2)
-            .append(OPCODES[opcode])
-            .append(' ')
-            .append(var)
-            .append('\n');
+        .append(OPCODES[opcode])
+        .append(' ')
+        .append(var)
+        .append('\n');
     text.add(buf.toString());
 
     if (mv != null) {
@@ -261,10 +261,10 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitFieldInsn(
-          final int opcode,
-          final String owner,
-          final String name,
-          final String desc) {
+      final int opcode,
+      final String owner,
+      final String name,
+      final String desc) {
     buf.setLength(0);
     buf.append(tab2).append(OPCODES[opcode]).append(' ');
     appendDescriptor(INTERNAL_NAME, owner);
@@ -279,10 +279,10 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitMethodInsn(
-          final int opcode,
-          final String owner,
-          final String name,
-          final String desc) {
+      final int opcode,
+      final String owner,
+      final String name,
+      final String desc) {
     buf.setLength(0);
     buf.append(tab2).append(OPCODES[opcode]).append(' ');
     appendDescriptor(INTERNAL_NAME, owner);
@@ -343,11 +343,11 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   public void visitIincInsn(final int var, final int increment) {
     buf.setLength(0);
     buf.append(tab2)
-            .append("IINC ")
-            .append(var)
-            .append(' ')
-            .append(increment)
-            .append('\n');
+        .append("IINC ")
+        .append(var)
+        .append(' ')
+        .append(increment)
+        .append('\n');
     text.add(buf.toString());
 
     if (mv != null) {
@@ -356,10 +356,10 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitTableSwitchInsn(
-          final int min,
-          final int max,
-          final Label dflt,
-          final Label labels[]) {
+      final int min,
+      final int max,
+      final Label dflt,
+      final Label labels[]) {
     buf.setLength(0);
     buf.append(tab2).append("TABLESWITCH\n");
     for (int i = 0; i < labels.length; ++i) {
@@ -378,9 +378,9 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitLookupSwitchInsn(
-          final Label dflt,
-          final int keys[],
-          final Label labels[]) {
+      final Label dflt,
+      final int keys[],
+      final Label labels[]) {
     buf.setLength(0);
     buf.append(tab2).append("LOOKUPSWITCH\n");
     for (int i = 0; i < labels.length; ++i) {
@@ -411,10 +411,10 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitTryCatchBlock(
-          final Label start,
-          final Label end,
-          final Label handler,
-          final String type) {
+      final Label start,
+      final Label end,
+      final Label handler,
+      final String type) {
     buf.setLength(0);
     buf.append(tab2).append("TRYCATCHBLOCK ");
     appendLabel(start);
@@ -433,12 +433,12 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitLocalVariable(
-          final String name,
-          final String desc,
-          final String signature,
-          final Label start,
-          final Label end,
-          final int index) {
+      final String name,
+      final String desc,
+      final String signature,
+      final Label start,
+      final Label end,
+      final int index) {
     buf.setLength(0);
     buf.append(tab2).append("LOCALVARIABLE ").append(name).append(' ');
     appendDescriptor(FIELD_DESCRIPTOR, desc);
@@ -456,9 +456,9 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
       SignatureReader r = new SignatureReader(signature);
       r.acceptType(sv);
       buf.append(tab2)
-              .append("// declaration: ")
-              .append(sv.getDeclaration())
-              .append('\n');
+          .append("// declaration: ")
+          .append(sv.getDeclaration())
+          .append('\n');
     }
     text.add(buf.toString());
 

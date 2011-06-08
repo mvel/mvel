@@ -23,7 +23,7 @@ public class GenericsTypeInferenceTest extends TestCase {
     context.addInput("a", A.class);
 
     final CompiledExpression compiledExpression = new ExpressionCompiler("a.strings")
-            .compile(context);
+        .compile(context);
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -39,7 +39,7 @@ public class GenericsTypeInferenceTest extends TestCase {
     context.addInput("a", A.class);
 
     final CompiledExpression compiledExpression = new ExpressionCompiler("a.values()")
-            .compile(context);
+        .compile(context);
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -55,7 +55,7 @@ public class GenericsTypeInferenceTest extends TestCase {
     context.addInput("a", A.class);
 
     final CompiledExpression compiledExpression = new ExpressionCompiler("a.getFooMap()[\"key\"].someMethod()")
-            .compile(context);
+        .compile(context);
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -174,7 +174,7 @@ public class GenericsTypeInferenceTest extends TestCase {
       ParserContext context = new ParserContext();
       context.setStrongTyping(true);
       context.addInput("this",
-              Amazed1.class);
+          Amazed1.class);
       ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
 
       Amazed1 a1 = new Amazed1();
@@ -184,7 +184,7 @@ public class GenericsTypeInferenceTest extends TestCase {
       context = new ParserContext();
       context.setStrongTyping(true);
       context.addInput("this",
-              Amazed2.class);
+          Amazed2.class);
       stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
 
       Amazed2 a2 = new Amazed2();

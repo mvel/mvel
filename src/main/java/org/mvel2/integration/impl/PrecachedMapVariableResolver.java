@@ -47,14 +47,14 @@ public class PrecachedMapVariableResolver implements VariableResolver {
       Class t = value.getClass();
       if (!canConvert(knownType, t)) {
         throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
-                + knownType.getName());
+            + knownType.getName());
       }
       try {
         value = convert(value, knownType);
       }
       catch (Exception e) {
         throw new RuntimeException("cannot convert value of " + value.getClass().getName()
-                + " to: " + knownType.getName());
+            + " to: " + knownType.getName());
       }
     }
 

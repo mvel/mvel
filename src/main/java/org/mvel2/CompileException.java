@@ -219,8 +219,8 @@ public class CompileException extends RuntimeException {
     offset = appender.length() - offset;
 
     appender.append(showCodeNearError(expr, cursor))
-            .append(" ....}]\n")
-            .append(repeatChar(' ', offset));
+        .append(" ....}]\n")
+        .append(repeatChar(' ', offset));
 
     if (msgOffset < 0) msgOffset = 0;
 
@@ -230,7 +230,7 @@ public class CompileException extends RuntimeException {
 
     if (lineNumber != -1) {
       appender.append('\n')
-              .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
+          .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
     }
     return appender.toString();
   }

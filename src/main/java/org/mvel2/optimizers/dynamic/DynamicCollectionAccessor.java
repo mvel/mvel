@@ -87,7 +87,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     }
 
     _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(pCtx, rootObject, colType,
-            property, start, offset, ctx, elCtx, variableResolverFactory);
+        property, start, offset, ctx, elCtx, variableResolverFactory);
     return _accessor.getValue(ctx, elCtx, variableResolverFactory);
   }
 

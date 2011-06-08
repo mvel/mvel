@@ -64,7 +64,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
       if ((fields & COMPILE_IMMEDIATE) != 0) {
         this.egressType = (statement = (ExecutableStatement)
-                subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
+            subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
       }
 
       if (col = ((endOfName = findFirst('[', 0, this.varName.length(), indexTarget = this.varName.toCharArray())) > 0)) {

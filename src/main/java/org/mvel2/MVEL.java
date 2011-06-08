@@ -54,7 +54,7 @@ public class MVEL {
   static boolean DEBUG_FILE = getBoolean("mvel2.debug.fileoutput");
 
   static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel2.debugging.file") == null ? "mvel_debug.txt"
-          : System.getProperty("mvel2.debugging.file");
+      : System.getProperty("mvel2.debugging.file");
 
   static boolean ADVANCED_DEBUG = getBoolean("mvel2.advanced_debugging");
   static boolean WEAK_CACHE = getBoolean("mvel2.weak_caching");
@@ -62,16 +62,16 @@ public class MVEL {
   public static boolean INVOKED_METHOD_EXCEPTIONS_BUBBLE = getBoolean("mvel2.invoked_meth_exceptions_bubble");
 
   public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL =
-          getBoolean("mvel2.compiler.allow_naked_meth_calls");
+      getBoolean("mvel2.compiler.allow_naked_meth_calls");
 
   public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING =
-          getBoolean("mvel2.compiler.allow_override_all_prophandling");
+      getBoolean("mvel2.compiler.allow_override_all_prophandling");
 
   public static boolean COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION =
-          getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
+      getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
 
   public static boolean COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS =
-          getBoolean("mvel2.compiler.support_java_style_class_literals");
+      getBoolean("mvel2.compiler.support_java_style_class_literals");
 
   static boolean OPTIMIZER = true;
 
@@ -1090,7 +1090,7 @@ public class MVEL {
   public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
     if (expression.isImportInjectionRequired()) {
       return execute(true, expression, ctx, new ClassImportResolverFactory(expression
-              .getParserContext().getParserConfiguration(), vars, false));
+          .getParserContext().getParserConfiguration(), vars, false));
     }
     else {
       return execute(true, expression, ctx, vars);

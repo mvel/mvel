@@ -53,7 +53,7 @@ public class EvalNode extends Node {
 
   public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
     appender.append(String.valueOf(TemplateRuntime.eval(
-            valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)), ctx, factory)));
+        valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)), ctx, factory)));
     return next != null ? next.eval(runtime, appender, ctx, factory) : null;
   }
 

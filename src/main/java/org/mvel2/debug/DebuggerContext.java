@@ -82,7 +82,7 @@ public class DebuggerContext {
 
   public boolean hasBreakpoint(LineLabel label) {
     return breakpoints.containsKey(label.getSourceFile()) && breakpoints.get(label.getSourceFile()).
-            contains(label.getLineNumber());
+        contains(label.getLineNumber());
   }
 
   public boolean hasBreakpoint(String sourceFile, int lineNumber) {

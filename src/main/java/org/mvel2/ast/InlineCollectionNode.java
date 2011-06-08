@@ -87,7 +87,7 @@ public class InlineCollectionNode extends ASTNode {
         if (collectionGraph == null) parseGraph(true, null, null);
 
         accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph,
-                egressType, expr, trailingStart, trailingOffset, ctx, thisValue, factory);
+            egressType, expr, trailingStart, trailingOffset, ctx, thisValue, factory);
         egressType = ao.getEgressType();
 
         return accessor.getValue(ctx, thisValue, factory);
@@ -156,7 +156,7 @@ public class InlineCollectionNode extends ASTNode {
 
       try {
         Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", AbstractParser.getCurrentThreadParserContext())
-                : type;
+            : type;
 
         int c = 0;
         for (Object item : (Object[]) o) {

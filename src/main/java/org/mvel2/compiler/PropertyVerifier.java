@@ -236,8 +236,8 @@ public class PropertyVerifier extends AbstractOptimizer {
       return pCtx.getImport(property);
     }
     else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
-            && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
-            || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
+        && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
+        || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
       Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
       pCtx.setLastTypeParameters(null);
       return parm;
@@ -287,13 +287,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
 
-
       if (pCtx.isStrictTypeEnforcement()) {
         throw new CompileException("unqualified type in strict mode for: " + property, expr, tkStart);
-
-        //      addFatalError("unqualified type in strict mode for: " + property, tkStart);
       }
-
 
       return Object.class;
     }
@@ -395,9 +391,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         resolvedExternally = false;
         Function f = pCtx.getFunction(name);
         f.checkArgumentCount(
-                parseParameterList(
-                        (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
-                                ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
+            parseParameterList(
+                (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
+                    ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
         return f.getEgressType();
       }
@@ -445,7 +441,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       //  ExpressionCompiler compiler;
 
       List<ErrorDetail> errors = pCtx.getErrorList().isEmpty() ?
-              pCtx.getErrorList() : new ArrayList<ErrorDetail>(pCtx.getErrorList());
+          pCtx.getErrorList() : new ArrayList<ErrorDetail>(pCtx.getErrorList());
 
       CompileException rethrow = null;
       for (int i = 0; i < subtokens.size(); i++) {
@@ -507,7 +503,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         if (pCtx.isStrictTypeEnforcement()) {
           throw new CompileException("unable to resolve method using strict-mode: "
-                  + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", expr, tkStart);
+              + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", expr, tkStart);
 
           //   addFatalError();
         }
@@ -584,8 +580,8 @@ public class PropertyVerifier extends AbstractOptimizer {
       if (scope.trim().equals("")) scope = "<package local>";
 
       addFatalError("the referenced method is not accessible: "
-              + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")"
-              + " (scope: " + scope + "; required: public", this.tkStart);
+          + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")"
+          + " (scope: " + scope + "; required: public", this.tkStart);
     }
 
     return m.getReturnType();

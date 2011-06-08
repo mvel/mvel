@@ -53,12 +53,12 @@ public class ClassAdapter implements ClassVisitor {
   }
 
   public void visit(
-          final int version,
-          final int access,
-          final String name,
-          final String signature,
-          final String superName,
-          final String[] interfaces) {
+      final int version,
+      final int access,
+      final String name,
+      final String signature,
+      final String superName,
+      final String[] interfaces) {
     cv.visit(version, access, name, signature, superName, interfaces);
   }
 
@@ -67,15 +67,15 @@ public class ClassAdapter implements ClassVisitor {
   }
 
   public void visitOuterClass(
-          final String owner,
-          final String name,
-          final String desc) {
+      final String owner,
+      final String name,
+      final String desc) {
     cv.visitOuterClass(owner, name, desc);
   }
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     return cv.visitAnnotation(desc, visible);
   }
 
@@ -84,28 +84,28 @@ public class ClassAdapter implements ClassVisitor {
   }
 
   public void visitInnerClass(
-          final String name,
-          final String outerName,
-          final String innerName,
-          final int access) {
+      final String name,
+      final String outerName,
+      final String innerName,
+      final int access) {
     cv.visitInnerClass(name, outerName, innerName, access);
   }
 
   public FieldVisitor visitField(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final Object value) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final Object value) {
     return cv.visitField(access, name, desc, signature, value);
   }
 
   public MethodVisitor visitMethod(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final String[] exceptions) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final String[] exceptions) {
     return cv.visitMethod(access, name, desc, signature, exceptions);
   }
 

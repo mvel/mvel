@@ -52,7 +52,7 @@ public class Invert extends ASTNode {
     }
     else {
       throw new CompileException("was expecting type: Integer; but found type: "
-              + (o == null ? "null" : o.getClass().getName()), expr, start);
+          + (o == null ? "null" : o.getClass().getName()), expr, start);
     }
   }
 }

@@ -37,7 +37,7 @@ public class Negation extends ASTNode {
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
       if (((this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType() != null)
-              && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
+          && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
         throw new CompileException("negation operator cannot be applied to non-boolean type", expr, start);
       }
     }

@@ -69,6 +69,6 @@ public class ExpressionNode extends Node {
 
   public String toString() {
     return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents, cStart, cEnd - cStart))
-            + "} (start=" + begin + ";end=" + end + ")";
+        + "} (start=" + begin + ";end=" + end + ")";
   }
 }

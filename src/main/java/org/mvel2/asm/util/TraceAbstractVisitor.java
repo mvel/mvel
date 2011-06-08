@@ -107,8 +107,8 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
    * @return a visitor to visit the annotation values.
    */
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     buf.setLength(0);
     buf.append(tab).append('@');
     appendDescriptor(FIELD_DESCRIPTOR, desc);
@@ -166,7 +166,7 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
    */
   protected void appendDescriptor(final int type, final String desc) {
     if (type == CLASS_SIGNATURE || type == FIELD_SIGNATURE
-            || type == METHOD_SIGNATURE) {
+        || type == METHOD_SIGNATURE) {
       if (desc != null) {
         buf.append("// signature ").append(desc).append('\n');
       }

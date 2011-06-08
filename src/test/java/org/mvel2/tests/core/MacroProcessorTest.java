@@ -30,11 +30,11 @@ public class MacroProcessorTest extends TestCase {
     super.setUp();
     Map<String, Macro> macros = new HashMap<String, Macro>();
     macros.put("insert",
-            new Macro() {
-              public String doMacro() {
-                return "drools.insert";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.insert";
+          }
+        });
     macroProcessor = new MacroProcessor();
     macroProcessor.setMacros(macros);
   }
@@ -53,7 +53,7 @@ public class MacroProcessorTest extends TestCase {
 
   public void testParseConsequenceWithComments() {
     String raw = "    // str is null, we are just testing we don't get a null pointer \n " +
-            "    list.add( p );";
+        "    list.add( p );";
     try {
       String result = macroProcessor.parse(raw);
       assertEquals(raw, result);
@@ -71,11 +71,11 @@ public class MacroProcessorTest extends TestCase {
 
     Map<String, Macro> macros = new HashMap<String, Macro>();
     macros.put("update",
-            new Macro() {
-              public String doMacro() {
-                return "drools.update";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.update";
+          }
+        });
 
     String result = parseMacros(str, macros);
 
@@ -96,7 +96,7 @@ public class MacroProcessorTest extends TestCase {
     interceptors.put("Modify", new Interceptor() {
       public int doBefore(ASTNode node, VariableResolverFactory factory) {
         ((WithNode) node).getNestedStatement().getValue(null,
-                factory);
+            factory);
         factory.createVariable("mod", "FOOBAR!");
         return 0;
       }
@@ -157,7 +157,7 @@ public class MacroProcessorTest extends TestCase {
     interceptors.put("Modify", new Interceptor() {
       public int doBefore(ASTNode node, VariableResolverFactory factory) {
         ((WithNode) node).getNestedStatement().getValue(null,
-                factory);
+            factory);
 
         factory.createVariable("mod", "FOOBAR!");
 
@@ -177,11 +177,11 @@ public class MacroProcessorTest extends TestCase {
     });
 
     ExpressionCompiler compiler = new ExpressionCompiler(
-            parseMacros(
-                    "System.out.println('hello');\n" +
-                            "System.out.println('bye');\n" +
-                            "modify (foo) { aValue = 'poo', \n" +
-                            " aValue = 'poo' };\n mod", macros)
+        parseMacros(
+            "System.out.println('hello');\n" +
+                "System.out.println('bye');\n" +
+                "modify (foo) { aValue = 'poo', \n" +
+                " aValue = 'poo' };\n mod", macros)
     );
     // compiler.setDebugSymbols(true);
 
@@ -222,27 +222,27 @@ public class MacroProcessorTest extends TestCase {
 
   public void testParseConsequenceWithFlowControlBlocks() {
     String raw = "    // str is null, we are just testing we don't get a null pointer \n " +
-            "     if (l.x < 1)  {\n" +
-            "        insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
-            "     } else {\n" +
-            "        insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
-            "     }\n" +
-            "    if( 1 < 2 ) { \n" +
-            "        insert( p ); \n" +
-            "    } else { \n" +
-            "        while( true ) {insert(x);}\n" +
-            "    }";
+        "     if (l.x < 1)  {\n" +
+        "        insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
+        "     } else {\n" +
+        "        insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
+        "     }\n" +
+        "    if( 1 < 2 ) { \n" +
+        "        insert( p ); \n" +
+        "    } else { \n" +
+        "        while( true ) {insert(x);}\n" +
+        "    }";
     String expected = "    // str is null, we are just testing we don't get a null pointer \n " +
-            "     if (l.x < 1)  {\n" +
-            "        drools.insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
-            "     } else {\n" +
-            "        drools.insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
-            "     }\n" +
-            "    if( 1 < 2 ) { \n" +
-            "        drools.insert( p ); \n" +
-            "    } else { \n" +
-            "        while( true ) {drools.insert(x);}\n" +
-            "    }";
+        "     if (l.x < 1)  {\n" +
+        "        drools.insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
+        "     } else {\n" +
+        "        drools.insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
+        "     }\n" +
+        "    if( 1 < 2 ) { \n" +
+        "        drools.insert( p ); \n" +
+        "    } else { \n" +
+        "        while( true ) {drools.insert(x);}\n" +
+        "    }";
 
     try {
       String result = macroProcessor.parse(raw);

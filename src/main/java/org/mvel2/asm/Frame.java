@@ -229,9 +229,9 @@ final class Frame {
     int i;
     int[] b = new int[202];
     String s = "EFFFFFFFFGGFFFGGFFFEEFGFGFEEEEEEEEEEEEEEEEEEEEDEDEDDDDD"
-            + "CDCDEEEEEEEEEEEEEEEEEEEEBABABBBBDCFFFGGGEDCDCDCDCDCDCDCDCD"
-            + "CDCEEEEDDDDDDDCDCDCEFEFDDEEFFDEDEEEBDDBBDDDDDDCCCCCCCCEFED"
-            + "DDCDCDEEEEEEEEEEFEEEEEEDDEEDDEE";
+        + "CDCDEEEEEEEEEEEEEEEEEEEEBABABBBBDCFFFGGGEDCDCDCDCDCDCDCDCD"
+        + "CDCEEEEDDDDDDDCDCDCEFEFDDEEFFDEDEEEBDDBBDDDDDDCCCCCCCCEFED"
+        + "DDCDCDEEEEEEEEEEFEEEEEEDDEEDDEE";
     for (i = 0; i < b.length; ++i) {
       b[i] = s.charAt(i) - 'E';
     }
@@ -792,10 +792,10 @@ final class Frame {
    * @param maxLocals the maximum number of local variables of this method.
    */
   void initInputFrame(
-          final ClassWriter cw,
-          final int access,
-          final Type[] args,
-          final int maxLocals) {
+      final ClassWriter cw,
+      final int access,
+      final Type[] args,
+      final int maxLocals) {
     inputLocals = new int[maxLocals];
     inputStack = new int[0];
     int i = 0;
@@ -828,10 +828,10 @@ final class Frame {
    * @param item   the operand of the instructions, if any.
    */
   void execute(
-          final int opcode,
-          final int arg,
-          final ClassWriter cw,
-          final Item item) {
+      final int opcode,
+      final int arg,
+      final ClassWriter cw,
+      final Item item) {
     int t1, t2, t3, t4;
     switch (opcode) {
       case Opcodes.NOP:
@@ -1173,7 +1173,7 @@ final class Frame {
         if (opcode != Opcodes.INVOKESTATIC) {
           t1 = pop();
           if (opcode == Opcodes.INVOKESPECIAL
-                  && item.strVal2.charAt(0) == '<') {
+              && item.strVal2.charAt(0) == '<') {
             init(t1);
           }
         }
@@ -1352,10 +1352,10 @@ final class Frame {
    *         operation.
    */
   private boolean merge(
-          final ClassWriter cw,
-          int t,
-          final int[] types,
-          final int index) {
+      final ClassWriter cw,
+      int t,
+      final int[] types,
+      final int index) {
     int u = types[index];
     if (u == t) {
       // if the types are equal, merge(u,t)=u, so there is no change
@@ -1385,7 +1385,7 @@ final class Frame {
           // same dimension merge(u,t) = dim(t) | common parent of the
           // element types of u and t
           v = (t & DIM) | OBJECT
-                  | cw.getMergedType(t & BASE_VALUE, u & BASE_VALUE);
+              | cw.getMergedType(t & BASE_VALUE, u & BASE_VALUE);
         }
         else {
           // if u and t are array types, but not with the same element

@@ -33,46 +33,46 @@ public class KnowledgeHelperFixer {
     Map macros = new HashMap(5);
 
     macros.put("insert",
-            new Macro() {
-              public String doMacro() {
-                return "drools.insert";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.insert";
+          }
+        });
 
     macros.put("insertLogical",
-            new Macro() {
-              public String doMacro() {
-                return "drools.insertLogical";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.insertLogical";
+          }
+        });
 
     macros.put("modifyRetract",
-            new Macro() {
-              public String doMacro() {
-                return "drools.modifyRetract";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.modifyRetract";
+          }
+        });
 
     macros.put("modifyInsert",
-            new Macro() {
-              public String doMacro() {
-                return "drools.modifyInsert";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.modifyInsert";
+          }
+        });
 
     macros.put("update",
-            new Macro() {
-              public String doMacro() {
-                return "drools.update";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.update";
+          }
+        });
 
     macros.put("retract",
-            new Macro() {
-              public String doMacro() {
-                return "drools.retract";
-              }
-            });
+        new Macro() {
+          public String doMacro() {
+            return "drools.retract";
+          }
+        });
 
 
     return parseMacros(raw, macros);

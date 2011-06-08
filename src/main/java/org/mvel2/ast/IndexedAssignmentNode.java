@@ -61,7 +61,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
       checkNameSafety(this.name = name);
 
       this.egressType = (statement = (ExecutableStatement)
-              subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, start, offset, operation), pCtx)).getKnownEgressType();
+          subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, start, offset, operation), pCtx)).getKnownEgressType();
     }
     else if ((assignStart = find(expr, start, offset, '=')) != -1) {
       this.name = createStringTrimmed(expr, start, assignStart - start);
@@ -76,8 +76,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
       stmt = subset(expr, this.start, this.offset);
 
       this.egressType = (statement
-              = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx))
-              .getKnownEgressType();
+          = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx))
+          .getKnownEgressType();
 
       if (col = ((endOfName = (short) findFirst('[', 0, this.name.length(), indexTarget = this.name.toCharArray())) > 0)) {
         if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {

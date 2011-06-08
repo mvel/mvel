@@ -62,7 +62,7 @@ public class Union implements Accessor {
       Class ingress = accessor.getKnownEgressType();
 
       nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, start, offset, o, elCtx, variableFactory,
-              false, ingress);
+          false, ingress);
       return ao.getResultOptPass();
     }
     else {

@@ -20,8 +20,8 @@ import java.util.Date;
  */
 
 public class Cheese
-        implements
-        Serializable {
+    implements
+    Serializable {
 
   public static final String STILTON = "stilton";
 

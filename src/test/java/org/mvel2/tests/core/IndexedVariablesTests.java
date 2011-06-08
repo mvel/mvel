@@ -21,12 +21,12 @@ public class IndexedVariablesTests extends TestCase {
     Object[] values = {10, 20, 30};
 
     String expr = "foo = -1; res = x + y + z;\n" +
-            "if (x > 9) {\n" +
-            "   res = z - y - x;\n" +
-            "   int k = 5;\n" +
-            "   foo = k;" +
-            "}; \n"
-            + "for (i = 0; i < 5000; i++) { foo++; }; foo;";
+        "if (x > 9) {\n" +
+        "   res = z - y - x;\n" +
+        "   int k = 5;\n" +
+        "   foo = k;" +
+        "}; \n"
+        + "for (i = 0; i < 5000; i++) { foo++; }; foo;";
 
     ParserContext ctx = ParserContext.create();
     ctx.addIndexedInput(varNames);
@@ -43,7 +43,7 @@ public class IndexedVariablesTests extends TestCase {
     map.put("z", 30);
 
     assertEquals(MVEL.executeExpression(dynamicCompile, map),
-            MVEL.executeExpression(indexCompile, model.createFactory()));
+        MVEL.executeExpression(indexCompile, model.createFactory()));
 //
 //        for (int x = 0; x < 10; x++) {
 //            long tm = System.currentTimeMillis();
@@ -75,12 +75,12 @@ public class IndexedVariablesTests extends TestCase {
 
 
     String expr = "foo = -1; res = x + y + z;\n" +
-            "if (x > 9) {\n" +
-            "   res = z - y - x;\n" +
-            "   int k = 5;\n" +
-            "   foo = k;" +
-            "}; \n"
-            + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
+        "if (x > 9) {\n" +
+        "   res = z - y - x;\n" +
+        "   int k = 5;\n" +
+        "   foo = k;" +
+        "}; \n"
+        + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
 
     ParserContext ctx = ParserContext.create();
     ctx.addIndexedInput(varNames);
@@ -97,7 +97,7 @@ public class IndexedVariablesTests extends TestCase {
     map.put("z", 30);
 
     assertEquals(MVEL.executeExpression(dynamicCompile, map),
-            MVEL.executeExpression(indexCompile, model.createFactory(values)));
+        MVEL.executeExpression(indexCompile, model.createFactory(values)));
 
   }
 
@@ -107,12 +107,12 @@ public class IndexedVariablesTests extends TestCase {
 
 
     String expr = "def add(a,b) { a + b }; foo = -1; res = x + y + z;\n" +
-            "if (x > 9) {\n" +
-            "   res = z - y - x;\n" +
-            "   int k = 5;\n" +
-            "   foo = add(5,10);" +
-            "}; \n"
-            + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
+        "if (x > 9) {\n" +
+        "   res = z - y - x;\n" +
+        "   int k = 5;\n" +
+        "   foo = add(5,10);" +
+        "}; \n"
+        + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
 
     ParserContext ctx = ParserContext.create();
     ctx.addIndexedInput(varNames);
@@ -129,7 +129,7 @@ public class IndexedVariablesTests extends TestCase {
     map.put("z", 30);
 
     assertEquals(MVEL.executeExpression(dynamicCompile, map),
-            MVEL.executeExpression(indexCompile, model.createFactory(values)));
+        MVEL.executeExpression(indexCompile, model.createFactory(values)));
 
   }
 }

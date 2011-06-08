@@ -47,7 +47,7 @@ public class ForNode extends BlockNode {
   public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
 
     boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
-            this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
+        this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
 
     this.indexAlloc = pCtx != null && pCtx.isIndexAllocation();
 
@@ -103,7 +103,7 @@ public class ForNode extends BlockNode {
 
       try {
         expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
-                (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+            (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
       }
       catch (CompileException e) {
         if (e.getExpr().length == 0) {
@@ -119,7 +119,7 @@ public class ForNode extends BlockNode {
       }
 
       this.after = (ExecutableStatement)
-              subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
+          subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
 
       if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
         if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());

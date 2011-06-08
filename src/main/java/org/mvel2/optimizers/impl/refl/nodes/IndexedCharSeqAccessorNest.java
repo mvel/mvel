@@ -44,7 +44,7 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     return nextNode.setValue(((String) ctx).charAt((Integer) index.getValue(ctx, elCtx, variableFactory)), elCtx,
-            variableFactory, value);
+        variableFactory, value);
   }
 
   public ExecutableStatement getIndex() {

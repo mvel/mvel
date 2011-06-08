@@ -76,7 +76,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
   public boolean isResolveable(String name) {
     if (name == null) return false;
     if ((imports != null && imports.containsKey(name)) || (dynImports != null && dynImports.containsKey(name))
-            || isNextResolveable(name)) {
+        || isNextResolveable(name)) {
       return true;
     }
     else if (packageImports != null) {

@@ -30,45 +30,45 @@ public interface Operator {
    * SUB is PTABLE[1] and so on.
    */
   public static final int[] PTABLE = {
-          10,   // ADD
-          10,   // SUB
-          11,   // MULT
-          11,   // DIV
-          11,   // MOD
-          12,   // POWER
+      10,   // ADD
+      10,   // SUB
+      11,   // MULT
+      11,   // DIV
+      11,   // MOD
+      12,   // POWER
 
-          6,   // BW_AND
-          4,   // BW_OR
-          5,   // BW_XOR
-          9,   // BW_SHIFT_RIGHT
-          9,   // BW_SHIFT_LEFT
-          9,   // BW_USHIFT_RIGHT
-          9,   // BW_USHIFT_LEFT
-          5,   // BW_NOT
+      6,   // BW_AND
+      4,   // BW_OR
+      5,   // BW_XOR
+      9,   // BW_SHIFT_RIGHT
+      9,   // BW_SHIFT_LEFT
+      9,   // BW_USHIFT_RIGHT
+      9,   // BW_USHIFT_LEFT
+      5,   // BW_NOT
 
-          8,   // LTHAN
-          8,   // GTHAN
-          8,   // LETHAN
-          8,   // GETHAN
+      8,   // LTHAN
+      8,   // GTHAN
+      8,   // LETHAN
+      8,   // GETHAN
 
-          7,   // EQUAL
-          7,   // NEQUAL
+      7,   // EQUAL
+      7,   // NEQUAL
 
-          13,    // STR_APPEND
-          3,   // AND
-          2,   // OR
-          2,   // CHOR
-          13,   // REGEX
-          8,   // INSTANCEOF
-          13,   // CONTAINS
-          13,   // SOUNDEX
-          13,   // SIMILARITY
+      13,    // STR_APPEND
+      3,   // AND
+      2,   // OR
+      2,   // CHOR
+      13,   // REGEX
+      8,   // INSTANCEOF
+      13,   // CONTAINS
+      13,   // SOUNDEX
+      13,   // SIMILARITY
 
-          0,  // TERNARY
-          0,  // TERNARY ELSE
-          13,   // ASSIGN
-          13,   // INC_ASSIGN
-          13   // DEC ASSIGN
+      0,  // TERNARY
+      0,  // TERNARY ELSE
+      13,   // ASSIGN
+      13,   // INC_ASSIGN
+      13   // DEC ASSIGN
 
   };
 

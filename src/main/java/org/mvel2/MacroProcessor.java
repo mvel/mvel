@@ -94,7 +94,7 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
           case '"':
           case '\'':
             appender.append(new String(expr, (start = cursor),
-                    (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start));
+                (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start));
 
             if (cursor >= length) break;
             else if (isIdentifierPart(expr[cursor])) cursor--;

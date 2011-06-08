@@ -54,7 +54,7 @@ public class RegExMatch extends ASTNode {
     if ((fields & COMPILE_IMMEDIATE) != 0) {
       this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
       if ((this.patternStmt = (ExecutableStatement)
-              subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
+          subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
 
         try {
           p = compile(valueOf(patternStmt.getValue(null, null)));

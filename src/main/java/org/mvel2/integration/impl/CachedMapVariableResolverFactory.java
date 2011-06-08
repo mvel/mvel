@@ -93,8 +93,8 @@ public class CachedMapVariableResolverFactory extends BaseVariableResolverFactor
 
   public boolean isResolveable(String name) {
     return (variableResolvers != null && variableResolvers.containsKey(name))
-            || (variables != null && variables.containsKey(name))
-            || (nextFactory != null && nextFactory.isResolveable(name));
+        || (variables != null && variables.containsKey(name))
+        || (nextFactory != null && nextFactory.isResolveable(name));
   }
 
   protected VariableResolver addResolver(String name, VariableResolver vr) {

@@ -162,7 +162,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
     catch (OptimizationNotSupported ne) {
       setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-              .optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, null));
+          .optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, null));
     }
 
     if (accessor == null) {
@@ -279,11 +279,11 @@ public class ASTNode implements Cloneable, Serializable {
                 Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader());
 
                 return get(new String(expr, last, end - last),
-                        Class.forName(new String(expr, start, last), true, currentThread().getContextClassLoader()), factory, thisRef);
+                    Class.forName(new String(expr, start, last), true, currentThread().getContextClassLoader()), factory, thisRef);
               }
               catch (ClassNotFoundException e) {
                 return get(new String(expr, i + 1, end - i - 1),
-                        Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader()), factory, thisRef);
+                    Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader()), factory, thisRef);
               }
             }
             meth = false;
@@ -475,7 +475,7 @@ public class ASTNode implements Cloneable, Serializable {
 
   public String toString() {
     return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" :
-            (PCTX_STORED & fields) != 0 ? nameCache : new String(expr, start, offset);
+        (PCTX_STORED & fields) != 0 ? nameCache : new String(expr, start, offset);
   }
 }
 

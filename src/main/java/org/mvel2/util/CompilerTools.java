@@ -95,8 +95,8 @@ public class CompilerTools {
               if (rightNode == null) break;
 
               Object val = new BinaryOperation(oper.getOperator(), inv ?
-                      new LiteralNode(signNumber(tk2.getLiteralValue())) : tk2, rightNode)
-                      .getReducedValueAccelerated(null, null, null);
+                  new LiteralNode(signNumber(tk2.getLiteralValue())) : tk2, rightNode)
+                  .getReducedValueAccelerated(null, null, null);
 
               if (!astLinkedList.hasMoreNodes() && BlankLiteral.INSTANCE.equals(val)) {
                 optimizedAst.addTokenNode(tk);
@@ -104,8 +104,8 @@ public class CompilerTools {
               }
 
               reduc = astLinkedList.hasMoreNodes()
-                      && (reducacbleOperator(astLinkedList.peekNode().getOperator()))
-                      && astLinkedList.peekNext().isLiteral();
+                  && (reducacbleOperator(astLinkedList.peekNode().getOperator()))
+                  && astLinkedList.peekNext().isLiteral();
 
               if (inv) p_inv = true;
               inv = false;
@@ -129,7 +129,7 @@ public class CompilerTools {
            * right here.
            */
           while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                  && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
+              && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
 
             if (PTABLE[op2] > PTABLE[op]) {
               //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
@@ -186,7 +186,7 @@ public class CompilerTools {
           optimizedAst.addTokenNode(tkOp);
         }
         else if (astLinkedList.hasMoreNodes() && tkOp.getLiteralValue() instanceof Class
-                && astLinkedList.peekNode().isAssignment()) {
+            && astLinkedList.peekNode().isAssignment()) {
           tkOp.discard();
           optimizedAst.addTokenNode(tk, astLinkedList.nextNode());
         }
@@ -216,7 +216,7 @@ public class CompilerTools {
             optimizedAst.addTokenNode(tk, tkOp);
           }
           else if (tkOp.isOperator()
-                  && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
+              && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
 
             tkOp2 = null;
             BooleanNode bool;
@@ -229,7 +229,7 @@ public class CompilerTools {
             }
 
             while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                    && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
+                && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
 
               if ((tkOp = tkOp2).getOperator() == Operator.AND) {
                 bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));
@@ -286,9 +286,9 @@ public class CompilerTools {
   private static boolean isReductionOpportunity(ASTNode oper, ASTNode node) {
     ASTNode n = node;
     return (n != null && n.isLiteral()
-            && (n = n.nextASTNode) != null && reducacbleOperator(n.getOperator())
-            && PTABLE[oper.getOperator()] <= PTABLE[n.getOperator()]
-            && (n = n.nextASTNode) != null && n.isLiteral() && n.getLiteralValue() instanceof Number);
+        && (n = n.nextASTNode) != null && reducacbleOperator(n.getOperator())
+        && PTABLE[oper.getOperator()] <= PTABLE[n.getOperator()]
+        && (n = n.nextASTNode) != null && n.isLiteral() && n.getLiteralValue() instanceof Number);
   }
 
   private static boolean reducacbleOperator(int oper) {
@@ -386,14 +386,14 @@ public class CompilerTools {
     Class retType = expression.getKnownEgressType();
     if (compileMode) {
       if ((retType == null || !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) && (!Object.class.equals(retType)
-              || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
+          || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
+            + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
     }
     else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-              + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
+          + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
   }
 
@@ -401,15 +401,15 @@ public class CompilerTools {
     Class retType = boxPrimitive(node.getEgressType());
     if (compileMode) {
       if ((retType == null || !boxPrimitive(type).isAssignableFrom(retType)) && (!Object.class.equals(retType) &&
-              (getCurrentThreadParserContext().isStrictTypeEnforcement()
-                      || getCurrentThreadParserContext().isStrictTypeEnforcement()))) {
+          (getCurrentThreadParserContext().isStrictTypeEnforcement()
+              || getCurrentThreadParserContext().isStrictTypeEnforcement()))) {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
+            + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
     }
     else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-              + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
+          + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
   }
 

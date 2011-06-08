@@ -36,7 +36,7 @@ public class OptimizerFactory {
   private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
   private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer
-          = new ThreadLocal<Class<? extends AccessorOptimizer>>();
+      = new ThreadLocal<Class<? extends AccessorOptimizer>>();
 
   static {
     accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
@@ -54,7 +54,7 @@ public class OptimizerFactory {
     catch (Throwable e) {
       e.printStackTrace();
       System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
-              "Disabling JIT compiler.  Reflective Optimizer will be used.");
+          "Disabling JIT compiler.  Reflective Optimizer will be used.");
       defaultOptimizer = SAFE_REFLECTIVE;
     }
 

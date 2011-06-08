@@ -17,12 +17,12 @@ public class RegularExpressionTests extends AbstractTest {
   public void testRegExpOK() throws Exception {
     // This works OK intepreted
     assertEquals(Boolean.TRUE,
-            MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
+        MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
     assertEquals(Boolean.TRUE,
-            MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
+        MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
     // This works OK if toUpperCase() is avoided in pre-compiled
     assertEquals(Boolean.TRUE,
-            executeExpression(compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'")));
+        executeExpression(compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'")));
   }
 
   public void testRegExpPreCompiledBug() throws Exception {
@@ -30,20 +30,20 @@ public class RegularExpressionTests extends AbstractTest {
     // a boolean.
     Object ser = compileExpression("'Hello'.toUpperCase() ~= '[a-zA-Z]{0,5}'");
     assertEquals(Boolean.TRUE,
-            executeExpression(ser));
+        executeExpression(ser));
   }
 
   public void testRegExpOrBug() throws Exception {
     // This fails during execution due to returning null, I think...
     assertEquals(Boolean.TRUE,
-            executeExpression(compileExpression("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
+        executeExpression(compileExpression("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
   }
 
   public void testRegExpAndBug() throws Exception {
     // This also fails due to returning null, I think...
     //  Object ser = MVEL.compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
     assertEquals(Boolean.TRUE,
-            executeExpression(compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
+        executeExpression(compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
   }
 
   public void testRegExSurroundedByBrackets() {
@@ -59,7 +59,7 @@ public class RegularExpressionTests extends AbstractTest {
 
   public void testParsingStability4() {
     assertEquals(true,
-            test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
+        test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
   }
 
 
@@ -69,25 +69,25 @@ public class RegularExpressionTests extends AbstractTest {
   public void testRegExOR() {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("os",
-            "windows");
+        "windows");
     assertTrue((Boolean) eval("os ~= 'windows|unix'",
-            map));
+        map));
   }
 
   public void testRegExOR2() {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("os",
-            "windows");
+        "windows");
     assertTrue((Boolean) eval("'windows' ~= 'windows|unix'",
-            map));
+        map));
     assertFalse((Boolean) eval("time ~= 'windows|unix'",
-            new java.util.Date()));
+        new java.util.Date()));
   }
 
 
   public void testRegExMatch() {
     assertEquals(true,
-            MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex",
-                    new HashMap()));
+        MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex",
+            new HashMap()));
   }
 }

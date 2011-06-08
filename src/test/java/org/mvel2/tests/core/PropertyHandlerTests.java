@@ -196,24 +196,24 @@ public class PropertyHandlerTests extends TestCase {
     MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
     PropertyHandlerFactory.registerPropertyHandler(Map.class, new
-            PropertyHandler() {
-              public Object getProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory) {
-                assertNotNull(contextObj);
-                assertEquals("'key'", name);
-                assertTrue(contextObj instanceof Map);
-                return "gotcalled";
-              }
+        PropertyHandler() {
+          public Object getProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory) {
+            assertNotNull(contextObj);
+            assertEquals("'key'", name);
+            assertTrue(contextObj instanceof Map);
+            return "gotcalled";
+          }
 
-              public Object setProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory, Object value) {
-                assertNotNull(contextObj);
-                assertEquals("'key'", name);
-                assertTrue(contextObj instanceof Map);
-                ((Map) contextObj).put("key", "set");
-                return null;
-              }
-            });
+          public Object setProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory, Object value) {
+            assertNotNull(contextObj);
+            assertEquals("'key'", name);
+            assertTrue(contextObj instanceof Map);
+            ((Map) contextObj).put("key", "set");
+            return null;
+          }
+        });
 
     assertEquals("gotcalled", PropertyAccessor.get("funMap['key']", base));
 
@@ -228,24 +228,24 @@ public class PropertyHandlerTests extends TestCase {
     MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
     PropertyHandlerFactory.registerPropertyHandler(Array.class, new
-            PropertyHandler() {
-              public Object getProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory) {
-                assertNotNull(contextObj);
-                assertEquals("0", name);
-                assertTrue(contextObj.getClass().isArray());
-                return "gotcalled";
-              }
+        PropertyHandler() {
+          public Object getProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory) {
+            assertNotNull(contextObj);
+            assertEquals("0", name);
+            assertTrue(contextObj.getClass().isArray());
+            return "gotcalled";
+          }
 
-              public Object setProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory, Object value) {
-                assertNotNull(contextObj);
-                assertEquals("0", name);
-                assertTrue(contextObj.getClass().isArray());
-                Array.set(contextObj, 0, "set");
-                return null;
-              }
-            });
+          public Object setProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory, Object value) {
+            assertNotNull(contextObj);
+            assertEquals("0", name);
+            assertTrue(contextObj.getClass().isArray());
+            Array.set(contextObj, 0, "set");
+            return null;
+          }
+        });
 
     assertEquals("gotcalled", PropertyAccessor.get("stringArray[0]", base));
 
@@ -311,30 +311,30 @@ public class PropertyHandlerTests extends TestCase {
     });
 
     PropertyHandlerFactory.registerPropertyHandler(List.class, new
-            PropertyHandler() {
-              public Object getProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory) {
-                List list = (List) contextObj;
-                int index = Integer.valueOf(name);
-                while (index >= list.size()) {
-                  list.add(new Foo());
-                }
+        PropertyHandler() {
+          public Object getProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory) {
+            List list = (List) contextObj;
+            int index = Integer.valueOf(name);
+            while (index >= list.size()) {
+              list.add(new Foo());
+            }
 
-                return list.get(index);
-              }
+            return list.get(index);
+          }
 
-              public Object setProperty(String name, Object contextObj,
-                                        VariableResolverFactory variableFactory, Object value) {
-                return null;
-              }
-            });
+          public Object setProperty(String name, Object contextObj,
+                                    VariableResolverFactory variableFactory, Object value) {
+            return null;
+          }
+        });
 
     Foo foo = new Foo();
 
     final Serializable fooExpr0 =
-            MVEL.compileSetExpression("collectionTest[0].name");
+        MVEL.compileSetExpression("collectionTest[0].name");
     final Serializable fooExpr1 =
-            MVEL.compileSetExpression("collectionTest[1].name");
+        MVEL.compileSetExpression("collectionTest[1].name");
     MVEL.executeSetExpression(fooExpr0, foo, "John Galt");
     MVEL.executeSetExpression(fooExpr1, foo, "The Joker");
     assertEquals(2, listener.count);

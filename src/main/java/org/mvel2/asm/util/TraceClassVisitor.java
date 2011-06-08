@@ -92,7 +92,7 @@ import org.mvel2.asm.signature.SignatureReader;
  * @author Eugene Kuleshov
  */
 public class TraceClassVisitor extends TraceAbstractVisitor implements
-        ClassVisitor {
+    ClassVisitor {
 
   /**
    * The {@link ClassVisitor} to which this visitor delegates calls. May be
@@ -132,20 +132,20 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
     if (!ok) {
       System.err.println("Prints a disassembled view of the given class.");
       System.err.println("Usage: TraceClassVisitor [-debug] "
-              + "<fully qualified class name or class file name>");
+          + "<fully qualified class name or class file name>");
       return;
     }
     ClassReader cr;
     if (args[i].endsWith(".class") || args[i].indexOf('\\') > -1
-            || args[i].indexOf('/') > -1) {
+        || args[i].indexOf('/') > -1) {
       cr = new ClassReader(new FileInputStream(args[i]));
     }
     else {
       cr = new ClassReader(args[i]);
     }
     cr.accept(new TraceClassVisitor(new PrintWriter(System.out)),
-            getDefaultAttributes(),
-            flags);
+        getDefaultAttributes(),
+        flags);
   }
 
   /**
@@ -174,22 +174,22 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   // ------------------------------------------------------------------------
 
   public void visit(
-          final int version,
-          final int access,
-          final String name,
-          final String signature,
-          final String superName,
-          final String[] interfaces) {
+      final int version,
+      final int access,
+      final String name,
+      final String signature,
+      final String superName,
+      final String[] interfaces) {
     int major = version & 0xFFFF;
     int minor = version >>> 16;
     buf.setLength(0);
     buf.append("// class version ")
-            .append(major)
-            .append('.')
-            .append(minor)
-            .append(" (")
-            .append(version)
-            .append(")\n");
+        .append(major)
+        .append('.')
+        .append(minor)
+        .append(" (")
+        .append(version)
+        .append(")\n");
     if ((access & Opcodes.ACC_DEPRECATED) != 0) {
       buf.append("// DEPRECATED\n");
     }
@@ -201,9 +201,9 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
       SignatureReader r = new SignatureReader(signature);
       r.accept(sv);
       buf.append("// declaration: ")
-              .append(name)
-              .append(sv.getDeclaration())
-              .append('\n');
+          .append(name)
+          .append(sv.getDeclaration())
+          .append('\n');
     }
 
     appendAccess(access & ~Opcodes.ACC_SUPER);
@@ -243,15 +243,15 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
     buf.setLength(0);
     if (file != null) {
       buf.append(tab)
-              .append("// compiled from: ")
-              .append(file)
-              .append('\n');
+          .append("// compiled from: ")
+          .append(file)
+          .append('\n');
     }
     if (debug != null) {
       buf.append(tab)
-              .append("// debug info: ")
-              .append(debug)
-              .append('\n');
+          .append("// debug info: ")
+          .append(debug)
+          .append('\n');
     }
     if (buf.length() > 0) {
       text.add(buf.toString());
@@ -263,9 +263,9 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitOuterClass(
-          final String owner,
-          final String name,
-          final String desc) {
+      final String owner,
+      final String name,
+      final String desc) {
     buf.setLength(0);
     buf.append(tab).append("OUTERCLASS ");
     appendDescriptor(INTERNAL_NAME, owner);
@@ -283,13 +283,13 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   }
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     text.add("\n");
     AnnotationVisitor tav = super.visitAnnotation(desc, visible);
     if (cv != null) {
       ((TraceAnnotationVisitor) tav).av = cv.visitAnnotation(desc,
-              visible);
+          visible);
     }
     return tav;
   }
@@ -304,10 +304,10 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   }
 
   public void visitInnerClass(
-          final String name,
-          final String outerName,
-          final String innerName,
-          final int access) {
+      final String name,
+      final String outerName,
+      final String innerName,
+      final int access) {
     buf.setLength(0);
     buf.append(tab).append("// access flags ");
     buf.append(access & ~Opcodes.ACC_SUPER).append('\n');
@@ -328,11 +328,11 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   }
 
   public FieldVisitor visitField(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final Object value) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final Object value) {
     buf.setLength(0);
     buf.append('\n');
     if ((access & Opcodes.ACC_DEPRECATED) != 0) {
@@ -347,9 +347,9 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
       SignatureReader r = new SignatureReader(signature);
       r.acceptType(sv);
       buf.append(tab)
-              .append("// declaration: ")
-              .append(sv.getDeclaration())
-              .append('\n');
+          .append("// declaration: ")
+          .append(sv.getDeclaration())
+          .append('\n');
     }
 
     buf.append(tab);
@@ -381,11 +381,11 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
   }
 
   public MethodVisitor visitMethod(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final String[] exceptions) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final String[] exceptions) {
     buf.setLength(0);
     buf.append('\n');
     if ((access & Opcodes.ACC_DEPRECATED) != 0) {
@@ -405,11 +405,11 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
       String genericExceptions = v.getExceptions();
 
       buf.append(tab)
-              .append("// declaration: ")
-              .append(genericReturn)
-              .append(' ')
-              .append(name)
-              .append(genericDecl);
+          .append("// declaration: ")
+          .append(genericReturn)
+          .append(' ')
+          .append(name)
+          .append(genericDecl);
       if (genericExceptions != null) {
         buf.append(" throws ").append(genericExceptions);
       }

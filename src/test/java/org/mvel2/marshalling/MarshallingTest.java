@@ -101,7 +101,7 @@ public class MarshallingTest extends TestCase {
 
     public void marshall(Object object) {
       marshaller.marshall(object,
-              this);
+          this);
     }
 
     public StringAppender getAppender() {
@@ -115,8 +115,8 @@ public class MarshallingTest extends TestCase {
   }
 
   public static class EpocDateMarshaller
-          implements
-          CustomMarshaller {
+      implements
+      CustomMarshaller {
 
     public void marshall(Object object,
                          MarshallerContext ctx) {
@@ -125,8 +125,8 @@ public class MarshallingTest extends TestCase {
   }
 
   public static class EpocDefaultCalendarMarshaller
-          implements
-          CustomMarshaller {
+      implements
+      CustomMarshaller {
     private CustomMarshaller dateMarshaller;
 
     public EpocDefaultCalendarMarshaller() {
@@ -142,7 +142,7 @@ public class MarshallingTest extends TestCase {
 
       ctx.getAppender().append("with ( java.util.Calendar.getInstance() ) { time = ");
       this.dateMarshaller.marshall(((Calendar) object).getTime(),
-              ctx);
+          ctx);
       ctx.getAppender().append("} ");
     }
   }
@@ -172,8 +172,8 @@ public class MarshallingTest extends TestCase {
     public void marshall(Object object,
                          MarshallerContext ctx) {
       marshall(object,
-              getType(object.getClass()),
-              ctx);
+          getType(object.getClass()),
+          ctx);
     }
 
     public void marshall(Object object,
@@ -186,8 +186,8 @@ public class MarshallingTest extends TestCase {
 
       if (type != Type.OBJECT) {
         marshallValue(object,
-                type,
-                ctx);
+            type,
+            ctx);
       }
       else {
         Class cls = object.getClass();
@@ -195,7 +195,7 @@ public class MarshallingTest extends TestCase {
         if (converter == null) {
           converter = generateConverter(cls);
           this.converters.put(cls,
-                  converter);
+              converter);
         }
 
         try {
@@ -209,14 +209,14 @@ public class MarshallingTest extends TestCase {
             ctx.getAppender().append(" = ");
 
             marshallValue(entry.getMethod().invoke(object,
-                    null),
-                    entry.getType(),
-                    ctx);
+                null),
+                entry.getType(),
+                ctx);
           }
         }
         catch (Exception e) {
           throw new IllegalStateException("Unable to marshall object " + object,
-                  e);
+              e);
         }
         ctx.getAppender().append(" }");
       }
@@ -249,12 +249,12 @@ public class MarshallingTest extends TestCase {
         }
         case DATE: {
           dateMarshaller.marshall(object,
-                  ctx);
+              ctx);
           break;
         }
         case CALENDAR: {
           calendarMarshaller.marshall(object,
-                  ctx);
+              ctx);
           break;
         }
         case BIG_INTEGER: {
@@ -267,23 +267,23 @@ public class MarshallingTest extends TestCase {
         }
         case ARRAY: {
           marshallArray(object,
-                  ctx);
+              ctx);
           break;
         }
         case MAP: {
           marshallMap((Map) object,
-                  ctx);
+              ctx);
           break;
         }
         case COLLECTION: {
           marshallCollection((Collection) object,
-                  ctx);
+              ctx);
           break;
         }
         case OBJECT: {
           marshall(object,
-                  type,
-                  ctx);
+              type,
+              ctx);
           break;
         }
       }
@@ -309,12 +309,12 @@ public class MarshallingTest extends TestCase {
         }
 
         list.add(new ObjectConverterEntry(prop.getName(),
-                prop.getReadMethod(),
-                getType(prop.getPropertyType())));
+            prop.getReadMethod(),
+            getType(prop.getPropertyType())));
       }
 
       return new ObjectConverter(cls,
-              list.toArray(new ObjectConverterEntry[list.size()]));
+          list.toArray(new ObjectConverterEntry[list.size()]));
     }
 
     private Type getType(Class cls) {
@@ -365,10 +365,10 @@ public class MarshallingTest extends TestCase {
         }
         Entry entry = it.next();
         marshall(entry.getKey(),
-                ctx);
+            ctx);
         ctx.getAppender().append(':');
         marshall(entry.getValue(),
-                ctx);
+            ctx);
 
       }
       ctx.getAppender().append(" ] ");
@@ -383,7 +383,7 @@ public class MarshallingTest extends TestCase {
           ctx.getAppender().append(", ");
         }
         marshall(it.next(),
-                ctx);
+            ctx);
       }
       ctx.getAppender().append(" ] ");
     }
@@ -397,8 +397,8 @@ public class MarshallingTest extends TestCase {
           ctx.getAppender().append(", ");
         }
         marshall(Array.get(array,
-                i),
-                ctx);
+            i),
+            ctx);
       }
       ctx.getAppender().append(" } ");
     }
@@ -406,7 +406,7 @@ public class MarshallingTest extends TestCase {
     public String marshallToString(Object object) {
       MarshallerContext ctx = new MarshallerContext(this);
       marshall(object,
-              ctx);
+          ctx);
       return ctx.getAppender().toString();
     }
 
@@ -420,16 +420,16 @@ public class MarshallingTest extends TestCase {
     list.add("a");
     list.add(12);
     list.add(new SomeNumers(10.02f,
-            22.02,
-            5,
-            100l,
-            new BigDecimal(23.0234d,
-                    MathContext.DECIMAL128),
-            new BigInteger("1001")));
+        22.02,
+        5,
+        100l,
+        new BigDecimal(23.0234d,
+            MathContext.DECIMAL128),
+        new BigInteger("1001")));
     list.add(new Date());
     //list.add( 'b' ); // generates ok but breaks round trip equals
     list.add(new Cheese("cheddar",
-            6));
+        6));
 
     pet.setList(list);
     pet.setArray(new int[]{1, 2, 3});
@@ -437,14 +437,14 @@ public class MarshallingTest extends TestCase {
     Map map = new HashMap();
     //map.put( new Date(), new Cheese( "stilton", 11) ); // TODO why doesn't this work
     map.put("key1",
-            13);
+        13);
     map.put("key3",
-            "value3");
+        "value3");
     map.put("key2",
-            15);
+        15);
     map.put("key4",
-            new Cheese("stilton",
-                    11));
+        new Cheese("stilton",
+            11));
     Calendar cal = Calendar.getInstance();
 //        cal.setTime( new Date() );
 //        map.put( "key5",
@@ -503,9 +503,9 @@ public class MarshallingTest extends TestCase {
     System.out.println(str);
     Object data2 = MVEL.eval(str);
     assertNotSame(data1,
-            data2);
+        data2);
     assertEquals(data1,
-            data2);
+        data2);
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < COUNT; i++) {
@@ -513,9 +513,9 @@ public class MarshallingTest extends TestCase {
       str = marshaller.marshallToString(data1);
       data2 = MVEL.eval(str);
       assertNotSame(data1,
-              data2);
+          data2);
       assertEquals(data1,
-              data2);
+          data2);
     }
     long end = System.currentTimeMillis();
 
@@ -816,7 +816,7 @@ public class MarshallingTest extends TestCase {
       }
       else if (!age.equals(other.age)) return false;
       if (!Arrays.equals(array,
-              other.array)) return false;
+          other.array)) return false;
       if (list == null) {
         if (other.list != null) return false;
       }

@@ -190,7 +190,7 @@ public class PropertyAccessor {
     }
     catch (IndexOutOfBoundsException e) {
       throw new PropertyAccessException("array or collections index out of bounds in property: "
-              + new String(property, cursor, length), property, cursor, e);
+          + new String(property, cursor, length), property, cursor, e);
     }
     catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, property, st);
@@ -309,8 +309,8 @@ public class PropertyAccessor {
           }
           else {
             throw new PropertyAccessException("cannot bind to collection property: "
-                    + new String(property) + ": not a recognized collection type: " + ctx.getClass(),
-                    property, cursor);
+                + new String(property) + ": not a recognized collection type: " + ctx.getClass(),
+                property, cursor);
           }
 
           return;
@@ -343,7 +343,7 @@ public class PropertyAccessor {
           }
           else {
             throw new PropertyAccessException("cannot bind to collection property: " + new String(property)
-                    + ": not a recognized collection type: " + ctx.getClass(), property, cursor);
+                + ": not a recognized collection type: " + ctx.getClass(), property, cursor);
           }
 
           return;
@@ -359,7 +359,7 @@ public class PropertyAccessor {
       Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
       if (member == null) {
         addWriteCache(curr.getClass(), tk.hashCode(),
-                (member = value != null ? getFieldOrWriteAccessor(curr.getClass(), tk, value.getClass()) : getFieldOrWriteAccessor(curr.getClass(), tk)));
+            (member = value != null ? getFieldOrWriteAccessor(curr.getClass(), tk, value.getClass()) : getFieldOrWriteAccessor(curr.getClass(), tk)));
       }
 
       if (member instanceof Method) {
@@ -370,7 +370,7 @@ public class PropertyAccessor {
         if (value != null && !paramaterTypes[0].isAssignableFrom(value.getClass())) {
           if (!canConvert(paramaterTypes[0], value.getClass())) {
             throw new CompileException("cannot convert type: "
-                    + value.getClass() + ": to " + meth.getParameterTypes()[0], property, cursor);
+                + value.getClass() + ": to " + meth.getParameterTypes()[0], property, cursor);
           }
           meth.invoke(curr, convert(value, paramaterTypes[0]));
         }
@@ -384,7 +384,7 @@ public class PropertyAccessor {
         if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
           if (!canConvert(fld.getType(), value.getClass())) {
             throw new CompileException("cannot convert type: "
-                    + value.getClass() + ": to " + fld.getType(), property, cursor);
+                + value.getClass() + ": to " + fld.getType(), property, cursor);
           }
 
           fld.set(curr, convert(value, fld.getType()));
@@ -399,7 +399,7 @@ public class PropertyAccessor {
       }
       else {
         throw new PropertyAccessException("could not access/write property (" + tk + ") in: "
-                + (curr == null ? "Unknown" : curr.getClass().getName()), property, cursor);
+            + (curr == null ? "Unknown" : curr.getClass().getName()), property, cursor);
       }
     }
     catch (InvocationTargetException e) {
@@ -567,7 +567,7 @@ public class PropertyAccessor {
   }
 
   private Object getBeanPropertyAO(Object ctx, String property)
-          throws IllegalAccessException, InvocationTargetException {
+      throws IllegalAccessException, InvocationTargetException {
     if (ctx != null && hasPropertyHandler(ctx.getClass()))
       return getPropertyHandler(ctx.getClass()).getProperty(property, ctx, variableFactory);
 
@@ -577,7 +577,7 @@ public class PropertyAccessor {
   }
 
   private Object getBeanProperty(Object ctx, String property)
-          throws IllegalAccessException, InvocationTargetException {
+      throws IllegalAccessException, InvocationTargetException {
 
     if (first) {
       if ("this".equals(property)) {
@@ -597,7 +597,7 @@ public class PropertyAccessor {
       Class<?> cls;
       if (ctx instanceof Class) {
         if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
-                && "class".equals(property)) {
+            && "class".equals(property)) {
           return ctx;
         }
 
@@ -635,7 +635,7 @@ public class PropertyAccessor {
               Class c = Class.forName(member.getDeclaringClass().getName() + "$" + property);
 
               throw new CompileException("name collision between innerclass: " + c.getCanonicalName()
-                      + "; and bean accessor: " + property + " (" + member.toString() + ")", this.property, this.st);
+                  + "; and bean accessor: " + property + " (" + member.toString() + ")", this.property, this.st);
             }
             catch (ClassNotFoundException e2) {
               //fallthru
@@ -731,8 +731,8 @@ public class PropertyAccessor {
     String nestParm = start == cursor ? null : new String(property, start, cursor - start - 1).trim();
 
     parseWithExpressions(nestParm, property, st = cursor + 1,
-            (cursor = balancedCaptureWithLineAccounting(property, cursor, end,
-                    '{', getCurrentThreadParserContext())) - st, ctx, variableFactory);
+        (cursor = balancedCaptureWithLineAccounting(property, cursor, end,
+            '{', getCurrentThreadParserContext())) - st, ctx, variableFactory);
     cursor++;
     return ctx;
   }
@@ -788,7 +788,7 @@ public class PropertyAccessor {
       }
       catch (Exception e) {
         throw new PropertyAccessException("illegal use of []: unknown type: "
-                + (ctx == null ? null : ctx.getClass().getName()), property, st, e);
+            + (ctx == null ? null : ctx.getClass().getName()), property, st, e);
       }
     }
   }
@@ -827,7 +827,7 @@ public class PropertyAccessor {
         int count = (Integer) eval(prop, ctx, variableFactory);
         if (count > ((Collection) ctx).size())
           throw new PropertyAccessException("index [" + count + "] out of bounds on collections",
-                  property, cursor);
+              property, cursor);
 
         Iterator iter = ((Collection) ctx).iterator();
         for (int i = 0; i < count; i++) iter.next();
@@ -852,7 +852,7 @@ public class PropertyAccessor {
       }
       catch (Exception e) {
         throw new PropertyAccessException("illegal use of []: unknown type: "
-                + (ctx == null ? null : ctx.getClass().getName()), property, st);
+            + (ctx == null ? null : ctx.getClass().getName()), property, st);
       }
     }
   }
@@ -871,8 +871,8 @@ public class PropertyAccessor {
     int _start = cursor;
 
     String tk = cursor != end
-            && property[cursor] == '(' && ((cursor = balancedCapture(property, cursor, '(')) - _start) > 1 ?
-            new String(property, _start + 1, cursor - _start - 1) : "";
+        && property[cursor] == '(' && ((cursor = balancedCapture(property, cursor, '(')) - _start) > 1 ?
+        new String(property, _start + 1, cursor - _start - 1) : "";
 
     cursor++;
 
@@ -904,7 +904,7 @@ public class PropertyAccessor {
       }
       else {
         throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
-                + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
+            + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
       }
 
       first = false;
@@ -977,8 +977,8 @@ public class PropertyAccessor {
 
 
       throw new PropertyAccessException("unable to resolve method: "
-              + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]"
-              , property, start);
+          + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]"
+          , property, start);
     }
     else {
       for (int i = 0; i < args.length; i++) {

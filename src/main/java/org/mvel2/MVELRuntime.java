@@ -163,7 +163,7 @@ public class MVELRuntime {
     catch (NullPointerException e) {
       if (tk != null && tk.isOperator() && tk.nextASTNode != null) {
         throw new CompileException("incomplete statement: "
-                + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", tk.getExpr(), tk.getStart());
+            + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", tk.getExpr(), tk.getStart());
       }
       else {
         throw e;

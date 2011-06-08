@@ -38,7 +38,7 @@ public class WhileNode extends BlockNode {
 
   public WhileNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
     expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
-            Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+        Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
 
     if (pCtx != null) {

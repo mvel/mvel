@@ -52,8 +52,8 @@ public strictfp class MathProcessor {
 
   public static Object doOperations(Object val1, int operation, Object val2) {
     return doOperations(val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass()),
-            val1, operation,
-            val2 == null ? DataTypes.NULL : __resolveType(val2.getClass()), val2);
+        val1, operation,
+        val2 == null ? DataTypes.NULL : __resolveType(val2.getClass()), val2);
   }
 
   public static Object doOperations(Object val1, int operation, int type2, Object val2) {
@@ -216,14 +216,14 @@ public strictfp class MathProcessor {
         return doOperationsSameType(type1, val1, operation, val2);
       }
       else if ((type1 > 99 && (type2 > 99))
-              || (operation != 0 && isNumber(val1) && isNumber(val2))) {
+          || (operation != 0 && isNumber(val1) && isNumber(val2))) {
         return doPrimWrapperArithmetic(getNumber(val1, type1),
-                operation,
-                getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+            operation,
+            getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
       }
       else if (operation != ADD &&
-              (type1 == 15 || type2 == 15) &&
-              type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
+          (type1 == 15 || type2 == 15) &&
+          type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
 
         return doOperationNonNumeric(type1, convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
       }
@@ -332,9 +332,9 @@ public strictfp class MathProcessor {
     }
 
     throw new RuntimeException("could not perform numeric operation on non-numeric types: left-type="
-            + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
-            + (val2 != null ? val2.getClass().getName() : "null")
-            + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
+        + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
+        + (val2 != null ? val2.getClass().getName() : "null")
+        + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
   }
 
   private static Boolean safeEquals(final Object val1, final Object val2) {

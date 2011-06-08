@@ -98,11 +98,11 @@ final class AnnotationWriter implements AnnotationVisitor {
    *               be stored.
    */
   AnnotationWriter(
-          final ClassWriter cw,
-          final boolean named,
-          final ByteVector bv,
-          final ByteVector parent,
-          final int offset) {
+      final ClassWriter cw,
+      final boolean named,
+      final ByteVector bv,
+      final ByteVector parent,
+      final int offset) {
     this.cw = cw;
     this.named = named;
     this.bv = bv;
@@ -201,9 +201,9 @@ final class AnnotationWriter implements AnnotationVisitor {
   }
 
   public void visitEnum(
-          final String name,
-          final String desc,
-          final String value) {
+      final String name,
+      final String desc,
+      final String value) {
     ++size;
     if (named) {
       bv.putShort(cw.newUTF8(name));
@@ -212,8 +212,8 @@ final class AnnotationWriter implements AnnotationVisitor {
   }
 
   public AnnotationVisitor visitAnnotation(
-          final String name,
-          final String desc) {
+      final String name,
+      final String desc) {
     ++size;
     if (named) {
       bv.putShort(cw.newUTF8(name));

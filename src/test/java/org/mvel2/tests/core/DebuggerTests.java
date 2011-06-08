@@ -147,9 +147,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpoints3() {
     String expr = "System.out.println( \"a1\" );\n" +
-            "System.out.println( \"a2\" );\n" +
-            "System.out.println( \"a3\" );\n" +
-            "System.out.println( \"a4\" );\n";
+        "System.out.println( \"a2\" );\n" +
+        "System.out.println( \"a3\" );\n" +
+        "System.out.println( \"a4\" );\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -176,7 +176,7 @@ public class DebuggerTests extends AbstractTest {
     String line1 = "System.out.println( \"a1\" );\n";
     String line2 = "c = new Cheese();\n";
     String line3 = "with ( c ) { type = 'cheddar',\n" +
-            "             price = 10 };\n";
+        "             price = 10 };\n";
     String line4 = "System.out.println( \"a1\" );\n";
     String expr = line1 + line2 + line3 + line4;
 
@@ -206,14 +206,14 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpointsAcrossComments() {
     String expression = "/** This is a comment\n" +  // 1
-            " *  Second comment line\n" +        // 2
-            " *  Third Comment Line\n" +         // 3
-            " */\n" +                         // 4
-            "System.out.println('4');\n" +   // 5
-            "System.out.println('5');\n" +   // 6
-            "a = 0;\n" +                     // 7
-            "b = 1;\n" +                    // 8
-            "a + b";                        // 9
+        " *  Second comment line\n" +        // 2
+        " *  Third Comment Line\n" +         // 3
+        " */\n" +                         // 4
+        "System.out.println('4');\n" +   // 5
+        "System.out.println('5');\n" +   // 6
+        "a = 0;\n" +                     // 7
+        "b = 1;\n" +                    // 8
+        "a + b";                        // 9
 
     ExpressionCompiler compiler = new ExpressionCompiler(expression);
 
@@ -247,16 +247,16 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpointsAcrossComments2() {
     ExpressionCompiler compiler = new ExpressionCompiler(
-            "// This is a comment\n" +                  // 1
-                    "//Second comment line\n" +         // 2
-                    "//Third Comment Line\n" +          // 3
-                    "\n" +                              // 4
-                    "//Test\n" +                        // 5
-                    "System.out.println('4');\n" +      // 6
-                    "//System.out.println('5'); \n" +    // 7
-                    "a = 0;\n" +                        // 8
-                    "b = 1;\n" +                        // 9
-                    " a + b");                          // 10
+        "// This is a comment\n" +                  // 1
+            "//Second comment line\n" +         // 2
+            "//Third Comment Line\n" +          // 3
+            "\n" +                              // 4
+            "//Test\n" +                        // 5
+            "System.out.println('4');\n" +      // 6
+            "//System.out.println('5'); \n" +    // 7
+            "a = 0;\n" +                        // 8
+            "b = 1;\n" +                        // 9
+            " a + b");                          // 10
 
 
     ParserContext ctx = new ParserContext();
@@ -284,10 +284,10 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpoints4() {
     String expression = "System.out.println('foo');\n" +
-            "a = new Foo244();\n" +
-            "update (a) { name = 'bar' };\n" +
-            "System.out.println('name:' + a.name);\n" +
-            "return a.name;";
+        "a = new Foo244();\n" +
+        "update (a) { name = 'bar' };\n" +
+        "System.out.println('name:' + a.name);\n" +
+        "return a.name;";
 
 
     Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
@@ -296,7 +296,7 @@ public class DebuggerTests extends AbstractTest {
     interceptors.put("Update", new Interceptor() {
       public int doBefore(ASTNode node, VariableResolverFactory factory) {
         ((WithNode) node).getNestedStatement().getValue(null,
-                factory);
+            factory);
         System.out.println("fired update interceptor -- before");
         return 0;
       }
@@ -348,13 +348,13 @@ public class DebuggerTests extends AbstractTest {
   public void testBreakpoints5() {
     OptimizerFactory.setDefaultOptimizer("ASM");
     String expression = "System.out.println('foo');\r\n" +
-            "a = new Foo244();\r\n" +
-            "a.name = 'bar';\r\n" +
-            "foo.happy();\r\n" +
-            "System.out.println( 'name:' + a.name );               \r\n" +
-            "System.out.println( 'name:' + a.name );         \r\n" +
-            "System.out.println( 'name:' + a.name );     \r\n" +
-            "return a.name;";
+        "a = new Foo244();\r\n" +
+        "a.name = 'bar';\r\n" +
+        "foo.happy();\r\n" +
+        "System.out.println( 'name:' + a.name );               \r\n" +
+        "System.out.println( 'name:' + a.name );         \r\n" +
+        "System.out.println( 'name:' + a.name );     \r\n" +
+        "return a.name;";
 
     Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
     Map<String, Macro> macros = new HashMap<String, Macro>();
@@ -362,7 +362,7 @@ public class DebuggerTests extends AbstractTest {
     interceptors.put("Update", new Interceptor() {
       public int doBefore(ASTNode node, VariableResolverFactory factory) {
         ((WithNode) node).getNestedStatement().getValue(null,
-                factory);
+            factory);
         System.out.println("fired update interceptor -- before");
         return 0;
       }
@@ -414,9 +414,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testDebugSymbolsWithWindowsLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\r\n" +
-            "   System.out.println( \"a2\" );\r\n" +
-            "   System.out.println( \"a3\" );\r\n" +
-            "   System.out.println( \"a4\" );\r\n";
+        "   System.out.println( \"a2\" );\r\n" +
+        "   System.out.println( \"a3\" );\r\n" +
+        "   System.out.println( \"a4\" );\r\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -439,9 +439,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testDebugSymbolsWithUnixLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\n" +
-            "   System.out.println( \"a2\" );\n" +
-            "   System.out.println( \"a3\" );\n" +
-            "   System.out.println( \"a4\" );\n";
+        "   System.out.println( \"a2\" );\n" +
+        "   System.out.println( \"a3\" );\n" +
+        "   System.out.println( \"a4\" );\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -463,9 +463,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testDebugSymbolsWithMixedLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\n" +
-            "   System.out.println( \"a2\" );\r\n" +
-            "   System.out.println( \"a3\" );\n" +
-            "   System.out.println( \"a4\" );\r\n";
+        "   System.out.println( \"a2\" );\r\n" +
+        "   System.out.println( \"a3\" );\n" +
+        "   System.out.println( \"a4\" );\r\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 

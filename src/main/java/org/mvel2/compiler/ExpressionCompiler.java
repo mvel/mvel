@@ -89,13 +89,13 @@ public class ExpressionCompiler extends AbstractParser {
           }
           else {
             err.append("\n - ").append("(").append(e.getLineNumber()).append(",").append(e.getColumn()).append(")")
-                    .append(" ").append(e.getMessage());
+                .append(" ").append(e.getMessage());
           }
         }
 
         //noinspection ThrowFromFinallyBlock
         throw new CompileException("Failed to compileShared: " + pCtx.getErrorList().size()
-                + " compilation error(s): " + err.toString(), pCtx.getErrorList(), expr, cursor, pCtx);
+            + " compilation error(s): " + err.toString(), pCtx.getErrorList(), expr, cursor, pCtx);
       }
     }
 
@@ -161,15 +161,15 @@ public class ExpressionCompiler extends AbstractParser {
           if (literalOnly == -1) literalOnly = 1;
 
           if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
-                  && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
+              && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
             /**
              * If the next token is ALSO a literal, then we have a candidate for a compileShared-time literal
              * reduction.
              */
             if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
-                    && tkOp.getOperator() < 34 && ((lastOp == -1
-                    || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
+                && tkOp.getOperator() < 34 && ((lastOp == -1
+                || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
               stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
               /**
@@ -334,8 +334,8 @@ public class ExpressionCompiler extends AbstractParser {
 
         astBuild.addTokenNode(new LiteralNode(stk.pop()));
         astBuild.addTokenNode(
-                (OperatorNode) splitAccumulator.pop(),
-                verify(pCtx, (ASTNode) splitAccumulator.pop())
+            (OperatorNode) splitAccumulator.pop(),
+            verify(pCtx, (ASTNode) splitAccumulator.pop())
         );
         return false;
       case -2:
@@ -401,7 +401,7 @@ public class ExpressionCompiler extends AbstractParser {
           }
 
           if (!pCtx.isOptimizerNotified() && pCtx.isStrongTyping()
-                  && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
+              && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
             throw new CompileException("no such identifier: " + tk.getAbsoluteName(), expr, tk.getStart());
           }
 
@@ -421,7 +421,7 @@ public class ExpressionCompiler extends AbstractParser {
           }
 
           ExecutableStatement c = (ExecutableStatement) subCompileExpression(expr, tk.getStart(),
-                  tk.getOffset(), pCtx);
+              tk.getOffset(), pCtx);
 
           if (pCtx.isStrictTypeEnforcement()) {
             /**
@@ -442,7 +442,7 @@ public class ExpressionCompiler extends AbstractParser {
                 }
               }
               else if (returnType.isPrimitive()
-                      && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
+                  && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
                 /**
                  * We ignore boxed primitive cases, since MVEL does not recognize primitives.
                  */
@@ -450,8 +450,8 @@ public class ExpressionCompiler extends AbstractParser {
               }
 
               throw new CompileException(
-                      "cannot assign type " + c.getKnownEgressType().getName()
-                              + " to " + returnType.getName(), expr, st);
+                  "cannot assign type " + c.getKnownEgressType().getName()
+                      + " to " + returnType.getName(), expr, st);
             }
           }
         }

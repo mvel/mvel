@@ -66,7 +66,7 @@ public class MethodStub implements Serializable {
   }
 
   public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parameters)
-          throws IllegalAccessException, InvocationTargetException {
+      throws IllegalAccessException, InvocationTargetException {
     return method.invoke(ctx, parameters);
   }
 }

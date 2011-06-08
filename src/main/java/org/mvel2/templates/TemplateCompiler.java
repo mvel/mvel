@@ -121,8 +121,8 @@ public class TemplateCompiler {
                    * Capture any residual text node, and push the if statement on the nesting stack.
                    */
                   stack.push(n = markTextNode(n).next =
-                          codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start, parserContext)
-                                  : new IfNode(start, name, template, captureOrbInternal(), start));
+                      codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start, parserContext)
+                          : new IfNode(start, name, template, captureOrbInternal(), start));
 
                   n.setTerminus(new TerminalNode());
 
@@ -134,7 +134,7 @@ public class TemplateCompiler {
 
                     last.demarcate(last.getTerminus(), template);
                     last.next = n = codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start, parserContext)
-                            : new IfNode(start, name, template, captureOrbInternal(), start);
+                        : new IfNode(start, name, template, captureOrbInternal(), start);
                     n.setTerminus(last.getTerminus());
 
                     stack.push(n);
@@ -143,8 +143,8 @@ public class TemplateCompiler {
 
                 case Opcodes.FOREACH:
                   stack.push(
-                          n = markTextNode(n).next = codeCache ? new CompiledForEachNode(start, name, template, captureOrbInternal(), start, parserContext)
-                                  : new ForEachNode(start, name, template, captureOrbInternal(), start)
+                      n = markTextNode(n).next = codeCache ? new CompiledForEachNode(start, name, template, captureOrbInternal(), start, parserContext)
+                          : new ForEachNode(start, name, template, captureOrbInternal(), start)
                   );
 
                   n.setTerminus(new TerminalNode());
@@ -153,39 +153,39 @@ public class TemplateCompiler {
 
                 case Opcodes.INCLUDE_FILE:
                   n = markTextNode(n).next =
-                          codeCache ? new CompiledIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                                  : new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                      codeCache ? new CompiledIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                          : new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                   break;
 
                 case Opcodes.INCLUDE_NAMED:
                   n = markTextNode(n).next =
-                          codeCache ? new CompiledNamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                                  : new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                      codeCache ? new CompiledNamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                          : new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                   break;
 
                 case Opcodes.CODE:
                   n = markTextNode(n)
-                          .next = codeCache ? new CompiledCodeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                          : new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                      .next = codeCache ? new CompiledCodeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                      : new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                   break;
 
                 case Opcodes.EVAL:
                   n = markTextNode(n).next =
-                          codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                                  : new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                      codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                          : new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                   break;
 
                 case Opcodes.COMMENT:
                   n = markTextNode(n)
-                          .next = new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                      .next = new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1);
 
                   break;
 
                 case Opcodes.DECLARE:
                   stack.push(n = markTextNode(n).next =
-                          codeCache ?
-                                  new CompiledDeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                                  : new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                      codeCache ?
+                          new CompiledDeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                          : new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1));
 
                   n.setTerminus(new TerminalNode());
 
@@ -209,9 +209,9 @@ public class TemplateCompiler {
                 default:
                   if (name.length() == 0) {
                     n = markTextNode(n).next =
-                            codeCache ?
-                                    new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
-                                    : new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                        codeCache ?
+                            new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
+                            : new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                   }
                   else if (customNodes != null && customNodes.containsKey(name)) {
                     Class<? extends Node> customNode = customNodes.get(name);

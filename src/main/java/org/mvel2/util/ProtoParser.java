@@ -70,12 +70,12 @@ public class ProtoParser {
 
             if (start == cursor) {
               throw new CompileException("attempt to declare an anonymous function as a prototype member",
-                      expr, start);
+                  expr, start);
             }
 
             FunctionParser parser =
-                    new FunctionParser(new String(expr, start, cursor - start),
-                            cursor, endOffset, expr, 0, pCtx, null);
+                new FunctionParser(new String(expr, start, cursor - start),
+                    cursor, endOffset, expr, 0, pCtx, null);
 
             proto.declareReceiver(parser.getName(), parser.parse());
             cursor = parser.getCursor() + 1;
@@ -90,7 +90,7 @@ public class ProtoParser {
 
       if (cursor > endOffset) {
         throw new CompileException("unexpected end of statement in proto declaration: " + protoName,
-                expr, start);
+            expr, start);
       }
 
       switch (expr[cursor]) {
@@ -104,7 +104,7 @@ public class ProtoParser {
              * we defer resolution of the type until later and place it in the wait queue.
              */
             enqueueReceiverForLateResolution(deferredName,
-                    proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), null);
+                proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), null);
           }
           else {
             proto.declareReceiver(name, type, null);
@@ -139,11 +139,11 @@ public class ProtoParser {
 
           if (interpreted && type == DeferredTypeResolve.class) {
             enqueueReceiverForLateResolution(deferredName,
-                    proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), initString);
+                proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), initString);
           }
           else {
             proto.declareReceiver(name, type, (ExecutableStatement)
-                    subCompileExpression(initString, pCtx));
+                subCompileExpression(initString, pCtx));
           }
           break;
 
@@ -265,7 +265,7 @@ public class ProtoParser {
   public static void checkForPossibleUnresolvedViolations(char[] expr, int cursor, ParserContext pCtx) {
     if (isUnresolvedWaiting()) {
       LinkedHashMap<String, Object> imports =
-              (LinkedHashMap<String, Object>) pCtx.getParserConfiguration().getImports();
+          (LinkedHashMap<String, Object>) pCtx.getParserConfiguration().getImports();
 
       Object o = imports.values().toArray()[imports.size() - 1];
 
@@ -285,7 +285,7 @@ public class ProtoParser {
 
         if (cursor != last) {
           throw new CompileException("unresolved reference (possible illegal forward-reference?): " +
-                  ProtoParser.getNextUnresolvedWaiting(), expr, proto.getCursorStart());
+              ProtoParser.getNextUnresolvedWaiting(), expr, proto.getCursorStart());
         }
       }
     }

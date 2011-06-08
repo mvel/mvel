@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class LongCH implements ConversionHandler {
   private static final Map<Class, Converter> CNV =
-          new HashMap<Class, Converter>();
+      new HashMap<Class, Converter>();
 
   private static Converter stringConverter = new Converter() {
     public Object convert(Object o) {
@@ -42,7 +42,7 @@ public class LongCH implements ConversionHandler {
 
   public Object convertFrom(Object in) {
     if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-            + in.getClass().getName() + " to: " + Long.class.getName());
+        + in.getClass().getName() + " to: " + Long.class.getName());
     return CNV.get(in.getClass()).convert(in);
   }
 
@@ -53,83 +53,83 @@ public class LongCH implements ConversionHandler {
 
   static {
     CNV.put(String.class,
-            stringConverter
+        stringConverter
     );
 
     CNV.put(Object.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return stringConverter.convert(valueOf(o));
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            return stringConverter.convert(valueOf(o));
+          }
+        }
     );
 
     CNV.put(BigDecimal.class,
-            new Converter() {
-              public Long convert(Object o) {
-                return ((BigDecimal) o).longValue();
-              }
-            }
+        new Converter() {
+          public Long convert(Object o) {
+            return ((BigDecimal) o).longValue();
+          }
+        }
     );
 
 
     CNV.put(BigInteger.class,
-            new Converter() {
-              public Long convert(Object o) {
-                return ((BigInteger) o).longValue();
-              }
-            }
+        new Converter() {
+          public Long convert(Object o) {
+            return ((BigInteger) o).longValue();
+          }
+        }
     );
 
 
     CNV.put(Short.class,
-            new Converter() {
-              public Object convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Short) o).longValue();
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Short) o).longValue();
+          }
+        }
     );
 
     CNV.put(Long.class,
-            new Converter() {
-              public Object convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return new Long(((Long) o));
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return new Long(((Long) o));
+          }
+        }
     );
 
     CNV.put(Integer.class,
-            new Converter() {
-              public Object convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Integer) o).longValue();
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Integer) o).longValue();
+          }
+        }
     );
 
     CNV.put(Double.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return ((Double) o).longValue();
-              }
-            });
+        new Converter() {
+          public Object convert(Object o) {
+            return ((Double) o).longValue();
+          }
+        });
 
     CNV.put(Float.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return ((Float) o).longValue();
-              }
-            });
+        new Converter() {
+          public Object convert(Object o) {
+            return ((Float) o).longValue();
+          }
+        });
 
     CNV.put(Boolean.class,
-            new Converter() {
-              public Long convert(Object o) {
-                if ((Boolean) o) return 1l;
-                else return 0l;
-              }
-            }
+        new Converter() {
+          public Long convert(Object o) {
+            if ((Boolean) o) return 1l;
+            else return 0l;
+          }
+        }
     );
   }
 }

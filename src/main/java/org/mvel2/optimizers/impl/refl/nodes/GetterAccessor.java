@@ -67,7 +67,7 @@ public class GetterAccessor implements AccessorNode {
     catch (NullPointerException e) {
       if (ctx == null) {
         throw new RuntimeException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
-                "target of method is null", e);
+            "target of method is null", e);
       }
       else {
         throw new RuntimeException("cannot invoke getter: " + method.getName() + " (see trace)", e);
@@ -75,8 +75,8 @@ public class GetterAccessor implements AccessorNode {
     }
     catch (Exception e) {
       throw new RuntimeException("cannot invoke getter: " + method.getName()
-              + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
-              + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
+          + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
+          + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
     }
   }
 

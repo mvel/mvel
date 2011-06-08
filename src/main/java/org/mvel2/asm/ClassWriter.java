@@ -445,9 +445,9 @@ public class ClassWriter implements ClassVisitor {
     int i;
     byte[] b = new byte[220];
     String s = "AAAAAAAAAAAAAAAABCKLLDDDDDEEEEEEEEEEEEEEEEEEEEAAAAAAAADD"
-            + "DDDEEEEEEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-            + "AAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAIIIIIIIIIIIIIIIIDNOAA"
-            + "AAAAGGGGGGGHAFBFAAFFAAQPIIJJIIIIIIIIIIIIIIIIII";
+        + "DDDEEEEEEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        + "AAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAIIIIIIIIIIIIIIIIDNOAA"
+        + "AAAAGGGGGGGHAFBFAAFFAAQPIIJJIIIIIIIIIIIIIIIIII";
     for (i = 0; i < b.length; ++i) {
       b[i] = (byte) (s.charAt(i) - 'A');
     }
@@ -578,12 +578,12 @@ public class ClassWriter implements ClassVisitor {
   // ------------------------------------------------------------------------
 
   public void visit(
-          final int version,
-          final int access,
-          final String name,
-          final String signature,
-          final String superName,
-          final String[] interfaces) {
+      final int version,
+      final int access,
+      final String name,
+      final String signature,
+      final String superName,
+      final String[] interfaces) {
     this.version = version;
     this.access = access;
     this.name = newClass(name);
@@ -611,9 +611,9 @@ public class ClassWriter implements ClassVisitor {
   }
 
   public void visitOuterClass(
-          final String owner,
-          final String name,
-          final String desc) {
+      final String owner,
+      final String name,
+      final String desc) {
     enclosingMethodOwner = newClass(owner);
     if (name != null && desc != null) {
       enclosingMethod = newNameType(name, desc);
@@ -621,8 +621,8 @@ public class ClassWriter implements ClassVisitor {
   }
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     ByteVector bv = new ByteVector();
     // write type, and reserve space for values count
     bv.putShort(newUTF8(desc)).putShort(0);
@@ -644,10 +644,10 @@ public class ClassWriter implements ClassVisitor {
   }
 
   public void visitInnerClass(
-          final String name,
-          final String outerName,
-          final String innerName,
-          final int access) {
+      final String name,
+      final String outerName,
+      final String innerName,
+      final int access) {
     if (innerClasses == null) {
       innerClasses = new ByteVector();
     }
@@ -659,28 +659,28 @@ public class ClassWriter implements ClassVisitor {
   }
 
   public FieldVisitor visitField(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final Object value) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final Object value) {
     return new FieldWriter(this, access, name, desc, signature, value);
   }
 
   public MethodVisitor visitMethod(
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final String[] exceptions) {
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final String[] exceptions) {
     return new MethodWriter(this,
-            access,
-            name,
-            desc,
-            signature,
-            exceptions,
-            computeMaxs,
-            computeFrames);
+        access,
+        name,
+        desc,
+        signature,
+        exceptions,
+        computeMaxs,
+        computeFrames);
   }
 
   public void visitEnd() {
@@ -739,7 +739,7 @@ public class ClassWriter implements ClassVisitor {
       newUTF8("Deprecated");
     }
     if ((access & Opcodes.ACC_SYNTHETIC) != 0
-            && (version & 0xffff) < Opcodes.V1_5) {
+        && (version & 0xffff) < Opcodes.V1_5) {
       ++attributeCount;
       size += 6;
       newUTF8("Synthetic");
@@ -806,7 +806,7 @@ public class ClassWriter implements ClassVisitor {
       out.putShort(newUTF8("Deprecated")).putInt(0);
     }
     if ((access & Opcodes.ACC_SYNTHETIC) != 0
-            && (version & 0xffff) < Opcodes.V1_5) {
+        && (version & 0xffff) < Opcodes.V1_5) {
       out.putShort(newUTF8("Synthetic")).putInt(0);
     }
     if (innerClasses != null) {
@@ -886,8 +886,8 @@ public class ClassWriter implements ClassVisitor {
     else if (cst instanceof Type) {
       Type t = (Type) cst;
       return newClassItem(t.getSort() == Type.OBJECT
-              ? t.getInternalName()
-              : t.getDescriptor());
+          ? t.getInternalName()
+          : t.getDescriptor());
     }
     else {
       throw new IllegalArgumentException("value " + cst);
@@ -1009,10 +1009,10 @@ public class ClassWriter implements ClassVisitor {
    * @return a new or already existing method reference item.
    */
   Item newMethodItem(
-          final String owner,
-          final String name,
-          final String desc,
-          final boolean itf) {
+      final String owner,
+      final String name,
+      final String desc,
+      final boolean itf) {
     int type = itf ? IMETH : METH;
     key3.set(type, owner, name, desc);
     Item result = get(key3);
@@ -1037,10 +1037,10 @@ public class ClassWriter implements ClassVisitor {
    * @return the index of a new or already existing method reference item.
    */
   public int newMethod(
-          final String owner,
-          final String name,
-          final String desc,
-          final boolean itf) {
+      final String owner,
+      final String name,
+      final String desc,
+      final boolean itf) {
     return newMethodItem(owner, name, desc, itf).index;
   }
 

@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class FloatCH implements ConversionHandler {
   private static final Map<Class, Converter> CNV =
-          new HashMap<Class, Converter>();
+      new HashMap<Class, Converter>();
 
   private static Converter stringConverter = new Converter() {
     public Object convert(Object o) {
@@ -42,7 +42,7 @@ public class FloatCH implements ConversionHandler {
 
   public Object convertFrom(Object in) {
     if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-            + in.getClass().getName() + " to: " + Integer.class.getName());
+        + in.getClass().getName() + " to: " + Integer.class.getName());
     return CNV.get(in.getClass()).convert(in);
   }
 
@@ -53,85 +53,85 @@ public class FloatCH implements ConversionHandler {
 
   static {
     CNV.put(String.class,
-            stringConverter
+        stringConverter
     );
 
 
     CNV.put(Object.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return stringConverter.convert(valueOf(o));
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            return stringConverter.convert(valueOf(o));
+          }
+        }
     );
 
     CNV.put(BigDecimal.class,
-            new Converter() {
-              public Float convert(Object o) {
-                return ((BigDecimal) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            return ((BigDecimal) o).floatValue();
+          }
+        }
     );
 
 
     CNV.put(BigInteger.class,
-            new Converter() {
-              public Float convert(Object o) {
-                return ((BigInteger) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            return ((BigInteger) o).floatValue();
+          }
+        }
     );
 
 
     CNV.put(Float.class,
-            new Converter() {
-              public Object convert(Object o) {
-                return o;
-              }
-            }
+        new Converter() {
+          public Object convert(Object o) {
+            return o;
+          }
+        }
     );
 
     CNV.put(Integer.class,
-            new Converter() {
-              public Float convert(Object o) {
-                //noinspection UnnecessaryBoxing
-                return ((Integer) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            //noinspection UnnecessaryBoxing
+            return ((Integer) o).floatValue();
+          }
+        }
     );
 
 
     CNV.put(Double.class,
-            new Converter() {
-              public Float convert(Object o) {
-                return ((Double) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            return ((Double) o).floatValue();
+          }
+        }
     );
 
     CNV.put(Long.class,
-            new Converter() {
-              public Float convert(Object o) {
-                return ((Long) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            return ((Long) o).floatValue();
+          }
+        }
     );
 
     CNV.put(Short.class,
-            new Converter() {
-              public Float convert(Object o) {
-                return ((Short) o).floatValue();
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            return ((Short) o).floatValue();
+          }
+        }
     );
 
     CNV.put(Boolean.class,
-            new Converter() {
-              public Float convert(Object o) {
-                if ((Boolean) o) return 1f;
-                else return 0f;
-              }
-            }
+        new Converter() {
+          public Float convert(Object o) {
+            if ((Boolean) o) return 1f;
+            else return 0f;
+          }
+        }
     );
 
   }

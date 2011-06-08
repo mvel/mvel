@@ -400,9 +400,9 @@ public class ParseTools {
   }
 
   private static Map<Class, Map<Integer, WeakReference<Constructor>>> RESOLVED_CONST_CACHE
-          = new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10);
+      = new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10);
   private static Map<Constructor, WeakReference<Class[]>> CONSTRUCTOR_PARMS_CACHE
-          = new WeakHashMap<Constructor, WeakReference<Class[]>>(10);
+      = new WeakHashMap<Constructor, WeakReference<Class[]>>(10);
 
   private static Class[] getConstructors(Constructor cns) {
     WeakReference<Class[]> ref = CONSTRUCTOR_PARMS_CACHE.get(cns);
@@ -510,9 +510,9 @@ public class ParseTools {
 
 
   private static Map<ClassLoader, Map<String, WeakReference<Class>>> CLASS_RESOLVER_CACHE
-          = new WeakHashMap<ClassLoader, Map<String, WeakReference<Class>>>(1, 1.0f);
+      = new WeakHashMap<ClassLoader, Map<String, WeakReference<Class>>>(1, 1.0f);
   private static Map<Class, WeakReference<Constructor[]>> CLASS_CONSTRUCTOR_CACHE
-          = new WeakHashMap<Class, WeakReference<Constructor[]>>(10);
+      = new WeakHashMap<Class, WeakReference<Constructor[]>>(10);
 
 
   public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
@@ -533,7 +533,7 @@ public class ParseTools {
     else {
       try {
         cls = pCtx == null ? Class.forName(className, true, Thread.currentThread().getContextClassLoader()) :
-                Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
+            Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
       }
       catch (ClassNotFoundException e) {
         /**
@@ -760,7 +760,7 @@ public class ParseTools {
         else {
           while (++pos - s != 5) {
             if ((escapeStr[pos] > ('0' - 1) && escapeStr[pos] < ('9' + 1)) ||
-                    (escapeStr[pos] > ('A' - 1) && escapeStr[pos] < ('F' + 1))) {
+                (escapeStr[pos] > ('A' - 1) && escapeStr[pos] < ('F' + 1))) {
             }
             else {
               throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
@@ -1571,7 +1571,7 @@ public class ParseTools {
               }
               else {
                 MVEL.eval(new StringBuilder(nestParm).append('.')
-                        .append(block, _st, _end - _st).toString(), ctx, factory);
+                    .append(block, _st, _end - _st).toString(), ctx, factory);
               }
             }
             catch (CompileException e) {
@@ -1591,9 +1591,9 @@ public class ParseTools {
                 }
 
                 String rewrittenExpr = new String(
-                        createShortFormOperativeAssignment(
-                                new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                block, _st, _end - _st, oper));
+                    createShortFormOperativeAssignment(
+                        new StringBuilder(nestParm).append(".").append(parm).toString(),
+                        block, _st, _end - _st, oper));
 
                 MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
               }
@@ -1625,7 +1625,7 @@ public class ParseTools {
           }
           else {
             MVEL.eval(new StringAppender(nestParm).append('.')
-                    .append(block, _st, _end - _st).toString(), ctx, factory);
+                .append(block, _st, _end - _st).toString(), ctx, factory);
           }
         }
         else {
@@ -1635,8 +1635,8 @@ public class ParseTools {
             }
 
             String rewrittenExpr = new String(createShortFormOperativeAssignment(
-                    new StringBuilder(nestParm).append(".").append(parm).toString(),
-                    block, _st, _end - _st, oper));
+                new StringBuilder(nestParm).append(".").append(parm).toString(),
+                block, _st, _end - _st, oper));
 
             MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
           }
@@ -1719,7 +1719,7 @@ public class ParseTools {
     }
 
     return clz == int.class || clz == long.class || clz == short.class || clz == double.class ||
-            clz == float.class || Number.class.isAssignableFrom(clz);
+        clz == float.class || Number.class.isAssignableFrom(clz);
   }
 
   public static int numericTest(final char[] val, int start, int offset) {
@@ -1774,8 +1774,8 @@ public class ParseTools {
     if (val instanceof String) return isNumber((String) val);
     if (val instanceof char[]) return isNumber((char[]) val);
     return val instanceof Integer || val instanceof BigDecimal || val instanceof BigInteger
-            || val instanceof Float || val instanceof Double || val instanceof Long
-            || val instanceof Short || val instanceof Character;
+        || val instanceof Float || val instanceof Double || val instanceof Long
+        || val instanceof Short || val instanceof Character;
   }
 
   public static boolean isNumber(final String val) {
@@ -1918,8 +1918,8 @@ public class ParseTools {
 
   public static boolean isIdentifierPart(final int c) {
     return ((c > 96 && c < 123)
-            || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$')
-            || Character.isJavaIdentifierPart(c));
+        || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$')
+        || Character.isJavaIdentifierPart(c));
   }
 
   public static boolean isDigit(final int c) {
@@ -2102,7 +2102,7 @@ public class ParseTools {
 
   public static boolean isPrimitiveWrapper(Class clazz) {
     return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
-            || clazz == Float.class || clazz == Character.class || clazz == Short.class || clazz == Byte.class;
+        || clazz == Float.class || clazz == Character.class || clazz == Short.class || clazz == Byte.class;
   }
 
   public static Serializable subCompileExpression(char[] expression) {
@@ -2138,7 +2138,7 @@ public class ParseTools {
      * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
      */
     if (!compiled.isImportInjectionRequired() &&
-            compiled.getParserContext().isAllowBootstrapBypass() && compiled.isSingleNode()) {
+        compiled.getParserContext().isAllowBootstrapBypass() && compiled.isSingleNode()) {
 
       return _optimizeTree(compiled);
     }
@@ -2157,7 +2157,7 @@ public class ParseTools {
         return new ExecutableLiteral(tk.getLiteralValue());
       }
       return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, compiled.getKnownEgressType()) :
-              new ExecutableAccessor(tk, compiled.getKnownEgressType());
+          new ExecutableAccessor(tk, compiled.getKnownEgressType());
     }
 
     return compiled;

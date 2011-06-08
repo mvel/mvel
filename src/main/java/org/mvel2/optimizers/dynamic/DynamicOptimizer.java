@@ -65,7 +65,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     synchronized (oLock) {
       pCtx.optimizationNotify();
       return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
-              firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
+          firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
     }
   }
 
@@ -76,7 +76,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     synchronized (oLock) {
       return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, start, offset,
-              firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
+          firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
     }
   }
 
@@ -86,7 +86,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
                                      int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
     synchronized (oLock) {
       return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
-              firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
+          firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
     }
   }
 
@@ -96,7 +96,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
                                          Object ctx, Object thisRef, VariableResolverFactory factory) {
     synchronized (oLock) {
       return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
-              firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
+          firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
     }
   }
 

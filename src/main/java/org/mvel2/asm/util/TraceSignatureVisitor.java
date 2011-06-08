@@ -111,8 +111,8 @@ public class TraceSignatureVisitor implements SignatureVisitor {
 
   public SignatureVisitor visitInterface() {
     separator = seenInterface ? ", " : isInterface
-            ? " extends "
-            : " implements ";
+        ? " extends "
+        : " implements ";
     seenInterface = true;
     startType();
     return this;

@@ -81,17 +81,17 @@ public abstract class AbstractTest extends TestCase {
     map.put("five", 5);
 
     map.put("testImpl",
-            new TestInterface() {
+        new TestInterface() {
 
-              public String getName() {
-                return "FOOBAR!";
-              }
+          public String getName() {
+            return "FOOBAR!";
+          }
 
 
-              public boolean isFoo() {
-                return true;
-              }
-            });
+          public boolean isFoo() {
+            return true;
+          }
+        });
 
     map.put("derived", new DerivedClass());
 
@@ -262,7 +262,7 @@ public abstract class AbstractTest extends TestCase {
 
     CompiledExpression compiled = compiler.compile();
     Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
-            eighth = null;
+        eighth = null;
 
     System.out.println(DebugTools.decompile((Serializable) compiled));
 
@@ -313,14 +313,14 @@ public abstract class AbstractTest extends TestCase {
         System.out.println(failErrors.toString());
 
         throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
-                + valueOf(first) + "; second: " + valueOf(second) + "]");
+            + valueOf(first) + "; second: " + valueOf(second) + "]");
       }
 
       if (!first.equals(third)) {
         if (failErrors != null) System.out.println(failErrors.toString());
 
         throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
+            valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
       }
     }
 
@@ -357,7 +357,7 @@ public abstract class AbstractTest extends TestCase {
     if (fourth != null && !fourth.getClass().isArray()) {
       if (!fourth.equals(fifth)) {
         throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run X2) [fourth: "
-                + valueOf(fourth) + "; fifth: " + valueOf(fifth) + "]");
+            + valueOf(fourth) + "; fifth: " + valueOf(fifth) + "]");
       }
     }
 
@@ -395,7 +395,7 @@ public abstract class AbstractTest extends TestCase {
         System.out.println();
 
         throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
-                + valueOf(fifth) + "; second: " + valueOf(sixth) + "]");
+            + valueOf(fifth) + "; second: " + valueOf(sixth) + "]");
       }
     }
 
@@ -415,7 +415,7 @@ public abstract class AbstractTest extends TestCase {
     if (seventh != null && !seventh.getClass().isArray()) {
       if (!seventh.equals(sixth)) {
         throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                + valueOf(first) + "; second: " + valueOf(second) + "]");
+            + valueOf(first) + "; second: " + valueOf(second) + "]");
       }
     }
 
@@ -437,7 +437,7 @@ public abstract class AbstractTest extends TestCase {
     if (eighth != null && !eighth.getClass().isArray()) {
       if (!eighth.equals(seventh)) {
         throw new AssertionError("Different result from test 7 and 8 (Compiled Re-Run / Reflective) [first: "
-                + valueOf(first) + "; second: " + valueOf(second) + "]");
+            + valueOf(first) + "; second: " + valueOf(second) + "]");
       }
     }
 

@@ -39,8 +39,8 @@ public class TypeInjectionResolverFactoryImpl extends MapVariableResolverFactory
 
   public TypeInjectionResolverFactoryImpl(ParserContext ctx, VariableResolverFactory nextVariableResolverFactory) {
     super(ctx.getImports(), ctx.hasFunction()
-            ? new TypeInjectionResolverFactoryImpl(ctx.getFunctions(), nextVariableResolverFactory) :
-            nextVariableResolverFactory);
+        ? new TypeInjectionResolverFactoryImpl(ctx.getFunctions(), nextVariableResolverFactory) :
+        nextVariableResolverFactory);
   }
 
   public TypeInjectionResolverFactoryImpl(Map<String, Object> variables, VariableResolverFactory nextFactory) {

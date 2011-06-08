@@ -211,7 +211,7 @@ public class ParserContext implements Serializable {
    */
   public boolean hasVarOrInput(String name) {
     return (variables != null && variables.containsKey(name))
-            || (inputs != null && inputs.containsKey(name));
+        || (inputs != null && inputs.containsKey(name));
   }
 
   /**
@@ -448,8 +448,8 @@ public class ParserContext implements Serializable {
         for (Method m : ctxType.getMethods()) {
           if ((m.getModifiers() & Modifier.PUBLIC) != 0) {
             if (m.getName().startsWith("get")
-                    || (m.getName().startsWith("is")
-                    && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
+                || (m.getName().startsWith("is")
+                && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
               scope.add(ReflectionUtil.getPropertyFromAccessor(m.getName()));
             }
             else {
@@ -555,8 +555,8 @@ public class ParserContext implements Serializable {
     else {
       for (ErrorDetail detail : errorList) {
         if (detail.getMessage().equals(errorDetail.getMessage())
-                && detail.getColumn() == errorDetail.getColumn()
-                && detail.getLineNumber() == errorDetail.getLineNumber()) {
+            && detail.getColumn() == errorDetail.getColumn()
+            && detail.getLineNumber() == errorDetail.getLineNumber()) {
           return;
         }
       }

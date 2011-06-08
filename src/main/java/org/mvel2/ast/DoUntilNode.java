@@ -42,7 +42,7 @@ public class DoUntilNode extends BlockNode {
     this.offset = offset;
 
     expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
-            Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+        Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
     if (pCtx != null) {
       pCtx.pushVariableScope();

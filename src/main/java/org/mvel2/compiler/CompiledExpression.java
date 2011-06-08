@@ -178,7 +178,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   public void setParserContext(ParserContext parserContext) {
     if ((this.parserContext = parserContext) != null) {
       this.importInjectionRequired =
-              parserContext.getImports() != null && parserContext.getImports().size() != 0;
+          parserContext.getImports() != null && parserContext.getImports().size() != 0;
     }
   }
 

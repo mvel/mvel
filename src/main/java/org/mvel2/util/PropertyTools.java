@@ -38,13 +38,13 @@ public class PropertyTools {
     if (o != null) {
       if (o instanceof Object[]) {
         return ((Object[]) o).length == 0 ||
-                (((Object[]) o).length == 1 && isEmpty(((Object[]) o)[0]));
+            (((Object[]) o).length == 1 && isEmpty(((Object[]) o)[0]));
       }
       else {
         return ("".equals(valueOf(o)))
-                || "null".equals(valueOf(o))
-                || (o instanceof Collection && ((Collection) o).size() == 0)
-                || (o instanceof Map && ((Map) o).size() == 0);
+            || "null".equals(valueOf(o))
+            || (o instanceof Collection && ((Collection) o).size() == 0)
+            || (o instanceof Map && ((Map) o).size() == 0);
       }
     }
     return true;
@@ -55,7 +55,7 @@ public class PropertyTools {
 
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1
-              && property.equals(meth.getName())) {
+          && property.equals(meth.getName())) {
         return meth;
       }
     }
@@ -69,7 +69,7 @@ public class PropertyTools {
 
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
-              (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
+          (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
         return meth;
       }
     }
@@ -85,7 +85,7 @@ public class PropertyTools {
   public static boolean hasSetter(Field field) {
     Method meth = getSetter(field.getDeclaringClass(), field.getName());
     return meth != null && meth.getParameterTypes().length == 1 &&
-            field.getType().isAssignableFrom(meth.getParameterTypes()[0]);
+        field.getType().isAssignableFrom(meth.getParameterTypes()[0]);
   }
 
   public static Method getGetter(Class clazz, String property) {
@@ -95,7 +95,7 @@ public class PropertyTools {
 
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-              && (property.equals(meth.getName()) || isGet.equals(meth.getName()) || simple.equals(meth.getName()))) {
+          && (property.equals(meth.getName()) || isGet.equals(meth.getName()) || simple.equals(meth.getName()))) {
         return meth;
       }
     }
@@ -120,7 +120,7 @@ public class PropertyTools {
     Field field;
     try {
       if ((field = clazz.getField(property)) != null &&
-              isPublic(field.getModifiers())) {
+          isPublic(field.getModifiers())) {
         return field;
       }
     }

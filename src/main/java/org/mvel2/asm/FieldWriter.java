@@ -105,12 +105,12 @@ final class FieldWriter implements FieldVisitor {
    * @param value     the field's constant value. May be <tt>null</tt>.
    */
   protected FieldWriter(
-          final ClassWriter cw,
-          final int access,
-          final String name,
-          final String desc,
-          final String signature,
-          final Object value) {
+      final ClassWriter cw,
+      final int access,
+      final String name,
+      final String desc,
+      final String signature,
+      final Object value) {
     if (cw.firstField == null) {
       cw.firstField = this;
     }
@@ -135,8 +135,8 @@ final class FieldWriter implements FieldVisitor {
   // ------------------------------------------------------------------------
 
   public AnnotationVisitor visitAnnotation(
-          final String desc,
-          final boolean visible) {
+      final String desc,
+      final boolean visible) {
     ByteVector bv = new ByteVector();
     // write type, and reserve space for values count
     bv.putShort(cw.newUTF8(desc)).putShort(0);
@@ -176,7 +176,7 @@ final class FieldWriter implements FieldVisitor {
       size += 8;
     }
     if ((access & Opcodes.ACC_SYNTHETIC) != 0
-            && (cw.version & 0xffff) < Opcodes.V1_5) {
+        && (cw.version & 0xffff) < Opcodes.V1_5) {
       cw.newUTF8("Synthetic");
       size += 6;
     }
@@ -214,7 +214,7 @@ final class FieldWriter implements FieldVisitor {
       ++attributeCount;
     }
     if ((access & Opcodes.ACC_SYNTHETIC) != 0
-            && (cw.version & 0xffff) < Opcodes.V1_5) {
+        && (cw.version & 0xffff) < Opcodes.V1_5) {
       ++attributeCount;
     }
     if ((access & Opcodes.ACC_DEPRECATED) != 0) {
@@ -238,7 +238,7 @@ final class FieldWriter implements FieldVisitor {
       out.putInt(2).putShort(value);
     }
     if ((access & Opcodes.ACC_SYNTHETIC) != 0
-            && (cw.version & 0xffff) < Opcodes.V1_5) {
+        && (cw.version & 0xffff) < Opcodes.V1_5) {
       out.putShort(cw.newUTF8("Synthetic")).putInt(0);
     }
     if ((access & Opcodes.ACC_DEPRECATED) != 0) {

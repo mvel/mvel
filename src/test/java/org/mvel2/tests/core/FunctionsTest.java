@@ -23,10 +23,10 @@ public class FunctionsTest extends AbstractTest {
 
   public final void testThatFunctionsCloseOverArguments() {
     final Object o = MVEL.eval(
-            "def fun(x) { ($ in [1, 2, 3] if $ > x) }" +
-                    "" +
-                    "fun(0)",
-            new HashMap<String, Object>()
+        "def fun(x) { ($ in [1, 2, 3] if $ > x) }" +
+            "" +
+            "fun(0)",
+        new HashMap<String, Object>()
     );
 
     assertTrue(o instanceof List);
@@ -35,18 +35,18 @@ public class FunctionsTest extends AbstractTest {
 
   public void testFunctionDefAndCall() {
     assertEquals("FoobarFoobar",
-            test("function heyFoo() { return 'Foobar'; };\n" +
-                    "return heyFoo() + heyFoo();"));
+        test("function heyFoo() { return 'Foobar'; };\n" +
+            "return heyFoo() + heyFoo();"));
   }
 
   public void testFunctionDefAndCall1() {
     assertEquals("FoobarFoobar", MVEL.eval("function heyFoo() { return 'Foobar'; };\n"
-            + "return heyFoo() + heyFoo();", new HashMap()));
+        + "return heyFoo() + heyFoo();", new HashMap()));
   }
 
   public void testFunctionDefAndCall2() {
     ExpressionCompiler compiler = new ExpressionCompiler("function heyFoo() { return 'Foobar'; };\n" +
-            "return heyFoo() + heyFoo();");
+        "return heyFoo() + heyFoo();");
 
     Serializable s = compiler.compile();
 
@@ -85,13 +85,13 @@ public class FunctionsTest extends AbstractTest {
 
   public void testJIRA207() {
     String ex = "x = 0; y = 0;" +
-            "def foo() { x = 1; System.out.println('Word up'); }\n" +
-            "def bar() { y = 1;  System.out.println('Peace out'); }\n" +
-            "def doMany(fps) {\n" +
-            "foreach(f : fps) { System.out.println(f); f(); }\n" +
-            "}\n" +
-            "doMany([foo,bar]);" +
-            "x == 1 && y == 1;";
+        "def foo() { x = 1; System.out.println('Word up'); }\n" +
+        "def bar() { y = 1;  System.out.println('Peace out'); }\n" +
+        "def doMany(fps) {\n" +
+        "foreach(f : fps) { System.out.println(f); f(); }\n" +
+        "}\n" +
+        "doMany([foo,bar]);" +
+        "x == 1 && y == 1;";
 
     Boolean bool;
 
@@ -106,14 +106,14 @@ public class FunctionsTest extends AbstractTest {
 
   public void testBranchesWithReturn() {
     String ex = "function max($a, $b) {\n" +
-            " if ($a>$b){\n" +
-            "    System.out.println($a);\n" +
-            "    return $a;\n" +
-            "} else {\n" +
-            "   System.out.println($b);\n" +
-            "   return $b;\n" +
-            "};\n" +
-            "}; val = max(20, 30);";
+        " if ($a>$b){\n" +
+        "    System.out.println($a);\n" +
+        "    return $a;\n" +
+        "} else {\n" +
+        "   System.out.println($b);\n" +
+        "   return $b;\n" +
+        "};\n" +
+        "}; val = max(20, 30);";
 
     Serializable s = MVEL.compileExpression(ex);
     Map<String, Object> map = new HashMap<String, Object>();
@@ -139,22 +139,22 @@ public class FunctionsTest extends AbstractTest {
 
   public void testDeepNestedLoopsInFunction() {
     assertEquals(10,
-            test("def increment(i) { i + 1 }; def ff(i) { x = 0; while (i < 1) { " + "x++; " +
-                    "while (i < 10) { i = increment(i); } }; if (x == 1) return i; else -1; }; i = 0; ff(i);"));
+        test("def increment(i) { i + 1 }; def ff(i) { x = 0; while (i < 1) { " + "x++; " +
+            "while (i < 10) { i = increment(i); } }; if (x == 1) return i; else -1; }; i = 0; ff(i);"));
   }
 
   public void testFunctions5() {
     String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
     System.out.println(MVEL.eval(exp,
-            new HashMap()));
+        new HashMap()));
   }
 
   public void testJIRA174() {
     OptimizerFactory.setDefaultOptimizer("ASM");
 
     Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove((Object) 2); a; }\n" +
-            "a = test(new java.util.ArrayList());\n" +
-            "b = test(new java.util.HashSet());");
+        "a = test(new java.util.ArrayList());\n" +
+        "b = test(new java.util.HashSet());");
 
     Map vars = new HashMap();
     executeExpression(s, vars);
@@ -168,7 +168,7 @@ public class FunctionsTest extends AbstractTest {
 
   public void testMVEL225() {
     Serializable compileExpression = MVEL.compileExpression(
-            "def f() { int a=1;a++;return a; }; f();");
+        "def f() { int a=1;a++;return a; }; f();");
     MapVariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
     assertEquals(2, MVEL.executeExpression(compileExpression, factory));
   }
@@ -176,13 +176,13 @@ public class FunctionsTest extends AbstractTest {
 
   public void testAnonymousFunctionDecl() {
     assertEquals(3,
-            test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
+        test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
   }
 
   public void testFunctionSemantics() {
     assertEquals(true,
-            test("function fooFunction(a) { return a; }; x__0 = ''; 'boob' == fooFunction(x__0 = 'boob') " +
-                    "&& x__0 == 'boob';"));
+        test("function fooFunction(a) { return a; }; x__0 = ''; 'boob' == fooFunction(x__0 = 'boob') " +
+            "&& x__0 == 'boob';"));
   }
 
 

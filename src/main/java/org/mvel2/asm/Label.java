@@ -272,10 +272,10 @@ public class Label {
    *                                  the given code writer.
    */
   void put(
-          final MethodWriter owner,
-          final ByteVector out,
-          final int source,
-          final boolean wideOffset) {
+      final MethodWriter owner,
+      final ByteVector out,
+      final int source,
+      final boolean wideOffset) {
     if ((status & RESOLVED) != 0) {
       if (wideOffset) {
         out.putInt(position - source);
@@ -309,18 +309,18 @@ public class Label {
    *                          reference must be stored.
    */
   private void addReference(
-          final int sourcePosition,
-          final int referencePosition) {
+      final int sourcePosition,
+      final int referencePosition) {
     if (srcAndRefPositions == null) {
       srcAndRefPositions = new int[6];
     }
     if (referenceCount >= srcAndRefPositions.length) {
       int[] a = new int[srcAndRefPositions.length + 6];
       System.arraycopy(srcAndRefPositions,
-              0,
-              a,
-              0,
-              srcAndRefPositions.length);
+          0,
+          a,
+          0,
+          srcAndRefPositions.length);
       srcAndRefPositions = a;
     }
     srcAndRefPositions[referenceCount++] = sourcePosition;
@@ -347,9 +347,9 @@ public class Label {
    *                                  or if it has not been created by the given code writer.
    */
   boolean resolve(
-          final MethodWriter owner,
-          final int position,
-          final byte[] data) {
+      final MethodWriter owner,
+      final int position,
+      final byte[] data) {
     boolean needUpdate = false;
     this.status |= RESOLVED;
     this.position = position;

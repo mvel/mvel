@@ -31,10 +31,10 @@ public class Soundex {
   * to:   00000000111122222222334556
   */
   public static final char[] MAP = {
-          //A   B    C    D    E    F    G    H    I    J    K    L    M
-          '0', '1', '2', '3', '0', '1', '2', '0', '0', '2', '2', '4', '5',
-          //N  O   P   W   R   S   T   U   V   W   X   Y   Z
-          '5', '0', '1', '2', '6', '2', '3', '0', '1', '0', '2', '0', '2'
+      //A   B    C    D    E    F    G    H    I    J    K    L    M
+      '0', '1', '2', '3', '0', '1', '2', '0', '0', '2', '2', '4', '5',
+      //N  O   P   W   R   S   T   U   V   W   X   Y   Z
+      '5', '0', '1', '2', '6', '2', '3', '0', '1', '0', '2', '0', '2'
   };
 
   /**
@@ -51,7 +51,7 @@ public class Soundex {
 
     // Main loop: find up to 4 chars that map.
     for (int i = 0; i < ca.length && res.length() < 4 &&
-            (c = ca[i]) != ','; i++) {
+        (c = ca[i]) != ','; i++) {
 
       // Check to see if the given character is alphabetic.
       // Text is already converted to uppercase. Algorithm

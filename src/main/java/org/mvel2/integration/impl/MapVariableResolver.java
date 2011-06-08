@@ -68,14 +68,14 @@ public class MapVariableResolver implements VariableResolver {
     if (knownType != null && value != null && value.getClass() != knownType) {
       if (!canConvert(knownType, value.getClass())) {
         throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
-                + knownType.getName());
+            + knownType.getName());
       }
       try {
         value = convert(value, knownType);
       }
       catch (Exception e) {
         throw new RuntimeException("cannot convert value of " + value.getClass().getName()
-                + " to: " + knownType.getName());
+            + " to: " + knownType.getName());
       }
     }
 

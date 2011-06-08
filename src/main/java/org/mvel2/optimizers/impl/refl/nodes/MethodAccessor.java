@@ -80,7 +80,7 @@ public class MethodAccessor implements AccessorNode {
         Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
         Method newMeth;
         if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), ctx.getClass(),
-                ctx.getClass().getMethods(), false))) != null) {
+            ctx.getClass().getMethods(), false))) != null) {
           return executeOverrideTarget(newMeth, ctx, elCtx, vars);
         }
         else {
@@ -126,11 +126,11 @@ public class MethodAccessor implements AccessorNode {
       }
       catch (IllegalAccessException e) {
         throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
-                "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
+            "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
       }
       catch (Exception e2) {
         throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
-                "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
+            "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
       }
     }
   }

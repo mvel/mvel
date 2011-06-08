@@ -95,8 +95,8 @@ public class Proto extends ASTNode {
 
     public Receiver init(ProtoInstance instance, Object ctx, Object thisCtx, VariableResolverFactory factory) {
       return new Receiver(instance, type,
-              type == ReceiverType.PROPERTY && initValue != null ? initValue.getValue(ctx, thisCtx, factory) :
-                      receiver);
+          type == ReceiverType.PROPERTY && initValue != null ? initValue.getValue(ctx, thisCtx, factory) :
+              receiver);
     }
 
     public void setType(ReceiverType type) {
@@ -337,14 +337,14 @@ public class Proto extends ASTNode {
       if (knownType != null && value != null && value.getClass() != knownType) {
         if (!canConvert(knownType, value.getClass())) {
           throw new CompileException("cannot assign " + value.getClass().getName() + " to type: "
-                  + knownType.getName(), expr, start);
+              + knownType.getName(), expr, start);
         }
         try {
           value = convert(value, knownType);
         }
         catch (Exception e) {
           throw new CompileException("cannot convert value of " + value.getClass().getName()
-                  + " to: " + knownType.getName(), expr, start);
+              + " to: " + knownType.getName(), expr, start);
         }
       }
 

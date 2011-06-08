@@ -186,10 +186,10 @@ final class Item {
    * @param strVal3 third part of the value of this item.
    */
   void set(
-          final int type,
-          final String strVal1,
-          final String strVal2,
-          final String strVal3) {
+      final int type,
+      final String strVal1,
+      final String strVal2,
+      final String strVal3) {
     this.type = type;
     this.strVal1 = strVal1;
     this.strVal2 = strVal2;
@@ -203,14 +203,14 @@ final class Item {
         return;
       case ClassWriter.NAME_TYPE:
         hashCode = 0x7FFFFFFF & (type + strVal1.hashCode()
-                * strVal2.hashCode());
+            * strVal2.hashCode());
         return;
       // ClassWriter.FIELD:
       // ClassWriter.METH:
       // ClassWriter.IMETH:
       default:
         hashCode = 0x7FFFFFFF & (type + strVal1.hashCode()
-                * strVal2.hashCode() * strVal3.hashCode());
+            * strVal2.hashCode() * strVal3.hashCode());
     }
   }
 
@@ -240,14 +240,14 @@ final class Item {
           return i.intVal == intVal && i.strVal1.equals(strVal1);
         case ClassWriter.NAME_TYPE:
           return i.strVal1.equals(strVal1)
-                  && i.strVal2.equals(strVal2);
+              && i.strVal2.equals(strVal2);
         // ClassWriter.FIELD:
         // ClassWriter.METH:
         // ClassWriter.IMETH:
         default:
           return i.strVal1.equals(strVal1)
-                  && i.strVal2.equals(strVal2)
-                  && i.strVal3.equals(strVal3);
+              && i.strVal2.equals(strVal2)
+              && i.strVal3.equals(strVal3);
       }
     }
     return false;

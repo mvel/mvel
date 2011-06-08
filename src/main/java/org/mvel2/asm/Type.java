@@ -508,8 +508,8 @@ public class Type {
    *         types.
    */
   public static String getMethodDescriptor(
-          final Type returnType,
-          final Type[] argumentTypes) {
+      final Type returnType,
+      final Type[] argumentTypes) {
     StringBuffer buf = new StringBuffer();
     buf.append('(');
     for (int i = 0; i < argumentTypes.length; ++i) {

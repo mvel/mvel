@@ -45,15 +45,15 @@ public class TypeCast extends ASTNode {
     if ((fields & COMPILE_IMMEDIATE) != 0) {
 
       if ((statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx))
-              .getKnownEgressType() != Object.class
-              && !canConvert(cast, statement.getKnownEgressType())) {
+          .getKnownEgressType() != Object.class
+          && !canConvert(cast, statement.getKnownEgressType())) {
 
         if (canCast(statement.getKnownEgressType(), cast)) {
           widen = true;
         }
         else {
           throw new CompileException("unable to cast type: "
-                  + statement.getKnownEgressType() + "; to: " + cast, expr, start);
+              + statement.getKnownEgressType() + "; to: " + cast, expr, start);
         }
       }
 
@@ -80,7 +80,7 @@ public class TypeCast extends ASTNode {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     //noinspection unchecked
     return widen ? typeCheck(eval(expr, start, offset, ctx, factory), egressType) :
-            convert(eval(expr, start, offset, ctx, factory), egressType);
+        convert(eval(expr, start, offset, ctx, factory), egressType);
   }
 
   private static Object typeCheck(Object inst, Class type) {

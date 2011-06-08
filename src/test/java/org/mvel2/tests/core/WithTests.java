@@ -36,11 +36,11 @@ public class WithTests extends AbstractTest {
 
   public void testWith2() {
     assertEquals("OneTwoOne", test(
-            "var y; with (foo) { \n" +
-                    "aValue = (y = 'One'), // this is a comment \n" +
-                    "bValue='Two'  // this is also a comment \n" +
-                    "}; \n" +
-                    "foo.aValue + foo.bValue + y;"));
+        "var y; with (foo) { \n" +
+            "aValue = (y = 'One'), // this is a comment \n" +
+            "bValue='Two'  // this is also a comment \n" +
+            "}; \n" +
+            "foo.aValue + foo.bValue + y;"));
   }
 
   public void testWith3() {
@@ -61,10 +61,10 @@ public class WithTests extends AbstractTest {
 
   public void testWith5() {
     String expr = "with (foo) { countTest += 5, \n" +
-            "// foobar!\n" +
-            "aValue = 'Hello',\n" +
-            "/** Comment! **/\n" +
-            "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo";
+        "// foobar!\n" +
+        "aValue = 'Hello',\n" +
+        "/** Comment! **/\n" +
+        "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo";
 
     Map vars = createTestMap();
 
@@ -181,12 +181,12 @@ public class WithTests extends AbstractTest {
     ctx.addImport(Bar.class);
 
     Serializable s = compileExpression("[ 'foo' : (with ( new Foo() )" +
-            " { bar = with ( new Bar() ) { name = 'ziggy' } }) ]",
-            ctx);
+        " { bar = with ( new Bar() ) { name = 'ziggy' } }) ]",
+        ctx);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
     assertEquals("ziggy",
-            (((Foo) ((Map) executeExpression(s)).get("foo")).getBar().getName()));
+        (((Foo) ((Map) executeExpression(s)).get("foo")).getBar().getName()));
   }
 
   public void testSataticClassImportViaFactoryAndWithModification() {
@@ -196,14 +196,14 @@ public class WithTests extends AbstractTest {
     classes.addClass(Person.class);
 
     ResolverTools.appendFactory(mvf,
-            classes);
+        classes);
 
     assertEquals(21,
-            executeExpression(
-                    compileExpression("p = new Person('tom'); p.age = 20; " +
-                            "with( p ) { age = p.age + 1 }; return p.age;",
-                            classes.getImportedClasses()),
-                    mvf));
+        executeExpression(
+            compileExpression("p = new Person('tom'); p.age = 20; " +
+                "with( p ) { age = p.age + 1 }; return p.age;",
+                classes.getImportedClasses()),
+            mvf));
   }
 
 
@@ -212,9 +212,9 @@ public class WithTests extends AbstractTest {
 
     Map<String, Object> vars = new HashMap<String, Object>();
     vars.put("foo",
-            new Foo());
+        new Foo());
     vars.put("$value",
-            new Long(5));
+        new Long(5));
 
     ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
 
@@ -233,9 +233,9 @@ public class WithTests extends AbstractTest {
 
     Map<String, Object> vars = new HashMap<String, Object>();
     vars.put("foo",
-            new Foo());
+        new Foo());
     vars.put("$value",
-            new Long(5));
+        new Long(5));
 
     ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
 
@@ -246,11 +246,11 @@ public class WithTests extends AbstractTest {
     CompiledExpression compiled = compiler.compile(ctx);
 
     executeExpression(compiled,
-            null,
-            vars);
+        null,
+        vars);
     executeExpression(compiled,
-            null,
-            vars);
+        null,
+        vars);
   }
 
 
@@ -268,7 +268,7 @@ public class WithTests extends AbstractTest {
     list.add(recipient2);
 
     String text = "array = [" + "(with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' }),"
-            + "(with ( new Recipient() ) {name = 'userName2', email = 'user2@domain.com' })];\n";
+        + "(with ( new Recipient() ) {name = 'userName2', email = 'user2@domain.com' })];\n";
 
     ParserContext context = new ParserContext();
     context.addImport(Recipient.class);
@@ -276,9 +276,9 @@ public class WithTests extends AbstractTest {
     ExpressionCompiler compiler = new ExpressionCompiler(text);
     Serializable execution = compiler.compile(context);
     List result = (List) executeExpression(execution,
-            new HashMap());
+        new HashMap());
     assertEquals(list,
-            result);
+        result);
   }
 
   public void testNestedWithInComplexGraph3() {
@@ -317,11 +317,11 @@ public class WithTests extends AbstractTest {
     Serializable execution = compiler.compile(context);
 
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
 
     OptimizerFactory.setDefaultOptimizer("reflective");
 
@@ -330,11 +330,11 @@ public class WithTests extends AbstractTest {
     execution = compiler.compile(context);
 
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
     assertEquals(msg,
-            executeExpression(execution));
+        executeExpression(execution));
   }
 
   public void testInlineWithWithLiteral() {

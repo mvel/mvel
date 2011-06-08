@@ -18,7 +18,7 @@ public class Strsim extends ASTNode {
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return similarity(String.valueOf(soundslike.getReducedValueAccelerated(ctx, thisValue, factory)),
-            ((String) stmt.getReducedValueAccelerated(ctx, thisValue, factory)));
+        ((String) stmt.getReducedValueAccelerated(ctx, thisValue, factory)));
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
