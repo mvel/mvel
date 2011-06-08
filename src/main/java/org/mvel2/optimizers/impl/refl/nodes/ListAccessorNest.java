@@ -22,78 +22,76 @@ import org.mvel2.DataConversion;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.util.List;
 
 public class ListAccessorNest implements AccessorNode {
-    private AccessorNode nextNode;
-    private ExecutableStatement index;
-    private Class conversionType;
+  private AccessorNode nextNode;
+  private ExecutableStatement index;
+  private Class conversionType;
 
 
-    public ListAccessorNest() {
+  public ListAccessorNest() {
+  }
+
+  public ListAccessorNest(String index, Class conversionType) {
+    this.index = (ExecutableStatement) subCompileExpression(index.toCharArray());
+    this.conversionType = conversionType;
+  }
+
+  public ListAccessorNest(ExecutableStatement index, Class conversionType) {
+    this.index = index;
+    this.conversionType = conversionType;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return nextNode.getValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);
+    } else {
+      return ((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars));
+    }
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    //noinspection unchecked
+
+    if (nextNode != null) {
+      return nextNode.setValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars, value);
+    } else {
+      if (conversionType != null) {
+        ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
+      } else {
+        ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value);
+      }
+      return value;
     }
 
-    public ListAccessorNest(String index, Class conversionType) {
-        this.index = (ExecutableStatement) subCompileExpression(index.toCharArray());
-        this.conversionType = conversionType;
-    }
+  }
 
-    public ListAccessorNest(ExecutableStatement index, Class conversionType) {
-        this.index = index;
-        this.conversionType = conversionType;
-    }
+  public ExecutableStatement getIndex() {
+    return index;
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return nextNode.getValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);
-        }
-        else {
-            return ((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars));
-        }
-    }
+  public void setIndex(ExecutableStatement index) {
+    this.index = index;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        //noinspection unchecked
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-        if (nextNode != null) {
-            return nextNode.setValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars, value);
-        }
-        else {
-            if (conversionType != null) {
-                ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
-            }
-            else {
-                ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value);
-            }
-            return value;
-        }
-
-    }
-
-    public ExecutableStatement getIndex() {
-        return index;
-    }
-
-    public void setIndex(ExecutableStatement index) {
-        this.index = index;
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
 
-    public String toString() {
-        return "Array Accessor -> [" + index + "]";
-    }
+  public String toString() {
+    return "Array Accessor -> [" + index + "]";
+  }
 
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

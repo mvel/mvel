@@ -27,41 +27,41 @@ import static java.lang.String.valueOf;
 import static org.mvel2.util.ParseTools.subset;
 
 public class EvalNode extends Node {
-    public EvalNode() {
-    }
+  public EvalNode() {
+  }
 
-    public EvalNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-    }
+  public EvalNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  }
 
-    public EvalNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
-        this.begin = begin;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-        this.next = next;
-    }
+  public EvalNode(int begin, String name, char[] template, int start, int end, Node next) {
+    this.name = name;
+    this.begin = begin;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+    this.next = next;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append(String.valueOf(TemplateRuntime.eval(
-                valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)), ctx, factory)));
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    appender.append(String.valueOf(TemplateRuntime.eval(
+            valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)), ctx, factory)));
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 
-    public String toString() {
-        return "EvalNode:" + name + "{" + (contents == null ? "" : new String(contents,cStart,cEnd-cStart)) + "} (start=" + begin + ";end=" + end + ")";
-    }
+  public String toString() {
+    return "EvalNode:" + name + "{" + (contents == null ? "" : new String(contents, cStart, cEnd - cStart)) + "} (start=" + begin + ";end=" + end + ")";
+  }
 }

@@ -19,150 +19,156 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.Operator;
+
 import static org.mvel2.Operator.PTABLE;
+
 import org.mvel2.ParserContext;
+
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 
 import org.mvel2.ScriptRuntimeException;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.math.MathProcessor.doOperations;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
+
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class BinaryOperation extends BooleanNode {
-    private final int operation;
-    private int lType = -1;
-    private int rType = -1;
+  private final int operation;
+  private int lType = -1;
+  private int rType = -1;
 
-    public BinaryOperation(int operation) {
-        this.operation = operation;
+  public BinaryOperation(int operation) {
+    this.operation = operation;
+  }
+
+  public BinaryOperation(int operation, ASTNode left, ASTNode right) {
+    this.operation = operation;
+    if ((this.left = left) == null) {
+      throw new RuntimeException("not a statement");
+    }
+    if ((this.right = right) == null) {
+      throw new RuntimeException("not a statement");
     }
 
-    public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-        this.operation = operation;
-        if ((this.left = left) == null) {
-            throw new RuntimeException("not a statement");
-        }
-        if ((this.right = right) == null) {
-            throw new RuntimeException("not a statement");
-        }
+    egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
+  }
 
-        egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
+  public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
+    this.operation = operation;
+    if ((this.left = left) == null) {
+      throw new ScriptRuntimeException("not a statement");
     }
-
-    public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
-        this.operation = operation;
-        if ((this.left = left) == null) {
-            throw new ScriptRuntimeException("not a statement");
-        }
-        if ((this.right = right) == null) {
-            throw new ScriptRuntimeException("not a statement");
-        }
+    if ((this.right = right) == null) {
+      throw new ScriptRuntimeException("not a statement");
+    }
 
     //    if (ctx.isStrongTyping()) {
-            switch (operation) {
-                case Operator.ADD:
-                    /**
-                     * In the special case of Strings, the return type may leftward propogate.
-                     */
-                    if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
-                        egressType = String.class;
-                        lType = ParseTools.__resolveType(left.egressType);
-                        rType = ParseTools.__resolveType(right.egressType);
+    switch (operation) {
+      case Operator.ADD:
+        /**
+         * In the special case of Strings, the return type may leftward propogate.
+         */
+        if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
+          egressType = String.class;
+          lType = ParseTools.__resolveType(left.egressType);
+          rType = ParseTools.__resolveType(right.egressType);
 
-                        return;
-                    }
-
-                default:
-                    if (!ctx.isStrongTyping()) break;
-
-                    if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
-                        if (right.isLiteral() && canConvert(right.getEgressType(), left.getEgressType())) {
-                            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
-                        }
-                        else if (!(Number.class.isAssignableFrom(right.getEgressType()) && Number.class.isAssignableFrom(left.getEgressType()))
-                                && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
-                                || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
-
-                            throw new CompileException("incompatible types in statement: " + right.getEgressType()
-                                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
-                        }
-                    }
-            }
-
-
-       // }
-
-        if (this.left.isLiteral() && this.right.isLiteral()) {
-            if (this.left.egressType == this.right.egressType) {
-                lType = rType = ParseTools.__resolveType(left.egressType);
-            }
-            else {
-                lType = ParseTools.__resolveType(this.left.egressType);
-                rType = ParseTools.__resolveType(this.right.egressType);
-            }
+          return;
         }
 
-        egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
+      default:
+        if (!ctx.isStrongTyping()) break;
 
-    }
+        if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
+          if (right.isLiteral() && canConvert(right.getEgressType(), left.getEgressType())) {
+            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
+          } else if (!(Number.class.isAssignableFrom(right.getEgressType()) && Number.class.isAssignableFrom(left.getEgressType()))
+                  && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
+                  || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
 
-
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), operation, rType, right.getReducedValueAccelerated(ctx, thisValue, factory));
-    }
-
-
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new RuntimeException("unsupported AST operation");
-    }
-
-    public int getOperation() {
-        return operation;
-    }
-
-    public BinaryOperation getRightBinary() {
-        return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
-    }
-
-    public void setRightMost(ASTNode right) {
-        BinaryOperation n = this;
-        while (n.right != null && n.right instanceof BinaryOperation) {
-            n = (BinaryOperation) n.right;
-        }
-        n.right = right;
-
-        if (n == this) {
-            if ((rType = ParseTools.__resolveType(n.right.getEgressType())) == 0) rType = -1;
+            throw new CompileException("incompatible types in statement: " + right.getEgressType()
+                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
+          }
         }
     }
 
-    public ASTNode getRightMost() {
-        BinaryOperation n = this;
-        while (n.right != null && n.right instanceof BinaryOperation) {
-            n = (BinaryOperation) n.right;
-        }
-        return n.right;
+
+    // }
+
+    if (this.left.isLiteral() && this.right.isLiteral()) {
+      if (this.left.egressType == this.right.egressType) {
+        lType = rType = ParseTools.__resolveType(left.egressType);
+      } else {
+        lType = ParseTools.__resolveType(this.left.egressType);
+        rType = ParseTools.__resolveType(this.right.egressType);
+      }
     }
 
-    public int getPrecedence() {
-        return PTABLE[operation];
-    }
+    egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
 
-    public boolean isGreaterPrecedence(BinaryOperation o) {
-        return o.getPrecedence() > PTABLE[operation];
-    }
+  }
 
-    @Override
-    public boolean isLiteral() {
-        return false;
-    }
 
-    public String toString() {
-        return "(" + left + " " + getOperatorSymbol(operation) + " " + right + ")";
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), operation, rType, right.getReducedValueAccelerated(ctx, thisValue, factory));
+  }
+
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    throw new RuntimeException("unsupported AST operation");
+  }
+
+  public int getOperation() {
+    return operation;
+  }
+
+  public BinaryOperation getRightBinary() {
+    return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
+  }
+
+  public void setRightMost(ASTNode right) {
+    BinaryOperation n = this;
+    while (n.right != null && n.right instanceof BinaryOperation) {
+      n = (BinaryOperation) n.right;
     }
+    n.right = right;
+
+    if (n == this) {
+      if ((rType = ParseTools.__resolveType(n.right.getEgressType())) == 0) rType = -1;
+    }
+  }
+
+  public ASTNode getRightMost() {
+    BinaryOperation n = this;
+    while (n.right != null && n.right instanceof BinaryOperation) {
+      n = (BinaryOperation) n.right;
+    }
+    return n.right;
+  }
+
+  public int getPrecedence() {
+    return PTABLE[operation];
+  }
+
+  public boolean isGreaterPrecedence(BinaryOperation o) {
+    return o.getPrecedence() > PTABLE[operation];
+  }
+
+  @Override
+  public boolean isLiteral() {
+    return false;
+  }
+
+  public String toString() {
+    return "(" + left + " " + getOperatorSymbol(operation) + " " + right + ")";
+  }
 }

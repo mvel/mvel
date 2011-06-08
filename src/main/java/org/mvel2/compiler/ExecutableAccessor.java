@@ -23,79 +23,79 @@ import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class ExecutableAccessor implements ExecutableStatement {
-    private ASTNode node;
+  private ASTNode node;
 
-    private Class ingress;
-    private Class egress;
-    private boolean convertable;
+  private Class ingress;
+  private Class egress;
+  private boolean convertable;
 
-    public ExecutableAccessor(ASTNode node, Class egress) {
-        this.node = node;
-        this.egress = egress;
+  public ExecutableAccessor(ASTNode node, Class egress) {
+    this.node = node;
+    this.egress = egress;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    return node.getReducedValueAccelerated(ctx, elCtx, variableFactory);
+  }
+
+  public Object getValue(Object staticContext, VariableResolverFactory factory) {
+    return node.getReducedValueAccelerated(staticContext, staticContext, factory);
+  }
+
+  public void setKnownIngressType(Class type) {
+    this.ingress = type;
+  }
+
+  public void setKnownEgressType(Class type) {
+    this.egress = type;
+  }
+
+  public Class getKnownIngressType() {
+    return ingress;
+  }
+
+  public Class getKnownEgressType() {
+    return egress;
+  }
+
+  public boolean isConvertableIngressEgress() {
+    return convertable;
+  }
+
+  public void computeTypeConversionRule() {
+    if (ingress != null && egress != null) {
+      convertable = ingress.isAssignableFrom(egress);
     }
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return node.getReducedValueAccelerated(ctx, elCtx, variableFactory);
-    }
+  public boolean intOptimized() {
+    return false;
+  }
 
-    public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return node.getReducedValueAccelerated(staticContext, staticContext, factory);
-    }
+  public ASTNode getNode() {
+    return node;
+  }
 
-    public void setKnownIngressType(Class type) {
-        this.ingress = type;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return null;
+  }
 
-    public void setKnownEgressType(Class type) {
-        this.egress = type;
-    }
+  public boolean isLiteralOnly() {
+    return false;
+  }
 
-    public Class getKnownIngressType() {
-        return ingress;
-    }
+  public boolean isExplicitCast() {
+    return node instanceof TypeCast;
+  }
 
-    public Class getKnownEgressType() {
-        return egress;
-    }
+  public boolean isEmptyStatement() {
+    return node == null;
+  }
 
-    public boolean isConvertableIngressEgress() {
-        return convertable;
-    }
-
-    public void computeTypeConversionRule() {
-        if (ingress != null && egress != null) {
-            convertable = ingress.isAssignableFrom(egress);
-        }
-    }
-
-    public boolean intOptimized() {
-        return false;
-    }
-
-    public ASTNode getNode() {
-        return node;
-    }
-
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
-    }
-
-    public boolean isLiteralOnly() {
-        return false;
-    }
-
-    public boolean isExplicitCast() {
-        return node instanceof TypeCast;
-    }
-
-    public boolean isEmptyStatement() {
-        return node == null;
-    }
-
-    @Override
-    public String toString() {
-        return node.toString();
-    }
+  @Override
+  public String toString() {
+    return node.toString();
+  }
 }
 
 

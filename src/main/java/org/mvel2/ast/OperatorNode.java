@@ -19,36 +19,38 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
+
 import org.mvel2.integration.VariableResolverFactory;
 
 public class OperatorNode extends ASTNode {
-    private Integer operator;
+  private Integer operator;
 
-    public OperatorNode(Integer operator, char[] expr, int start) {
-        assert operator != null;
-        this.expr = expr;
-        this.literal = this.operator = operator;
-        this.start = start;
-    }
+  public OperatorNode(Integer operator, char[] expr, int start) {
+    assert operator != null;
+    this.expr = expr;
+    this.literal = this.operator = operator;
+    this.start = start;
+  }
 
-    public boolean isOperator() {
-        return true;
-    }
+  public boolean isOperator() {
+    return true;
+  }
 
-    public boolean isOperator(Integer operator) {
-        return operator.equals(this.operator);
-    }
+  public boolean isOperator(Integer operator) {
+    return operator.equals(this.operator);
+  }
 
-    public Integer getOperator() {
-        return operator;
-    }
+  public Integer getOperator() {
+    return operator;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr, start);
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr, start);
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr,start);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr, start);
+  }
 }

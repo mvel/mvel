@@ -23,37 +23,37 @@ import org.mvel2.ast.LineLabel;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class Frame {
-    private LineLabel label;
-    private VariableResolverFactory factory;
-    private ParserContext parserContext;
+  private LineLabel label;
+  private VariableResolverFactory factory;
+  private ParserContext parserContext;
 
-    public Frame(LineLabel label, VariableResolverFactory factory, ParserContext pCtx) {
-        this.label = label;
-        this.factory = factory;
-        this.parserContext = pCtx;
-    }
+  public Frame(LineLabel label, VariableResolverFactory factory, ParserContext pCtx) {
+    this.label = label;
+    this.factory = factory;
+    this.parserContext = pCtx;
+  }
 
-    public String getSourceName() {
-        return label.getSourceFile();
-    }
+  public String getSourceName() {
+    return label.getSourceFile();
+  }
 
-    public int getLineNumber() {
-        return label.getLineNumber();
-    }
+  public int getLineNumber() {
+    return label.getLineNumber();
+  }
 
-    public VariableResolverFactory getFactory() {
-        return factory;
-    }
+  public VariableResolverFactory getFactory() {
+    return factory;
+  }
 
-    public void setFactory(VariableResolverFactory factory) {
-        this.factory = factory;
-    }
+  public void setFactory(VariableResolverFactory factory) {
+    this.factory = factory;
+  }
 
-    public ParserContext getParserContext() {
-        return parserContext;
-    }
+  public ParserContext getParserContext() {
+    return parserContext;
+  }
 
-    public void setParserContext(ParserContext parserContext) {
-        this.parserContext = parserContext;
-    }
+  public void setParserContext(ParserContext parserContext) {
+    this.parserContext = parserContext;
+  }
 }

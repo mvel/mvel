@@ -24,12 +24,12 @@ import org.mvel2.compiler.BlankLiteral;
 import static java.lang.String.valueOf;
 
 public class StringCH implements ConversionHandler {
-    public Object convertFrom(Object in) {
-        return valueOf(in);
-    }
+  public Object convertFrom(Object in) {
+    return valueOf(in);
+  }
 
 
-    public boolean canConvertFrom(Class cls) {
-        return cls != BlankLiteral.class;
-    }
+  public boolean canConvertFrom(Class cls) {
+    return cls != BlankLiteral.class;
+  }
 }

@@ -31,50 +31,49 @@ import java.io.Serializable;
 import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 
 public class CompiledNamedIncludeNode extends Node {
-    private Serializable cIncludeExpression;
-    private Serializable cPreExpression;
+  private Serializable cIncludeExpression;
+  private Serializable cPreExpression;
 
-    public CompiledNamedIncludeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
-        this.begin = begin;
-        this.name = name;
+  public CompiledNamedIncludeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
+    this.begin = begin;
+    this.name = name;
 
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
 
-        int mark = captureToEOS(contents, cStart);
-        this.cIncludeExpression = MVEL.compileExpression(contents, cStart, mark - cStart, context);
+    int mark = captureToEOS(contents, cStart);
+    this.cIncludeExpression = MVEL.compileExpression(contents, cStart, mark - cStart, context);
 
-        if (mark != contents.length) {
-            this.cPreExpression = MVEL.compileExpression(contents, ++mark, cEnd - mark, context);
-        }
+    if (mark != contents.length) {
+      this.cPreExpression = MVEL.compileExpression(contents, ++mark, cEnd - mark, context);
+    }
+  }
+
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (cPreExpression != null) {
+      MVEL.executeExpression(cPreExpression, ctx, factory);
     }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (cPreExpression != null) {
-            MVEL.executeExpression(cPreExpression, ctx, factory);
-        }
 
+    if (next != null) {
+      String namedTemplate = MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class);
+      CompiledTemplate ct = runtime.getNamedTemplateRegistry().getNamedTemplate(namedTemplate);
 
-        if (next != null) {
-            String namedTemplate = MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class);
-            CompiledTemplate ct = runtime.getNamedTemplateRegistry().getNamedTemplate(namedTemplate);
+      if (ct == null)
+        throw new TemplateError("named template does not exist: " + namedTemplate);
 
-            if (ct == null)
-                throw new TemplateError("named template does not exist: " + namedTemplate);
-
-            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.execute(ct, ctx, factory, runtime.getNamedTemplateRegistry()))), ctx, factory);
+      return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.execute(ct, ctx, factory, runtime.getNamedTemplateRegistry()))), ctx, factory);
 
 //            return next.eval(runtime,
 //                    appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory))), ctx, factory);
-        }
-        else {
-            return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory, runtime.getNamedTemplateRegistry())));
-        }
+    } else {
+      return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory, runtime.getNamedTemplateRegistry())));
     }
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

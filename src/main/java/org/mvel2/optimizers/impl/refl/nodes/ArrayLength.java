@@ -27,20 +27,19 @@ import static java.lang.reflect.Array.getLength;
  */
 public class ArrayLength extends BaseAccessor {
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        if (nextNode != null) {
-            return nextNode.getValue(getLength(ctx), elCtx, variableFactory);
-        }
-        else {
-            return getLength(ctx);
-        }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    if (nextNode != null) {
+      return nextNode.getValue(getLength(ctx), elCtx, variableFactory);
+    } else {
+      return getLength(ctx);
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return null;
+  }
 
-    public Class getKnownEgressType() {
-        return Integer.class;
-    }
+  public Class getKnownEgressType() {
+    return Integer.class;
+  }
 }

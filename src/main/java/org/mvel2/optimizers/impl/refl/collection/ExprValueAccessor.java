@@ -20,62 +20,64 @@ package org.mvel2.optimizers.impl.refl.collection;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.getSubComponentType;
 
 /**
  * @author Christopher Brock
  */
 public class ExprValueAccessor implements Accessor {
-    public ExecutableStatement stmt;
+  public ExecutableStatement stmt;
 
-    public ExprValueAccessor(String ex, Class expectedType, Object ctx, VariableResolverFactory factory, ParserContext pCtx) {
-        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray(), pCtx);
+  public ExprValueAccessor(String ex, Class expectedType, Object ctx, VariableResolverFactory factory, ParserContext pCtx) {
+    stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray(), pCtx);
 
-        //if (expectedType.isArray()) {
-        Class tt = getSubComponentType(expectedType);
-        Class et = stmt.getKnownEgressType();
-        if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
-            if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
-                try {
-                    stmt = new ExecutableLiteral(convert(stmt.getValue(ctx, factory), tt));
-                    return;
-                }
-                catch (IllegalArgumentException e) {
-                    // fall through;
-                }
-            }
-           if (pCtx != null && pCtx.isStrongTyping())
-               throw new RuntimeException("was expecting type: " + tt + "; but found type: "
-                       + (et == null ? "null" : et.getName()));
+    //if (expectedType.isArray()) {
+    Class tt = getSubComponentType(expectedType);
+    Class et = stmt.getKnownEgressType();
+    if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
+      if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
+        try {
+          stmt = new ExecutableLiteral(convert(stmt.getValue(ctx, factory), tt));
+          return;
+        } catch (IllegalArgumentException e) {
+          // fall through;
         }
+      }
+      if (pCtx != null && pCtx.isStrongTyping())
+        throw new RuntimeException("was expecting type: " + tt + "; but found type: "
+                + (et == null ? "null" : et.getName()));
     }
+  }
 
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return stmt.getValue(elCtx, variableFactory);
-    }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    return stmt.getValue(elCtx, variableFactory);
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        // not implemented
-        return null;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    // not implemented
+    return null;
+  }
 
-    public ExecutableStatement getStmt() {
-        return stmt;
-    }
+  public ExecutableStatement getStmt() {
+    return stmt;
+  }
 
-    public void setStmt(ExecutableStatement stmt) {
-        this.stmt = stmt;
-    }
+  public void setStmt(ExecutableStatement stmt) {
+    this.stmt = stmt;
+  }
 
-    public Class getKnownEgressType() {
-        return stmt.getKnownEgressType();
-    }
+  public Class getKnownEgressType() {
+    return stmt.getKnownEgressType();
+  }
 }

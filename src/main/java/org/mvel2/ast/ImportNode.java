@@ -28,75 +28,71 @@ import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
  * @author Christopher Brock
  */
 public class ImportNode extends ASTNode {
-    private Class importClass;
-    private boolean packageImport;
-    private int _offset;
+  private Class importClass;
+  private boolean packageImport;
+  private int _offset;
 
-    private static final char[] WC_TEST = new char[]{'.', '*'};
+  private static final char[] WC_TEST = new char[]{'.', '*'};
 
-    public ImportNode(char[] expr, int start, int offset) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public ImportNode(char[] expr, int start, int offset) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if (ParseTools.endsWith(expr, start, offset, WC_TEST)) {
-            packageImport = true;
-            _offset = (short) ParseTools.findLast(expr, start, offset, '.');
-            if (_offset == -1) {
-                _offset = 0;
-            }
+    if (ParseTools.endsWith(expr, start, offset, WC_TEST)) {
+      packageImport = true;
+      _offset = (short) ParseTools.findLast(expr, start, offset, '.');
+      if (_offset == -1) {
+        _offset = 0;
+      }
+    } else {
+      String clsName = new String(expr, start, offset);
+
+      try {
+        this.importClass = Class.forName(clsName, true,
+                Thread.currentThread().getContextClassLoader());
+      } catch (ClassNotFoundException e) {
+        int idx;
+        clsName = (clsName.substring(0, idx = clsName.lastIndexOf('.')) + "$" + clsName.substring(idx + 1)).trim();
+
+        try {
+          this.importClass = Class.forName(clsName, true, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e2) {
+          throw new CompileException("class not found: " + new String(expr), expr, start);
         }
-        else {
-            String clsName = new String(expr, start, offset);
-
-            try {
-                this.importClass = Class.forName(clsName, true,
-                        Thread.currentThread().getContextClassLoader());
-            }
-            catch (ClassNotFoundException e) {
-                int idx;
-                clsName = (clsName.substring(0, idx = clsName.lastIndexOf('.')) + "$" + clsName.substring(idx + 1)).trim();
-
-                try {
-                    this.importClass = Class.forName(clsName, true, Thread.currentThread().getContextClassLoader());
-                }
-                catch (ClassNotFoundException e2) {
-                    throw new CompileException("class not found: " + new String(expr), expr, start);
-                }
-            }
-        }
+      }
     }
+  }
 
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (!packageImport) {
-            return findClassImportResolverFactory(factory).addClass(importClass);
-        }
-        else {
-            findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
-            return null;
-        }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (!packageImport) {
+      return findClassImportResolverFactory(factory).addClass(importClass);
+    } else {
+      findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
+      return null;
     }
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return getReducedValueAccelerated(ctx, thisValue, factory);
+  }
 
 
-    public Class getImportClass() {
-        return importClass;
-    }
+  public Class getImportClass() {
+    return importClass;
+  }
 
-    public boolean isPackageImport() {
-        return packageImport;
-    }
+  public boolean isPackageImport() {
+    return packageImport;
+  }
 
-    public void setPackageImport(boolean packageImport) {
-        this.packageImport = packageImport;
-    }
+  public void setPackageImport(boolean packageImport) {
+    this.packageImport = packageImport;
+  }
 
-    public String getPackageImport() {
-        return new String(expr, start, _offset - start);
-    }
+  public String getPackageImport() {
+    return new String(expr, start, _offset - start);
+  }
 }
 

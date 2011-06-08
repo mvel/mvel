@@ -36,88 +36,82 @@ import java.util.HashMap;
  * @author Christopher Brock
  */
 public class IfNode extends BlockNode implements NestedStatement {
-    protected ExecutableStatement condition;
-    protected ExecutableStatement nestedStatement;
+  protected ExecutableStatement condition;
+  protected ExecutableStatement nestedStatement;
 
-    protected IfNode elseIf;
-    protected ExecutableStatement elseBlock;
+  protected IfNode elseIf;
+  protected ExecutableStatement elseBlock;
 
-    protected boolean idxAlloc = false;
+  protected boolean idxAlloc = false;
 
-    public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
-        if ((this.expr = expr) == null || offset == 0) {
-            throw new CompileException("statement expected", expr, start);
-        }
-        this.start = start;
-        this.offset = offset;
-        this.blockStart = blockStart;
-        this.blockOffset = blockOffset;
-
-        idxAlloc = pCtx != null && pCtx.isIndexAllocation();
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
-                    Boolean.class, true);
-
-            if (pCtx != null) {
-                pCtx.pushVariableScope();
-            }
-            this.nestedStatement = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
-
-            if (pCtx != null) {
-                pCtx.popVariableScope();
-            }
-        }
+  public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+    if ((this.expr = expr) == null || offset == 0) {
+      throw new CompileException("statement expected", expr, start);
     }
+    this.start = start;
+    this.offset = offset;
+    this.blockStart = blockStart;
+    this.blockOffset = blockOffset;
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            return nestedStatement.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else if (elseIf != null) {
-            return elseIf.getReducedValueAccelerated(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else if (elseBlock != null) {
-            return elseBlock.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else {
-            return null;
-        }
-    }
+    idxAlloc = pCtx != null && pCtx.isIndexAllocation();
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((Boolean) eval(expr, start, offset, ctx, factory)) {
-            return eval(expr, blockStart, blockOffset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else if (elseIf != null) {
-            return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else if (elseBlock != null) {
-            return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
-        }
-        else {
-            return null;
-        }
-    }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
+              Boolean.class, true);
 
-    public ExecutableStatement getNestedStatement() {
-        return nestedStatement;
-    }
+      if (pCtx != null) {
+        pCtx.pushVariableScope();
+      }
+      this.nestedStatement = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
 
-    public IfNode setElseIf(IfNode elseIf) {
-        return this.elseIf = elseIf;
+      if (pCtx != null) {
+        pCtx.popVariableScope();
+      }
     }
+  }
 
-    public ExecutableStatement getElseBlock() {
-        return elseBlock;
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
+      return nestedStatement.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
+    } else if (elseIf != null) {
+      return elseIf.getReducedValueAccelerated(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
+    } else if (elseBlock != null) {
+      return elseBlock.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
+    } else {
+      return null;
     }
+  }
 
-    public IfNode setElseBlock(char[] block, int cursor, int offset, ParserContext ctx) {
-        elseBlock = (ExecutableStatement) subCompileExpression(block, cursor, offset, ctx);
-        return this;
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if ((Boolean) eval(expr, start, offset, ctx, factory)) {
+      return eval(expr, blockStart, blockOffset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
+    } else if (elseIf != null) {
+      return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
+    } else if (elseBlock != null) {
+      return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
+    } else {
+      return null;
     }
+  }
 
-    public String toString() {
-        return new String(expr, start, offset);
-    }
+  public ExecutableStatement getNestedStatement() {
+    return nestedStatement;
+  }
+
+  public IfNode setElseIf(IfNode elseIf) {
+    return this.elseIf = elseIf;
+  }
+
+  public ExecutableStatement getElseBlock() {
+    return elseBlock;
+  }
+
+  public IfNode setElseBlock(char[] block, int cursor, int offset, ParserContext ctx) {
+    elseBlock = (ExecutableStatement) subCompileExpression(block, cursor, offset, ctx);
+    return this;
+  }
+
+  public String toString() {
+    return new String(expr, start, offset);
+  }
 }

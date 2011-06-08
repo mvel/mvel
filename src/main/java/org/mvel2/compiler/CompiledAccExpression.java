@@ -27,108 +27,105 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import java.io.Serializable;
 
 public class CompiledAccExpression implements ExecutableStatement, Serializable {
-    private char[] expression;
-    private int start;
-    private int offset;
+  private char[] expression;
+  private int start;
+  private int offset;
 
-    private transient Accessor accessor;
-    private ParserContext context;
-    private Class ingressType;
+  private transient Accessor accessor;
+  private ParserContext context;
+  private Class ingressType;
 
-    public CompiledAccExpression(char[] expression, Class ingressType, ParserContext context) {
-        this(expression, 0, expression.length, ingressType, context);
+  public CompiledAccExpression(char[] expression, Class ingressType, ParserContext context) {
+    this(expression, 0, expression.length, ingressType, context);
+  }
+
+  public CompiledAccExpression(char[] expression, int start, int offset, Class ingressType, ParserContext context) {
+    this.expression = expression;
+    this.start = start;
+    this.offset = offset;
+
+    this.context = context;
+    this.ingressType = ingressType != null ? ingressType : Object.class;
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
+    if (accessor == null) {
+      if (ingressType == Object.class && value != null) ingressType = value.getClass();
+      accessor = getThreadAccessorOptimizer()
+              .optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, ingressType);
+
+    } else {
+      accessor.setValue(ctx, elCtx, vrf, value);
     }
+    return value;
+  }
 
-    public CompiledAccExpression(char[] expression, int start, int offset, Class ingressType, ParserContext context) {
-        this.expression = expression;
-        this.start = start;
-        this.offset = offset;
-
-        this.context = context;
-        this.ingressType = ingressType != null ? ingressType : Object.class;
+  public Object getValue(Object staticContext, VariableResolverFactory factory) {
+    if (accessor == null) {
+      try {
+        accessor = getThreadAccessorOptimizer()
+                .optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
+        return getValue(staticContext, factory);
+      } finally {
+        OptimizerFactory.clearThreadAccessorOptimizer();
+      }
     }
+    return accessor.getValue(staticContext, staticContext, factory);
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
-        if (accessor == null) {
-            if (ingressType == Object.class && value != null) ingressType = value.getClass();
-            accessor = getThreadAccessorOptimizer()
-                    .optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, ingressType);
+  public void setKnownIngressType(Class type) {
+    this.ingressType = type;
+  }
 
-        }
-        else {
-            accessor.setValue(ctx, elCtx, vrf, value);
-        }
-        return value;
+  public void setKnownEgressType(Class type) {
+
+  }
+
+  public Class getKnownIngressType() {
+    return ingressType;
+  }
+
+  public Class getKnownEgressType() {
+    return null;
+  }
+
+  public boolean isConvertableIngressEgress() {
+    return false;
+  }
+
+  public void computeTypeConversionRule() {
+  }
+
+  public boolean intOptimized() {
+    return false;
+  }
+
+  public boolean isLiteralOnly() {
+    return false;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    if (accessor == null) {
+      try {
+        accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx,
+                variableFactory, false, ingressType);
+        return getValue(ctx, elCtx, variableFactory);
+      } finally {
+        OptimizerFactory.clearThreadAccessorOptimizer();
+      }
     }
+    return accessor.getValue(ctx, elCtx, variableFactory);
+  }
 
-    public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        if (accessor == null) {
-            try {
-                accessor = getThreadAccessorOptimizer()
-                        .optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
-                return getValue(staticContext, factory);
-            }
-            finally {
-                OptimizerFactory.clearThreadAccessorOptimizer();
-            }
-        }
-        return accessor.getValue(staticContext, staticContext, factory);
-    }
+  public Accessor getAccessor() {
+    return accessor;
+  }
 
-    public void setKnownIngressType(Class type) {
-        this.ingressType = type;
-    }
+  public boolean isEmptyStatement() {
+    return accessor == null;
+  }
 
-    public void setKnownEgressType(Class type) {
-
-    }
-
-    public Class getKnownIngressType() {
-        return ingressType;
-    }
-
-    public Class getKnownEgressType() {
-        return null;
-    }
-
-    public boolean isConvertableIngressEgress() {
-        return false;
-    }
-
-    public void computeTypeConversionRule() {
-    }
-
-    public boolean intOptimized() {
-        return false;
-    }
-
-    public boolean isLiteralOnly() {
-        return false;
-    }
-
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        if (accessor == null) {
-            try {
-                accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx,
-                        variableFactory, false, ingressType);
-                return getValue(ctx, elCtx, variableFactory);
-            }
-            finally {
-                OptimizerFactory.clearThreadAccessorOptimizer();
-            }
-        }
-        return accessor.getValue(ctx, elCtx, variableFactory);
-    }
-
-    public Accessor getAccessor() {
-        return accessor;
-    }
-
-    public boolean isEmptyStatement() {
-        return accessor == null;
-    }
-
-    public boolean isExplicitCast() {
-        return false;
-    }
+  public boolean isExplicitCast() {
+    return false;
+  }
 }

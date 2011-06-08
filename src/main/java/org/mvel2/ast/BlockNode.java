@@ -24,24 +24,24 @@ import org.mvel2.compiler.ExecutableStatement;
  * @author Christopher Brock
  */
 public class BlockNode extends ASTNode {
-    protected int blockStart;
-    protected int blockOffset;
+  protected int blockStart;
+  protected int blockOffset;
 
-    protected ExecutableStatement compiledBlock;
+  protected ExecutableStatement compiledBlock;
 
-    public BlockNode() {
-    }
+  public BlockNode() {
+  }
 
-    public ExecutableStatement getCompiledBlock() {
-        return compiledBlock;
-    }
+  public ExecutableStatement getCompiledBlock() {
+    return compiledBlock;
+  }
 
-    public int getBlockStart() {
-        return blockStart;
-    }
+  public int getBlockStart() {
+    return blockStart;
+  }
 
-    public int getBlockOffset() {
-        return blockOffset;
-    }
+  public int getBlockOffset() {
+    return blockOffset;
+  }
 }
 

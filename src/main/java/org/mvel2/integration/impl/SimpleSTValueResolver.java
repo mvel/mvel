@@ -26,61 +26,60 @@ import static org.mvel2.DataConversion.convert;
 import org.mvel2.CompileException;
 
 public class SimpleSTValueResolver implements VariableResolver {
-    private Object value;
-    private Class type;
-    private boolean updated = false;
+  private Object value;
+  private Class type;
+  private boolean updated = false;
 
-    public SimpleSTValueResolver(Object value, Class type) {
-        this.value = handleTypeCoercion(type, value);
-        this.type = type;
-    }
+  public SimpleSTValueResolver(Object value, Class type) {
+    this.value = handleTypeCoercion(type, value);
+    this.type = type;
+  }
 
-    public SimpleSTValueResolver(Object value, Class type, boolean updated) {
-        this.value = handleTypeCoercion(type, value);
-        this.type = type;
-        this.updated = updated;
-    }
+  public SimpleSTValueResolver(Object value, Class type, boolean updated) {
+    this.value = handleTypeCoercion(type, value);
+    this.type = type;
+    this.updated = updated;
+  }
 
-    public String getName() {
-        return null;
-    }
+  public String getName() {
+    return null;
+  }
 
-    public Class getType() {
-        return type;
-    }
+  public Class getType() {
+    return type;
+  }
 
-    public void setStaticType(Class type) {
-        this.type = type;
-    }
+  public void setStaticType(Class type) {
+    this.type = type;
+  }
 
-    public int getFlags() {
-        return updated ? -1 : 0;
-    }
+  public int getFlags() {
+    return updated ? -1 : 0;
+  }
 
-    public Object getValue() {
-        return value;
-    }
+  public Object getValue() {
+    return value;
+  }
 
-    public void setValue(Object value) {
-        updated = true;
-        this.value = handleTypeCoercion(type, value);
-    }
+  public void setValue(Object value) {
+    updated = true;
+    this.value = handleTypeCoercion(type, value);
+  }
 
-    private static Object handleTypeCoercion(Class type, Object value) {
-        if (type != null && value != null && value.getClass() != type) {
-            if (!canConvert(type, value.getClass())) {
-                throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
-                        + type.getName());
-            }
-            try {
-                return convert(value, type);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("cannot convert value of " + value.getClass().getName()
-                        + " to: " + type.getName());
-            }
-        }
-        return value;
+  private static Object handleTypeCoercion(Class type, Object value) {
+    if (type != null && value != null && value.getClass() != type) {
+      if (!canConvert(type, value.getClass())) {
+        throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
+                + type.getName());
+      }
+      try {
+        return convert(value, type);
+      } catch (Exception e) {
+        throw new RuntimeException("cannot convert value of " + value.getClass().getName()
+                + " to: " + type.getName());
+      }
     }
+    return value;
+  }
 
 }

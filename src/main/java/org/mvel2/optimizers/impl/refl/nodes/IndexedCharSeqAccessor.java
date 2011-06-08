@@ -22,51 +22,50 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class IndexedCharSeqAccessor implements AccessorNode {
-    private AccessorNode nextNode;
+  private AccessorNode nextNode;
 
-    private int index;
+  private int index;
 
-    public IndexedCharSeqAccessor() {
+  public IndexedCharSeqAccessor() {
+  }
+
+  public IndexedCharSeqAccessor(int index) {
+    this.index = index;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return nextNode.getValue(((String) ctx).charAt(index), elCtx, vars);
+    } else {
+      return ((String) ctx).charAt(index);
     }
+  }
 
-    public IndexedCharSeqAccessor(int index) {
-        this.index = index;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return nextNode.setValue(((String) ctx).charAt(index), elCtx, variableFactory, value);
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return nextNode.getValue(((String) ctx).charAt(index), elCtx, vars);
-        }
-        else {
-            return ((String) ctx).charAt(index);
-        }
-    }
+  public int getIndex() {
+    return index;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return nextNode.setValue(((String) ctx).charAt(index), elCtx, variableFactory, value);
-    }
+  public void setIndex(int index) {
+    this.index = index;
+  }
 
-    public int getIndex() {
-        return index;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public String toString() {
+    return "Array Accessor -> [" + index + "]";
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public String toString() {
-        return "Array Accessor -> [" + index + "]";
-    }
-
-    public Class getKnownEgressType() {
-        return Character.class;
-    }
+  public Class getKnownEgressType() {
+    return Character.class;
+  }
 }

@@ -31,35 +31,33 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class LiteralDeepPropertyNode extends ASTNode {
-    private Object literal;
+  private Object literal;
 
-    public LiteralDeepPropertyNode(char[] expr, int start, int offset, int fields, Object literal) {
-        this.fields = fields;
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public LiteralDeepPropertyNode(char[] expr, int start, int offset, int fields, Object literal) {
+    this.fields = fields;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        this.literal = literal;
+    this.literal = literal;
+  }
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (accessor != null) {
+      return accessor.getValue(literal, thisValue, factory);
+    } else {
+      try {
+        AccessorOptimizer aO = getThreadAccessorOptimizer();
+        accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
+                literal, thisValue, factory, false, null);
+        return aO.getResultOptPass();
+      } finally {
+        OptimizerFactory.clearThreadAccessorOptimizer();
+      }
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accessor != null) {
-            return accessor.getValue(literal, thisValue, factory);
-        }
-        else {
-            try {
-                AccessorOptimizer aO = getThreadAccessorOptimizer();
-                accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
-                        literal, thisValue, factory, false, null);
-                return aO.getResultOptPass();
-            }
-            finally {
-                OptimizerFactory.clearThreadAccessorOptimizer();
-            }
-        }
-    }
-
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return get(expr, start, offset, literal, factory, thisValue);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return get(expr, start, offset, literal, factory, thisValue);
+  }
 }

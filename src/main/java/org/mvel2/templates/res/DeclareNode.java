@@ -34,38 +34,38 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class DeclareNode extends Node {
-    private Node nestedNode;
+  private Node nestedNode;
 
-    public DeclareNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
+  public DeclareNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
     //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  }
+
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (runtime.getNamedTemplateRegistry() == null) {
+      runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
     }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (runtime.getNamedTemplateRegistry() == null) {
-            runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
-        }
+    runtime.getNamedTemplateRegistry()
+            .addNamedTemplate(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory, String.class),
+                    new CompiledTemplate(runtime.getTemplate(), nestedNode));
 
-        runtime.getNamedTemplateRegistry()
-                .addNamedTemplate(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory, String.class),
-                        new CompiledTemplate(runtime.getTemplate(), nestedNode));
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    Node n = nestedNode = next;
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        Node n = nestedNode = next;
+    while (n.getNext() != null) n = n.next;
 
-        while (n.getNext() != null) n = n.next;
+    n.next = new EndNode();
 
-        n.next = new EndNode();
-
-        next = terminus;
-        return false;
-    }
+    next = terminus;
+    return false;
+  }
 }

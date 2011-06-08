@@ -19,40 +19,43 @@
 package org.mvel2.ast;
 
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
+
 import org.mvel2.math.MathProcessor;
 import org.mvel2.ParserContext;
 
 public class IndexedOperativeAssign extends ASTNode {
-    private final int register;
-    private ExecutableStatement statement;
-    private final int operation;
+  private final int register;
+  private ExecutableStatement statement;
+  private final int operation;
 
-    public IndexedOperativeAssign(char[] expr, int start, int offset, int operation, int register, int fields, ParserContext pCtx) {
-        this.operation = operation;
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
-        this.register = register;
+  public IndexedOperativeAssign(char[] expr, int start, int offset, int operation, int register, int fields, ParserContext pCtx) {
+    this.operation = operation;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
+    this.register = register;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
-            egressType = statement.getKnownEgressType();
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
+      egressType = statement.getKnownEgressType();
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver resolver = factory.getIndexedVariableResolver(register);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver resolver = factory.getIndexedVariableResolver(register);
+    resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver resolver = factory.getIndexedVariableResolver(register);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(expr, start, offset, ctx, factory)));
-        return ctx;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver resolver = factory.getIndexedVariableResolver(register);
+    resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(expr, start, offset, ctx, factory)));
+    return ctx;
+  }
 }

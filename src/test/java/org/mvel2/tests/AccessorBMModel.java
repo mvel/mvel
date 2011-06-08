@@ -14,42 +14,41 @@ import org.mvel2.util.StringAppender;
 
 
 public class AccessorBMModel implements Accessor {
-    private ExecutableStatement p0;
-    private long foo;
-    
-    public PropertyHandler nullPropertyHandler;
-    public PropertyHandler nullMethodHandler;
-    
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-    		return new String[][] {{"2008-04-01", "2008-05-10"}, {"2007-03-01", "2007-02-12"}};
+  private ExecutableStatement p0;
+  private long foo;
+
+  public PropertyHandler nullPropertyHandler;
+  public PropertyHandler nullMethodHandler;
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    return new String[][]{{"2008-04-01", "2008-05-10"}, {"2007-03-01", "2007-02-12"}};
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    Foo foo = (Foo) variableFactory.getVariableResolver("foo").getValue();
+
+    if (value == null) {
+      foo.charTestFld = 0;
+    } else {
+      foo.charTestFld = (Character) value;
     }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        Foo foo = (Foo) variableFactory.getVariableResolver("foo").getValue();
-    
-        if (value == null) {
-        	foo.charTestFld = 0;
-        }
-        else {
-        	foo.charTestFld = (Character) value;
-        }
-    	
-        return value;
-    }
+    return value;
+  }
 
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
-    
-    public void setNullPropertyHandler(PropertyHandler handler) {
-    	this.nullPropertyHandler = handler;
-    }
-    
-    public void setNullMethodHandler(PropertyHandler handler) {
-    	this.nullMethodHandler = handler;
-    }
-    
-    public String toString() {
-    	return "FOFOSLDJALKJ";
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
+
+  public void setNullPropertyHandler(PropertyHandler handler) {
+    this.nullPropertyHandler = handler;
+  }
+
+  public void setNullMethodHandler(PropertyHandler handler) {
+    this.nullMethodHandler = handler;
+  }
+
+  public String toString() {
+    return "FOFOSLDJALKJ";
+  }
 }

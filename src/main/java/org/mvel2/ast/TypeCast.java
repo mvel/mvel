@@ -33,62 +33,61 @@ import org.mvel2.DataConversion;
 import org.mvel2.CompileException;
 
 public class TypeCast extends ASTNode {
-    private ExecutableStatement statement;
-    private boolean widen;
+  private ExecutableStatement statement;
+  private boolean widen;
 
-    public TypeCast(char[] expr, int start, int offset, Class cast, int fields, ParserContext pCtx) {
-        this.egressType = cast;
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public TypeCast(char[] expr, int start, int offset, Class cast, int fields, ParserContext pCtx) {
+    this.egressType = cast;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
 
-            if ((statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx))
-                    .getKnownEgressType() != Object.class
-                    && !canConvert(cast, statement.getKnownEgressType())) {
+      if ((statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx))
+              .getKnownEgressType() != Object.class
+              && !canConvert(cast, statement.getKnownEgressType())) {
 
-                if (canCast(statement.getKnownEgressType(), cast)) {
-                    widen = true;
-                } else {
-                    throw new CompileException("unable to cast type: "
-                            + statement.getKnownEgressType() + "; to: " + cast, expr, start);
-                }
-            }
-
+        if (canCast(statement.getKnownEgressType(), cast)) {
+          widen = true;
+        } else {
+          throw new CompileException("unable to cast type: "
+                  + statement.getKnownEgressType() + "; to: " + cast, expr, start);
         }
-    }
+      }
 
-    private boolean canCast(Class from, Class to) {
-        return from.isAssignableFrom(to) || (from.isInterface() && interfaceAssignable(from, to));
     }
+  }
 
-    private boolean interfaceAssignable(Class from, Class to) {
-        for (Class c : from.getInterfaces()) {
-            if (c.isAssignableFrom(to)) return true;
-        }
-        return false;
+  private boolean canCast(Class from, Class to) {
+    return from.isAssignableFrom(to) || (from.isInterface() && interfaceAssignable(from, to));
+  }
+
+  private boolean interfaceAssignable(Class from, Class to) {
+    for (Class c : from.getInterfaces()) {
+      if (c.isAssignableFrom(to)) return true;
     }
+    return false;
+  }
 
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //noinspection unchecked
-        return widen ? typeCheck(statement.getValue(ctx, thisValue, factory), egressType) : convert(statement.getValue(ctx, thisValue, factory), egressType);
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    //noinspection unchecked
+    return widen ? typeCheck(statement.getValue(ctx, thisValue, factory), egressType) : convert(statement.getValue(ctx, thisValue, factory), egressType);
+  }
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    //noinspection unchecked
+    return widen ? typeCheck(eval(expr, start, offset, ctx, factory), egressType) :
+            convert(eval(expr, start, offset, ctx, factory), egressType);
+  }
+
+  private static Object typeCheck(Object inst, Class type) {
+    if (inst == null) return null;
+    if (type.isInstance(inst)) {
+      return inst;
+    } else {
+      throw new ClassCastException(inst.getClass().getName() + " cannot be cast to: " + type.getClass().getName());
     }
-
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //noinspection unchecked
-        return widen ? typeCheck(eval(expr, start, offset, ctx, factory), egressType) :
-                convert(eval(expr, start, offset, ctx, factory), egressType);
-    }
-
-    private static Object typeCheck(Object inst, Class type) {
-        if (inst == null) return null;
-        if (type.isInstance(inst)) {
-            return inst;
-        }
-        else {
-            throw new ClassCastException(inst.getClass().getName() + " cannot be cast to: " + type.getClass().getName());
-        }
-    }
+  }
 }

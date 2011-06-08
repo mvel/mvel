@@ -37,55 +37,52 @@ import static java.util.regex.Pattern.compile;
 import java.util.regex.PatternSyntaxException;
 
 public class RegExMatch extends ASTNode {
-    private ExecutableStatement stmt;
-    private ExecutableStatement patternStmt;
+  private ExecutableStatement stmt;
+  private ExecutableStatement patternStmt;
 
-    private int patternStart;
-    private int patternOffset;
-    private Pattern p;
+  private int patternStart;
+  private int patternOffset;
+  private Pattern p;
 
-    public RegExMatch(char[] expr, int start, int offset, int fields, int patternStart, int patternOffset, ParserContext pCtx) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
-        this.patternStart = patternStart;
-        this.patternOffset = patternOffset;
+  public RegExMatch(char[] expr, int start, int offset, int fields, int patternStart, int patternOffset, ParserContext pCtx) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
+    this.patternStart = patternStart;
+    this.patternOffset = patternOffset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
-            if ((this.patternStmt = (ExecutableStatement)
-                    subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
+      if ((this.patternStmt = (ExecutableStatement)
+              subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
 
-                try {
-                    p = compile(valueOf(patternStmt.getValue(null, null)));
-                }
-                catch (PatternSyntaxException e) {
-                    throw new CompileException("bad regular expression", expr, patternStart, e);
-                }
-            }
-        }
-    }
-
-
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (p == null) {
-            return compile(valueOf(patternStmt.getValue(ctx, thisValue, factory))).matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
-        }
-        else {
-            return p.matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
-        }
-    }
-
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return compile(valueOf(eval(expr, patternStart, patternOffset, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
+          p = compile(valueOf(patternStmt.getValue(null, null)));
+        } catch (PatternSyntaxException e) {
+          throw new CompileException("bad regular expression", expr, patternStart, e);
         }
-        catch (PatternSyntaxException e) {
-            throw new CompileException("bad regular expression", expr, patternStart, e);
-        }
+      }
     }
+  }
 
-    public Class getEgressType() {
-        return Boolean.class;
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (p == null) {
+      return compile(valueOf(patternStmt.getValue(ctx, thisValue, factory))).matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
+    } else {
+      return p.matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
     }
+  }
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    try {
+      return compile(valueOf(eval(expr, patternStart, patternOffset, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
+    } catch (PatternSyntaxException e) {
+      throw new CompileException("bad regular expression", expr, patternStart, e);
+    }
+  }
+
+  public Class getEgressType() {
+    return Boolean.class;
+  }
 }

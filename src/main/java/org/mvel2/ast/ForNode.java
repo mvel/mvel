@@ -35,114 +35,110 @@ import static org.mvel2.util.ParseTools.subset;
  * @author Christopher Brock
  */
 public class ForNode extends BlockNode {
-    protected String item;
+  protected String item;
 
-    protected ExecutableStatement initializer;
-    protected ExecutableStatement condition;
+  protected ExecutableStatement initializer;
+  protected ExecutableStatement condition;
 
-    protected ExecutableStatement after;
+  protected ExecutableStatement after;
 
-    protected boolean indexAlloc = false;
+  protected boolean indexAlloc = false;
 
-    public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+  public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
 
-        boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
-                this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
+    boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
+            this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
 
-        this.indexAlloc = pCtx != null && pCtx.isIndexAllocation();
+    this.indexAlloc = pCtx != null && pCtx.isIndexAllocation();
 
-        if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
-            throw new RedundantCodeException();
-        }
-
-        if (pCtx != null) {
-            pCtx.popVariableScope();
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
+      throw new RedundantCodeException();
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = indexAlloc ? factory : new MapVariableResolverFactory(new HashMap<String, Object>(1), factory);
-        Object v;
-        for (initializer.getValue(ctx, thisValue, ctxFactory); (Boolean) condition.getValue(ctx, thisValue, ctxFactory); after.getValue(ctx, thisValue, ctxFactory)) {
-            v = compiledBlock.getValue(ctx, thisValue, ctxFactory);
-            if (ctxFactory.tiltFlag()) return v;
-        }
-        return null;
+    if (pCtx != null) {
+      pCtx.popVariableScope();
+    }
+  }
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolverFactory ctxFactory = indexAlloc ? factory : new MapVariableResolverFactory(new HashMap<String, Object>(1), factory);
+    Object v;
+    for (initializer.getValue(ctx, thisValue, ctxFactory); (Boolean) condition.getValue(ctx, thisValue, ctxFactory); after.getValue(ctx, thisValue, ctxFactory)) {
+      v = compiledBlock.getValue(ctx, thisValue, ctxFactory);
+      if (ctxFactory.tiltFlag()) return v;
+    }
+    return null;
+  }
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    Object v;
+    for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap<String, Object>(1), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+      v = compiledBlock.getValue(ctx, thisValue, factory);
+      if (factory.tiltFlag()) return v;
     }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object v;
-        for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap<String, Object>(1), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
-            v = compiledBlock.getValue(ctx, thisValue, factory);
-            if (factory.tiltFlag()) return v;
-        }
+    return null;
+  }
 
-        return null;
+  private boolean buildForEach(char[] condition, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+    int end = start + offset;
+    int cursor = nextCondPart(condition, start, end, false);
+
+    boolean varsEscape = false;
+
+    try {
+      ParserContext spCtx = pCtx;
+      if (pCtx != null) {
+        spCtx = pCtx.createSubcontext().createColoringSubcontext();
+      } else {
+        spCtx = new ParserContext();
+      }
+
+      this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
+
+      if (pCtx != null) {
+        pCtx.pushVariableScope();
+      }
+
+      try {
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
+                (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+      } catch (CompileException e) {
+        if (e.getExpr().length == 0) {
+          e.setExpr(expr);
+
+          while (start < expr.length && ParseTools.isWhitespace(expr[start])) {
+            start++;
+          }
+
+          e.setCursor(start);
+        }
+        throw e;
+      }
+
+      this.after = (ExecutableStatement)
+              subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
+
+      if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
+        if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
+        varsEscape = true;
+      } else if (spCtx != null && pCtx != null) {
+        pCtx.addVariables(spCtx.getVariables());
+      }
+
+      this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
+
+    } catch (NegativeArraySizeException e) {
+      throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);
     }
+    return varsEscape;
+  }
 
-    private boolean buildForEach(char[] condition, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
-        int end = start + offset;
-        int cursor = nextCondPart(condition, start, end, false);
-
-        boolean varsEscape = false;
-
-        try {
-            ParserContext spCtx = pCtx;
-            if (pCtx != null) {
-                spCtx = pCtx.createSubcontext().createColoringSubcontext();
-            }
-            else {
-                spCtx = new ParserContext();
-            }
-
-            this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
-
-            if (pCtx != null) {
-                pCtx.pushVariableScope();
-            }
-
-            try {
-                expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
-                        (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
-            }
-            catch (CompileException e) {
-                if (e.getExpr().length == 0) {
-                    e.setExpr(expr);
-
-                    while (start < expr.length && ParseTools.isWhitespace(expr[start])) {
-                        start++;
-                    }
-
-                    e.setCursor(start);
-                }
-                throw e;
-            }
-
-            this.after = (ExecutableStatement)
-                    subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
-
-            if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
-                if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
-                varsEscape = true;
-            }
-            else if (spCtx != null && pCtx != null) {
-                pCtx.addVariables(spCtx.getVariables());
-            }
-
-            this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
-
-        }
-        catch (NegativeArraySizeException e) {
-            throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);
-        }
-        return varsEscape;
+  private static int nextCondPart(char[] condition, int cursor, int end, boolean allowEnd) {
+    for (; cursor < end; cursor++) {
+      if (condition[cursor] == ';') return ++cursor;
     }
-
-    private static int nextCondPart(char[] condition, int cursor, int end, boolean allowEnd) {
-        for (; cursor < end; cursor++) {
-            if (condition[cursor] == ';') return ++cursor;
-        }
-        if (!allowEnd) throw new CompileException("expected ;", condition, cursor);
-        return cursor;
-    }
+    if (!allowEnd) throw new CompileException("expected ;", condition, cursor);
+    return cursor;
+  }
 }

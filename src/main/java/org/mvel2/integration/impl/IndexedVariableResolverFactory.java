@@ -29,109 +29,109 @@ import java.util.Set;
 
 public class IndexedVariableResolverFactory extends BaseVariableResolverFactory {
 
-    public IndexedVariableResolverFactory(String[] varNames, VariableResolver[] resolvers) {
-        this.indexedVariableNames = varNames;
-        this.indexedVariableResolvers = resolvers;
+  public IndexedVariableResolverFactory(String[] varNames, VariableResolver[] resolvers) {
+    this.indexedVariableNames = varNames;
+    this.indexedVariableResolvers = resolvers;
+  }
+
+  public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
+    this.indexedVariableNames = varNames;
+    this.indexedVariableResolvers = createResolvers(values, varNames.length);
+  }
+
+  public IndexedVariableResolverFactory(String[] varNames, Object[] values, VariableResolverFactory nextFactory) {
+    this.indexedVariableNames = varNames;
+    this.nextFactory = new MapVariableResolverFactory();
+    this.nextFactory.setNextFactory(nextFactory);
+    this.indexedVariableResolvers = createResolvers(values, varNames.length);
+
+  }
+
+  private static VariableResolver[] createResolvers(Object[] values, int size) {
+    VariableResolver[] vr = new VariableResolver[size];
+    for (int i = 0; i < size; i++) {
+      vr[i] = i >= values.length ? new SimpleValueResolver(null) : new IndexVariableResolver(i, values);
     }
+    return vr;
+  }
 
-    public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
-        this.indexedVariableNames = varNames;
-        this.indexedVariableResolvers = createResolvers(values, varNames.length);
+  public VariableResolver createIndexedVariable(int index, String name, Object value) {
+    VariableResolver r = indexedVariableResolvers[index];
+    r.setValue(value);
+    return r;
+  }
+
+  public VariableResolver getIndexedVariableResolver(int index) {
+    return indexedVariableResolvers[index];
+  }
+
+  public VariableResolver createVariable(String name, Object value) {
+    VariableResolver vr = getResolver(name);
+    if (vr != null) {
+      vr.setValue(value);
     }
+    return vr;
+  }
 
-    public IndexedVariableResolverFactory(String[] varNames, Object[] values, VariableResolverFactory nextFactory) {
-        this.indexedVariableNames = varNames;
-        this.nextFactory = new MapVariableResolverFactory();
-        this.nextFactory.setNextFactory(nextFactory);
-        this.indexedVariableResolvers = createResolvers(values, varNames.length);
-
+  public VariableResolver createVariable(String name, Object value, Class<?> type) {
+    VariableResolver vr = getResolver(name);
+    if (vr != null) {
+      vr.setValue(value);
     }
-
-    private static VariableResolver[] createResolvers(Object[] values, int size) {
-        VariableResolver[] vr = new VariableResolver[size];
-        for (int i = 0; i < size; i++) {
-            vr[i] = i >= values.length ? new SimpleValueResolver(null) : new IndexVariableResolver(i, values);
-        }
-        return vr;
-    }
-
-    public VariableResolver createIndexedVariable(int index, String name, Object value) {
-        VariableResolver r = indexedVariableResolvers[index];
-        r.setValue(value);
-        return r;
-    }
-
-    public VariableResolver getIndexedVariableResolver(int index) {
-        return indexedVariableResolvers[index];
-    }
-
-    public VariableResolver createVariable(String name, Object value) {
-        VariableResolver vr = getResolver(name);
-        if (vr != null) {
-            vr.setValue(value);
-        }
-        return vr;
-    }
-
-    public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        VariableResolver vr = getResolver(name);
-        if (vr != null) {
-            vr.setValue(value);
-        }
-        return vr;
+    return vr;
 
 //        if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
 //        return nextFactory.createVariable(name, value, type);
+  }
+
+  public VariableResolver getVariableResolver(String name) {
+    VariableResolver vr = getResolver(name);
+    if (vr != null) return vr;
+    else if (nextFactory != null) {
+      return nextFactory.getVariableResolver(name);
     }
 
-    public VariableResolver getVariableResolver(String name) {
-        VariableResolver vr = getResolver(name);
-        if (vr != null) return vr;
-        else if (nextFactory != null) {
-            return nextFactory.getVariableResolver(name);
-        }
+    throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
+  }
 
-        throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
+  public boolean isResolveable(String name) {
+    return isTarget(name) || (nextFactory != null && nextFactory.isResolveable(name));
+  }
+
+  protected VariableResolver addResolver(String name, VariableResolver vr) {
+    variableResolvers.put(name, vr);
+    return vr;
+  }
+
+  private VariableResolver getResolver(String name) {
+    for (int i = 0; i < indexedVariableNames.length; i++) {
+      if (indexedVariableNames[i].equals(name)) {
+        return indexedVariableResolvers[i];
+      }
     }
+    return null;
+  }
 
-    public boolean isResolveable(String name) {
-        return isTarget(name) || (nextFactory != null && nextFactory.isResolveable(name));
-    }
-
-    protected VariableResolver addResolver(String name, VariableResolver vr) {
-        variableResolvers.put(name, vr);
-        return vr;
-    }
-
-    private VariableResolver getResolver(String name) {
-        for (int i = 0; i < indexedVariableNames.length; i++) {
-            if (indexedVariableNames[i].equals(name)) {
-                return indexedVariableResolvers[i];
-            }
-        }
-        return null;
-    }
-
-    public boolean isTarget(String name) {
-        for (String indexedVariableName : indexedVariableNames) {
-            if (indexedVariableName.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Set<String> getKnownVariables() {
-        return new HashSet<String>(Arrays.asList(indexedVariableNames));
-    }
-
-    public void clear() {
-        // variableResolvers.clear();
-
-    }
-
-    @Override
-    public boolean isIndexedFactory() {
+  public boolean isTarget(String name) {
+    for (String indexedVariableName : indexedVariableNames) {
+      if (indexedVariableName.equals(name)) {
         return true;
+      }
     }
+    return false;
+  }
+
+  public Set<String> getKnownVariables() {
+    return new HashSet<String>(Arrays.asList(indexedVariableNames));
+  }
+
+  public void clear() {
+    // variableResolvers.clear();
+
+  }
+
+  @Override
+  public boolean isIndexedFactory() {
+    return true;
+  }
 }

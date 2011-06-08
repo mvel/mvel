@@ -22,7 +22,7 @@ package org.mvel2;
  * A preprocessor used for pre-processing any expressions before being parsed/compiled.
  */
 public interface PreProcessor {
-    public char[] parse(char[] input);
+  public char[] parse(char[] input);
 
-    public String parse(String input);
+  public String parse(String input);
 }

@@ -4,75 +4,75 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bar {
-    private String name = "dog";
-    private boolean woof = true;
-    private int age = 14;
-    private String assignTest = "";
-    private List<Integer> testList = new ArrayList<Integer>();
-    private Integer[] intarray = new Integer[1];
+  private String name = "dog";
+  private boolean woof = true;
+  private int age = 14;
+  private String assignTest = "";
+  private List<Integer> testList = new ArrayList<Integer>();
+  private Integer[] intarray = new Integer[1];
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public boolean isWoof() {
-        return woof;
-    }
+  public boolean isWoof() {
+    return woof;
+  }
 
-    public void setWoof(boolean woof) {
-        this.woof = woof;
-    }
+  public void setWoof(boolean woof) {
+    this.woof = woof;
+  }
 
-    public int getAge() {
-        return age;
-    }
+  public int getAge() {
+    return age;
+  }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+  public void setAge(int age) {
+    this.age = age;
+  }
 
-    public boolean isFoo(Object obj) {
-        return obj instanceof Foo;
-    }
+  public boolean isFoo(Object obj) {
+    return obj instanceof Foo;
+  }
 
-    public String getAssignTest() {
-        return assignTest;
-    }
+  public String getAssignTest() {
+    return assignTest;
+  }
 
-    public void setAssignTest(String assignTest) {
-        this.assignTest = assignTest;
-    }
+  public void setAssignTest(String assignTest) {
+    this.assignTest = assignTest;
+  }
 
 
-    public List<Integer> getTestList() {
-        return testList;
-    }
+  public List<Integer> getTestList() {
+    return testList;
+  }
 
-    public void setTestList(List<Integer> testList) {
-        this.testList = testList;
-    }
+  public void setTestList(List<Integer> testList) {
+    this.testList = testList;
+  }
 
-    public String happy() {
-        return "happyBar";
-    }
+  public String happy() {
+    return "happyBar";
+  }
 
-    public static int staticMethod() {
-        return 1;
-    }
+  public static int staticMethod() {
+    return 1;
+  }
 
-    public Integer[] getIntarray() {
-        return intarray;
-    }
+  public Integer[] getIntarray() {
+    return intarray;
+  }
 
-    public void setIntarray(Integer[] intarray) {
-        this.intarray = intarray;
-    }
+  public void setIntarray(Integer[] intarray) {
+    this.intarray = intarray;
+  }
 
-    public boolean equals(Object o) {
-        return o instanceof Bar;
-    }
+  public boolean equals(Object o) {
+    return o instanceof Bar;
+  }
 }

@@ -30,24 +30,24 @@ import static java.lang.String.valueOf;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledExpressionNode extends ExpressionNode {
-    private Serializable ce;
+  private Serializable ce;
 
-    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        ce = MVEL.compileExpression(template, cStart, cEnd - cStart, context);
-    }
+  public CompiledExpressionNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    ce = MVEL.compileExpression(template, cStart, cEnd - cStart, context);
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append(valueOf(MVEL.executeExpression(ce, ctx, factory)));
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    appender.append(valueOf(MVEL.executeExpression(ce, ctx, factory)));
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public String toString() {
-        return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
-    }
+  public String toString() {
+    return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
+  }
 }

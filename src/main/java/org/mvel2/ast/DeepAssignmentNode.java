@@ -37,91 +37,89 @@ import static org.mvel2.util.ParseTools.*;
  * @author Christopher Brock
  */
 public class DeepAssignmentNode extends ASTNode implements Assignment {
-    private String property;
-    // private char[] stmt;
+  private String property;
+  // private char[] stmt;
 
-    private CompiledAccExpression acc;
-    private ExecutableStatement statement;
+  private CompiledAccExpression acc;
+  private ExecutableStatement statement;
 
-    public DeepAssignmentNode(char[] expr, int start, int offset, int fields, int operation, String name, ParserContext pCtx) {
-        this.fields |= DEEP_PROPERTY | fields;
+  public DeepAssignmentNode(char[] expr, int start, int offset, int fields, int operation, String name, ParserContext pCtx) {
+    this.fields |= DEEP_PROPERTY | fields;
 
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
-        int mark;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
+    int mark;
 
-        if (operation != -1) {
-            this.egressType = ((statement =
-                    (ExecutableStatement) subCompileExpression(
-                            createShortFormOperativeAssignment(this.property = name, expr, start, offset, operation), pCtx))).getKnownEgressType();
-        }
-        else if ((mark = find(expr, start, offset, '=')) != -1) {
-            property = createStringTrimmed(expr, start, mark - start);
+    if (operation != -1) {
+      this.egressType = ((statement =
+              (ExecutableStatement) subCompileExpression(
+                      createShortFormOperativeAssignment(this.property = name, expr, start, offset, operation), pCtx))).getKnownEgressType();
+    } else if ((mark = find(expr, start, offset, '=')) != -1) {
+      property = createStringTrimmed(expr, start, mark - start);
 
-           // this.start = mark + 1;
-            this.start = skipWhitespace(expr, mark + 1, pCtx);
+      // this.start = mark + 1;
+      this.start = skipWhitespace(expr, mark + 1, pCtx);
 
-            if (this.start >= start + offset) {
-                throw new CompileException("unexpected end of statement", expr, mark + 1);
-            }
+      if (this.start >= start + offset) {
+        throw new CompileException("unexpected end of statement", expr, mark + 1);
+      }
 
-            this.offset = offset - (this.start - start);
+      this.offset = offset - (this.start - start);
 
-            if ((fields & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
-            }
-        }
-        else {
-            property = new String(expr);
-        }
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), start, offset, pCtx);
-        }
+      if ((fields & COMPILE_IMMEDIATE) != 0) {
+        statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
+      }
+    } else {
+      property = new String(expr);
     }
 
-    public DeepAssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
-        this(expr, start, offset, fields, -1, null, pCtx);
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), start, offset, pCtx);
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement == null) {
-            statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset);
-            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), statement.getKnownEgressType(),
-                    getCurrentThreadParserContext());
-        }
-        acc.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
-        return ctx;
-    }
+  public DeepAssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this(expr, start, offset, fields, -1, null, pCtx);
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        set(ctx, factory, property, ctx = eval(expr, this.start, this.offset, ctx, factory));
-        return ctx;
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (statement == null) {
+      statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset);
+      acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), statement.getKnownEgressType(),
+              getCurrentThreadParserContext());
     }
+    acc.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
+    return ctx;
+  }
 
-    @Override
-    public String getAbsoluteName() {
-        return property.substring(0, property.indexOf('.'));
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    set(ctx, factory, property, ctx = eval(expr, this.start, this.offset, ctx, factory));
+    return ctx;
+  }
 
-    public String getAssignmentVar() {
-        return property;
-    }
+  @Override
+  public String getAbsoluteName() {
+    return property.substring(0, property.indexOf('.'));
+  }
 
-    public char[] getExpression() {
-        return subArray(expr, start, offset);
-    }
+  public String getAssignmentVar() {
+    return property;
+  }
 
-    public boolean isNewDeclaration() {
-        return false;
-    }
+  public char[] getExpression() {
+    return subArray(expr, start, offset);
+  }
 
-    public boolean isAssignment() {
-        return true;
-    }
+  public boolean isNewDeclaration() {
+    return false;
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        this.statement = stmt;
-    }
+  public boolean isAssignment() {
+    return true;
+  }
+
+  public void setValueStatement(ExecutableStatement stmt) {
+    this.statement = stmt;
+  }
 }

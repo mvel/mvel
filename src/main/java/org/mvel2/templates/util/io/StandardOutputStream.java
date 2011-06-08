@@ -7,40 +7,38 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class StandardOutputStream implements TemplateOutputStream {
-    private OutputStream outputStream;
+  private OutputStream outputStream;
 
-    public StandardOutputStream(OutputStream outputStream) {
-        this.outputStream = outputStream;
+  public StandardOutputStream(OutputStream outputStream) {
+    this.outputStream = outputStream;
+  }
+
+  public TemplateOutputStream append(CharSequence c) {
+    try {
+      for (int i = 0; i < c.length(); i++) {
+        outputStream.write(c.charAt(i));
+      }
+
+      return this;
+    } catch (IOException e) {
+      throw new RuntimeException("failed to write to stream", e);
     }
+  }
 
-    public TemplateOutputStream append(CharSequence c) {
-        try {
-            for (int i = 0; i < c.length(); i++) {
-                outputStream.write(c.charAt(i));
-            }
+  public TemplateOutputStream append(char[] c) {
+    try {
 
-            return this;
-        }
-        catch (IOException e) {
-            throw new RuntimeException("failed to write to stream", e);
-        }
+      for (char i : c) {
+        outputStream.write(i);
+      }
+      return this;
+    } catch (IOException e) {
+      throw new RuntimeException("failed to write to stream", e);
     }
+  }
 
-    public TemplateOutputStream append(char[] c) {
-        try {
-
-            for (char i : c) {
-                outputStream.write(i);
-            }
-            return this;
-        }
-        catch (IOException e) {
-            throw new RuntimeException("failed to write to stream", e);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return null;
-    }
+  @Override
+  public String toString() {
+    return null;
+  }
 }

@@ -28,24 +28,24 @@ import org.mvel2.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class PostFixDecNode extends ASTNode {
-    private String name;
+  private String name;
 
-    public PostFixDecNode(String name, ParserContext pCtx) {
-        this.name = name;
-        if (pCtx != null) {
-            this.egressType = pCtx.getVarOrInputType(name);
-        }
+  public PostFixDecNode(String name, ParserContext pCtx) {
+    this.name = name;
+    if (pCtx != null) {
+      this.egressType = pCtx.getVarOrInputType(name);
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver vResolver = factory.getVariableResolver(name);
-        vResolver.setValue(MathProcessor.doOperations(ctx = vResolver.getValue(), Operator.SUB, DataTypes.INTEGER, 1));
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver vResolver = factory.getVariableResolver(name);
+    vResolver.setValue(MathProcessor.doOperations(ctx = vResolver.getValue(), Operator.SUB, DataTypes.INTEGER, 1));
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return getReducedValueAccelerated(ctx, thisValue, factory);
+  }
 
 
 }

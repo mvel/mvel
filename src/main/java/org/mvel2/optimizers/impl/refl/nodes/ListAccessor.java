@@ -24,58 +24,56 @@ import org.mvel2.integration.VariableResolverFactory;
 import java.util.List;
 
 public class ListAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private int index;
+  private AccessorNode nextNode;
+  private int index;
 
 
-    public ListAccessor() {
+  public ListAccessor() {
+  }
+
+  public ListAccessor(int index) {
+    this.index = index;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return nextNode.getValue(((List) ctx).get(index), elCtx, vars);
+    } else {
+      return ((List) ctx).get(index);
     }
+  }
 
-    public ListAccessor(int index) {
-        this.index = index;
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(((List) ctx).get(index), elCtx, vars, value);
+    } else {
+      //noinspection unchecked
+      ((List) ctx).set(index, value);
+      return value;
     }
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return nextNode.getValue(((List) ctx).get(index), elCtx, vars);
-        }
-        else {
-            return ((List) ctx).get(index);
-        }
-    }
+  public int getIndex() {
+    return index;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(((List) ctx).get(index), elCtx, vars, value);
-        }
-        else {
-            //noinspection unchecked
-            ((List) ctx).set(index, value);
-            return value;
-        }
-    }
+  public void setIndex(int index) {
+    this.index = index;
+  }
 
-    public int getIndex() {
-        return index;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public String toString() {
+    return "Array Accessor -> [" + index + "]";
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public String toString() {
-        return "Array Accessor -> [" + index + "]";
-    }
-
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

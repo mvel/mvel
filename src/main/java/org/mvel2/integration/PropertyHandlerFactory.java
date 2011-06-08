@@ -22,82 +22,81 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PropertyHandlerFactory {
-    protected static Map<Class, PropertyHandler> propertyHandlerClass =
-            new HashMap<Class, PropertyHandler>();
+  protected static Map<Class, PropertyHandler> propertyHandlerClass =
+          new HashMap<Class, PropertyHandler>();
 
-    protected static PropertyHandler nullPropertyHandler;
-    protected static PropertyHandler nullMethodHandler;
+  protected static PropertyHandler nullPropertyHandler;
+  protected static PropertyHandler nullMethodHandler;
 
-    public static PropertyHandler getPropertyHandler(Class clazz) {
-        return propertyHandlerClass.get(clazz);
-    }
+  public static PropertyHandler getPropertyHandler(Class clazz) {
+    return propertyHandlerClass.get(clazz);
+  }
 
-    public static boolean hasPropertyHandler(Class clazz) {
-        if (clazz == null) return false;
-        if (!propertyHandlerClass.containsKey(clazz)) {
-            Class clazzWalk = clazz;
-            do {
-                if (clazz != clazzWalk && propertyHandlerClass.containsKey(clazzWalk)) {
-                    propertyHandlerClass.put(clazz, propertyHandlerClass.get(clazzWalk));
-                    return true;
-                }
-                for (Class c : clazzWalk.getInterfaces()) {
-                    if (propertyHandlerClass.containsKey(c)) {
-                        propertyHandlerClass.put(clazz, propertyHandlerClass.get(c));
-                        return true;
-                    }
-                }
-            }
-            while ((clazzWalk = clazzWalk.getSuperclass()) != null && clazzWalk != Object.class);
-            return false;
+  public static boolean hasPropertyHandler(Class clazz) {
+    if (clazz == null) return false;
+    if (!propertyHandlerClass.containsKey(clazz)) {
+      Class clazzWalk = clazz;
+      do {
+        if (clazz != clazzWalk && propertyHandlerClass.containsKey(clazzWalk)) {
+          propertyHandlerClass.put(clazz, propertyHandlerClass.get(clazzWalk));
+          return true;
         }
-        else {
+        for (Class c : clazzWalk.getInterfaces()) {
+          if (propertyHandlerClass.containsKey(c)) {
+            propertyHandlerClass.put(clazz, propertyHandlerClass.get(c));
             return true;
+          }
         }
+      }
+      while ((clazzWalk = clazzWalk.getSuperclass()) != null && clazzWalk != Object.class);
+      return false;
+    } else {
+      return true;
     }
+  }
 
-    public static void registerPropertyHandler(Class clazz, PropertyHandler propertyHandler) {
-        do {
-            propertyHandlerClass.put(clazz, propertyHandler);
+  public static void registerPropertyHandler(Class clazz, PropertyHandler propertyHandler) {
+    do {
+      propertyHandlerClass.put(clazz, propertyHandler);
 
-            for (Class c : clazz.getInterfaces()) {
-                propertyHandlerClass.put(c, propertyHandler);
-            }
-        }
-        while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
+      for (Class c : clazz.getInterfaces()) {
+        propertyHandlerClass.put(c, propertyHandler);
+      }
     }
+    while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
+  }
 
-    public static void setNullPropertyHandler(PropertyHandler handler) {
-        nullPropertyHandler = handler;
-    }
+  public static void setNullPropertyHandler(PropertyHandler handler) {
+    nullPropertyHandler = handler;
+  }
 
-    public static boolean hasNullPropertyHandler() {
-        return nullPropertyHandler != null;
-    }
+  public static boolean hasNullPropertyHandler() {
+    return nullPropertyHandler != null;
+  }
 
-    public static PropertyHandler getNullPropertyHandler() {
-        return nullPropertyHandler;
-    }
+  public static PropertyHandler getNullPropertyHandler() {
+    return nullPropertyHandler;
+  }
 
-    public static void setNullMethodHandler(PropertyHandler handler) {
-        nullMethodHandler = handler;
-    }
+  public static void setNullMethodHandler(PropertyHandler handler) {
+    nullMethodHandler = handler;
+  }
 
-    public static boolean hasNullMethodHandler() {
-        return nullMethodHandler != null;
-    }
+  public static boolean hasNullMethodHandler() {
+    return nullMethodHandler != null;
+  }
 
-    public static PropertyHandler getNullMethodHandler() {
-        return nullMethodHandler;
-    }
+  public static PropertyHandler getNullMethodHandler() {
+    return nullMethodHandler;
+  }
 
-    public static void unregisterPropertyHandler(Class clazz) {
-        propertyHandlerClass.remove(clazz);
-    }
+  public static void unregisterPropertyHandler(Class clazz) {
+    propertyHandlerClass.remove(clazz);
+  }
 
-    public static void disposeAll() {
-        nullMethodHandler = null;
-        nullPropertyHandler = null;
-        propertyHandlerClass.clear();
-    }
+  public static void disposeAll() {
+    nullMethodHandler = null;
+    nullPropertyHandler = null;
+    propertyHandlerClass.clear();
+  }
 }

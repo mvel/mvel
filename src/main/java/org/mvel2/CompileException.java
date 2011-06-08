@@ -33,257 +33,252 @@ import static org.mvel2.util.ParseTools.repeatChar;
  * Standard exception thrown for all general compileShared and some runtime failures.
  */
 public class CompileException extends RuntimeException {
-    private char[] expr;
+  private char[] expr;
 
-    private int cursor = 0;
-    private int msgOffset = 0;
+  private int cursor = 0;
+  private int msgOffset = 0;
 
-    private int lineNumber = 1;
-    private int column = 0;
+  private int lineNumber = 1;
+  private int column = 0;
 
-    private int lastLineStart = 0;
+  private int lastLineStart = 0;
 
-    private List<ErrorDetail> errors;
+  private List<ErrorDetail> errors;
 
-    public CompileException(String message, List<ErrorDetail> errors, char[] expr, int cursor, ParserContext ctx) {
-        super(message);
-        this.expr = expr;
-        this.cursor = cursor;
+  public CompileException(String message, List<ErrorDetail> errors, char[] expr, int cursor, ParserContext ctx) {
+    super(message);
+    this.expr = expr;
+    this.cursor = cursor;
 
-        if (!errors.isEmpty()) {
-            ErrorDetail detail = errors.iterator().next();
-            this.cursor = detail.getCursor();
-            this.lineNumber = detail.getLineNumber();
-            this.column = detail.getColumn();
+    if (!errors.isEmpty()) {
+      ErrorDetail detail = errors.iterator().next();
+      this.cursor = detail.getCursor();
+      this.lineNumber = detail.getLineNumber();
+      this.column = detail.getColumn();
+    }
+
+    this.errors = errors;
+  }
+
+  public String toString() {
+    return generateErrorMessage();
+  }
+
+  public CompileException(String message, char[] expr, int cursor, Throwable e) {
+    super(message, e);
+    this.expr = expr;
+    this.cursor = cursor;
+  }
+
+  public CompileException(String message, char[] expr, int cursor) {
+    super(message);
+    this.expr = expr;
+    this.cursor = cursor;
+  }
+
+  @Override
+  public String getMessage() {
+    return generateErrorMessage();
+  }
+
+  private void calcRowAndColumn() {
+    if (lineNumber > 1 || column > 1) return;
+
+    int row = 1;
+    int col = 1;
+
+    if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
+
+    for (int i = 0; i < cursor && i < expr.length; i++) {
+      switch (expr[i]) {
+        case '\r':
+          continue;
+        case '\n':
+          row++;
+          col = 1;
+          break;
+
+        default:
+          col++;
+      }
+    }
+
+    this.lineNumber = row;
+    this.column = col;
+  }
+
+  private CharSequence showCodeNearError(char[] expr, int cursor) {
+    if (expr == null) return "Unknown";
+
+    int start = cursor - 20;
+    int end = (cursor + 30);
+
+    if (end > expr.length) {
+      end = expr.length;
+      start -= 30;
+    }
+
+    if (start < 0) {
+      start = 0;
+    }
+
+    String cs;
+
+    int firstCr;
+    int lastCr;
+
+    try {
+      cs = copyValueOf(expr, start, end - start);
+    } catch (StringIndexOutOfBoundsException e) {
+      throw e;
+    }
+
+    int matchStart = -1;
+    int matchOffset = 0;
+    String match = null;
+
+    if (cursor < end) {
+      matchStart = cursor;
+      if (matchStart > 0) {
+        while (matchStart > 0 && !isWhitespace(expr[matchStart - 1])) {
+          matchStart--;
         }
+      }
 
-        this.errors = errors;
-    }
+      matchOffset = cursor - matchStart;
 
-    public String toString() {
-        return generateErrorMessage();
-    }
-
-    public CompileException(String message, char[] expr, int cursor, Throwable e) {
-        super(message, e);
-        this.expr = expr;
-        this.cursor = cursor;
-    }
-
-    public CompileException(String message, char[] expr, int cursor) {
-        super(message);
-        this.expr = expr;
-        this.cursor = cursor;
-    }
-
-    @Override
-    public String getMessage() {
-        return generateErrorMessage();
-    }
-
-    private void calcRowAndColumn() {
-        if (lineNumber > 1 || column > 1) return;
-
-        int row = 1;
-        int col = 1;
-
-        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
-
-        for (int i = 0; i < cursor && i < expr.length; i++) {
-            switch (expr[i]) {
-                case '\r':
-                    continue;
-                case '\n':
-                    row++;
-                    col = 1;
-                    break;
-
-                default:
-                    col++;
-            }
+      match = new String(expr, matchStart, expr.length - matchStart);
+      Makematch:
+      for (int i = 0; i < match.length(); i++) {
+        switch (match.charAt(i)) {
+          case '\n':
+          case ')':
+            match = match.substring(0, i);
+            break Makematch;
         }
+      }
 
-        this.lineNumber = row;
-        this.column = col;
+      if (match.length() >= 30) {
+        match = match.substring(0, 30);
+      }
     }
 
-    private CharSequence showCodeNearError(char[] expr, int cursor) {
-        if (expr == null) return "Unknown";
+    do {
+      firstCr = cs.indexOf('\n');
+      lastCr = cs.lastIndexOf('\n');
 
-        int start = cursor - 20;
-        int end = (cursor + 30);
+      if (firstCr == -1) break;
 
-        if (end > expr.length) {
-            end = expr.length;
-            start -= 30;
+      int matchIndex = match == null ? 0 : cs.indexOf(match);
+
+      if (firstCr != -1 && firstCr == lastCr) {
+        if (firstCr > matchIndex) {
+          cs = cs.substring(0, firstCr);
+        } else if (firstCr < matchIndex) {
+          cs = cs.substring(firstCr + 1, cs.length());
         }
+      } else if (firstCr < matchIndex) {
+        cs = cs.substring(firstCr + 1, lastCr);
+      } else {
+        cs = cs.substring(0, firstCr);
+      }
+    }
+    while (true);
 
-        if (start < 0) {
-            start = 0;
-        }
+    String trimmed = cs.trim();
 
-        String cs;
-
-        int firstCr;
-        int lastCr;
-
-        try {
-            cs = copyValueOf(expr, start, end - start);
-        }
-        catch (StringIndexOutOfBoundsException e) {
-            throw e;
-        }
-
-        int matchStart = -1;
-        int matchOffset = 0;
-        String match = null;
-
-        if (cursor < end) {
-            matchStart = cursor;
-            if (matchStart > 0) {
-                while (matchStart > 0 && !isWhitespace(expr[matchStart - 1])) {
-                    matchStart--;
-                }
-            }
-
-            matchOffset = cursor - matchStart;
-
-            match = new String(expr, matchStart, expr.length - matchStart);
-            Makematch:
-            for (int i = 0; i < match.length(); i++) {
-                switch (match.charAt(i)) {
-                    case '\n':
-                    case ')':
-                        match = match.substring(0, i);
-                        break Makematch;
-                }
-            }
-
-            if (match.length() >= 30) {
-                match = match.substring(0, 30);
-            }
-        }
-
-        do {
-            firstCr = cs.indexOf('\n');
-            lastCr = cs.lastIndexOf('\n');
-
-            if (firstCr == -1) break;
-
-            int matchIndex = match == null ? 0 : cs.indexOf(match);
-
-            if (firstCr != -1 && firstCr == lastCr) {
-                if (firstCr > matchIndex) {
-                    cs = cs.substring(0, firstCr);
-                }
-                else if (firstCr < matchIndex) {
-                    cs = cs.substring(firstCr + 1, cs.length());
-                }
-            }
-            else if (firstCr < matchIndex) {
-                cs = cs.substring(firstCr + 1, lastCr);
-            }
-            else {
-                cs = cs.substring(0, firstCr);
-            }
-        }
-        while (true);
-
-        String trimmed = cs.trim();
-
-        if (match != null) {
-            msgOffset = trimmed.indexOf(match) + matchOffset;
-        }
-        else {
-            msgOffset = cs.length() - (cs.length() - trimmed.length());
-        }
-
-        if (msgOffset == 0 && matchOffset == 0) {
-            msgOffset = cursor;
-        }
-
-        return trimmed;
+    if (match != null) {
+      msgOffset = trimmed.indexOf(match) + matchOffset;
+    } else {
+      msgOffset = cs.length() - (cs.length() - trimmed.length());
     }
 
-    public CharSequence getCodeNearError() {
-        return showCodeNearError(expr, cursor);
+    if (msgOffset == 0 && matchOffset == 0) {
+      msgOffset = cursor;
     }
 
-    private String generateErrorMessage() {
-        StringAppender appender = new StringAppender().append("[Error: " + super.getMessage() + "]\n");
+    return trimmed;
+  }
 
-        int offset = appender.length();
+  public CharSequence getCodeNearError() {
+    return showCodeNearError(expr, cursor);
+  }
 
-        appender.append("[Near : {... ");
+  private String generateErrorMessage() {
+    StringAppender appender = new StringAppender().append("[Error: " + super.getMessage() + "]\n");
 
-        offset = appender.length() - offset;
+    int offset = appender.length();
 
-        appender.append(showCodeNearError(expr, cursor))
-                .append(" ....}]\n")
-                .append(repeatChar(' ', offset));
+    appender.append("[Near : {... ");
 
-        if (msgOffset < 0) msgOffset = 0;
+    offset = appender.length() - offset;
 
-        appender.append(repeatChar(' ', msgOffset)).append('^');
+    appender.append(showCodeNearError(expr, cursor))
+            .append(" ....}]\n")
+            .append(repeatChar(' ', offset));
 
-        calcRowAndColumn();
+    if (msgOffset < 0) msgOffset = 0;
 
-        if (lineNumber != -1) {
-            appender.append('\n')
-                    .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
-        }
-        return appender.toString();
+    appender.append(repeatChar(' ', msgOffset)).append('^');
+
+    calcRowAndColumn();
+
+    if (lineNumber != -1) {
+      appender.append('\n')
+              .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
     }
+    return appender.toString();
+  }
 
-    public char[] getExpr() {
-        return expr;
-    }
+  public char[] getExpr() {
+    return expr;
+  }
 
-    public int getCursor() {
-        return cursor;
-    }
+  public int getCursor() {
+    return cursor;
+  }
 
-    public List<ErrorDetail> getErrors() {
-        return errors != null ? errors : Collections.<ErrorDetail>emptyList();
-    }
+  public List<ErrorDetail> getErrors() {
+    return errors != null ? errors : Collections.<ErrorDetail>emptyList();
+  }
 
-    public void setErrors(List<ErrorDetail> errors) {
-        this.errors = errors;
-    }
+  public void setErrors(List<ErrorDetail> errors) {
+    this.errors = errors;
+  }
 
-    public int getLineNumber() {
-        return lineNumber;
-    }
+  public int getLineNumber() {
+    return lineNumber;
+  }
 
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
+  public void setLineNumber(int lineNumber) {
+    this.lineNumber = lineNumber;
+  }
 
-    public int getColumn() {
-        return column;
-    }
+  public int getColumn() {
+    return column;
+  }
 
-    public void setColumn(int column) {
-        this.column = column;
-    }
+  public void setColumn(int column) {
+    this.column = column;
+  }
 
-    public int getCursorOffet() {
-        return this.msgOffset;
-    }
+  public int getCursorOffet() {
+    return this.msgOffset;
+  }
 
-    public void setExpr(char[] expr) {
-        this.expr = expr;
-    }
+  public void setExpr(char[] expr) {
+    this.expr = expr;
+  }
 
-    public void setCursor(int cursor) {
-        this.cursor = cursor;
-    }
+  public void setCursor(int cursor) {
+    this.cursor = cursor;
+  }
 
-    public int getLastLineStart() {
-        return lastLineStart;
-    }
+  public int getLastLineStart() {
+    return lastLineStart;
+  }
 
-    public void setLastLineStart(int lastLineStart) {
-        this.lastLineStart = lastLineStart;
-    }
+  public void setLastLineStart(int lastLineStart) {
+    this.lastLineStart = lastLineStart;
+  }
 }

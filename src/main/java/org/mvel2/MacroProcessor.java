@@ -19,9 +19,11 @@
 package org.mvel2;
 
 import org.mvel2.compiler.AbstractParser;
+
 import static org.mvel2.util.ParseTools.isWhitespace;
 import static org.mvel2.util.ParseTools.isIdentifierPart;
 import static org.mvel2.util.ParseTools.captureStringLiteral;
+
 import org.mvel2.util.StringAppender;
 import org.mvel2.util.ParseTools;
 
@@ -31,105 +33,104 @@ import java.util.Map;
  * A simple, fast, macro processor.  This processor works by simply replacing a matched identifier with a set of code.
  */
 public class MacroProcessor extends AbstractParser implements PreProcessor {
-    private Map<String, Macro> macros;
+  private Map<String, Macro> macros;
 
-    public MacroProcessor() {
-    }
+  public MacroProcessor() {
+  }
 
-    public MacroProcessor(Map<String, Macro> macros) {
-        this.macros = macros;
-    }
+  public MacroProcessor(Map<String, Macro> macros) {
+    this.macros = macros;
+  }
 
-    public char[] parse(char[] input) {
-        setExpression(input);
+  public char[] parse(char[] input) {
+    setExpression(input);
 
-        StringAppender appender = new StringAppender();
+    StringAppender appender = new StringAppender();
 
-        int start;
-        boolean macroArmed = true;
-        String token;
+    int start;
+    boolean macroArmed = true;
+    String token;
 
-        for (; cursor < length; cursor++) {
-            start = cursor;
-            while (cursor < length && isIdentifierPart(expr[cursor])) cursor++;
-            if (cursor > start) {
-                if (macros.containsKey(token = new String(expr, start, cursor - start)) && macroArmed) {
-                    appender.append(macros.get(token).doMacro());
-                }
-                else {
-                    appender.append(token);
-                }
-            }
-
-            if (cursor < length) {
-                switch (expr[cursor]) {
-                    case '\\':
-                        cursor++;
-                        break;
-                    case '/':
-                        start = cursor;
-
-                        if (cursor + 1 != length) {
-                            switch (expr[cursor + 1]) {
-                                  case '/':
-                                      while (cursor != length && expr[cursor] != '\n') cursor++;
-                                      break;
-                                  case '*':
-                                      int len = length-1;
-                                      while (cursor != len && !(expr[cursor] == '*' && expr[cursor+1] == '/')) cursor++;
-                                      cursor += 2;
-                                      break;
-                            }
-                        }
-
-                        if (cursor < length) cursor++;
-
-                        appender.append(new String(expr, start, cursor - start));
-
-                        if (cursor < length) cursor--;
-                        break;
-
-                    case '"':
-                    case '\'':
-                        appender.append(new String(expr, (start = cursor),
-                                (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start));
-
-                        if (cursor >= length) break;
-                        else if (isIdentifierPart(expr[cursor])) cursor--;
-
-                    default:
-                        switch (expr[cursor]) {
-                            case '.':
-                                macroArmed = false;
-                                break;
-                            case ';':
-                            case '{':
-                            case '(':
-                                macroArmed = true;
-                                break;
-                        }
-
-                        appender.append(expr[cursor]);
-                }
-            }
+    for (; cursor < length; cursor++) {
+      start = cursor;
+      while (cursor < length && isIdentifierPart(expr[cursor])) cursor++;
+      if (cursor > start) {
+        if (macros.containsKey(token = new String(expr, start, cursor - start)) && macroArmed) {
+          appender.append(macros.get(token).doMacro());
+        } else {
+          appender.append(token);
         }
+      }
 
-        return appender.toChars();
+      if (cursor < length) {
+        switch (expr[cursor]) {
+          case '\\':
+            cursor++;
+            break;
+          case '/':
+            start = cursor;
+
+            if (cursor + 1 != length) {
+              switch (expr[cursor + 1]) {
+                case '/':
+                  while (cursor != length && expr[cursor] != '\n') cursor++;
+                  break;
+                case '*':
+                  int len = length - 1;
+                  while (cursor != len && !(expr[cursor] == '*' && expr[cursor + 1] == '/')) cursor++;
+                  cursor += 2;
+                  break;
+              }
+            }
+
+            if (cursor < length) cursor++;
+
+            appender.append(new String(expr, start, cursor - start));
+
+            if (cursor < length) cursor--;
+            break;
+
+          case '"':
+          case '\'':
+            appender.append(new String(expr, (start = cursor),
+                    (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start));
+
+            if (cursor >= length) break;
+            else if (isIdentifierPart(expr[cursor])) cursor--;
+
+          default:
+            switch (expr[cursor]) {
+              case '.':
+                macroArmed = false;
+                break;
+              case ';':
+              case '{':
+              case '(':
+                macroArmed = true;
+                break;
+            }
+
+            appender.append(expr[cursor]);
+        }
+      }
     }
 
-    public String parse(String input) {
-        return new String(parse(input.toCharArray()));
-    }
+    return appender.toChars();
+  }
 
-    public Map<String, Macro> getMacros() {
-        return macros;
-    }
+  public String parse(String input) {
+    return new String(parse(input.toCharArray()));
+  }
 
-    public void setMacros(Map<String, Macro> macros) {
-        this.macros = macros;
-    }
+  public Map<String, Macro> getMacros() {
+    return macros;
+  }
 
-    public void captureToWhitespace() {
-        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
-    }
+  public void setMacros(Map<String, Macro> macros) {
+    this.macros = macros;
+  }
+
+  public void captureToWhitespace() {
+    while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
+  }
 }

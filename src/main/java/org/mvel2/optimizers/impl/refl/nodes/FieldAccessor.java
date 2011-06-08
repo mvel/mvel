@@ -19,7 +19,9 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.PropertyTools;
@@ -27,83 +29,77 @@ import org.mvel2.util.PropertyTools;
 import java.lang.reflect.Field;
 
 public class FieldAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private Field field;
-    private boolean coercionRequired = false;
-    private boolean primitive;
+  private AccessorNode nextNode;
+  private Field field;
+  private boolean coercionRequired = false;
+  private boolean primitive;
 
 
-    public FieldAccessor() {
+  public FieldAccessor() {
+  }
+
+  public FieldAccessor(Field field) {
+    primitive = (this.field = field).getType().isPrimitive();
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      if (nextNode != null) {
+        return nextNode.getValue(field.get(ctx), elCtx, vars);
+      } else {
+        return field.get(ctx);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("unable to access field: " + field.getName(), e);
+    }
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    if (nextNode != null) {
+      try {
+        return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(field.getType()) : value);
+      } catch (Exception e) {
+        throw new RuntimeException("unable to access field", e);
+      }
     }
 
-    public FieldAccessor(Field field) {
-        primitive = (this.field = field).getType().isPrimitive();
-    }
+    try {
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            if (nextNode != null) {
-                return nextNode.getValue(field.get(ctx), elCtx, vars);
-            }
-            else {
-                return field.get(ctx);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unable to access field: " + field.getName(), e);
-        }
+      if (coercionRequired) {
+        field.set(ctx, value = convert(ctx, field.getClass()));
+        return value;
+      } else {
+        field.set(ctx, value);
+        return value;
+      }
+    } catch (IllegalArgumentException e) {
+      if (!coercionRequired) {
+        coercionRequired = true;
+        return setValue(ctx, elCtx, variableFactory, value);
+      }
+      throw new RuntimeException("unable to bind property", e);
+    } catch (Exception e) {
+      throw new RuntimeException("unable to access field", e);
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        if (nextNode != null) {
-            try {
-                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(field.getType()) : value);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("unable to access field", e);
-            }
-        }
-        
-        try {
+  public Field getField() {
+    return field;
+  }
 
-            if (coercionRequired) {
-                field.set(ctx, value = convert(ctx, field.getClass()));
-                return value;
-            }
-            else {
-                field.set(ctx, value);
-                return value;
-            }
-        }
-        catch (IllegalArgumentException e) {
-            if (!coercionRequired) {
-                coercionRequired = true;
-                return setValue(ctx, elCtx, variableFactory, value);
-            }
-            throw new RuntimeException("unable to bind property", e);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unable to access field", e);
-        }
-    }
+  public void setField(Field field) {
+    this.field = field;
+  }
 
-    public Field getField() {
-        return field;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public void setField(Field field) {
-        this.field = field;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public Class getKnownEgressType() {
-        return field.getClass();
-    }
+  public Class getKnownEgressType() {
+    return field.getClass();
+  }
 }

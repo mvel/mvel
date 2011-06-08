@@ -27,65 +27,61 @@ import java.lang.reflect.Field;
 
 @SuppressWarnings({"unchecked"})
 public class DynamicFieldAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private Field field;
-    private Class targetType;
+  private AccessorNode nextNode;
+  private Field field;
+  private Class targetType;
 
-    public DynamicFieldAccessor() {
+  public DynamicFieldAccessor() {
+  }
+
+  public DynamicFieldAccessor(Field field) {
+    this.field = field;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      if (nextNode != null) {
+        return nextNode.getValue(field.get(ctx), elCtx, vars);
+      } else {
+        return field.get(ctx);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("unable to access field", e);
     }
 
-    public DynamicFieldAccessor(Field field) {
-        this.field = field;
-    }
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            if (nextNode != null) {
-                return nextNode.getValue(field.get(ctx), elCtx, vars);
-            }
-            else {
-                return field.get(ctx);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unable to access field", e);
-        }
-
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    try {
+      if (nextNode != null) {
+        return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+      } else {
+        field.set(ctx, DataConversion.convert(value, targetType));
+        return value;
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("unable to access field", e);
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        try {
-            if (nextNode != null) {
-                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
-            }
-            else {
-                field.set(ctx, DataConversion.convert(value, targetType));
-                return value;
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unable to access field", e);
-        }
-    }
+  public Field getField() {
+    return field;
+  }
 
-    public Field getField() {
-        return field;
-    }
+  public void setField(Field field) {
+    this.field = field;
+    this.targetType = field.getType();
+  }
 
-    public void setField(Field field) {
-        this.field = field;
-        this.targetType = field.getType();
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public Class getKnownEgressType() {
-        return targetType;
-    }
+  public Class getKnownEgressType() {
+    return targetType;
+  }
 }

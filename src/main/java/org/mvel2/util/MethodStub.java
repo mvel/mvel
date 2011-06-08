@@ -25,48 +25,48 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
 public class MethodStub implements Serializable {
-    private Class classReference;
-    private String name;
+  private Class classReference;
+  private String name;
 
-    private transient Method method;
+  private transient Method method;
 
-    public MethodStub(Method method) {
-        this.classReference = method.getDeclaringClass();
-        this.name = method.getName();
+  public MethodStub(Method method) {
+    this.classReference = method.getDeclaringClass();
+    this.name = method.getName();
+  }
+
+  public MethodStub(Class classReference, String methodName) {
+    this.classReference = classReference;
+    this.name = methodName;
+  }
+
+  public Class getClassReference() {
+    return classReference;
+  }
+
+  public void setClassReference(Class classReference) {
+    this.classReference = classReference;
+  }
+
+  public String getMethodName() {
+    return name;
+  }
+
+  public void setMethodName(String methodName) {
+    this.name = methodName;
+  }
+
+  public Method getMethod() {
+    if (method == null) {
+      for (Method method : classReference.getMethods()) {
+        if (name.equals(method.getName())) return this.method = method;
+      }
     }
+    return method;
+  }
 
-    public MethodStub(Class classReference, String methodName) {
-        this.classReference = classReference;
-        this.name = methodName;
-    }
-
-    public Class getClassReference() {
-        return classReference;
-    }
-
-    public void setClassReference(Class classReference) {
-        this.classReference = classReference;
-    }
-
-    public String getMethodName() {
-        return name;
-    }
-
-    public void setMethodName(String methodName) {
-        this.name = methodName;
-    }
-
-    public Method getMethod() {
-        if (method == null) {
-            for (Method method : classReference.getMethods()) {
-                if (name.equals(method.getName())) return this.method = method;
-            }
-        }
-        return method;
-    }
-
-    public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parameters)
-            throws IllegalAccessException, InvocationTargetException {
-        return method.invoke(ctx, parameters);
-    }
+  public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parameters)
+          throws IllegalAccessException, InvocationTargetException {
+    return method.invoke(ctx, parameters);
+  }
 }

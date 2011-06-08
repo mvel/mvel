@@ -19,23 +19,24 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
 public class IsDef extends ASTNode {
-    public IsDef(char[] expr, int start, int offset) {
-        this.nameCache = new String(this.expr = expr, this.start = start, this.offset = offset);
-    }
+  public IsDef(char[] expr, int start, int offset) {
+    this.nameCache = new String(this.expr = expr, this.start = start, this.offset = offset);
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
 
-    }
+  }
 
-    public Class getEgressType() {
-        return Boolean.class;
-    }
+  public Class getEgressType() {
+    return Boolean.class;
+  }
 }

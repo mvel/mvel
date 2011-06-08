@@ -28,42 +28,40 @@ import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 
 public class Union extends ASTNode {
-    private ASTNode main;
-    private transient Accessor accessor;
+  private ASTNode main;
+  private transient Accessor accessor;
 
-    public Union(char[] expr, int start, int offset, int fields, ASTNode main) {
-        super(expr, start, offset, fields);
-        this.main = main;
-    }
+  public Union(char[] expr, int start, int offset, int fields, ASTNode main) {
+    super(expr, start, offset, fields);
+    this.main = main;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accessor != null) {
-            return accessor.getValue(main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory);
-        }
-        else {
-            try {
-                AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = o.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
-                        main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
-                return o.getResultOptPass();
-            }
-            finally {
-                OptimizerFactory.clearThreadAccessorOptimizer();
-            }
-        }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (accessor != null) {
+      return accessor.getValue(main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory);
+    } else {
+      try {
+        AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
+        accessor = o.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
+                main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
+        return o.getResultOptPass();
+      } finally {
+        OptimizerFactory.clearThreadAccessorOptimizer();
+      }
     }
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return PropertyAccessor.get(
-                expr, start, offset,
-                main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return PropertyAccessor.get(
+            expr, start, offset,
+            main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
+  }
 
-    public Class getLeftEgressType() {
-        return main.getEgressType();
-    }
+  public Class getLeftEgressType() {
+    return main.getEgressType();
+  }
 
-    public String toString() {
-        return (main != null ? main.toString() : "") + "-[union]->" + (accessor != null ? accessor.toString() : "");
-    }
+  public String toString() {
+    return (main != null ? main.toString() : "") + "-[union]->" + (accessor != null ? accessor.toString() : "");
+  }
 }

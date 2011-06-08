@@ -37,267 +37,257 @@ import static org.mvel2.util.PropertyTools.getReturnType;
  * @author Christopher Brock
  */
 public class WithNode extends BlockNode implements NestedStatement {
-    protected String nestParm;
-    //   protected ExecutableStatement nestedStatement;
-    protected ParmValuePair[] withExpressions;
+  protected String nestParm;
+  //   protected ExecutableStatement nestedStatement;
+  protected ParmValuePair[] withExpressions;
 
-    public WithNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields,
-                    ParserContext pCtx) {
-        nestParm = createStringTrimmed(this.expr = expr, this.start = start, this.offset = offset);
-        this.blockStart = blockStart;
-        this.blockOffset = blockOffset;
+  public WithNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields,
+                  ParserContext pCtx) {
+    nestParm = createStringTrimmed(this.expr = expr, this.start = start, this.offset = offset);
+    this.blockStart = blockStart;
+    this.blockOffset = blockOffset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            pCtx.setBlockSymbols(true);
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      pCtx.setBlockSymbols(true);
 
-            egressType = (compiledBlock = (ExecutableStatement)
-                    subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
+      egressType = (compiledBlock = (ExecutableStatement)
+              subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
 
-            withExpressions = compileWithExpressions(expr, blockStart, blockOffset, nestParm, egressType, pCtx);
+      withExpressions = compileWithExpressions(expr, blockStart, blockOffset, nestParm, egressType, pCtx);
 
-            pCtx.setBlockSymbols(false);
-        }
+      pCtx.setBlockSymbols(false);
+    }
+  }
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    Object ctxObject = compiledBlock.getValue(ctx, thisValue, factory);
+    if (ctxObject == null) throw new CompileException("with-block against null pointer", expr, start);
+
+    for (ParmValuePair pvp : withExpressions) {
+      pvp.eval(ctxObject, factory);
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object ctxObject = compiledBlock.getValue(ctx, thisValue, factory);
-        if (ctxObject == null) throw new CompileException("with-block against null pointer", expr, start);
-
-        for (ParmValuePair pvp : withExpressions) {
-            pvp.eval(ctxObject, factory);
-        }
-
-        return ctxObject;
-    }
+    return ctxObject;
+  }
 
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        parseWithExpressions(nestParm, expr, blockStart, blockOffset, ctx = MVEL.eval(expr, start, offset, ctx, factory), factory);
-        return ctx;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    parseWithExpressions(nestParm, expr, blockStart, blockOffset, ctx = MVEL.eval(expr, start, offset, ctx, factory), factory);
+    return ctx;
+  }
 
-    public static ParmValuePair[] compileWithExpressions(char[] block, int start, int offset, String nestParm, Class egressType, ParserContext pCtx) {
-        /**
-         *
-         * MAINTENANCE NOTE: AN INTERPRETED MODE VERSION OF THIS CODE IS DUPLICATED IN: ParseTools
-         *
-         */
+  public static ParmValuePair[] compileWithExpressions(char[] block, int start, int offset, String nestParm, Class egressType, ParserContext pCtx) {
+    /**
+     *
+     * MAINTENANCE NOTE: AN INTERPRETED MODE VERSION OF THIS CODE IS DUPLICATED IN: ParseTools
+     *
+     */
 
-        List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
-        String parm = "";
+    List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
+    String parm = "";
 
-        int end = start + offset;
+    int end = start + offset;
 
-        int _st = start;
-        int _end = -1;
+    int _st = start;
+    int _end = -1;
 
-        int oper = -1;
-        for (int i = start; i < end; i++) {
-            switch (block[i]) {
-                case '{':
-                case '[':
-                case '(':
-                    i = balancedCapture(block, i, end, block[i]);
-                    continue;
+    int oper = -1;
+    for (int i = start; i < end; i++) {
+      switch (block[i]) {
+        case '{':
+        case '[':
+        case '(':
+          i = balancedCapture(block, i, end, block[i]);
+          continue;
 
-                case '/':
-                    if (i < end && block[i + 1] == '/') {
-                        while (i < end && block[i] != '\n') block[i++] = ' ';
-                        if (parm == null) _st = i;
-                    }
-                    else if (i < end && block[i + 1] == '*') {
-                        int len = end - 1;
-                        while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
-                            block[i++] = ' ';
-                        }
-                        block[i++] = ' ';
-                        block[i++] = ' ';
-
-                        if (parm == null) _st = i;
-                    }
-                    else if (i < end && block[i + 1] == '=') {
-                        oper = Operator.DIV;
-                    }
-                    continue;
-
-                case '%':
-                case '*':
-                case '-':
-                case '+':
-                    if (i + 1 < end && block[i + 1] == '=') {
-                        oper = opLookup(block[i]);
-                    }
-                    continue;
-
-
-                case '=':
-                    parm = createStringTrimmed(block, _st, i - _st - (oper != -1 ? 1 : 0));
-                    _st = i + 1;
-                    continue;
-
-                case ',':
-                    if (_end == -1) _end = i;
-
-                    if (parm == null || parm.length() == 0) {
-                        try {
-                            String expr;
-                            if (nestParm == null) {
-                                expr = new String(block, _st, _end - _st);
-                            }
-                            else {
-                                expr = new StringBuilder(nestParm).append('.')
-                                        .append(new String(block, _st, _end - _st)).toString();
-                            }
-
-                            parms.add(
-                                    new ParmValuePair(null, (ExecutableStatement)
-                                            subCompileExpression(expr, pCtx),
-                                            block, _st, egressType, pCtx)
-                            );
-
-                        }
-                        catch (CompileException e) {
-                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
-                            e.setExpr(block);
-                            throw e;
-                        }
-
-                        oper = -1;
-                        _st = ++i;
-                    }
-                    else {
-                        if (nestParm == null) {
-                            throw new CompileException("operative assignment not possible here", block, start);
-                        }
-
-                        try {
-                            parms.add(new ParmValuePair(
-                                    parm,
-                                    oper != -1 ?
-                                            (ExecutableStatement) subCompileExpression(
-                                                    createShortFormOperativeAssignment(nestParm + "." + parm,
-                                                            block, _st, _end - _st, oper), pCtx)
-                                            //or
-                                            : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                                    , block, _st, Object.class, pCtx));
-                        }
-                        catch (CompileException e) {
-                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
-                            e.setExpr(block);
-                            throw e;
-                        }
-
-                        parm = null;
-                        oper = -1;
-                        _st = ++i;
-                    }
-
-                    _end = -1;
-
-                    break;
+        case '/':
+          if (i < end && block[i + 1] == '/') {
+            while (i < end && block[i] != '\n') block[i++] = ' ';
+            if (parm == null) _st = i;
+          } else if (i < end && block[i + 1] == '*') {
+            int len = end - 1;
+            while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
+              block[i++] = ' ';
             }
-        }
+            block[i++] = ' ';
+            block[i++] = ' ';
 
-        if (_st != (_end = end)) {
+            if (parm == null) _st = i;
+          } else if (i < end && block[i + 1] == '=') {
+            oper = Operator.DIV;
+          }
+          continue;
+
+        case '%':
+        case '*':
+        case '-':
+        case '+':
+          if (i + 1 < end && block[i + 1] == '=') {
+            oper = opLookup(block[i]);
+          }
+          continue;
+
+
+        case '=':
+          parm = createStringTrimmed(block, _st, i - _st - (oper != -1 ? 1 : 0));
+          _st = i + 1;
+          continue;
+
+        case ',':
+          if (_end == -1) _end = i;
+
+          if (parm == null || parm.length() == 0) {
             try {
-                if (parm == null || "".equals(parm)) {
-                    String expr;
-                    if (nestParm == null) {
-                        expr = new String(block, _st, _end - _st);
-                    }
-                    else {
-                        expr = new StringBuilder(nestParm).append('.')
-                                .append(new String(block, _st, _end - _st)).toString();
-                    }
+              String expr;
+              if (nestParm == null) {
+                expr = new String(block, _st, _end - _st);
+              } else {
+                expr = new StringBuilder(nestParm).append('.')
+                        .append(new String(block, _st, _end - _st)).toString();
+              }
 
-                    parms.add(
-                            new ParmValuePair(null, (ExecutableStatement)
-                                    subCompileExpression(expr, pCtx),
-                                    block, _st, egressType, pCtx)
-                    );
-                }
-                else {
-                    if (nestParm == null) {
-                        throw new CompileException("operative assignment not possible here", block, start);
-                    }
+              parms.add(
+                      new ParmValuePair(null, (ExecutableStatement)
+                              subCompileExpression(expr, pCtx),
+                              block, _st, egressType, pCtx)
+              );
 
-                    parms.add(new ParmValuePair(
-                            parm,
-                            oper != -1 ?
-                                    (ExecutableStatement) subCompileExpression(
-                                            createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
-                                            pCtx)
-                                    //or
-                                    : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                            , block, _st, Object.class, pCtx));
-                }
+            } catch (CompileException e) {
+              e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+              e.setExpr(block);
+              throw e;
             }
-            catch (CompileException e) {
-                throw ErrorUtil.rewriteIfNeeded(e, block, _st);
+
+            oper = -1;
+            _st = ++i;
+          } else {
+            if (nestParm == null) {
+              throw new CompileException("operative assignment not possible here", block, start);
+            }
+
+            try {
+              parms.add(new ParmValuePair(
+                      parm,
+                      oper != -1 ?
+                              (ExecutableStatement) subCompileExpression(
+                                      createShortFormOperativeAssignment(nestParm + "." + parm,
+                                              block, _st, _end - _st, oper), pCtx)
+                              //or
+                              : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
+                      , block, _st, Object.class, pCtx));
+            } catch (CompileException e) {
+              e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+              e.setExpr(block);
+              throw e;
+            }
+
+            parm = null;
+            oper = -1;
+            _st = ++i;
+          }
+
+          _end = -1;
+
+          break;
+      }
+    }
+
+    if (_st != (_end = end)) {
+      try {
+        if (parm == null || "".equals(parm)) {
+          String expr;
+          if (nestParm == null) {
+            expr = new String(block, _st, _end - _st);
+          } else {
+            expr = new StringBuilder(nestParm).append('.')
+                    .append(new String(block, _st, _end - _st)).toString();
+          }
+
+          parms.add(
+                  new ParmValuePair(null, (ExecutableStatement)
+                          subCompileExpression(expr, pCtx),
+                          block, _st, egressType, pCtx)
+          );
+        } else {
+          if (nestParm == null) {
+            throw new CompileException("operative assignment not possible here", block, start);
+          }
+
+          parms.add(new ParmValuePair(
+                  parm,
+                  oper != -1 ?
+                          (ExecutableStatement) subCompileExpression(
+                                  createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
+                                  pCtx)
+                          //or
+                          : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
+                  , block, _st, Object.class, pCtx));
+        }
+      } catch (CompileException e) {
+        throw ErrorUtil.rewriteIfNeeded(e, block, _st);
 
 //                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
 //                e.setExpr(block);
 //                throw e;
-            }
-        }
-
-        ParmValuePair[] withExpressions;
-        parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
-        return withExpressions;
+      }
     }
 
+    ParmValuePair[] withExpressions;
+    parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
+    return withExpressions;
+  }
 
-    public ExecutableStatement getNestedStatement() {
-        return compiledBlock;
+
+  public ExecutableStatement getNestedStatement() {
+    return compiledBlock;
+  }
+
+  public ParmValuePair[] getWithExpressions() {
+    return withExpressions;
+  }
+
+  public static final class ParmValuePair implements Serializable {
+    private char[] expr;
+    private int cursor;
+    private Serializable setExpression;
+    private ExecutableStatement statement;
+
+    public ParmValuePair() {
     }
 
-    public ParmValuePair[] getWithExpressions() {
-        return withExpressions;
+    public ParmValuePair(String parameter, ExecutableStatement statement, char[] expr, int cursor, Class ingressType, ParserContext pCtx) {
+      this.expr = expr;
+      this.cursor = cursor;
+      if (parameter != null && parameter.length() != 0) {
+        this.setExpression = MVEL.compileSetExpression(parameter,
+                ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
+                , pCtx);
+      }
+      this.statement = statement;
     }
 
-    public static final class ParmValuePair implements Serializable {
-        private char[] expr;
-        private int cursor;
-        private Serializable setExpression;
-        private ExecutableStatement statement;
-
-        public ParmValuePair() {
-        }
-
-        public ParmValuePair(String parameter, ExecutableStatement statement, char[] expr, int cursor, Class ingressType, ParserContext pCtx) {
-            this.expr = expr;
-            this.cursor = cursor;
-            if (parameter != null && parameter.length() != 0) {
-                this.setExpression = MVEL.compileSetExpression(parameter,
-                        ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
-                        , pCtx);
-            }
-            this.statement = statement;
-        }
-
-        public Serializable getSetExpression() {
-            return setExpression;
-        }
-
-        public void setSetExpression(Serializable setExpression) {
-            this.setExpression = setExpression;
-        }
-
-        public ExecutableStatement getStatement() {
-            return statement;
-        }
-
-        public void setStatement(ExecutableStatement statement) {
-            this.statement = statement;
-        }
-
-        public void eval(Object ctx, VariableResolverFactory factory) {
-            if (setExpression == null) {
-                this.statement.getValue(ctx, factory);
-            }
-            else {
-                MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
-            }
-        }
+    public Serializable getSetExpression() {
+      return setExpression;
     }
+
+    public void setSetExpression(Serializable setExpression) {
+      this.setExpression = setExpression;
+    }
+
+    public ExecutableStatement getStatement() {
+      return statement;
+    }
+
+    public void setStatement(ExecutableStatement statement) {
+      this.statement = statement;
+    }
+
+    public void eval(Object ctx, VariableResolverFactory factory) {
+      if (setExpression == null) {
+        this.statement.getValue(ctx, factory);
+      } else {
+        MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
+      }
+    }
+  }
 }

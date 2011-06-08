@@ -34,123 +34,117 @@ import static org.mvel2.util.ParseTools.*;
  * @author Christopher Brock
  */
 public class AssignmentNode extends ASTNode implements Assignment {
-    private String varName;
-    private transient CompiledAccExpression accExpr;
+  private String varName;
+  private transient CompiledAccExpression accExpr;
 
-    private char[] indexTarget;
-    private String index;
+  private char[] indexTarget;
+  private String index;
 
-    // private char[] stmt;
-    private ExecutableStatement statement;
-    private boolean col = false;
-
-
-    public AssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
-
-        int assignStart;
-
-        if ((assignStart = find(expr, start, offset, '=')) != -1) {
-            this.varName = createStringTrimmed(expr, start, assignStart - start);
-
-            this.start = skipWhitespace(expr, assignStart + 1, pCtx);
-            if (this.start >= start+offset) {
-                throw new CompileException("unexpected end of statement", expr, assignStart+1);
-            }
-
-            this.offset = offset - (this.start - start);
-
-            if ((fields & COMPILE_IMMEDIATE) != 0) {
-                this.egressType = (statement = (ExecutableStatement)
-                        subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
-            }
-
-            if (col = ((endOfName = findFirst('[', 0, this.varName.length(), indexTarget = this.varName.toCharArray())) > 0)) {
-                if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
-                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
-                }
-
-                this.varName = new String(expr, start, endOfName);
-                index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
-            }
+  // private char[] stmt;
+  private ExecutableStatement statement;
+  private boolean col = false;
 
 
-            try {
-                checkNameSafety(this.varName);
-            }
-            catch (RuntimeException e) {
-                throw new CompileException(e.getMessage(), expr, start);
-            }
-        }
-        else {
-            try {
-                checkNameSafety(this.varName = new String(expr, start, offset));
-            }
-            catch (RuntimeException e) {
-                throw new CompileException(e.getMessage(), expr, start);
-            }
+  public AssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
+
+    int assignStart;
+
+    if ((assignStart = find(expr, start, offset, '=')) != -1) {
+      this.varName = createStringTrimmed(expr, start, assignStart - start);
+
+      this.start = skipWhitespace(expr, assignStart + 1, pCtx);
+      if (this.start >= start + offset) {
+        throw new CompileException("unexpected end of statement", expr, assignStart + 1);
+      }
+
+      this.offset = offset - (this.start - start);
+
+      if ((fields & COMPILE_IMMEDIATE) != 0) {
+        this.egressType = (statement = (ExecutableStatement)
+                subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
+      }
+
+      if (col = ((endOfName = findFirst('[', 0, this.varName.length(), indexTarget = this.varName.toCharArray())) > 0)) {
+        if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
+          accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
         }
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            pCtx.addVariable(this.varName, egressType);
-        }
+        this.varName = new String(expr, start, endOfName);
+        index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
+      }
+
+
+      try {
+        checkNameSafety(this.varName);
+      } catch (RuntimeException e) {
+        throw new CompileException(e.getMessage(), expr, start);
+      }
+    } else {
+      try {
+        checkNameSafety(this.varName = new String(expr, start, offset));
+      } catch (RuntimeException e) {
+        throw new CompileException(e.getMessage(), expr, start);
+      }
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accExpr == null && indexTarget != null) {
-            accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      pCtx.addVariable(this.varName, egressType);
+    }
+  }
 
-        if (col) {
-            return accExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
-        }
-        else if (statement != null) {
-            if (factory == null)
-                throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
-            return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
-        }
-        else {
-            if (factory == null)
-                throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
-            factory.createVariable(varName, null);
-            return null;
-        }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (accExpr == null && indexTarget != null) {
+      accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
     }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        checkNameSafety(varName);
+    if (col) {
+      return accExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
+    } else if (statement != null) {
+      if (factory == null)
+        throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
+      return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
+    } else {
+      if (factory == null)
+        throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
+      factory.createVariable(varName, null);
+      return null;
+    }
+  }
 
-        if (col) {
-            PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory));
-        }
-        else {
-            return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();
-        }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    checkNameSafety(varName);
 
-        return ctx;
+    if (col) {
+      PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory));
+    } else {
+      return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();
     }
 
+    return ctx;
+  }
 
-    public String getAssignmentVar() {
-        return varName;
-    }
 
-    public char[] getExpression() {
-        return subset(expr, start, offset);
-    }
+  public String getAssignmentVar() {
+    return varName;
+  }
 
-    public boolean isNewDeclaration() {
-        return false;
-    }
+  public char[] getExpression() {
+    return subset(expr, start, offset);
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        this.statement = stmt;
-    }
+  public boolean isNewDeclaration() {
+    return false;
+  }
 
-    @Override
-    public String toString() {
-        return varName + " = " + new String(expr, start, offset);
-    }
+  public void setValueStatement(ExecutableStatement stmt) {
+    this.statement = stmt;
+  }
+
+  @Override
+  public String toString() {
+    return varName + " = " + new String(expr, start, offset);
+  }
 }

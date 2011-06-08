@@ -22,13 +22,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 public interface TemplateRegistry {
-    Iterator iterator();
+  Iterator iterator();
 
-    Set<String> getNames();
+  Set<String> getNames();
 
-    boolean contains(String name);
+  boolean contains(String name);
 
-    void addNamedTemplate(String name, CompiledTemplate template);
+  void addNamedTemplate(String name, CompiledTemplate template);
 
-    CompiledTemplate getNamedTemplate(String name);
+  CompiledTemplate getNamedTemplate(String name);
 }

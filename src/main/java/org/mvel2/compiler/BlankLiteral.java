@@ -22,33 +22,32 @@ import static java.lang.reflect.Array.getLength;
 import static org.mvel2.util.ParseTools.isNumeric;
 
 import java.io.Serializable;
+
 import static java.lang.String.valueOf;
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 
 public class BlankLiteral implements Serializable {
-    public static final BlankLiteral INSTANCE = new BlankLiteral();
+  public static final BlankLiteral INSTANCE = new BlankLiteral();
 
-    public BlankLiteral() {
-    }
+  public BlankLiteral() {
+  }
 
-    public boolean equals(Object obj) {
-        if (obj == null || "".equals(valueOf(obj))) {
-            return true;
-        }
-        else if (isNumeric(obj)) {
-            return "0".equals(valueOf(obj));
-        }
-        else if (obj instanceof Collection) {
-            return ((Collection) obj).size() == 0;
-        }
-        else if (obj.getClass().isArray()) {
-            return getLength(obj) == 0;
-        }
-        return false;
+  public boolean equals(Object obj) {
+    if (obj == null || "".equals(valueOf(obj))) {
+      return true;
+    } else if (isNumeric(obj)) {
+      return "0".equals(valueOf(obj));
+    } else if (obj instanceof Collection) {
+      return ((Collection) obj).size() == 0;
+    } else if (obj.getClass().isArray()) {
+      return getLength(obj) == 0;
     }
+    return false;
+  }
 
-    public String toString() {
-        return "";
-    }
+  public String toString() {
+    return "";
+  }
 }

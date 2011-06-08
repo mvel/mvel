@@ -21,13 +21,13 @@ package org.mvel2.optimizers.impl.refl.nodes;
 import org.mvel2.compiler.AccessorNode;
 
 public abstract class BaseAccessor implements AccessorNode {
-    protected AccessorNode nextNode;
+  protected AccessorNode nextNode;
 
-    public AccessorNode setNextNode(AccessorNode accessorNode) {
-        return this.nextNode = accessorNode;
-    }
+  public AccessorNode setNextNode(AccessorNode accessorNode) {
+    return this.nextNode = accessorNode;
+  }
 
-    public AccessorNode getNextNode() {
-        return this.nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return this.nextNode;
+  }
 }

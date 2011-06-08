@@ -24,42 +24,41 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class Negation extends ASTNode {
-    private ExecutableStatement stmt;
+  private ExecutableStatement stmt;
 
-    public Negation(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public Negation(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            if (((this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType() != null)
-                    && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
-                throw new CompileException("negation operator cannot be applied to non-boolean type", expr, start);
-            }
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      if (((this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType() != null)
+              && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
+        throw new CompileException("negation operator cannot be applied to non-boolean type", expr, start);
+      }
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return !((Boolean) stmt.getValue(ctx, thisValue, factory));
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return !((Boolean) stmt.getValue(ctx, thisValue, factory));
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
-            return !((Boolean) MVEL.eval(expr, start, offset, ctx, factory));
-        }
-        catch (NullPointerException e) {
-            throw new CompileException("negation operator applied to a null value", expr, start, e);
-        }
-        catch (ClassCastException e) {
-            throw new CompileException("negation operator applied to non-boolean expression", expr, start, e);
-        }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    try {
+      return !((Boolean) MVEL.eval(expr, start, offset, ctx, factory));
+    } catch (NullPointerException e) {
+      throw new CompileException("negation operator applied to a null value", expr, start, e);
+    } catch (ClassCastException e) {
+      throw new CompileException("negation operator applied to non-boolean expression", expr, start, e);
     }
+  }
 
-    public Class getEgressType() {
-        return Boolean.class;
-    }
+  public Class getEgressType() {
+    return Boolean.class;
+  }
 
 }

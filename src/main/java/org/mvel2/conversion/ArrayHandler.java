@@ -29,53 +29,52 @@ import static java.lang.reflect.Array.*;
 import static org.mvel2.DataConversion.convert;
 
 public class ArrayHandler implements ConversionHandler {
-    private final Map<Class, Converter> CNV = new HashMap<Class, Converter>();
+  private final Map<Class, Converter> CNV = new HashMap<Class, Converter>();
 
-    private final Class type;
+  private final Class type;
 
-    public ArrayHandler(Class type) {
-        this.type = type;
+  public ArrayHandler(Class type) {
+    this.type = type;
+  }
+
+  public Object convertFrom(Object in) {
+    return handleLooseTypeConversion(in.getClass(), in, type);
+  }
+
+  public boolean canConvertFrom(Class cls) {
+    return cls.isArray() || Collection.class.isAssignableFrom(cls);
+  }
+
+
+  /**
+   * Messy method to handle primitive boxing for conversion. If someone can re-write this more
+   * elegantly, be my guest.
+   *
+   * @param sourceType
+   * @param input
+   * @param targetType
+   * @return
+   */
+  private static Object handleLooseTypeConversion(Class sourceType, Object input, Class targetType) {
+    Class targType = targetType.getComponentType();
+    if (Collection.class.isAssignableFrom(sourceType)) {
+      Object newArray = newInstance(targType, ((Collection) input).size());
+
+      int i = 0;
+      for (Object o : ((Collection) input)) {
+        Array.set(newArray, i++, convert(o, targType));
+      }
+
+      return newArray;
+    } else {
+      int len = getLength(input);
+      Object target = newInstance(targType, len);
+
+      for (int i = 0; i < len; i++) {
+        set(target, i, convert(get(input, i), targType));
+      }
+
+      return target;
     }
-
-    public Object convertFrom(Object in) {
-        return handleLooseTypeConversion(in.getClass(), in, type);
-    }
-
-    public boolean canConvertFrom(Class cls) {
-        return cls.isArray() || Collection.class.isAssignableFrom(cls);
-    }
-
-
-    /**
-     * Messy method to handle primitive boxing for conversion. If someone can re-write this more
-     * elegantly, be my guest.
-     *
-     * @param sourceType
-     * @param input
-     * @param targetType
-     * @return
-     */
-    private static Object handleLooseTypeConversion(Class sourceType, Object input, Class targetType) {
-        Class targType = targetType.getComponentType();
-        if (Collection.class.isAssignableFrom(sourceType)) {
-            Object newArray = newInstance(targType, ((Collection)input).size());
-
-            int i = 0;
-            for (Object o : ((Collection) input)) {
-                Array.set(newArray, i++, convert(o, targType));
-            }
-
-            return newArray;
-        }
-        else {
-            int len = getLength(input);
-            Object target = newInstance(targType, len);
-
-            for (int i = 0; i < len; i++) {
-                set(target, i, convert(get(input, i), targType));
-            }
-
-            return target;
-        }
-    }
+  }
 }

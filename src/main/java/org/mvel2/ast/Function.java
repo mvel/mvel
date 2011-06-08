@@ -36,160 +36,159 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 
 @SuppressWarnings({"unchecked"})
 public class Function extends ASTNode implements Safe {
-    protected String name;
-    protected ExecutableStatement compiledBlock;
+  protected String name;
+  protected ExecutableStatement compiledBlock;
 
-    protected String[] parameters;
-    protected int parmNum;
-    protected boolean cMode = false;
+  protected String[] parameters;
+  protected int parmNum;
+  protected boolean cMode = false;
 
-    public Function(String name, char[] expr, int start, int offset, int blockStart, int blockOffset,
-                    int fields, ParserContext pCtx) {
-        if ((this.name = name) == null || name.length() == 0) {
-            this.name = null;
-        }
-        this.expr = expr;
+  public Function(String name, char[] expr, int start, int offset, int blockStart, int blockOffset,
+                  int fields, ParserContext pCtx) {
+    if ((this.name = name) == null || name.length() == 0) {
+      this.name = null;
+    }
+    this.expr = expr;
 
-        parmNum = (this.parameters = parseParameterDefList(expr, start, offset)).length;
+    parmNum = (this.parameters = parseParameterDefList(expr, start, offset)).length;
 
-        pCtx.declareFunction(this);
+    pCtx.declareFunction(this);
 
-        ParserContext ctx = new ParserContext(pCtx.getParserConfiguration());
-
-
-        /**
-         * To prevent the function parameters from being counted as
-         * external inputs, we must add them explicitly here.
-         */
-        for (String s : this.parameters) {
-            ctx.addVariable(s, Object.class);
-            ctx.addIndexedInput(s);
-        }
-
-        /**
-         * Compile the expression so we can determine the input-output delta.
-         */
+    ParserContext ctx = new ParserContext(pCtx.getParserConfiguration());
 
 
-        ctx.setIndexAllocation(false);
-        ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset);
-        compiler.setVerifyOnly(true);
-        compiler.compile(ctx);
+    /**
+     * To prevent the function parameters from being counted as
+     * external inputs, we must add them explicitly here.
+     */
+    for (String s : this.parameters) {
+      ctx.addVariable(s, Object.class);
+      ctx.addIndexedInput(s);
+    }
 
-        ctx.setIndexAllocation(true);
+    /**
+     * Compile the expression so we can determine the input-output delta.
+     */
 
-        /**
-         * Add globals as inputs
-         */
-        if (pCtx.getVariables() != null) {
-            for (Map.Entry<String, Class> e : pCtx.getVariables().entrySet()) {
-                ctx.getVariables().remove(e.getKey());
-                ctx.addInput(e.getKey(), e.getValue());
-            }
 
-            ctx.processTables();
-        }
+    ctx.setIndexAllocation(false);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset);
+    compiler.setVerifyOnly(true);
+    compiler.compile(ctx);
 
-        ctx.addIndexedInputs(ctx.getVariables().keySet());
-        ctx.getVariables().clear();
+    ctx.setIndexAllocation(true);
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, ctx);
+    /**
+     * Add globals as inputs
+     */
+    if (pCtx.getVariables() != null) {
+      for (Map.Entry<String, Class> e : pCtx.getVariables().entrySet()) {
+        ctx.getVariables().remove(e.getKey());
+        ctx.addInput(e.getKey(), e.getValue());
+      }
 
-        AbstractParser.setCurrentThreadParserContext(pCtx);
+      ctx.processTables();
+    }
 
-        this.parameters = new String[ctx.getIndexedInputs().size()];
+    ctx.addIndexedInputs(ctx.getVariables().keySet());
+    ctx.getVariables().clear();
 
-        int i = 0;
-        for (String s : ctx.getIndexedInputs()) {
-            this.parameters[i++] = s;
-        }
+    this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, ctx);
 
-        cMode = (fields & COMPILE_IMMEDIATE) != 0;
+    AbstractParser.setCurrentThreadParserContext(pCtx);
 
-        this.egressType = this.compiledBlock.getKnownEgressType();
+    this.parameters = new String[ctx.getIndexedInputs().size()];
+
+    int i = 0;
+    for (String s : ctx.getIndexedInputs()) {
+      this.parameters[i++] = s;
+    }
+
+    cMode = (fields & COMPILE_IMMEDIATE) != 0;
+
+    this.egressType = this.compiledBlock.getKnownEgressType();
 
 //        if (pCtx.isIndexAllocation()) {
-            pCtx.addVariable(name, Function.class);
+    pCtx.addVariable(name, Function.class);
 //        }
 
-    }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name != null) {
-           if (!factory.isIndexedFactory() && factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
-            factory.createVariable(name, this);
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (name != null) {
+      if (!factory.isIndexedFactory() && factory.isResolveable(name))
+        throw new CompileException("duplicate function: " + name, expr, start);
+      factory.createVariable(name, this);
+    }
+    return this;
+  }
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (name != null) {
+      if (!factory.isIndexedFactory() && factory.isResolveable(name))
+        throw new CompileException("duplicate function: " + name, expr, start);
+      factory.createVariable(name, this);
+    }
+    return this;
+  }
+
+  public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
+    if (parms != null && parms.length != 0) {
+      // detect tail recursion
+      if (factory instanceof FunctionVariableResolverFactory
+              && ((FunctionVariableResolverFactory) factory).getIndexedVariableResolvers().length == parms.length) {
+        FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
+        if (fvrf.getFunction().equals(this)) {
+          VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
+          fvrf.updateParameters(parms);
+          try {
+            return compiledBlock.getValue(ctx, thisValue, fvrf);
+          } finally {
+            fvrf.setIndexedVariableResolvers(swapVR);
+          }
         }
-        return this;
+      }
+      return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
+    } else if (cMode) {
+      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
+    } else {
+      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory).setNoTilt(true));
     }
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name != null) {
-            if (!factory.isIndexedFactory() && factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
-            factory.createVariable(name, this);
-        }
-        return this;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
-        if (parms != null && parms.length != 0) {
-            // detect tail recursion
-            if (factory instanceof FunctionVariableResolverFactory
-                    && ((FunctionVariableResolverFactory) factory).getIndexedVariableResolvers().length == parms.length) {
-                FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
-                if (fvrf.getFunction().equals(this)) {
-                    VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
-                    fvrf.updateParameters(parms);
-                    try {
-                        return compiledBlock.getValue(ctx, thisValue, fvrf);
-                    }
-                    finally {
-                        fvrf.setIndexedVariableResolvers(swapVR);
-                    }
-                }
-            }
-            return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
-        }
-        else if (cMode) {
-            return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
-        }
-        else {
-            return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory).setNoTilt(true));
-        }
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String[] getParameters() {
+    return parameters;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setParameters(String[] parameters) {
+    this.parameters = parameters;
+  }
 
-    public String[] getParameters() {
-        return parameters;
-    }
+  public boolean hasParameters() {
+    return this.parameters != null && this.parameters.length != 0;
+  }
 
-    public void setParameters(String[] parameters) {
-        this.parameters = parameters;
+  public void checkArgumentCount(int passing) {
+    if (passing != parmNum) {
+      throw new CompileException("bad number of arguments in function call: "
+              + passing + " (expected: " + (parmNum == 0 ? "none" : parmNum) + ")", expr, start);
     }
+  }
 
-    public boolean hasParameters() {
-        return this.parameters != null && this.parameters.length != 0;
-    }
+  public ExecutableStatement getCompiledBlock() {
+    return compiledBlock;
+  }
 
-    public void checkArgumentCount(int passing) {
-        if (passing != parmNum) {
-            throw new CompileException("bad number of arguments in function call: "
-                    + passing + " (expected: " + (parmNum == 0 ? "none" : parmNum) + ")", expr, start);
-        }
-    }
-
-    public ExecutableStatement getCompiledBlock() {
-        return compiledBlock;
-    }
-
-    public String toString() {
-        return "FunctionDef:" + (name == null ? "Anonymous" : name);
-    }
+  public String toString() {
+    return "FunctionDef:" + (name == null ? "Anonymous" : name);
+  }
 }
 

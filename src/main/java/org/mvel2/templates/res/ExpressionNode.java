@@ -34,41 +34,41 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class ExpressionNode extends Node {
-    public ExpressionNode() {
-    }
+  public ExpressionNode() {
+  }
 
-    public ExpressionNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-    }
+  public ExpressionNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  }
 
-    public ExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
-        this.begin = begin;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-        this.next = next;
-    }
+  public ExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
+    this.name = name;
+    this.begin = begin;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //   this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+    this.next = next;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append(valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)));
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    appender.append(valueOf(MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory)));
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 
-    public String toString() {
-        return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents, cStart, cEnd - cStart))
-                + "} (start=" + begin + ";end=" + end + ")";
-    }
+  public String toString() {
+    return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents, cStart, cEnd - cStart))
+            + "} (start=" + begin + ";end=" + end + ")";
+  }
 }

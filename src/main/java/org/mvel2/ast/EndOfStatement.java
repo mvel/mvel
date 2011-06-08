@@ -25,27 +25,27 @@ import org.mvel2.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class EndOfStatement extends ASTNode {
-    public EndOfStatement() {
-        this.literal = getOperator();
-    }
+  public EndOfStatement() {
+    this.literal = getOperator();
+  }
 
-    public boolean isOperator() {
-        return true;
-    }
+  public boolean isOperator() {
+    return true;
+  }
 
-    public boolean isOperator(Integer operator) {
-        return operator == Operator.END_OF_STMT;
-    }
+  public boolean isOperator(Integer operator) {
+    return operator == Operator.END_OF_STMT;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return null;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return null;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return null;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return null;
+  }
 
-    public Integer getOperator() {
-        return Operator.END_OF_STMT;
-    }
+  public Integer getOperator() {
+    return Operator.END_OF_STMT;
+  }
 }

@@ -19,148 +19,143 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.getBestCandidate;
 
 import java.lang.reflect.Method;
 
 
 public class MethodAccessorNH implements AccessorNode {
-    private AccessorNode nextNode;
+  private AccessorNode nextNode;
 
-    private Method method;
-    private Class[] parameterTypes;
-    private ExecutableStatement[] parms;
-    private int length;
-    private boolean coercionNeeded = false;
+  private Method method;
+  private Class[] parameterTypes;
+  private ExecutableStatement[] parms;
+  private int length;
+  private boolean coercionNeeded = false;
 
-    private PropertyHandler nullHandler;
+  private PropertyHandler nullHandler;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (!coercionNeeded) {
-            try {
-                Object v = method.invoke(ctx, executeAll(elCtx, vars));
-                if (v == null) nullHandler.getProperty(method.getName(), ctx, vars);
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (!coercionNeeded) {
+      try {
+        Object v = method.invoke(ctx, executeAll(elCtx, vars));
+        if (v == null) nullHandler.getProperty(method.getName(), ctx, vars);
 
-                if (nextNode != null) {
-                    return nextNode.getValue(v, elCtx, vars);
-                }
-                else {
-                    return v;
-                }
-            }
-            catch (IllegalArgumentException e) {
-                if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
-                    Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
-                    if (o != null) {
-                        return executeOverrideTarget(o, ctx, elCtx, vars);
-                    }
-                }
-
-                coercionNeeded = true;
-                return getValue(ctx, elCtx, vars);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("cannot invoke method", e);
-            }
-
+        if (nextNode != null) {
+          return nextNode.getValue(v, elCtx, vars);
+        } else {
+          return v;
         }
-        else {
-            try {
-                if (nextNode != null) {
-                    return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
-                }
-                else {
-                    return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
-                }
-            }
-            catch (Exception e) {
-                throw new RuntimeException("cannot invoke method", e);
-            }
+      } catch (IllegalArgumentException e) {
+        if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
+          Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+          if (o != null) {
+            return executeOverrideTarget(o, ctx, elCtx, vars);
+          }
         }
-    }
 
-    private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            Object v = o.invoke(ctx, executeAll(elCtx, vars));
-            if (v == null) v = nullHandler.getProperty(o.getName(), ctx, vars);
+        coercionNeeded = true;
+        return getValue(ctx, elCtx, vars);
+      } catch (Exception e) {
+        throw new RuntimeException("cannot invoke method", e);
+      }
 
-            if (nextNode != null) {
-                return nextNode.getValue(v, elCtx, vars);
-            }
-            else {
-                return v;
-            }
+    } else {
+      try {
+        if (nextNode != null) {
+          return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+        } else {
+          return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
         }
-        catch (Exception e2) {
-            throw new RuntimeException("unable to invoke method", e2);
-        }
+      } catch (Exception e) {
+        throw new RuntimeException("cannot invoke method", e);
+      }
     }
+  }
 
-    private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
-        if (length == 0) return GetterAccessor.EMPTY;
+  private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      Object v = o.invoke(ctx, executeAll(elCtx, vars));
+      if (v == null) v = nullHandler.getProperty(o.getName(), ctx, vars);
 
-        Object[] vals = new Object[length];
-        for (int i = 0; i < length; i++) {
-            vals[i] = parms[i].getValue(ctx, vars);
-        }
-        return vals;
+      if (nextNode != null) {
+        return nextNode.getValue(v, elCtx, vars);
+      } else {
+        return v;
+      }
+    } catch (Exception e2) {
+      throw new RuntimeException("unable to invoke method", e2);
     }
+  }
 
-    private Object[] executeAndCoerce(Class[] target, Object elCtx, VariableResolverFactory vars) {
-        Object[] values = new Object[length];
-        for (int i = 0; i < length; i++) {
-            //noinspection unchecked
-            values[i] = convert(parms[i].getValue(elCtx, vars), target[i]);
-        }
-        return values;
+  private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
+    if (length == 0) return GetterAccessor.EMPTY;
+
+    Object[] vals = new Object[length];
+    for (int i = 0; i < length; i++) {
+      vals[i] = parms[i].getValue(ctx, vars);
     }
+    return vals;
+  }
 
-    public Method getMethod() {
-        return method;
+  private Object[] executeAndCoerce(Class[] target, Object elCtx, VariableResolverFactory vars) {
+    Object[] values = new Object[length];
+    for (int i = 0; i < length; i++) {
+      //noinspection unchecked
+      values[i] = convert(parms[i].getValue(elCtx, vars), target[i]);
     }
+    return values;
+  }
 
-    public void setMethod(Method method) {
-        this.method = method;
-        this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
-    }
+  public Method getMethod() {
+    return method;
+  }
 
-    public ExecutableStatement[] getParms() {
-        return parms;
-    }
+  public void setMethod(Method method) {
+    this.method = method;
+    this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
+  }
 
-    public void setParms(ExecutableStatement[] parms) {
-        this.parms = parms;
-    }
+  public ExecutableStatement[] getParms() {
+    return parms;
+  }
 
-    public MethodAccessorNH() {
-    }
+  public void setParms(ExecutableStatement[] parms) {
+    this.parms = parms;
+  }
 
-    public MethodAccessorNH(Method method, ExecutableStatement[] parms, PropertyHandler handler) {
-        this.method = method;
-        this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
+  public MethodAccessorNH() {
+  }
 
-        this.parms = parms;
-        this.nullHandler = handler;
-    }
+  public MethodAccessorNH(Method method, ExecutableStatement[] parms, PropertyHandler handler) {
+    this.method = method;
+    this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+    this.parms = parms;
+    this.nullHandler = handler;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return nextNode.setValue(ctx, elCtx, variableFactory, value);
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public Class getKnownEgressType() {
-        return method.getReturnType();
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return nextNode.setValue(ctx, elCtx, variableFactory, value);
+  }
+
+  public Class getKnownEgressType() {
+    return method.getReturnType();
+  }
 }

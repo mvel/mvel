@@ -22,47 +22,46 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class StaticReferenceAccessor implements AccessorNode {
-    private AccessorNode nextNode;
+  private AccessorNode nextNode;
 
-    Object literal;
+  Object literal;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return nextNode.getValue(literal, elCtx, vars);
-        }
-        else {
-            return literal;
-        }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return nextNode.getValue(literal, elCtx, vars);
+    } else {
+      return literal;
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return nextNode.setValue(literal, elCtx, variableFactory, value);
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return nextNode.setValue(literal, elCtx, variableFactory, value);
+  }
 
-    public Object getLiteral() {
-        return literal;
-    }
+  public Object getLiteral() {
+    return literal;
+  }
 
-    public void setLiteral(Object literal) {
-        this.literal = literal;
-    }
+  public void setLiteral(Object literal) {
+    this.literal = literal;
+  }
 
-    public StaticReferenceAccessor() {
-    }
+  public StaticReferenceAccessor() {
+  }
 
-    public StaticReferenceAccessor(Object literal) {
-        this.literal = literal;
-    }
+  public StaticReferenceAccessor(Object literal) {
+    this.literal = literal;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public Class getKnownEgressType() {
-        return literal.getClass();
-    }
+  public Class getKnownEgressType() {
+    return literal.getClass();
+  }
 }

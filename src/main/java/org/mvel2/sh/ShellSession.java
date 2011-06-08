@@ -49,450 +49,430 @@ import static java.util.ResourceBundle.getBundle;
  * A shell session.
  */
 public class ShellSession {
-    public static final String PROMPT_VAR = "$PROMPT";
-    private static final String[] EMPTY = new String[0];
+  public static final String PROMPT_VAR = "$PROMPT";
+  private static final String[] EMPTY = new String[0];
 
-    private final Map<String, Command> commands = new HashMap<String, Command>();
-    private Map<String, Object> variables;
-    private Map<String, String> env;
-    private Object ctxObject;
+  private final Map<String, Command> commands = new HashMap<String, Command>();
+  private Map<String, Object> variables;
+  private Map<String, String> env;
+  private Object ctxObject;
 
-    ParserContext pCtx = new ParserContext();
-    VariableResolverFactory lvrf;
+  ParserContext pCtx = new ParserContext();
+  VariableResolverFactory lvrf;
 
-    private int depth;
-    private int cdepth;
+  private int depth;
+  private int cdepth;
 
-    private boolean multi = false;
-    private int multiIndentSize = 0;
-    private PrintStream out = System.out;
-    private String prompt;
-    private String commandBuffer;
-    StringAppender inBuffer = new StringAppender();
+  private boolean multi = false;
+  private int multiIndentSize = 0;
+  private PrintStream out = System.out;
+  private String prompt;
+  private String commandBuffer;
+  StringAppender inBuffer = new StringAppender();
 
-    final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
+  final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
 
-    public ShellSession() {
-        System.out.println("Starting session...");
+  public ShellSession() {
+    System.out.println("Starting session...");
 
-        variables = new HashMap<String, Object>();
-        env = new HashMap<String, String>();
+    variables = new HashMap<String, Object>();
+    env = new HashMap<String, String>();
 
-        commands.putAll(new BasicCommandSet().load());
-        commands.putAll(new FileCommandSet().load());
+    commands.putAll(new BasicCommandSet().load());
+    commands.putAll(new FileCommandSet().load());
 
-        env.put(PROMPT_VAR, DefaultEnvironment.PROMPT);
-        env.put("$OS_NAME", getProperty("os.name"));
-        env.put("$OS_VERSION", getProperty("os.version"));
-        env.put("$JAVA_VERSION", getProperty("java.version"));
-        env.put("$CWD", new File(".").getAbsolutePath());
-        env.put("$COMMAND_PASSTRU", "false");
-        env.put("$PRINTOUTPUT", "true");
-        env.put("$ECHO", "false");
-        env.put("$SHOW_TRACES", "true");
-        env.put("$USE_OPTIMIZER_ALWAYS", "false");
-        env.put("$PATH", "");
+    env.put(PROMPT_VAR, DefaultEnvironment.PROMPT);
+    env.put("$OS_NAME", getProperty("os.name"));
+    env.put("$OS_VERSION", getProperty("os.version"));
+    env.put("$JAVA_VERSION", getProperty("java.version"));
+    env.put("$CWD", new File(".").getAbsolutePath());
+    env.put("$COMMAND_PASSTRU", "false");
+    env.put("$PRINTOUTPUT", "true");
+    env.put("$ECHO", "false");
+    env.put("$SHOW_TRACES", "true");
+    env.put("$USE_OPTIMIZER_ALWAYS", "false");
+    env.put("$PATH", "");
 
-        try {
-            ResourceBundle bundle = getBundle(".mvelsh.properties");
+    try {
+      ResourceBundle bundle = getBundle(".mvelsh.properties");
 
-            Enumeration<String> enumer = bundle.getKeys();
-            String key;
-            while (enumer.hasMoreElements()) {
-                env.put(key = enumer.nextElement(), bundle.getString(key));
-            }
-        }
-        catch (MissingResourceException e) {
-            System.out.println("No config file found.  Loading default config.");
+      Enumeration<String> enumer = bundle.getKeys();
+      String key;
+      while (enumer.hasMoreElements()) {
+        env.put(key = enumer.nextElement(), bundle.getString(key));
+      }
+    } catch (MissingResourceException e) {
+      System.out.println("No config file found.  Loading default config.");
 
-            if (!contains(getProperty("os.name").toLowerCase(), "windows")) {
-                env.put("$PATH", "/bin:/usr/bin:/sbin:/usr/sbin");
-            }
-
-        }
-
-        lvrf = new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
+      if (!contains(getProperty("os.name").toLowerCase(), "windows")) {
+        env.put("$PATH", "/bin:/usr/bin:/sbin:/usr/sbin");
+      }
 
     }
 
-    public ShellSession(String init) {
-        this();
-        exec(init);
+    lvrf = new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
+
+  }
+
+  public ShellSession(String init) {
+    this();
+    exec(init);
+  }
+
+  private void _exec() {
+    String[] inTokens;
+    Object outputBuffer;
+
+    final PrintStream sysPrintStream = System.out;
+    final PrintStream sysErrorStream = System.err;
+    final InputStream sysInputStream = System.in;
+
+    File execFile;
+
+    if ("true".equals(env.get("$ECHO"))) {
+      out.println(">" + commandBuffer);
+      out.flush();
     }
 
-    private void _exec() {
-        String[] inTokens;
-        Object outputBuffer;
+    inTokens = inBuffer.append(commandBuffer).toString().split("\\s");
 
-        final PrintStream sysPrintStream = System.out;
-        final PrintStream sysErrorStream = System.err;
-        final InputStream sysInputStream = System.in;
+    if (inTokens.length != 0 && commands.containsKey(inTokens[0])) {
 
-        File execFile;
+      commandBuffer = null;
 
-        if ("true".equals(env.get("$ECHO"))) {
-            out.println(">" + commandBuffer);
-            out.flush();
+      String[] passParameters;
+      if (inTokens.length > 1) {
+        arraycopy(inTokens, 1, passParameters = new String[inTokens.length - 1], 0, passParameters.length);
+      } else {
+        passParameters = EMPTY;
+      }
+
+      try {
+        commands.get(inTokens[0]).execute(this, passParameters);
+      } catch (CommandException e) {
+        out.append("Error: ").append(e.getMessage()).append("\n");
+      }
+    } else {
+      commandBuffer = null;
+
+      try {
+        if (shouldDefer(inBuffer)) {
+          multi = true;
+          return;
+        } else {
+          multi = false;
         }
 
-        inTokens = inBuffer.append(commandBuffer).toString().split("\\s");
-
-        if (inTokens.length != 0 && commands.containsKey(inTokens[0])) {
-
-            commandBuffer = null;
-
-            String[] passParameters;
-            if (inTokens.length > 1) {
-                arraycopy(inTokens, 1, passParameters = new String[inTokens.length - 1], 0, passParameters.length);
-            }
-            else {
-                passParameters = EMPTY;
-            }
-
-            try {
-                commands.get(inTokens[0]).execute(this, passParameters);
-            }
-            catch (CommandException e) {
-                out.append("Error: ").append(e.getMessage()).append("\n");
-            }
+        if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
+          outputBuffer = executeExpression(compileExpression(inBuffer.toString()), ctxObject, lvrf);
+        } else {
+          MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(inBuffer.toString(), ctxObject, lvrf);
+          runtime.newContext(pCtx);
+          outputBuffer = runtime.parse();
         }
-        else {
-            commandBuffer = null;
+      } catch (Exception e) {
+        if ("true".equals(env.get("$COMMAND_PASSTHRU"))) {
 
-            try {
-                if (shouldDefer(inBuffer)) {
-                    multi = true;
-                    return;
-                }
-                else {
-                    multi = false;
-                }
+          String[] paths;
+          String s;
+          if ((s = inTokens[0]).startsWith("./")) {
+            s = new File(env.get("$CWD")).getAbsolutePath() + s.substring(s.indexOf('/'));
 
-                if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
-                    outputBuffer = executeExpression(compileExpression(inBuffer.toString()), ctxObject, lvrf);
-                }
-                else {
-                    MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(inBuffer.toString(), ctxObject, lvrf);
-                    runtime.newContext(pCtx);
-                    outputBuffer = runtime.parse();
-                }
-            }
-            catch (Exception e) {
-                if ("true".equals(env.get("$COMMAND_PASSTHRU"))) {
+            paths = new String[]{s};
+          } else {
+            paths = env.get("$PATH").split("(:|;)");
+          }
 
-                    String[] paths;
-                    String s;
-                    if ((s = inTokens[0]).startsWith("./")) {
-                        s = new File(env.get("$CWD")).getAbsolutePath() + s.substring(s.indexOf('/'));
-
-                        paths = new String[]{s};
-                    }
-                    else {
-                        paths = env.get("$PATH").split("(:|;)");
-                    }
-
-                    boolean successfulExec = false;
+          boolean successfulExec = false;
 
 
-                    for (String execPath : paths) {
-                        if ((execFile = new File(execPath + "/" + s)).exists() && execFile.isFile()) {
-                            successfulExec = true;
+          for (String execPath : paths) {
+            if ((execFile = new File(execPath + "/" + s)).exists() && execFile.isFile()) {
+              successfulExec = true;
 
-                            String[] execString = new String[inTokens.length];
-                            execString[0] = execFile.getAbsolutePath();
+              String[] execString = new String[inTokens.length];
+              execString[0] = execFile.getAbsolutePath();
 
-                            System.arraycopy(inTokens, 1, execString, 1, inTokens.length - 1);
+              System.arraycopy(inTokens, 1, execString, 1, inTokens.length - 1);
 
-                            try {
-                                final Process p = getRuntime().exec(execString);
-                                final OutputStream outStream = p.getOutputStream();
+              try {
+                final Process p = getRuntime().exec(execString);
+                final OutputStream outStream = p.getOutputStream();
 
-                                final InputStream inStream = p.getInputStream();
-                                final InputStream errStream = p.getErrorStream();
+                final InputStream inStream = p.getInputStream();
+                final InputStream errStream = p.getErrorStream();
 
-                                final RunState runState = new RunState(this);
+                final RunState runState = new RunState(this);
 
-                                final Thread pollingThread = new Thread(new Runnable() {
-                                    public void run() {
-                                        byte[] buf = new byte[25];
-                                        int read;
+                final Thread pollingThread = new Thread(new Runnable() {
+                  public void run() {
+                    byte[] buf = new byte[25];
+                    int read;
 
-                                        while (true) {
-                                            try {
-                                                while ((read = inStream.read(buf)) > 0) {
-                                                    for (int i = 0; i < read; i++) {
-                                                        sysPrintStream.print((char) buf[i]);
-                                                    }
-                                                    sysPrintStream.flush();
-                                                }
-
-                                                if (!runState.isRunning()) break;
-                                            }
-                                            catch (Exception e) {
-                                                break;
-                                            }
-                                        }
-
-                                        sysPrintStream.flush();
-
-                                        if (!multi) {
-                                            multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
-                                            out.append(prompt);
-                                        }
-                                        else {
-                                            out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
-                                        }
-
-                                    }
-                                });
-
-
-                                final Thread watchThread = new Thread(new Runnable() {
-                                    public void run() {
-
-                                        Thread runningThread = new Thread(new Runnable() {
-                                            public void run() {
-                                                try {
-                                                    String read;
-                                                    while (runState.isRunning()) {
-                                                        while ((read = readBuffer.readLine()) != null) {
-                                                            if (runState.isRunning()) {
-                                                                for (char c : read.toCharArray()) {
-                                                                    outStream.write((byte) c);
-                                                                }
-                                                            }
-                                                            else {
-                                                                runState.getSession().setCommandBuffer(read);
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    outStream.write((byte) '\n');
-                                                    outStream.flush();
-                                                }
-                                                catch (Exception e2) {
-
-                                                }
-                                            }
-
-                                        });
-
-                                        runningThread.setPriority(Thread.MIN_PRIORITY);
-                                        runningThread.start();
-
-                                        try {
-                                            p.waitFor();
-                                        }
-                                        catch (InterruptedException e) {
-                                            // nothing;
-                                        }
-
-                                        sysPrintStream.flush();
-                                        runState.setRunning(false);
-
-                                        try {
-                                            runningThread.join();
-                                        }
-                                        catch (InterruptedException e) {
-                                            // nothing;Ç
-                                        }
-                                    }
-                                });
-
-                                pollingThread.setPriority(Thread.MIN_PRIORITY);
-                                pollingThread.start();
-
-                                watchThread.setPriority(Thread.MIN_PRIORITY);
-                                watchThread.start();
-                                watchThread.join();
-
-
-                                try {
-                                    pollingThread.notify();
-                                }
-                                catch (Exception ne) {
-
-                                }
-
-                            }
-                            catch (Exception e2) {
-                                // fall through;
-                            }
+                    while (true) {
+                      try {
+                        while ((read = inStream.read(buf)) > 0) {
+                          for (int i = 0; i < read; i++) {
+                            sysPrintStream.print((char) buf[i]);
+                          }
+                          sysPrintStream.flush();
                         }
+
+                        if (!runState.isRunning()) break;
+                      } catch (Exception e) {
+                        break;
+                      }
                     }
 
-                    if (successfulExec) {
-                        inBuffer.reset();
-                        return;
+                    sysPrintStream.flush();
+
+                    if (!multi) {
+                      multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
+                      out.append(prompt);
+                    } else {
+                      out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
                     }
+
+                  }
+                });
+
+
+                final Thread watchThread = new Thread(new Runnable() {
+                  public void run() {
+
+                    Thread runningThread = new Thread(new Runnable() {
+                      public void run() {
+                        try {
+                          String read;
+                          while (runState.isRunning()) {
+                            while ((read = readBuffer.readLine()) != null) {
+                              if (runState.isRunning()) {
+                                for (char c : read.toCharArray()) {
+                                  outStream.write((byte) c);
+                                }
+                              } else {
+                                runState.getSession().setCommandBuffer(read);
+                                break;
+                              }
+                            }
+                          }
+
+                          outStream.write((byte) '\n');
+                          outStream.flush();
+                        } catch (Exception e2) {
+
+                        }
+                      }
+
+                    });
+
+                    runningThread.setPriority(Thread.MIN_PRIORITY);
+                    runningThread.start();
+
+                    try {
+                      p.waitFor();
+                    } catch (InterruptedException e) {
+                      // nothing;
+                    }
+
+                    sysPrintStream.flush();
+                    runState.setRunning(false);
+
+                    try {
+                      runningThread.join();
+                    } catch (InterruptedException e) {
+                      // nothing;ï¿½
+                    }
+                  }
+                });
+
+                pollingThread.setPriority(Thread.MIN_PRIORITY);
+                pollingThread.start();
+
+                watchThread.setPriority(Thread.MIN_PRIORITY);
+                watchThread.start();
+                watchThread.join();
+
+
+                try {
+                  pollingThread.notify();
+                } catch (Exception ne) {
+
                 }
 
-                ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
-                PrintStream capture = new PrintStream(stackTraceCap);
-
-                e.printStackTrace(capture);
-                capture.flush();
-
-                env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
-                if (parseBoolean(env.get("$SHOW_TRACE"))) {
-                    out.println(env.get("$LAST_STACK_TRACE"));
-                }
-                else {
-                    out.println(e.toString());
-                }
-
-                inBuffer.reset();
-
-                return;
+              } catch (Exception e2) {
+                // fall through;
+              }
             }
+          }
 
+          if (successfulExec) {
+            inBuffer.reset();
+            return;
+          }
+        }
 
-            if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
-                if (outputBuffer.getClass().isArray()) {
-                    out.println(Arrays.toString((Object[]) outputBuffer));
-                }
-                else {
-                    out.println(String.valueOf(outputBuffer));
-                }
-            }
+        ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
+        PrintStream capture = new PrintStream(stackTraceCap);
 
+        e.printStackTrace(capture);
+        capture.flush();
 
+        env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
+        if (parseBoolean(env.get("$SHOW_TRACE"))) {
+          out.println(env.get("$LAST_STACK_TRACE"));
+        } else {
+          out.println(e.toString());
         }
 
         inBuffer.reset();
 
+        return;
+      }
+
+
+      if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
+        if (outputBuffer.getClass().isArray()) {
+          out.println(Arrays.toString((Object[]) outputBuffer));
+        } else {
+          out.println(String.valueOf(outputBuffer));
+        }
+      }
+
 
     }
 
-    //todo: fix this
-    public void run() {
-        final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
-
-        try {
-            //noinspection InfiniteLoopStatement
-            while (true) {
-                printPrompt();
-
-                if (commandBuffer == null) {
-                    commandBuffer = readBuffer.readLine();
-                }
-
-                _exec();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("unexpected exception. exiting.");
-        }
-
-    }
-
-    public void printPrompt() {
-        if (!multi) {
-            multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
-            out.append(prompt);
-        }
-        else {
-            out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
-        }
-    }
+    inBuffer.reset();
 
 
-    public boolean shouldDefer(StringAppender inBuf) {
-        char[] buffer = new char[inBuf.length()];
-        inBuf.getChars(0, inBuf.length(), buffer, 0);
+  }
 
-        depth = cdepth = 0;
-        for (int i = 0; i < buffer.length; i++) {
-            switch (buffer[i]) {
-                case '/':
-                    if (i + 1 < buffer.length && buffer[i + 1] == '*') {
-                        cdepth++;
-                    }
-                    break;
-                case '*':
-                    if (i + 1 < buffer.length && buffer[i + 1] == '/') {
-                        cdepth--;
-                    }
-                    break;
+  //todo: fix this
+  public void run() {
+    final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
 
-                case '{':
-                    depth++;
-                    break;
-                case '}':
-                    depth--;
-                    break;
-            }
+    try {
+      //noinspection InfiniteLoopStatement
+      while (true) {
+        printPrompt();
+
+        if (commandBuffer == null) {
+          commandBuffer = readBuffer.readLine();
         }
 
-        return depth + cdepth > 0;
+        _exec();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("unexpected exception. exiting.");
     }
 
-    public String indent(int size) {
-        StringBuffer sbuf = new StringBuffer();
-        for (int i = 0; i < size; i++) sbuf.append(" ");
-        return sbuf.toString();
+  }
+
+  public void printPrompt() {
+    if (!multi) {
+      multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
+      out.append(prompt);
+    } else {
+      out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
+    }
+  }
+
+
+  public boolean shouldDefer(StringAppender inBuf) {
+    char[] buffer = new char[inBuf.length()];
+    inBuf.getChars(0, inBuf.length(), buffer, 0);
+
+    depth = cdepth = 0;
+    for (int i = 0; i < buffer.length; i++) {
+      switch (buffer[i]) {
+        case '/':
+          if (i + 1 < buffer.length && buffer[i + 1] == '*') {
+            cdepth++;
+          }
+          break;
+        case '*':
+          if (i + 1 < buffer.length && buffer[i + 1] == '/') {
+            cdepth--;
+          }
+          break;
+
+        case '{':
+          depth++;
+          break;
+        case '}':
+          depth--;
+          break;
+      }
     }
 
-    public Map<String, Command> getCommands() {
-        return commands;
+    return depth + cdepth > 0;
+  }
+
+  public String indent(int size) {
+    StringBuffer sbuf = new StringBuffer();
+    for (int i = 0; i < size; i++) sbuf.append(" ");
+    return sbuf.toString();
+  }
+
+  public Map<String, Command> getCommands() {
+    return commands;
+  }
+
+  public Map<String, Object> getVariables() {
+    return variables;
+  }
+
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  public Object getCtxObject() {
+    return ctxObject;
+  }
+
+  public void setCtxObject(Object ctxObject) {
+    this.ctxObject = ctxObject;
+  }
+
+  public String getCommandBuffer() {
+    return commandBuffer;
+  }
+
+  public void setCommandBuffer(String commandBuffer) {
+    this.commandBuffer = commandBuffer;
+  }
+
+  public void exec(String command) {
+    for (String c : command.split("\n")) {
+      inBuffer.append(c);
+      _exec();
+    }
+  }
+
+  public static final class RunState {
+    private boolean running = true;
+    private ShellSession session;
+
+
+    public RunState(ShellSession session) {
+      this.session = session;
     }
 
-    public Map<String, Object> getVariables() {
-        return variables;
+    public ShellSession getSession() {
+      return session;
     }
 
-    public Map<String, String> getEnv() {
-        return env;
+    public void setSession(ShellSession session) {
+      this.session = session;
     }
 
-    public Object getCtxObject() {
-        return ctxObject;
+    public boolean isRunning() {
+      return running;
     }
 
-    public void setCtxObject(Object ctxObject) {
-        this.ctxObject = ctxObject;
+    public void setRunning(boolean running) {
+      this.running = running;
     }
-
-    public String getCommandBuffer() {
-        return commandBuffer;
-    }
-
-    public void setCommandBuffer(String commandBuffer) {
-        this.commandBuffer = commandBuffer;
-    }
-
-    public void exec(String command) {
-        for (String c : command.split("\n")) {
-            inBuffer.append(c);
-            _exec();
-        }
-    }
-
-    public static final class RunState {
-        private boolean running = true;
-        private ShellSession session;
-
-
-        public RunState(ShellSession session) {
-            this.session = session;
-        }
-
-        public ShellSession getSession() {
-            return session;
-        }
-
-        public void setSession(ShellSession session) {
-            this.session = session;
-        }
-
-        public boolean isRunning() {
-            return running;
-        }
-
-        public void setRunning(boolean running) {
-            this.running = running;
-        }
-    }
+  }
 }

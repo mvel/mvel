@@ -26,13 +26,13 @@ import java.util.Map;
 
 public class FileCommandSet implements CommandSet {
 
-    public Map<String, Command> load() {
-        Map<String, Command> cmd = new HashMap<String, Command>();
+  public Map<String, Command> load() {
+    Map<String, Command> cmd = new HashMap<String, Command>();
 
-        cmd.put("ls", new DirList());
-        cmd.put("cd", new ChangeWorkingDir());
-        cmd.put("pwd", new PrintWorkingDirectory());
+    cmd.put("ls", new DirList());
+    cmd.put("cd", new ChangeWorkingDir());
+    cmd.put("pwd", new PrintWorkingDirectory());
 
-        return cmd;
-    }
+    return cmd;
+  }
 }

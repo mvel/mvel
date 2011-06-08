@@ -23,53 +23,51 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class VariableAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private String property;
+  private AccessorNode nextNode;
+  private String property;
 
-    public VariableAccessor(String property) {
-        this.property = property;
+  public VariableAccessor(String property) {
+    this.property = property;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
+    if (vrf == null)
+      throw new RuntimeException("cannot access property in optimized accessor: " + property);
+
+    if (nextNode != null) {
+      return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);
+    } else {
+      return vrf.getVariableResolver(property).getValue();
+    }
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(variableFactory.getVariableResolver(property).getValue(), elCtx, variableFactory, value);
+    } else {
+      variableFactory.getVariableResolver(property).setValue(value);
     }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (vrf == null)
-            throw new RuntimeException("cannot access property in optimized accessor: " + property);
+    return value;
+  }
 
-        if (nextNode != null) {
-            return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);
-        }
-        else {
-            return vrf.getVariableResolver(property).getValue();
-        }
-    }
+  public Object getProperty() {
+    return property;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(variableFactory.getVariableResolver(property).getValue(), elCtx, variableFactory, value);
-        }
-        else {
-            variableFactory.getVariableResolver(property).setValue(value);
-        }
+  public void setProperty(String property) {
+    this.property = property;
+  }
 
-        return value;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public Object getProperty() {
-        return property;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public void setProperty(String property) {
-        this.property = property;
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

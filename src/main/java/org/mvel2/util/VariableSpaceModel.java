@@ -7,8 +7,8 @@ import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.integration.impl.SimpleValueResolver;
 
 /**
-* @author Mike Brock .
-*/
+ * @author Mike Brock .
+ */
 public abstract class VariableSpaceModel {
-    protected String[] allVars;
+  protected String[] allVars;
 }

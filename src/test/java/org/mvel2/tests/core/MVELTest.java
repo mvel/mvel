@@ -11,23 +11,23 @@ import java.io.IOException;
  */
 public class MVELTest extends TestCase {
 
-    private File file;
+  private File file;
 
-    public void setUp() {
-        file = new File("samples/scripts/multibyte.mvel");
-    }
+  public void setUp() {
+    file = new File("samples/scripts/multibyte.mvel");
+  }
 
-    /**
-     * evalFile with encoding(workspace encoding utf-8)
-     *
-     * @throws IOException
-     */
-    public void testEvalFile1() throws IOException {
-        Object obj = MVEL.evalFile(file, "UTF-8");
-        assertEquals("?????", obj);
+  /**
+   * evalFile with encoding(workspace encoding utf-8)
+   *
+   * @throws IOException
+   */
+  public void testEvalFile1() throws IOException {
+    Object obj = MVEL.evalFile(file, "UTF-8");
+    assertEquals("?????", obj);
 
-        // use default encoding
-        obj = MVEL.evalFile(file);
-        assertEquals("?????", obj);
-	}
+    // use default encoding
+    obj = MVEL.evalFile(file);
+    assertEquals("?????", obj);
+  }
 }

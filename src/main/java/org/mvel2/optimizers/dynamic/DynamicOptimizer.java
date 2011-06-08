@@ -30,89 +30,89 @@ import static org.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
 import static org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer.setMVELClassLoader;
 
 public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptimizer {
-    private AccessorOptimizer firstStage = getAccessorCompiler(SAFE_REFLECTIVE);
+  private AccessorOptimizer firstStage = getAccessorCompiler(SAFE_REFLECTIVE);
 
-    private static final Object oLock = new Object();
-    private volatile static DynamicClassLoader classLoader;
-    public static int tenuringThreshold = 50;
-    public static long timeSpan = 100;
-    public static int maximumTenure = 1500;
-    public static int totalRecycled = 0;
-    private static volatile boolean useSafeClassloading = false;
+  private static final Object oLock = new Object();
+  private volatile static DynamicClassLoader classLoader;
+  public static int tenuringThreshold = 50;
+  public static long timeSpan = 100;
+  public static int maximumTenure = 1500;
+  public static int totalRecycled = 0;
+  private static volatile boolean useSafeClassloading = false;
 
-    public void init() {
+  public void init() {
+    _init();
+  }
+
+  private static void _init() {
+    setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader(), maximumTenure));
+  }
+
+  public static void enforceTenureLimit() {
+    if (classLoader.isOverloaded()) {
+      synchronized (oLock) {
+        classLoader.deoptimizeAll();
+        totalRecycled = +classLoader.getTotalClasses();
         _init();
+      }
     }
+  }
 
-    private static void _init() {
-        setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader(), maximumTenure));
+  public static final int REGULAR_ACCESSOR = 0;
+
+  public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
+                                   VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
+    synchronized (oLock) {
+      pCtx.optimizationNotify();
+      return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
+              firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
     }
+  }
 
-    public static void enforceTenureLimit() {
-        if (classLoader.isOverloaded()) {
-            synchronized (oLock) {
-                classLoader.deoptimizeAll();
-                totalRecycled = +classLoader.getTotalClasses();
-                _init();
-            }
-        }
+  public static final int SET_ACCESSOR = 1;
+
+  public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
+                                      VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
+
+    synchronized (oLock) {
+      return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, start, offset,
+              firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
     }
+  }
 
-    public static final int REGULAR_ACCESSOR = 0;
+  public static final int COLLECTION = 2;
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset,  Object ctx, Object thisRef,
-                                     VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
-        synchronized (oLock) {
-            pCtx.optimizationNotify();
-            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
-                    firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
-        }
+  public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, int start,
+                                     int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    synchronized (oLock) {
+      return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
+              firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
     }
+  }
 
-    public static final int SET_ACCESSOR = 1;
+  public static final int OBJ_CREATION = 3;
 
-    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
-                                        VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
-
-        synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, start, offset,
-                    firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
-        }
+  public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset,
+                                         Object ctx, Object thisRef, VariableResolverFactory factory) {
+    synchronized (oLock) {
+      return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
+              firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
     }
+  }
 
-    public static final int COLLECTION = 2;
+  public static boolean isOverloaded() {
+    return classLoader.isOverloaded();
+  }
 
-    public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, int start,
-                                       int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
-                    firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
-        }
-    }
+  public Object getResultOptPass() {
+    return firstStage.getResultOptPass();
+  }
 
-    public static final int OBJ_CREATION = 3;
+  public Class getEgressType() {
+    return firstStage.getEgressType();
+  }
 
-    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset,
-                                           Object ctx, Object thisRef, VariableResolverFactory factory) {
-        synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
-                    firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
-        }
-    }
-
-    public static boolean isOverloaded() {
-        return classLoader.isOverloaded();
-    }
-
-    public Object getResultOptPass() {
-        return firstStage.getResultOptPass();
-    }
-
-    public Class getEgressType() {
-        return firstStage.getEgressType();
-    }
-
-    public boolean isLiteralOnly() {
-        return firstStage.isLiteralOnly();
-    }
+  public boolean isLiteralOnly() {
+    return firstStage.isLiteralOnly();
+  }
 }

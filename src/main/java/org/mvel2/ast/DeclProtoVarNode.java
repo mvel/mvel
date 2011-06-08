@@ -22,61 +22,62 @@ import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.checkNameSafety;
 
 /**
  * @author Christopher Brock
  */
 public class DeclProtoVarNode extends ASTNode implements Assignment {
-    private String name;
+  private String name;
 
-    public DeclProtoVarNode(String name, Proto type, int fields, ParserContext pCtx) {
-        this.egressType = Proto.ProtoInstance.class;
-        checkNameSafety(this.name = name);
+  public DeclProtoVarNode(String name, Proto type, int fields, ParserContext pCtx) {
+    this.egressType = Proto.ProtoInstance.class;
+    checkNameSafety(this.name = name);
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            pCtx.addVariable(name, egressType, true);
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      pCtx.addVariable(name, egressType, true);
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new RuntimeException("variable defined within scope: " + name);
-        return null;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
+    else throw new RuntimeException("variable defined within scope: " + name);
+    return null;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new RuntimeException("variable defined within scope: " + name);
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
+    else throw new RuntimeException("variable defined within scope: " + name);
 
-        return null;
-    }
+    return null;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getAssignmentVar() {
-        return name;
-    }
+  public String getAssignmentVar() {
+    return name;
+  }
 
-    public char[] getExpression() {
-        return new char[0];
-    }
+  public char[] getExpression() {
+    return new char[0];
+  }
 
-    public boolean isAssignment() {
-        return true;
-    }
+  public boolean isAssignment() {
+    return true;
+  }
 
-    public boolean isNewDeclaration() {
-        return true;
-    }
+  public boolean isNewDeclaration() {
+    return true;
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        throw new RuntimeException("illegal operation");
-    }
+  public void setValueStatement(ExecutableStatement stmt) {
+    throw new RuntimeException("illegal operation");
+  }
 
-    public String toString() {
-        return "var:" + name;
-    }
+  public String toString() {
+    return "var:" + name;
+  }
 }

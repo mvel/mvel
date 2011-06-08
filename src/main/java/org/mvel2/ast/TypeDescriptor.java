@@ -20,186 +20,190 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
+
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
+
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ArrayTools.findFirst;
+
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.*;
 
 import java.io.Serializable;
+
 import static java.lang.Character.isDigit;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 
 public class TypeDescriptor implements Serializable {
-    private String className;
-    private char[] expr;
+  private String className;
+  private char[] expr;
 
-    private int start;
-    private int offset;
+  private int start;
+  private int offset;
 
-    private ArraySize[] arraySize;
-    private ExecutableStatement[] compiledArraySize;
-    int endRange;
+  private ArraySize[] arraySize;
+  private ExecutableStatement[] compiledArraySize;
+  int endRange;
 
-    public TypeDescriptor() {
-    }
+  public TypeDescriptor() {
+  }
 
-    public TypeDescriptor(char[] name, int start, int offset, int fields) {
-        updateClassName(this.expr = name, this.start = start, this.offset = offset, fields);
-    }
+  public TypeDescriptor(char[] name, int start, int offset, int fields) {
+    updateClassName(this.expr = name, this.start = start, this.offset = offset, fields);
+  }
 
-    public void updateClassName(char[] name, int start, int offset, int fields) {
-        this.expr = name;
+  public void updateClassName(char[] name, int start, int offset, int fields) {
+    this.expr = name;
 
-        if (offset == 0 || !ParseTools.isIdentifierPart(name[start]) || isDigit(name[start])) return;
+    if (offset == 0 || !ParseTools.isIdentifierPart(name[start]) || isDigit(name[start])) return;
 
-        if ((endRange = findFirst('(', start, offset, name)) == -1) {
-            if ((endRange = findFirst('[', start, offset, name)) != -1) {
-                className = new String(name, start, endRange - start).trim();
-                int to;
+    if ((endRange = findFirst('(', start, offset, name)) == -1) {
+      if ((endRange = findFirst('[', start, offset, name)) != -1) {
+        className = new String(name, start, endRange - start).trim();
+        int to;
 
-                LinkedList<char[]> sizes = new LinkedList<char[]>();
+        LinkedList<char[]> sizes = new LinkedList<char[]>();
 
-                int end = start + offset;
-                while (endRange < end) {
-                    while (endRange < end&& isWhitespace(name[endRange])) endRange++;
+        int end = start + offset;
+        while (endRange < end) {
+          while (endRange < end && isWhitespace(name[endRange])) endRange++;
 
-                    if (endRange == end || name[endRange] == '{') break;
+          if (endRange == end || name[endRange] == '{') break;
 
-                    if (name[endRange] != '[') {
-                        throw new CompileException("unexpected token in constructor", name, endRange);
-                    }
-                    to = balancedCapture(name, endRange, start + offset, '[');
-                    sizes.add(subset(name, ++endRange, to - endRange));
-                    endRange = to + 1;
-                }
-
-                Iterator<char[]> iter = sizes.iterator();
-                arraySize = new ArraySize[sizes.size()];
-
-                for (int i = 0; i < arraySize.length; i++)
-                    arraySize[i] = new ArraySize(iter.next());
-
-                if ((fields & COMPILE_IMMEDIATE) != 0) {
-                    compiledArraySize = new ExecutableStatement[arraySize.length];
-                    for (int i = 0; i < compiledArraySize.length; i++)
-                        compiledArraySize[i] = (ExecutableStatement) subCompileExpression(arraySize[i].value);
-                }
-
-                return;
-            }
-
-            className = new String(name, start, offset).trim();
-        }
-        else {
-            className = new String(name, start, endRange - start).trim();
-        }
-    }
-
-    public boolean isArray() {
-        return arraySize != null;
-    }
-
-    public int getArrayLength() {
-        return arraySize.length;
-    }
-
-    public ArraySize[] getArraySize() {
-        return arraySize;
-    }
-
-    public ExecutableStatement[] getCompiledArraySize() {
-        return compiledArraySize;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public boolean isClass() {
-        return className != null && className.length() != 0;
-    }
-
-    public int getEndRange() {
-        return endRange;
-    }
-
-    public void setEndRange(int endRange) {
-        this.endRange = endRange;
-    }
-
-    public static Class getClassReference(Class baseType,
-                                          TypeDescriptor tDescr,
-                                          VariableResolverFactory factory, ParserContext ctx) throws ClassNotFoundException {
-        return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";", ctx);
-    }
-
-    public static Class getClassReference(ParserContext ctx, Class cls, TypeDescriptor tDescr) throws ClassNotFoundException {
-        if (tDescr.isArray()) {
-            cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
-        }
-        return cls;
-    }
-
-
-    public static Class getClassReference(ParserContext ctx, TypeDescriptor tDescr) throws ClassNotFoundException {
-        Class cls;
-        if (ctx != null && ctx.hasImport(tDescr.className)) {
-            cls = ctx.getImport(tDescr.className);
-            if (tDescr.isArray()) {
-                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
-            }
-        }
-        else if (ctx == null && hasContextFreeImport(tDescr.className)) {
-            cls = getContextFreeImport(tDescr.className);
-            if (tDescr.isArray()) {
-                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
-            }
-        }
-        else {
-            cls = createClass(tDescr.getClassName(), ctx);
-            if (tDescr.isArray()) {
-                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
-            }
+          if (name[endRange] != '[') {
+            throw new CompileException("unexpected token in constructor", name, endRange);
+          }
+          to = balancedCapture(name, endRange, start + offset, '[');
+          sizes.add(subset(name, ++endRange, to - endRange));
+          endRange = to + 1;
         }
 
-        return cls;
-    }
+        Iterator<char[]> iter = sizes.iterator();
+        arraySize = new ArraySize[sizes.size()];
 
-    public boolean isUndimensionedArray() {
-        if (arraySize != null) {
-            for (ArraySize anArraySize : arraySize) {
-                if (anArraySize.value.length == 0) return true;
-            }
+        for (int i = 0; i < arraySize.length; i++)
+          arraySize[i] = new ArraySize(iter.next());
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+          compiledArraySize = new ExecutableStatement[arraySize.length];
+          for (int i = 0; i < compiledArraySize.length; i++)
+            compiledArraySize[i] = (ExecutableStatement) subCompileExpression(arraySize[i].value);
         }
 
-        return false;
+        return;
+      }
+
+      className = new String(name, start, offset).trim();
+    } else {
+      className = new String(name, start, endRange - start).trim();
+    }
+  }
+
+  public boolean isArray() {
+    return arraySize != null;
+  }
+
+  public int getArrayLength() {
+    return arraySize.length;
+  }
+
+  public ArraySize[] getArraySize() {
+    return arraySize;
+  }
+
+  public ExecutableStatement[] getCompiledArraySize() {
+    return compiledArraySize;
+  }
+
+  public String getClassName() {
+    return className;
+  }
+
+  public void setClassName(String className) {
+    this.className = className;
+  }
+
+  public boolean isClass() {
+    return className != null && className.length() != 0;
+  }
+
+  public int getEndRange() {
+    return endRange;
+  }
+
+  public void setEndRange(int endRange) {
+    this.endRange = endRange;
+  }
+
+  public static Class getClassReference(Class baseType,
+                                        TypeDescriptor tDescr,
+                                        VariableResolverFactory factory, ParserContext ctx) throws ClassNotFoundException {
+    return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";", ctx);
+  }
+
+  public static Class getClassReference(ParserContext ctx, Class cls, TypeDescriptor tDescr) throws ClassNotFoundException {
+    if (tDescr.isArray()) {
+      cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
+    }
+    return cls;
+  }
+
+
+  public static Class getClassReference(ParserContext ctx, TypeDescriptor tDescr) throws ClassNotFoundException {
+    Class cls;
+    if (ctx != null && ctx.hasImport(tDescr.className)) {
+      cls = ctx.getImport(tDescr.className);
+      if (tDescr.isArray()) {
+        cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
+      }
+    } else if (ctx == null && hasContextFreeImport(tDescr.className)) {
+      cls = getContextFreeImport(tDescr.className);
+      if (tDescr.isArray()) {
+        cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
+      }
+    } else {
+      cls = createClass(tDescr.getClassName(), ctx);
+      if (tDescr.isArray()) {
+        cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
+      }
     }
 
-    public static boolean hasContextFreeImport(String name) {
-        return AbstractParser.LITERALS.containsKey(name) && AbstractParser.LITERALS.get(name) instanceof Class;
+    return cls;
+  }
+
+  public boolean isUndimensionedArray() {
+    if (arraySize != null) {
+      for (ArraySize anArraySize : arraySize) {
+        if (anArraySize.value.length == 0) return true;
+      }
     }
 
-    public static Class getContextFreeImport(String name) {
-        return (Class) AbstractParser.LITERALS.get(name);
-    }
+    return false;
+  }
 
-    public char[] getExpr() {
-        return expr;
-    }
+  public static boolean hasContextFreeImport(String name) {
+    return AbstractParser.LITERALS.containsKey(name) && AbstractParser.LITERALS.get(name) instanceof Class;
+  }
 
-    public int getStart() {
-        return start;
-    }
+  public static Class getContextFreeImport(String name) {
+    return (Class) AbstractParser.LITERALS.get(name);
+  }
 
-    public int getOffset() {
-        return offset;
-    }
+  public char[] getExpr() {
+    return expr;
+  }
+
+  public int getStart() {
+    return start;
+  }
+
+  public int getOffset() {
+    return offset;
+  }
 }

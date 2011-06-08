@@ -4,24 +4,24 @@ import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.StringAppender;
 
 public class StringBuilderStream implements TemplateOutputStream {
-    private StringBuilder appender;
+  private StringBuilder appender;
 
-    public StringBuilderStream(StringBuilder appender) {
-        this.appender = appender;
-    }
+  public StringBuilderStream(StringBuilder appender) {
+    this.appender = appender;
+  }
 
-    public TemplateOutputStream append(CharSequence c) {
-        appender.append(c);
-        return this;
-    }
+  public TemplateOutputStream append(CharSequence c) {
+    appender.append(c);
+    return this;
+  }
 
-    public TemplateOutputStream append(char[] c) {
-        appender.append(c);
-        return this;
-    }
+  public TemplateOutputStream append(char[] c) {
+    appender.append(c);
+    return this;
+  }
 
-    @Override
-    public String toString() {
-        return appender.toString();
-    }
+  @Override
+  public String toString() {
+    return appender.toString();
+  }
 }

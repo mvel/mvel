@@ -25,42 +25,42 @@ import org.mvel2.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
-    private int register;
+  private int register;
 
-    public IndexedDeclTypedVarNode(int register, int start, int offset, Class type) {
-        this.egressType = type;
-        this.start = start;
-        this.offset = offset;
-        this.register = register;
-    }
+  public IndexedDeclTypedVarNode(int register, int start, int offset, Class type) {
+    this.egressType = type;
+    this.start = start;
+    this.offset = offset;
+    this.register = register;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createIndexedVariable(register, null, egressType);
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.createIndexedVariable(register, null, egressType);
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createIndexedVariable(register, null, egressType);
-        return null;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.createIndexedVariable(register, null, egressType);
+    return null;
+  }
 
-    public String getAssignmentVar() {
-        return null;
-    }
+  public String getAssignmentVar() {
+    return null;
+  }
 
-    public char[] getExpression() {
-        return new char[0];
-    }
+  public char[] getExpression() {
+    return new char[0];
+  }
 
-    public boolean isAssignment() {
-        return true;
-    }
+  public boolean isAssignment() {
+    return true;
+  }
 
-    public boolean isNewDeclaration() {
-        return true;
-    }
+  public boolean isNewDeclaration() {
+    return true;
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        throw new RuntimeException("illegal operation");
-    }
+  public void setValueStatement(ExecutableStatement stmt) {
+    throw new RuntimeException("illegal operation");
+  }
 }

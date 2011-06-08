@@ -21,9 +21,9 @@ package org.mvel2.compiler;
 import org.mvel2.integration.VariableResolverFactory;
 
 public interface Accessor {
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory);
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory);
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value);
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value);
 
-    public Class getKnownEgressType();
+  public Class getKnownEgressType();
 }

@@ -18,48 +18,50 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.CompilerTools.expectType;
+
 import org.mvel2.ast.BooleanNode;
 
 public class And extends BooleanNode {
 
-    public And(ASTNode left, ASTNode right, boolean strongTyping) {
-        expectType(this.left = left, Boolean.class, strongTyping);
-        expectType(this.right = right, Boolean.class, strongTyping);
-    }
+  public And(ASTNode left, ASTNode right, boolean strongTyping) {
+    expectType(this.left = left, Boolean.class, strongTyping);
+    expectType(this.right = right, Boolean.class, strongTyping);
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
-                && ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
+            && ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new RuntimeException("improper use of AST element");
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    throw new RuntimeException("improper use of AST element");
+  }
 
-    public String toString() {
-        return "(" + left.toString() + " && " + right.toString() + ")";
-    }
+  public String toString() {
+    return "(" + left.toString() + " && " + right.toString() + ")";
+  }
 
-    public void setRightMost(ASTNode right) {
-        And n = this;
-        while (n.right != null && n.right instanceof And) {
-            n = (And) n.right;
-        }
-        n.right = right;
+  public void setRightMost(ASTNode right) {
+    And n = this;
+    while (n.right != null && n.right instanceof And) {
+      n = (And) n.right;
     }
+    n.right = right;
+  }
 
-    public ASTNode getRightMost() {
-        And n = this;
-        while (n.right != null && n.right instanceof And) {
-            n = (And) n.right;
-        }
-        return n.right;
+  public ASTNode getRightMost() {
+    And n = this;
+    while (n.right != null && n.right instanceof And) {
+      n = (And) n.right;
     }
+    return n.right;
+  }
 
-    public Class getEgressType() {
-        return Boolean.class;
-    }
+  public Class getEgressType() {
+    return Boolean.class;
+  }
 }
 
 

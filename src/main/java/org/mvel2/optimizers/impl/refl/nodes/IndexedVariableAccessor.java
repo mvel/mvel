@@ -22,41 +22,39 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class IndexedVariableAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private int register;
+  private AccessorNode nextNode;
+  private int register;
 
-    public IndexedVariableAccessor(int register) {
-        this.register = register;
-    }
+  public IndexedVariableAccessor(int register) {
+    this.register = register;
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (nextNode != null) {
-            return nextNode.getValue(vrf.getIndexedVariableResolver(register).getValue(), elCtx, vrf);
-        }
-        else {
-            return vrf.getIndexedVariableResolver(register).getValue();
-        }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
+    if (nextNode != null) {
+      return nextNode.getValue(vrf.getIndexedVariableResolver(register).getValue(), elCtx, vrf);
+    } else {
+      return vrf.getIndexedVariableResolver(register).getValue();
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(variableFactory.getIndexedVariableResolver(register).getValue(), elCtx, variableFactory, value);
-        }
-        else {
-            variableFactory.getIndexedVariableResolver(register).setValue(value);
-            return value;
-        }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(variableFactory.getIndexedVariableResolver(register).getValue(), elCtx, variableFactory, value);
+    } else {
+      variableFactory.getIndexedVariableResolver(register).setValue(value);
+      return value;
     }
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

@@ -25,23 +25,23 @@ import org.mvel2.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class InterceptorWrapper extends ASTNode {
-    private Interceptor interceptor;
-    private ASTNode node;
+  private Interceptor interceptor;
+  private ASTNode node;
 
-    public InterceptorWrapper(Interceptor interceptor, ASTNode node) {
-        this.interceptor = interceptor;
-        this.node = node;
-    }
+  public InterceptorWrapper(Interceptor interceptor, ASTNode node) {
+    this.interceptor = interceptor;
+    this.node = node;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        interceptor.doBefore(node, factory);
-        interceptor.doAfter(ctx = node.getReducedValueAccelerated(ctx, thisValue, factory), node, factory);
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    interceptor.doBefore(node, factory);
+    interceptor.doAfter(ctx = node.getReducedValueAccelerated(ctx, thisValue, factory), node, factory);
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        interceptor.doBefore(node, factory);
-        interceptor.doAfter(ctx = node.getReducedValue(ctx, thisValue, factory), node, factory);
-        return ctx;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    interceptor.doBefore(node, factory);
+    interceptor.doAfter(ctx = node.getReducedValue(ctx, thisValue, factory), node, factory);
+    return ctx;
+  }
 }

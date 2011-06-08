@@ -30,69 +30,68 @@ import static org.mvel2.util.ParseTools.*;
  * @author Christopher Brock
  */
 public class ProtoVarNode extends ASTNode implements Assignment {
-    private String name;
+  private String name;
 
-    private ExecutableStatement statement;
+  private ExecutableStatement statement;
 
-    public ProtoVarNode(String name, Proto type) {
-        this.name = name;
-        this.egressType = Proto.ProtoInstance.class;
+  public ProtoVarNode(String name, Proto type) {
+    this.name = name;
+    this.egressType = Proto.ProtoInstance.class;
+  }
+
+  public ProtoVarNode(char[] expr, int start, int offset, int fields, Proto type, ParserContext pCtx) {
+    this.egressType = Proto.ProtoInstance.class;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
+    this.fields = fields;
+
+    int assignStart;
+    if ((assignStart = find(super.expr = expr, start, offset, '=')) != -1) {
+      checkNameSafety(name = createStringTrimmed(expr, 0, assignStart));
+
+      if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
+        statement = (ExecutableStatement) subCompileExpression(expr, assignStart + 1, offset, pCtx);
+      }
+    } else {
+      checkNameSafety(name = new String(expr, start, offset));
     }
 
-    public ProtoVarNode(char[] expr, int start, int offset, int fields, Proto type, ParserContext pCtx) {
-        this.egressType = Proto.ProtoInstance.class;
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
-        this.fields = fields;
-
-        int assignStart;
-        if ((assignStart = find(super.expr = expr, start, offset, '=')) != -1) {
-            checkNameSafety(name = createStringTrimmed(expr, 0, assignStart));
-
-            if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(expr, assignStart + 1, offset, pCtx);
-            }
-        }
-        else {
-            checkNameSafety(name = new String(expr, start, offset));
-        }
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            pCtx.addVariable(name, egressType, true);
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      pCtx.addVariable(name, egressType, true);
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement == null) statement = (ExecutableStatement) subCompileExpression(expr, start, offset);
-        factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (statement == null) statement = (ExecutableStatement) subCompileExpression(expr, start, offset);
+    factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, ctx = eval(expr, start, offset, thisValue, factory), egressType);
-        return ctx;
-    }
-
-
-    public String getName() {
-        return name;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.createVariable(name, ctx = eval(expr, start, offset, thisValue, factory), egressType);
+    return ctx;
+  }
 
 
-    public String getAssignmentVar() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public char[] getExpression() {
-        return expr;
-    }
 
-    public boolean isNewDeclaration() {
-        return true;
-    }
+  public String getAssignmentVar() {
+    return name;
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        this.statement = stmt;
-    }
+  public char[] getExpression() {
+    return expr;
+  }
+
+  public boolean isNewDeclaration() {
+    return true;
+  }
+
+  public void setValueStatement(ExecutableStatement stmt) {
+    this.statement = stmt;
+  }
 }

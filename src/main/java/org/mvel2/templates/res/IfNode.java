@@ -29,40 +29,40 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 public class IfNode extends Node {
-    protected Node trueNode;
-    protected Node elseNode;
+  protected Node trueNode;
+  protected Node elseNode;
 
-    public IfNode(int begin, String name, char[] template, int start, int end) {
-        super(begin, name, template, start, end);
-        while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
-    }
+  public IfNode(int begin, String name, char[] template, int start, int end) {
+    super(begin, name, template, start, end);
+    while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
+  }
 
-    public Node getTrueNode() {
-        return trueNode;
-    }
+  public Node getTrueNode() {
+    return trueNode;
+  }
 
-    public void setTrueNode(ExpressionNode trueNode) {
-        this.trueNode = trueNode;
-    }
+  public void setTrueNode(ExpressionNode trueNode) {
+    this.trueNode = trueNode;
+  }
 
-    public Node getElseNode() {
-        return elseNode;
-    }
+  public Node getElseNode() {
+    return elseNode;
+  }
 
-    public void setElseNode(ExpressionNode elseNode) {
-        this.elseNode = elseNode;
-    }
+  public void setElseNode(ExpressionNode elseNode) {
+    this.elseNode = elseNode;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        trueNode = next;
-        next = terminus;
-        return true;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    trueNode = next;
+    next = terminus;
+    return true;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (cEnd == cStart || MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory, Boolean.class)) {
-            return trueNode.eval(runtime, appender, ctx, factory);
-        }
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (cEnd == cStart || MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory, Boolean.class)) {
+      return trueNode.eval(runtime, appender, ctx, factory);
     }
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 }

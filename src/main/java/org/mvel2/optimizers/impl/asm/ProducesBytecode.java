@@ -46,7 +46,7 @@ import org.mvel2.integration.VariableResolverFactory;
  * The class is: org.mvel.tests.main.res.SampleBeanAccessor
  */
 public interface ProducesBytecode {
-    public void produceBytecodeGet(MethodVisitor mv, String propertyName, VariableResolverFactory factory);
+  public void produceBytecodeGet(MethodVisitor mv, String propertyName, VariableResolverFactory factory);
 
-    public void produceBytecodePut(MethodVisitor mv, String propertyName, VariableResolverFactory factory);
+  public void produceBytecodePut(MethodVisitor mv, String propertyName, VariableResolverFactory factory);
 }

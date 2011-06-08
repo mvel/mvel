@@ -28,28 +28,28 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class CommentNode extends Node {
-    public CommentNode() {
-    }
+  public CommentNode() {
+  }
 
-    public CommentNode(int begin, String name, char[] template, int start, int end) {
-        this.name = name;
-        this.end = this.cEnd = end;
-    }
+  public CommentNode(int begin, String name, char[] template, int start, int end) {
+    this.name = name;
+    this.end = this.cEnd = end;
+  }
 
-    public CommentNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.begin = begin;
-        this.end = this.cEnd = end;
-        this.next = next;
-    }
+  public CommentNode(int begin, String name, char[] template, int start, int end, Node next) {
+    this.begin = begin;
+    this.end = this.cEnd = end;
+    this.next = next;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (next != null)
-            return next.eval(runtime, appender, ctx, factory);
-        else
-            return null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (next != null)
+      return next.eval(runtime, appender, ctx, factory);
+    else
+      return null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

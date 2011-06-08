@@ -27,82 +27,82 @@ import java.util.Map;
 import static java.lang.String.valueOf;
 
 public class ByteCH implements ConversionHandler {
-    private static final Map<Class, Converter> CNV =
-            new HashMap<Class, Converter>();
+  private static final Map<Class, Converter> CNV =
+          new HashMap<Class, Converter>();
 
-    private static Converter stringConverter = new Converter() {
-        public Object convert(Object o) {
-            return Byte.parseByte(((String) o));
-        }
-    };
-
-    public Object convertFrom(Object in) {
-        if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-                + in.getClass().getName() + " to: " + Integer.class.getName());
-        return CNV.get(in.getClass()).convert(in);
+  private static Converter stringConverter = new Converter() {
+    public Object convert(Object o) {
+      return Byte.parseByte(((String) o));
     }
+  };
+
+  public Object convertFrom(Object in) {
+    if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
+            + in.getClass().getName() + " to: " + Integer.class.getName());
+    return CNV.get(in.getClass()).convert(in);
+  }
 
 
-    public boolean canConvertFrom(Class cls) {
-        return CNV.containsKey(cls);
-    }
+  public boolean canConvertFrom(Class cls) {
+    return CNV.containsKey(cls);
+  }
 
-    static {
-        CNV.put(String.class,
-                stringConverter
-        );
+  static {
+    CNV.put(String.class,
+            stringConverter
+    );
 
-        CNV.put(Object.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return stringConverter.convert(valueOf(o));
-                    }
-                }
-        );
+    CNV.put(Object.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return stringConverter.convert(valueOf(o));
+              }
+            }
+    );
 
-        CNV.put(Byte.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        //noinspection UnnecessaryBoxing
-                        return new Byte(((Byte) o));
-                    }
-                }
-        );
+    CNV.put(Byte.class,
+            new Converter() {
+              public Object convert(Object o) {
+                //noinspection UnnecessaryBoxing
+                return new Byte(((Byte) o));
+              }
+            }
+    );
 
-        CNV.put(Integer.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return ((Integer) o).byteValue();
-                    }
-                }
-        );
+    CNV.put(Integer.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return ((Integer) o).byteValue();
+              }
+            }
+    );
 
-        CNV.put(Long.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return ((Long) o).byteValue();
-                    }
-                });
+    CNV.put(Long.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return ((Long) o).byteValue();
+              }
+            });
 
-        CNV.put(Double.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return ((Double) o).byteValue();
-                    }
-                });
+    CNV.put(Double.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return ((Double) o).byteValue();
+              }
+            });
 
-        CNV.put(Float.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return ((Float) o).byteValue();
-                    }
-                });
+    CNV.put(Float.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return ((Float) o).byteValue();
+              }
+            });
 
-        CNV.put(Short.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return ((Short) o).byteValue();
-                    }
-                });
-    }
+    CNV.put(Short.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return ((Short) o).byteValue();
+              }
+            });
+  }
 }

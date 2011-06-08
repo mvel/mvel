@@ -21,31 +21,31 @@ package org.mvel2.util;
 import java.io.Serializable;
 
 public interface Stack extends Serializable {
-    public boolean isEmpty();
+  public boolean isEmpty();
 
-    public Object peek();
+  public Object peek();
 
-    public Object peek2();
+  public Object peek2();
 
-    public void add(Object obj);
+  public void add(Object obj);
 
-    public void push(Object obj);
+  public void push(Object obj);
 
-    public Object pushAndPeek(Object obj);
+  public Object pushAndPeek(Object obj);
 
-    public void push(Object obj1, Object obj2);
+  public void push(Object obj1, Object obj2);
 
-    public void push(Object obj1, Object obj2, Object obj3);
+  public void push(Object obj1, Object obj2, Object obj3);
 
-    public Object pop();
+  public Object pop();
 
-    public Object pop2();
+  public Object pop2();
 
-    public void discard();
+  public void discard();
 
-    public void clear();
+  public void clear();
 
-    public int size();
+  public int size();
 
-    public void showStack();
+  public void showStack();
 }

@@ -27,108 +27,104 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultLocalVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
-    public DefaultLocalVariableResolverFactory() {
-        super(new HashMap<String, Object>());
+  public DefaultLocalVariableResolverFactory() {
+    super(new HashMap<String, Object>());
+  }
+
+  public DefaultLocalVariableResolverFactory(Map<String, Object> variables) {
+    super(variables);
+  }
+
+  public DefaultLocalVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
+    super(variables, nextFactory);
+  }
+
+  public DefaultLocalVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
+    super(variables);
+  }
+
+  public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {
+    super(new HashMap<String, Object>(), nextFactory);
+  }
+
+  public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables) {
+    super(new HashMap<String, Object>(), nextFactory);
+    this.indexedVariableNames = indexedVariables;
+    this.indexedVariableResolvers = new VariableResolver[indexedVariables.length];
+  }
+
+
+  public VariableResolver getIndexedVariableResolver(int index) {
+    if (indexedVariableNames == null) return null;
+
+    if (indexedVariableResolvers[index] == null) {
+      /**
+       * If the register is null, this means we need to forward-allocate the variable onto the
+       * register table.
+       */
+      return indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
+    }
+    return indexedVariableResolvers[index];
+  }
+
+  public VariableResolver getVariableResolver(String name) {
+    if (indexedVariableNames == null) return super.getVariableResolver(name);
+
+    int idx;
+    //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
+    if ((idx = variableIndexOf(name)) != -1) {
+      if (indexedVariableResolvers[idx] == null) {
+        indexedVariableResolvers[idx] = new SimpleValueResolver(null);
+      }
+      variableResolvers.put(indexedVariableNames[idx], null);
+      return indexedVariableResolvers[idx];
     }
 
-    public DefaultLocalVariableResolverFactory(Map<String, Object> variables) {
-        super(variables);
-    }
+    return super.getVariableResolver(name);
+  }
 
-    public DefaultLocalVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
-        super(variables, nextFactory);
-    }
+  public VariableResolver createVariable(String name, Object value, Class<?> type) {
+    if (indexedVariableNames == null) return super.createVariable(name, value, type);
 
-    public DefaultLocalVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
-        super(variables);
-    }
+    VariableResolver vr;
+    boolean newVar = false;
 
-    public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {
-        super(new HashMap<String, Object>(), nextFactory);
-    }
-
-    public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables) {
-        super(new HashMap<String, Object>(), nextFactory);
-        this.indexedVariableNames = indexedVariables;
-        this.indexedVariableResolvers = new VariableResolver[indexedVariables.length];
-    }
-
-
-
-    public VariableResolver getIndexedVariableResolver(int index) {
-        if (indexedVariableNames == null) return null;
-
-        if (indexedVariableResolvers[index] == null) {
-            /**
-             * If the register is null, this means we need to forward-allocate the variable onto the
-             * register table.
-             */
-            return indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
+    try {
+      int idx;
+      if ((idx = variableIndexOf(name)) != -1) {
+        vr = new SimpleValueResolver(value);
+        if (indexedVariableResolvers[idx] == null) {
+          indexedVariableResolvers[idx] = vr;
         }
-        return indexedVariableResolvers[index];
+        variableResolvers.put(indexedVariableNames[idx], vr);
+        vr = indexedVariableResolvers[idx];
+
+        newVar = true;
+      } else {
+        return super.createVariable(name, value, type);
+      }
+
+    } catch (UnresolveablePropertyException e) {
+      vr = null;
     }
 
-    public VariableResolver getVariableResolver(String name) {
-        if (indexedVariableNames == null) return super.getVariableResolver(name);
-
-        int idx;
-        //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
-        if ((idx = variableIndexOf(name)) != -1) {
-            if (indexedVariableResolvers[idx] == null) {
-                indexedVariableResolvers[idx] = new SimpleValueResolver(null);
-            }
-            variableResolvers.put(indexedVariableNames[idx], null);
-            return indexedVariableResolvers[idx];
-        }
-
-        return super.getVariableResolver(name);
+    if (!newVar && vr != null && vr.getType() != null) {
+      throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
+    } else {
+      addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
+      return vr;
     }
+  }
 
-    public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        if (indexedVariableNames == null) return super.createVariable(name, value, type);
+  private boolean noTilt = false;
 
-        VariableResolver vr;
-        boolean newVar = false;
+  public VariableResolverFactory setNoTilt(boolean noTilt) {
+    this.noTilt = noTilt;
+    return this;
+  }
 
-        try {
-            int idx;
-            if ((idx = variableIndexOf(name)) != -1) {
-                vr = new SimpleValueResolver(value);
-                if (indexedVariableResolvers[idx] == null) {
-                    indexedVariableResolvers[idx] = vr;
-                }
-                variableResolvers.put(indexedVariableNames[idx], vr);
-                vr = indexedVariableResolvers[idx];
-
-                newVar = true;
-            }
-            else {
-                return super.createVariable(name, value, type);
-            }
-
-        }
-        catch (UnresolveablePropertyException e) {
-            vr = null;
-        }
-
-        if (!newVar && vr != null && vr.getType() != null) {
-            throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-        }
-        else {
-            addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
-            return vr;
-        }
-    }
-
-    private boolean noTilt = false;
-
-    public VariableResolverFactory setNoTilt(boolean noTilt) {
-        this.noTilt = noTilt;
-        return this;
-    }
-
-    @Override
-    public void setTiltFlag(boolean tiltFlag) {
-        if (!noTilt) super.setTiltFlag(tiltFlag);
-    }
+  @Override
+  public void setTiltFlag(boolean tiltFlag) {
+    if (!noTilt) super.setTiltFlag(tiltFlag);
+  }
 }

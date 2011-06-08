@@ -21,11 +21,11 @@ package org.mvel2.ast;
 import org.mvel2.compiler.ExecutableStatement;
 
 public interface Assignment {
-    public String getAssignmentVar();
+  public String getAssignmentVar();
 
-    public char[] getExpression();
+  public char[] getExpression();
 
-    public boolean isNewDeclaration();
+  public boolean isNewDeclaration();
 
-    public void setValueStatement(ExecutableStatement stmt);
+  public void setValueStatement(ExecutableStatement stmt);
 }

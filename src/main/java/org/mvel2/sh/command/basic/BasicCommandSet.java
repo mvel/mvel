@@ -27,17 +27,17 @@ import java.util.HashMap;
 
 public class BasicCommandSet implements CommandSet {
 
-    public Map<String, Command> load() {
-        Map<String, Command> cmds = new HashMap<String, Command>();
+  public Map<String, Command> load() {
+    Map<String, Command> cmds = new HashMap<String, Command>();
 
-        cmds.put("set", new Set());
-        cmds.put("push", new PushContext());
-        cmds.put("help", new Help());
-        cmds.put("showvars", new ShowVars());
-        cmds.put("inspect", new ObjectInspector());
-        cmds.put("exit", new Exit());
+    cmds.put("set", new Set());
+    cmds.put("push", new PushContext());
+    cmds.put("help", new Help());
+    cmds.put("showvars", new ShowVars());
+    cmds.put("inspect", new ObjectInspector());
+    cmds.put("exit", new Exit());
 
-        return cmds;
-    }
+    return cmds;
+  }
 }
 

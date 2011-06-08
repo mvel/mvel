@@ -26,48 +26,48 @@ import java.util.LinkedList;
 
 
 public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
-    private int totalClasses;
-    private int tenureLimit;
-    private final LinkedList<DynamicAccessor> allAccessors = new LinkedList<DynamicAccessor>();
+  private int totalClasses;
+  private int tenureLimit;
+  private final LinkedList<DynamicAccessor> allAccessors = new LinkedList<DynamicAccessor>();
 
-    public DynamicClassLoader(ClassLoader classLoader, int tenureLimit) {
-        super(classLoader);
-        this.tenureLimit = tenureLimit;
-    }
+  public DynamicClassLoader(ClassLoader classLoader, int tenureLimit) {
+    super(classLoader);
+    this.tenureLimit = tenureLimit;
+  }
 
-    public Class defineClassX(String className, byte[] b, int start, int end) {
-        totalClasses++;
-        return super.defineClass(className, b, start, end);
-    }
+  public Class defineClassX(String className, byte[] b, int start, int end) {
+    totalClasses++;
+    return super.defineClass(className, b, start, end);
+  }
 
-    public int getTotalClasses() {
-        return totalClasses;
-    }
+  public int getTotalClasses() {
+    return totalClasses;
+  }
 
-    public DynamicAccessor registerDynamicAccessor(DynamicAccessor accessor) {
-        synchronized (allAccessors) {
-            allAccessors.add(accessor);
-            while (allAccessors.size() > tenureLimit) {
-                DynamicAccessor da = allAccessors.removeFirst();
-                if (da != null) {
-                    da.deoptimize();
-                }
-            }
-            assert accessor != null;
-            return accessor;
+  public DynamicAccessor registerDynamicAccessor(DynamicAccessor accessor) {
+    synchronized (allAccessors) {
+      allAccessors.add(accessor);
+      while (allAccessors.size() > tenureLimit) {
+        DynamicAccessor da = allAccessors.removeFirst();
+        if (da != null) {
+          da.deoptimize();
         }
+      }
+      assert accessor != null;
+      return accessor;
     }
+  }
 
-    public void deoptimizeAll() {
-        synchronized (allAccessors) {
-            for (DynamicAccessor a : allAccessors) {
-                if (a != null) a.deoptimize();
-            }
-            allAccessors.clear();
-        }
+  public void deoptimizeAll() {
+    synchronized (allAccessors) {
+      for (DynamicAccessor a : allAccessors) {
+        if (a != null) a.deoptimize();
+      }
+      allAccessors.clear();
     }
+  }
 
-    public boolean isOverloaded() {
-        return tenureLimit < totalClasses;
-    }
+  public boolean isOverloaded() {
+    return tenureLimit < totalClasses;
+  }
 }

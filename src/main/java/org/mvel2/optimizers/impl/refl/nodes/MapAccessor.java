@@ -24,57 +24,55 @@ import org.mvel2.integration.VariableResolverFactory;
 import java.util.Map;
 
 public class MapAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private Object property;
+  private AccessorNode nextNode;
+  private Object property;
 
-    public MapAccessor() {
-    }
+  public MapAccessor() {
+  }
 
-    public MapAccessor(Object property) {
-        this.property = property;
-    }
+  public MapAccessor(Object property) {
+    this.property = property;
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (nextNode != null) {
-            return nextNode.getValue(((Map) ctx).get(property), elCtx, vrf);
-        }
-        else {
-            return ((Map) ctx).get(property);
-        }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
+    if (nextNode != null) {
+      return nextNode.getValue(((Map) ctx).get(property), elCtx, vrf);
+    } else {
+      return ((Map) ctx).get(property);
     }
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(((Map) ctx).get(property), elCtx, vars, value);
-        }
-        else {
-            //noinspection unchecked
-            ((Map) ctx).put(property, value);
-            return value;
-        }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(((Map) ctx).get(property), elCtx, vars, value);
+    } else {
+      //noinspection unchecked
+      ((Map) ctx).put(property, value);
+      return value;
     }
+  }
 
-    public Object getProperty() {
-        return property;
-    }
+  public Object getProperty() {
+    return property;
+  }
 
-    public void setProperty(Object property) {
-        this.property = property;
-    }
+  public void setProperty(Object property) {
+    this.property = property;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public String toString() {
-        return "Map Accessor -> [" + property + "]";
-    }
+  public String toString() {
+    return "Map Accessor -> [" + property + "]";
+  }
 
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

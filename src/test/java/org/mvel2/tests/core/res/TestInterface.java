@@ -8,7 +8,7 @@ package org.mvel2.tests.core.res;
  * To change this template use File | Settings | File Templates.
  */
 public interface TestInterface {
-    public String getName();
+  public String getName();
 
-    public boolean isFoo();
+  public boolean isFoo();
 }

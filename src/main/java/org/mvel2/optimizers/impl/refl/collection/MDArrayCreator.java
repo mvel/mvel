@@ -22,49 +22,49 @@ import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.lang.reflect.Array;
+
 import static java.lang.reflect.Array.newInstance;
 
 /**
  * @author Christopher Brock
  */
 public class MDArrayCreator implements Accessor {
-    public Accessor[] template;
-    private Class arrayType;
-    private int dimension;
+  public Accessor[] template;
+  private Class arrayType;
+  private int dimension;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        if (Object.class.equals(arrayType)) {
-            Object[] newArray = new Object[template.length];
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    if (Object.class.equals(arrayType)) {
+      Object[] newArray = new Object[template.length];
 
-            for (int i = 0; i < newArray.length; i++)
-                newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
+      for (int i = 0; i < newArray.length; i++)
+        newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
 
-            return newArray;
-        }
-        else {
-            Object newArray = newInstance(arrayType, template.length);
+      return newArray;
+    } else {
+      Object newArray = newInstance(arrayType, template.length);
 
-            for (int i = 0; i < template.length; i++) {
-                Object o = template[i].getValue(ctx, elCtx, variableFactory);
-                Array.set(newArray, i, o);
-            }
+      for (int i = 0; i < template.length; i++) {
+        Object o = template[i].getValue(ctx, elCtx, variableFactory);
+        Array.set(newArray, i, o);
+      }
 
-            return newArray;
-        }
+      return newArray;
     }
+  }
 
-    public MDArrayCreator(Accessor[] template, Class arrayType, int dimension) {
-        this.template = template;
-        this.arrayType = arrayType;
-        this.dimension = dimension;
-    }
+  public MDArrayCreator(Accessor[] template, Class arrayType, int dimension) {
+    this.template = template;
+    this.arrayType = arrayType;
+    this.dimension = dimension;
+  }
 
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return null;
+  }
 
-    public Class getKnownEgressType() {
-        return arrayType;
-    }
+  public Class getKnownEgressType() {
+    return arrayType;
+  }
 }

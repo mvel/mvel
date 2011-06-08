@@ -20,58 +20,60 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ArrayTools.findLast;
 import static org.mvel2.util.ParseTools.subset;
 
 import static java.lang.Thread.currentThread;
+
 import java.lang.reflect.Method;
+
 import static java.lang.reflect.Modifier.isStatic;
 
 /**
  * @author Christopher Brock
  */
 public class StaticImportNode extends ASTNode {
-    private Class declaringClass;
-    private String methodName;
-    private transient Method method;
+  private Class declaringClass;
+  private String methodName;
+  private transient Method method;
 
-    public StaticImportNode(char[] expr, int start, int offset) {
-        try {
-            this.expr = expr;
-            this.start = start;
-            this.offset = offset;
+  public StaticImportNode(char[] expr, int start, int offset) {
+    try {
+      this.expr = expr;
+      this.start = start;
+      this.offset = offset;
 
-            int mark;
-            declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
-                    true, currentThread().getContextClassLoader());
+      int mark;
+      declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
+              true, currentThread().getContextClassLoader());
 
-            methodName = new String(expr, ++mark, offset - (mark - start));
+      methodName = new String(expr, ++mark, offset - (mark - start));
 
-            if (resolveMethod() == null) {
-                throw new CompileException("can not find method for static import: "
-                        + declaringClass.getName() + "." + methodName, expr, start);
-            }
-        }
-        catch (Exception e) {
-            throw new CompileException("unable to import class", expr, start, e);
-        }
+      if (resolveMethod() == null) {
+        throw new CompileException("can not find method for static import: "
+                + declaringClass.getName() + "." + methodName, expr, start);
+      }
+    } catch (Exception e) {
+      throw new CompileException("unable to import class", expr, start, e);
     }
+  }
 
-    private Method resolveMethod() {
-        for (Method meth : declaringClass.getMethods()) {
-            if (isStatic(meth.getModifiers()) && methodName.equals(meth.getName())) {
-                return method = meth;
-            }
-        }
-        return null;
+  private Method resolveMethod() {
+    for (Method meth : declaringClass.getMethods()) {
+      if (isStatic(meth.getModifiers()) && methodName.equals(meth.getName())) {
+        return method = meth;
+      }
     }
+    return null;
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(methodName, method == null ? method = resolveMethod() : method);
-        return null;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.createVariable(methodName, method == null ? method = resolveMethod() : method);
+    return null;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return getReducedValueAccelerated(ctx, thisValue, factory);
+  }
 }

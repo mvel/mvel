@@ -32,260 +32,256 @@ import java.lang.reflect.Method;
  * @author Christopher Brock
  */
 public class AbstractOptimizer extends AbstractParser {
-    protected static final int BEAN = 0;
-    protected static final int METH = 1;
-    protected static final int COL = 2;
-    protected static final int WITH = 3;
+  protected static final int BEAN = 0;
+  protected static final int METH = 1;
+  protected static final int COL = 2;
+  protected static final int WITH = 3;
 
-    protected boolean collection = false;
-    protected boolean nullSafe = false;
-    protected Class currType = null;
-    protected boolean staticAccess = false;
+  protected boolean collection = false;
+  protected boolean nullSafe = false;
+  protected Class currType = null;
+  protected boolean staticAccess = false;
 
-    protected int tkStart;
-
-
-    /**
-     * Try static access of the property, and return an instance of the Field, Method of Class if successful.
-     *
-     * @return - Field, Method or Class instance.
-     */
-    protected Object tryStaticAccess() {
-        int begin = cursor;
-        try {
-            /**
-             * Try to resolve this *smartly* as a static class reference.
-             *
-             * This starts at the end of the token and starts to step backwards to figure out whether
-             * or not this may be a static class reference.  We search for method calls simply by
-             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
-             * test-point for a class reference.  If we find a class, we pass the reference to the
-             * property accessor along  with trailing methods (if any).
-             *
-             */
-            boolean meth = false;
-            // int end = start + length;
-            int last = end;
-            for (int i = end - 1; i > start; i--) {
-                switch (expr[i]) {
-                    case '.':
-                        if (!meth) {
-                            try {
-                                String test = new String(expr, start, (cursor = last) - start);
-
-                                return Class.forName(test, true, pCtx != null ?
-                                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
-                            }
-                            catch (ClassNotFoundException e) {
-                                Class cls = Class.forName(new String(expr, start, i - start), true, pCtx != null ?
-                                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
-                                String name = new String(expr, i + 1, end - i - 1);
-                                try {
-                                    return cls.getField(name);
-                                }
-                                catch (NoSuchFieldException nfe) {
-                                    for (Method m : cls.getMethods()) {
-                                        if (name.equals(m.getName())) return m;
-                                    }
-                                    return null;
-                                }
-                            }
-                        }
-
-                        meth = false;
-                        last = i;
-                        break;
-
-                    case '}':
-                        i--;
-                        for (int d = 1; i > start && d != 0; i--) {
-                            switch (expr[i]) {
-                                case '}':
-                                    d++;
-                                    break;
-                                case '{':
-                                    d--;
-                                    break;
-                                case '"':
-                                case '\'':
-                                    char s = expr[i];
-                                    while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
-                            }
-                        }
-                        break;
-
-                    case ')':
-                        i--;
-
-                        for (int d = 1; i > start && d != 0; i--) {
-                            switch (expr[i]) {
-                                case ')':
-                                    d++;
-                                    break;
-                                case '(':
-                                    d--;
-                                    break;
-                                case '"':
-                                case '\'':
-                                    char s = expr[i];
-                                    while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
-                            }
-                        }
-
-                        meth = true;
-                        last = i++;
-                        break;
+  protected int tkStart;
 
 
-                    case '\'':
-                        while (--i > start) {
-                            if (expr[i] == '\'' && expr[i - 1] != '\\') {
-                                break;
-                            }
-                        }
-                        break;
+  /**
+   * Try static access of the property, and return an instance of the Field, Method of Class if successful.
+   *
+   * @return - Field, Method or Class instance.
+   */
+  protected Object tryStaticAccess() {
+    int begin = cursor;
+    try {
+      /**
+       * Try to resolve this *smartly* as a static class reference.
+       *
+       * This starts at the end of the token and starts to step backwards to figure out whether
+       * or not this may be a static class reference.  We search for method calls simply by
+       * inspecting for ()'s.  The first union area we come to where no brackets are present is our
+       * test-point for a class reference.  If we find a class, we pass the reference to the
+       * property accessor along  with trailing methods (if any).
+       *
+       */
+      boolean meth = false;
+      // int end = start + length;
+      int last = end;
+      for (int i = end - 1; i > start; i--) {
+        switch (expr[i]) {
+          case '.':
+            if (!meth) {
+              try {
+                String test = new String(expr, start, (cursor = last) - start);
 
-                    case '"':
-                        while (--i > start) {
-                            if (expr[i] == '"' && expr[i - 1] != '\\') {
-                                break;
-                            }
-                        }
-                        break;
+                return Class.forName(test, true, pCtx != null ?
+                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
+              } catch (ClassNotFoundException e) {
+                Class cls = Class.forName(new String(expr, start, i - start), true, pCtx != null ?
+                        pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
+                String name = new String(expr, i + 1, end - i - 1);
+                try {
+                  return cls.getField(name);
+                } catch (NoSuchFieldException nfe) {
+                  for (Method m : cls.getMethods()) {
+                    if (name.equals(m.getName())) return m;
+                  }
+                  return null;
                 }
-            }
-        }
-        catch (Exception cnfe) {
-            cursor = begin;
-        }
-
-        return null;
-    }
-
-    protected int nextSubToken() {
-        skipWhitespace();
-        nullSafe = false;
-
-        switch (expr[tkStart = cursor]) {
-            case '[':
-                return COL;
-            case '{':
-                if (expr[cursor - 1] == '.') {
-                    return WITH;
-                }
-                break;
-            case '.':
-                if ((start + 1) != end) {
-                    switch (expr[cursor = ++tkStart]) {
-                        case '?':
-                            skipWhitespace();
-                            if ((cursor = ++tkStart) == end) {
-                                throw new CompileException("unexpected end of statement", expr, start);
-                            }
-                            nullSafe = true;
-
-                            fields = -1;
-                            break;
-                        case '{':
-                            return WITH;
-                        default:
-                            if (isWhitespace(expr[tkStart])) {
-                                skipWhitespace();
-                                tkStart = cursor;
-                            }
-                    }
-                }
-                else {
-                    throw new CompileException("unexpected end of statement", expr, start);
-                }
-                break;
-        }
-
-        //noinspection StatementWithEmptyBody
-        while (++cursor < end && isIdentifierPart(expr[cursor])) ;
-
-        skipWhitespace();
-        if (cursor < end) {
-            switch (expr[cursor]) {
-                case '[':
-                    return COL;
-                case '(':
-                    return METH;
-                default:
-                    return BEAN;
-            }
-        }
-
-        return 0;
-    }
-
-    protected String capture() {
-        /**
-         * Trim off any whitespace.
-         */
-        return new String(expr, tkStart = trimRight(tkStart), trimLeft(cursor) - tkStart);
-    }
-
-    /**
-     * Skip to the next non-whitespace position.
-     */
-    protected void whiteSpaceSkip() {
-        if (cursor < length)
-            //noinspection StatementWithEmptyBody
-            while (isWhitespace(expr[cursor]) && ++cursor != length) ;
-    }
-
-    /**
-     * @param c - character to scan to.
-     * @return - returns true is end of statement is hit, false if the scan scar is countered.
-     */
-    protected boolean scanTo(char c) {
-        for (; cursor < end; cursor++) {
-            switch (expr[cursor]) {
-                case '\'':
-                case '"':
-                    cursor = captureStringLiteral(expr[cursor], expr, cursor, end);
-                default:
-                    if (expr[cursor] == c) {
-                        return false;
-                    }
+              }
             }
 
-        }
-        return true;
-    }
+            meth = false;
+            last = i;
+            break;
 
-
-    protected int findLastUnion() {
-        int split = -1;
-        int depth = 0;
-
-        int end = start + length;
-        for (int i = end - 1; i != start; i--) {
-            switch (expr[i]) {
+          case '}':
+            i--;
+            for (int d = 1; i > start && d != 0; i--) {
+              switch (expr[i]) {
                 case '}':
-                case ']':
-                    depth++;
-                    break;
-
+                  d++;
+                  break;
                 case '{':
-                case '[':
-                    if (--depth == 0) {
-                        split = i;
-                        collection = true;
-                    }
-                    break;
-                case '.':
-                    if (depth == 0) {
-                        split = i;
-                    }
-                    break;
+                  d--;
+                  break;
+                case '"':
+                case '\'':
+                  char s = expr[i];
+                  while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
+              }
             }
-            if (split != -1) break;
-        }
+            break;
 
-        return split;
+          case ')':
+            i--;
+
+            for (int d = 1; i > start && d != 0; i--) {
+              switch (expr[i]) {
+                case ')':
+                  d++;
+                  break;
+                case '(':
+                  d--;
+                  break;
+                case '"':
+                case '\'':
+                  char s = expr[i];
+                  while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
+              }
+            }
+
+            meth = true;
+            last = i++;
+            break;
+
+
+          case '\'':
+            while (--i > start) {
+              if (expr[i] == '\'' && expr[i - 1] != '\\') {
+                break;
+              }
+            }
+            break;
+
+          case '"':
+            while (--i > start) {
+              if (expr[i] == '"' && expr[i - 1] != '\\') {
+                break;
+              }
+            }
+            break;
+        }
+      }
+    } catch (Exception cnfe) {
+      cursor = begin;
     }
+
+    return null;
+  }
+
+  protected int nextSubToken() {
+    skipWhitespace();
+    nullSafe = false;
+
+    switch (expr[tkStart = cursor]) {
+      case '[':
+        return COL;
+      case '{':
+        if (expr[cursor - 1] == '.') {
+          return WITH;
+        }
+        break;
+      case '.':
+        if ((start + 1) != end) {
+          switch (expr[cursor = ++tkStart]) {
+            case '?':
+              skipWhitespace();
+              if ((cursor = ++tkStart) == end) {
+                throw new CompileException("unexpected end of statement", expr, start);
+              }
+              nullSafe = true;
+
+              fields = -1;
+              break;
+            case '{':
+              return WITH;
+            default:
+              if (isWhitespace(expr[tkStart])) {
+                skipWhitespace();
+                tkStart = cursor;
+              }
+          }
+        } else {
+          throw new CompileException("unexpected end of statement", expr, start);
+        }
+        break;
+    }
+
+    //noinspection StatementWithEmptyBody
+    while (++cursor < end && isIdentifierPart(expr[cursor])) ;
+
+    skipWhitespace();
+    if (cursor < end) {
+      switch (expr[cursor]) {
+        case '[':
+          return COL;
+        case '(':
+          return METH;
+        default:
+          return BEAN;
+      }
+    }
+
+    return 0;
+  }
+
+  protected String capture() {
+    /**
+     * Trim off any whitespace.
+     */
+    return new String(expr, tkStart = trimRight(tkStart), trimLeft(cursor) - tkStart);
+  }
+
+  /**
+   * Skip to the next non-whitespace position.
+   */
+  protected void whiteSpaceSkip() {
+    if (cursor < length)
+      //noinspection StatementWithEmptyBody
+      while (isWhitespace(expr[cursor]) && ++cursor != length) ;
+  }
+
+  /**
+   * @param c - character to scan to.
+   * @return - returns true is end of statement is hit, false if the scan scar is countered.
+   */
+  protected boolean scanTo(char c) {
+    for (; cursor < end; cursor++) {
+      switch (expr[cursor]) {
+        case '\'':
+        case '"':
+          cursor = captureStringLiteral(expr[cursor], expr, cursor, end);
+        default:
+          if (expr[cursor] == c) {
+            return false;
+          }
+      }
+
+    }
+    return true;
+  }
+
+
+  protected int findLastUnion() {
+    int split = -1;
+    int depth = 0;
+
+    int end = start + length;
+    for (int i = end - 1; i != start; i--) {
+      switch (expr[i]) {
+        case '}':
+        case ']':
+          depth++;
+          break;
+
+        case '{':
+        case '[':
+          if (--depth == 0) {
+            split = i;
+            collection = true;
+          }
+          break;
+        case '.':
+          if (depth == 0) {
+            split = i;
+          }
+          break;
+      }
+      if (split != -1) break;
+    }
+
+    return split;
+  }
 
 
 }

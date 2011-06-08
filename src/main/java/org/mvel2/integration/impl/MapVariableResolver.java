@@ -19,73 +19,74 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.integration.VariableResolver;
 
 import java.util.Map;
 import java.util.HashMap;
 
 public class MapVariableResolver implements VariableResolver {
-    private String name;
-    private Class<?> knownType;
-    private Map<String, Object> variableMap;
+  private String name;
+  private Class<?> knownType;
+  private Map<String, Object> variableMap;
 
-    public MapVariableResolver(Map<String, Object> variableMap, String name) {
-        this.variableMap = variableMap;
-        this.name = name;
+  public MapVariableResolver(Map<String, Object> variableMap, String name) {
+    this.variableMap = variableMap;
+    this.name = name;
+  }
+
+  public MapVariableResolver(Map<String, Object> variableMap, String name, Class knownType) {
+    this.name = name;
+    this.knownType = knownType;
+    this.variableMap = variableMap;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setStaticType(Class knownType) {
+    this.knownType = knownType;
+  }
+
+  public void setVariableMap(Map<String, Object> variableMap) {
+    this.variableMap = variableMap;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Class getType() {
+    return knownType;
+  }
+
+  public void setValue(Object value) {
+    if (knownType != null && value != null && value.getClass() != knownType) {
+      if (!canConvert(knownType, value.getClass())) {
+        throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
+                + knownType.getName());
+      }
+      try {
+        value = convert(value, knownType);
+      } catch (Exception e) {
+        throw new RuntimeException("cannot convert value of " + value.getClass().getName()
+                + " to: " + knownType.getName());
+      }
     }
 
-    public MapVariableResolver(Map<String, Object> variableMap, String name, Class knownType) {
-        this.name = name;
-        this.knownType = knownType;
-        this.variableMap = variableMap;
-    }
+    //noinspection unchecked
+    variableMap.put(name, value);
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public Object getValue() {
+    return variableMap.get(name);
+  }
 
-    public void setStaticType(Class knownType) {
-        this.knownType = knownType;
-    }
-
-    public void setVariableMap(Map<String, Object> variableMap) {
-        this.variableMap = variableMap;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Class getType() {
-        return knownType;
-    }
-
-    public void setValue(Object value) {
-        if (knownType != null && value != null && value.getClass() != knownType) {
-            if (!canConvert(knownType, value.getClass())) {
-                throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "
-                        + knownType.getName());
-            }
-            try {
-                value = convert(value, knownType);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("cannot convert value of " + value.getClass().getName()
-                        + " to: " + knownType.getName());
-            }
-        }
-
-        //noinspection unchecked
-        variableMap.put(name, value);
-    }
-
-    public Object getValue() {  
-        return variableMap.get(name);
-    }
-
-    public int getFlags() {
-        return 0;
-    }
+  public int getFlags() {
+    return 0;
+  }
 }

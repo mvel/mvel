@@ -23,75 +23,74 @@ public class Cheese
         implements
         Serializable {
 
-    public static final String STILTON = "stilton";
+  public static final String STILTON = "stilton";
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -1187540653710115339L;
-    private String type;
-    private int price;
-    private Date useBy;
+  /**
+   *
+   */
+  private static final long serialVersionUID = -1187540653710115339L;
+  private String type;
+  private int price;
+  private Date useBy;
 
-    public Cheese() {
+  public Cheese() {
 
-    }
+  }
 
-    public Cheese(final String type,
-                  final int price) {
-        super();
-        this.type = type;
-        this.price = price;
-    }
+  public Cheese(final String type,
+                final int price) {
+    super();
+    this.type = type;
+    this.price = price;
+  }
 
-    public int getPrice() {
-        return this.price;
-    }
+  public int getPrice() {
+    return this.price;
+  }
 
-    public String getType() {
-        return this.type;
-    }
+  public String getType() {
+    return this.type;
+  }
 
-    public void setType(final String type) {
-        this.type = type;
-    }
+  public void setType(final String type) {
+    this.type = type;
+  }
 
-    public void setPrice(final int price) {
-        this.price = price;
-    }
+  public void setPrice(final int price) {
+    this.price = price;
+  }
 
-    public Date getUseBy() {
-        return useBy;
-    }
+  public Date getUseBy() {
+    return useBy;
+  }
 
-    public void setUseBy(Date useBy) {
-        this.useBy = useBy;
-    }
+  public void setUseBy(Date useBy) {
+    this.useBy = useBy;
+  }
 
-    public String toString() {
-        return "Cheese( type='" + this.type + "', price=" + this.price + " )";
-    }
+  public String toString() {
+    return "Cheese( type='" + this.type + "', price=" + this.price + " )";
+  }
 
-    public int hashCode() {
-        final int PRIME = 31;
-        int result = 1;
-        result = PRIME * result + price;
-        result = PRIME * result + ((type == null) ? 0 : type.hashCode());
-        return result;
-    }
+  public int hashCode() {
+    final int PRIME = 31;
+    int result = 1;
+    result = PRIME * result + price;
+    result = PRIME * result + ((type == null) ? 0 : type.hashCode());
+    return result;
+  }
 
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        final Cheese other = (Cheese) obj;
-        if (price != other.price) return false;
-        if (type == null) {
-            if (other.type != null) return false;
-        }
-        else if (!type.equals(other.type)) return false;
-        return true;
-    }
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    final Cheese other = (Cheese) obj;
+    if (price != other.price) return false;
+    if (type == null) {
+      if (other.type != null) return false;
+    } else if (!type.equals(other.type)) return false;
+    return true;
+  }
 
 
 }

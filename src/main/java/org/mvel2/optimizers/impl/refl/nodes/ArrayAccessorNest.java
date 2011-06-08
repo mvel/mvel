@@ -19,6 +19,7 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
@@ -27,75 +28,72 @@ import org.mvel2.util.ParseTools;
 import java.lang.reflect.Array;
 
 public class ArrayAccessorNest implements AccessorNode {
-    private AccessorNode nextNode;
-    private ExecutableStatement index;
+  private AccessorNode nextNode;
+  private ExecutableStatement index;
 
-    private Class baseComponentType;
-    private boolean requireConversion;
+  private Class baseComponentType;
+  private boolean requireConversion;
 
-    public ArrayAccessorNest() {
+  public ArrayAccessorNest() {
+  }
+
+  public ArrayAccessorNest(String index) {
+    this.index = (ExecutableStatement) ParseTools.subCompileExpression(index.toCharArray());
+  }
+
+  public ArrayAccessorNest(ExecutableStatement stmt) {
+    this.index = stmt;
+  }
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return nextNode.getValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars);
+    } else {
+      return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)];
     }
+  }
 
-    public ArrayAccessorNest(String index) {
-        this.index = (ExecutableStatement) ParseTools.subCompileExpression(index.toCharArray());
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
+    } else {
+      if (baseComponentType == null) {
+        baseComponentType = ParseTools.getBaseComponentType(ctx.getClass());
+        requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
+      }
+
+      if (requireConversion) {
+        Object o = convert(value, baseComponentType);
+        Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), o);
+        return o;
+      } else {
+        Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), value);
+        return value;
+      }
     }
+  }
 
-    public ArrayAccessorNest(ExecutableStatement stmt) {
-        this.index = stmt;
-    }
+  public ExecutableStatement getIndex() {
+    return index;
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return nextNode.getValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars);
-        }
-        else {
-            return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)];
-        }
-    }
+  public void setIndex(ExecutableStatement index) {
+    this.index = index;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
-        }
-        else {
-            if (baseComponentType == null) {
-                baseComponentType = ParseTools.getBaseComponentType(ctx.getClass());
-                requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
-            }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-            if (requireConversion) {
-                Object o = convert(value, baseComponentType);
-                Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), o);
-                return o;
-            }
-            else {
-                Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), value);
-                return value;
-            }
-        }
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public ExecutableStatement getIndex() {
-        return index;
-    }
+  public Class getKnownEgressType() {
+    return baseComponentType;
+  }
 
-    public void setIndex(ExecutableStatement index) {
-        this.index = index;
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public Class getKnownEgressType() {
-        return baseComponentType;
-    }
-
-    public String toString() {
-        return "Array Accessor -> [" + index + "]";
-    }
+  public String toString() {
+    return "Array Accessor -> [" + index + "]";
+  }
 }

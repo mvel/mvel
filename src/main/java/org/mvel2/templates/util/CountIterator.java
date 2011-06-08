@@ -8,21 +8,21 @@ import java.util.Iterator;
  * Time: 6:42:20 PM
  */
 public class CountIterator implements Iterator {
-    int cursor;
-    int countTo;
+  int cursor;
+  int countTo;
 
-    public CountIterator(int countTo) {
-        this.countTo = countTo;
-    }
+  public CountIterator(int countTo) {
+    this.countTo = countTo;
+  }
 
-    public boolean hasNext() {
-        return cursor < countTo;
-    }
+  public boolean hasNext() {
+    return cursor < countTo;
+  }
 
-    public Object next() {
-        return cursor++;
-    }
+  public Object next() {
+    return cursor++;
+  }
 
-    public void remove() {
-    }
+  public void remove() {
+  }
 }

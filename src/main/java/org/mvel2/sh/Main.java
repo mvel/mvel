@@ -24,19 +24,18 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        if (args.length != 0) {
-            MVEL.evalFile(new File(args[0]));
-        }
-        else {
-            showSplash();
-            new ShellSession().run();
-        }
+  public static void main(String[] args) throws IOException {
+    if (args.length != 0) {
+      MVEL.evalFile(new File(args[0]));
+    } else {
+      showSplash();
+      new ShellSession().run();
     }
+  }
 
-    private static void showSplash() {
-        System.out.println("\nMVEL-Shell (MVELSH)");
-        System.out.println("Copyright (C) 2010, Christopher Brock, The Codehaus");
-        System.out.println("Version " + MVEL.VERSION + "." + MVEL.VERSION_SUB + "\n");
-    }
+  private static void showSplash() {
+    System.out.println("\nMVEL-Shell (MVELSH)");
+    System.out.println("Copyright (C) 2010, Christopher Brock, The Codehaus");
+    System.out.println("Version " + MVEL.VERSION + "." + MVEL.VERSION_SUB + "\n");
+  }
 }

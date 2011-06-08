@@ -19,27 +19,27 @@ package org.mvel2.util;
 
 public class ArrayTools {
 
-    public static boolean isLiteralOnly(char[] array, int start, int end) {
-        end = start + (end - start);
-        for (int i = start; i < end; i++) {
-            if (!ParseTools.isIdentifierPart(array[i])) return false;
-        }
-
-        return true;
+  public static boolean isLiteralOnly(char[] array, int start, int end) {
+    end = start + (end - start);
+    for (int i = start; i < end; i++) {
+      if (!ParseTools.isIdentifierPart(array[i])) return false;
     }
 
-    public static int findFirst(char c, int start, int offset, char[] array) {
-        int end = start + offset;
-        for (int i = start; i < end; i++) {
-            if (array[i] == c) return i;
-        }
-        return -1;
-    }
+    return true;
+  }
 
-    public static int findLast(char c, int start, int offset, char[] array) {
-        for (int i = start + offset - 1; i >= 0; i--) {
-            if (array[i] == c) return i;
-        }
-        return -1;
+  public static int findFirst(char c, int start, int offset, char[] array) {
+    int end = start + offset;
+    for (int i = start; i < end; i++) {
+      if (array[i] == c) return i;
     }
+    return -1;
+  }
+
+  public static int findLast(char c, int start, int offset, char[] array) {
+    for (int i = start + offset - 1; i >= 0; i--) {
+      if (array[i] == c) return i;
+    }
+    return -1;
+  }
 }

@@ -35,11 +35,11 @@ public class PropertyAccessException extends CompileException {
 //        super(cause);
 //    }
 
-    public PropertyAccessException(String message, char[] expr, int cursor, Throwable e) {
-        super(message, expr, cursor, e);
-    }
+  public PropertyAccessException(String message, char[] expr, int cursor, Throwable e) {
+    super(message, expr, cursor, e);
+  }
 
-    public PropertyAccessException(String message, char[] expr, int cursor) {
-        super(message, expr, cursor);
-    }
+  public PropertyAccessException(String message, char[] expr, int cursor) {
+    super(message, expr, cursor);
+  }
 }

@@ -19,7 +19,7 @@
 package org.mvel2;
 
 public interface Unit extends ConversionHandler {
-    public double getValue();
+  public double getValue();
 
-    public void setValue(double value);
+  public void setValue(double value);
 }

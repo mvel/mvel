@@ -24,42 +24,41 @@ import org.mvel2.compiler.BlankLiteral;
  * @author Christopher Brock
  */
 public class LiteralNode extends ASTNode {
-    public LiteralNode(Object literal, Class type) {
-        this(literal);
-        this.egressType = type;
-    }
+  public LiteralNode(Object literal, Class type) {
+    this(literal);
+    this.egressType = type;
+  }
 
-    public LiteralNode(Object literal) {
-        if ((this.literal = literal) != null) {
-            if ((this.egressType = literal.getClass()) == BlankLiteral.class) this.egressType = Object.class;
-        }
-        else {
-            this.egressType = Object.class;
-        }
+  public LiteralNode(Object literal) {
+    if ((this.literal = literal) != null) {
+      if ((this.egressType = literal.getClass()) == BlankLiteral.class) this.egressType = Object.class;
+    } else {
+      this.egressType = Object.class;
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return literal;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return literal;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return literal;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return literal;
+  }
 
-    public Object getLiteralValue() {
-        return literal;
-    }
+  public Object getLiteralValue() {
+    return literal;
+  }
 
-    public void setLiteralValue(Object literal) {
-        this.literal = literal;
-    }
+  public void setLiteralValue(Object literal) {
+    this.literal = literal;
+  }
 
-    public boolean isLiteral() {
-        return true;
-    }
+  public boolean isLiteral() {
+    return true;
+  }
 
-    @Override
-    public String toString() {
-        return "Literal<" + literal + ">";
-    }
+  @Override
+  public String toString() {
+    return "Literal<" + literal + ">";
+  }
 }

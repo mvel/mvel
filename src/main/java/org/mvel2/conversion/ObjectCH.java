@@ -21,12 +21,12 @@ package org.mvel2.conversion;
 import org.mvel2.ConversionHandler;
 
 public class ObjectCH implements ConversionHandler {
-    public Object convertFrom(Object in) {
-        return in;
-    }
+  public Object convertFrom(Object in) {
+    return in;
+  }
 
 
-    public boolean canConvertFrom(Class cls) {
-        return true;
-    }
+  public boolean canConvertFrom(Class cls) {
+    return true;
+  }
 }

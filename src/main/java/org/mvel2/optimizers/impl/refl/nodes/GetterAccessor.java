@@ -19,7 +19,9 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.MVEL.getProperty;
+
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ReflectionUtil;
@@ -30,118 +32,105 @@ import static org.mvel2.util.ReflectionUtil.getPropertyFromAccessor;
 import java.lang.reflect.Method;
 
 public class GetterAccessor implements AccessorNode {
-    private AccessorNode nextNode;
-    private final Method method;
+  private AccessorNode nextNode;
+  private final Method method;
 
-    public static final Object[] EMPTY = new Object[0];
+  public static final Object[] EMPTY = new Object[0];
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            if (nextNode != null) {
-                return nextNode.getValue(method.invoke(ctx, EMPTY), elCtx, vars);
-            }
-            else {
-                return method.invoke(ctx, EMPTY);
-            }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      if (nextNode != null) {
+        return nextNode.getValue(method.invoke(ctx, EMPTY), elCtx, vars);
+      } else {
+        return method.invoke(ctx, EMPTY);
+      }
+    } catch (IllegalArgumentException e) {
+      if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
+        Method o = getBestCandidate(EMPTY, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+        if (o != null) {
+          return executeOverrideTarget(o, ctx, elCtx, vars);
         }
-        catch (IllegalArgumentException e) {
-            if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
-                Method o = getBestCandidate(EMPTY, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
-                if (o != null) {
-                    return executeOverrideTarget(o, ctx, elCtx, vars);
-                }
-            }
+      }
 
-            /**
-             * HACK: Try to access this another way.
-             */
-            if (nextNode != null) {
-                return nextNode.getValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars);
-            }
-            else {
-                return getProperty(getPropertyFromAccessor(method.getName()), ctx);
-            }
-        }
-        catch (NullPointerException e) {
-            if (ctx == null) {
-                throw new RuntimeException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
-                        "target of method is null", e);
-            }
-            else {
-                throw new RuntimeException("cannot invoke getter: " + method.getName() + " (see trace)", e);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("cannot invoke getter: " + method.getName()
-                    + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
-                    + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
-        }
+      /**
+       * HACK: Try to access this another way.
+       */
+      if (nextNode != null) {
+        return nextNode.getValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars);
+      } else {
+        return getProperty(getPropertyFromAccessor(method.getName()), ctx);
+      }
+    } catch (NullPointerException e) {
+      if (ctx == null) {
+        throw new RuntimeException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
+                "target of method is null", e);
+      } else {
+        throw new RuntimeException("cannot invoke getter: " + method.getName() + " (see trace)", e);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("cannot invoke getter: " + method.getName()
+              + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
+              + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
     }
+  }
 
-    public GetterAccessor(Method method) {
-        this.method = method;
+  public GetterAccessor(Method method) {
+    this.method = method;
+  }
+
+  public Method getMethod() {
+    return method;
+  }
+
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
+
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
+
+  public String toString() {
+    return method.getDeclaringClass().getName() + "." + method.getName();
+  }
+
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    try {
+      if (nextNode != null) {
+        return nextNode.setValue(method.invoke(ctx, EMPTY), elCtx, vars, value);
+      } else {
+        throw new RuntimeException("bad payload");
+      }
+    } catch (IllegalArgumentException e) {
+      /**
+       * HACK: Try to access this another way.
+       */
+
+      if (nextNode != null) {
+        return nextNode.setValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars, value);
+      } else {
+        return getProperty(getPropertyFromAccessor(method.getName()), ctx);
+      }
+    } catch (CompileException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
     }
+  }
 
-    public Method getMethod() {
-        return method;
+  public Class getKnownEgressType() {
+    return method.getReturnType();
+  }
+
+  private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      if (nextNode != null) {
+        return nextNode.getValue(o.invoke(ctx, EMPTY), elCtx, vars);
+      } else {
+        return o.invoke(ctx, EMPTY);
+      }
+    } catch (Exception e2) {
+      throw new RuntimeException("unable to invoke method", e2);
     }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public String toString() {
-        return method.getDeclaringClass().getName() + "." + method.getName();
-    }
-
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        try {
-            if (nextNode != null) {
-                return nextNode.setValue(method.invoke(ctx, EMPTY), elCtx, vars, value);
-            }
-            else {
-                throw new RuntimeException("bad payload");
-            }
-        }
-        catch (IllegalArgumentException e) {
-            /**
-             * HACK: Try to access this another way.
-             */
-
-            if (nextNode != null) {
-                return nextNode.setValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars, value);
-            }
-            else {
-                return getProperty(getPropertyFromAccessor(method.getName()), ctx);
-            }
-        }
-        catch (CompileException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            throw new RuntimeException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
-        }
-    }
-
-    public Class getKnownEgressType() {
-        return method.getReturnType();
-    }
-
-    private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            if (nextNode != null) {
-                return nextNode.getValue(o.invoke(ctx, EMPTY), elCtx, vars);
-            }
-            else {
-                return o.invoke(ctx, EMPTY);
-            }
-        }
-        catch (Exception e2) {
-            throw new RuntimeException("unable to invoke method", e2);
-        }
-    }
+  }
 }

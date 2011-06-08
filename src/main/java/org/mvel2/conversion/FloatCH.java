@@ -22,116 +22,117 @@ import org.mvel2.ConversionException;
 import org.mvel2.ConversionHandler;
 
 import static java.lang.String.valueOf;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
 public class FloatCH implements ConversionHandler {
-    private static final Map<Class, Converter> CNV =
-            new HashMap<Class, Converter>();
+  private static final Map<Class, Converter> CNV =
+          new HashMap<Class, Converter>();
 
-    private static Converter stringConverter = new Converter() {
-        public Object convert(Object o) {
-            if (((String) o).length() == 0) return (float) 0;
+  private static Converter stringConverter = new Converter() {
+    public Object convert(Object o) {
+      if (((String) o).length() == 0) return (float) 0;
 
-            return Float.parseFloat(((String) o));
-        }
-    };
-
-    public Object convertFrom(Object in) {
-        if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-                + in.getClass().getName() + " to: " + Integer.class.getName());
-        return CNV.get(in.getClass()).convert(in);
+      return Float.parseFloat(((String) o));
     }
+  };
+
+  public Object convertFrom(Object in) {
+    if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
+            + in.getClass().getName() + " to: " + Integer.class.getName());
+    return CNV.get(in.getClass()).convert(in);
+  }
 
 
-    public boolean canConvertFrom(Class cls) {
-        return CNV.containsKey(cls);
-    }
+  public boolean canConvertFrom(Class cls) {
+    return CNV.containsKey(cls);
+  }
 
-    static {
-        CNV.put(String.class,
-                stringConverter
-        );
-
-
-        CNV.put(Object.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return stringConverter.convert(valueOf(o));
-                    }
-                }
-        );
-
-        CNV.put(BigDecimal.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        return ((BigDecimal) o).floatValue();
-                    }
-                }
-        );
+  static {
+    CNV.put(String.class,
+            stringConverter
+    );
 
 
-        CNV.put(BigInteger.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        return ((BigInteger) o).floatValue();
-                    }
-                }
-        );
+    CNV.put(Object.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return stringConverter.convert(valueOf(o));
+              }
+            }
+    );
+
+    CNV.put(BigDecimal.class,
+            new Converter() {
+              public Float convert(Object o) {
+                return ((BigDecimal) o).floatValue();
+              }
+            }
+    );
 
 
-        CNV.put(Float.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        return o;
-                    }
-                }
-        );
-
-        CNV.put(Integer.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        //noinspection UnnecessaryBoxing
-                        return ((Integer) o).floatValue();
-                    }
-                }
-        );
+    CNV.put(BigInteger.class,
+            new Converter() {
+              public Float convert(Object o) {
+                return ((BigInteger) o).floatValue();
+              }
+            }
+    );
 
 
-        CNV.put(Double.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        return ((Double) o).floatValue();
-                    }
-                }
-        );
+    CNV.put(Float.class,
+            new Converter() {
+              public Object convert(Object o) {
+                return o;
+              }
+            }
+    );
 
-        CNV.put(Long.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        return ((Long) o).floatValue();
-                    }
-                }
-        );
+    CNV.put(Integer.class,
+            new Converter() {
+              public Float convert(Object o) {
+                //noinspection UnnecessaryBoxing
+                return ((Integer) o).floatValue();
+              }
+            }
+    );
 
-        CNV.put(Short.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        return ((Short) o).floatValue();
-                    }
-                }
-        );
 
-        CNV.put(Boolean.class,
-                new Converter() {
-                    public Float convert(Object o) {
-                        if ((Boolean) o) return 1f;
-                        else return 0f;
-                    }
-                }
-        );
+    CNV.put(Double.class,
+            new Converter() {
+              public Float convert(Object o) {
+                return ((Double) o).floatValue();
+              }
+            }
+    );
 
-    }
+    CNV.put(Long.class,
+            new Converter() {
+              public Float convert(Object o) {
+                return ((Long) o).floatValue();
+              }
+            }
+    );
+
+    CNV.put(Short.class,
+            new Converter() {
+              public Float convert(Object o) {
+                return ((Short) o).floatValue();
+              }
+            }
+    );
+
+    CNV.put(Boolean.class,
+            new Converter() {
+              public Float convert(Object o) {
+                if ((Boolean) o) return 1f;
+                else return 0f;
+              }
+            }
+    );
+
+  }
 }

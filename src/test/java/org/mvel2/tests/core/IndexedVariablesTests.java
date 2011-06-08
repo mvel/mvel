@@ -16,34 +16,34 @@ import java.util.Map;
  * @author Mike Brock .
  */
 public class IndexedVariablesTests extends TestCase {
-    public void testVariableInjection1() {
-        String[] varNames = {"x", "y", "z"};
-        Object[] values = {10, 20, 30};
+  public void testVariableInjection1() {
+    String[] varNames = {"x", "y", "z"};
+    Object[] values = {10, 20, 30};
 
-        String expr = "foo = -1; res = x + y + z;\n" +
-                "if (x > 9) {\n" +
-                "   res = z - y - x;\n" +
-                "   int k = 5;\n" +
-                "   foo = k;" +
-                "}; \n"
-                + "for (i = 0; i < 5000; i++) { foo++; }; foo;";
+    String expr = "foo = -1; res = x + y + z;\n" +
+            "if (x > 9) {\n" +
+            "   res = z - y - x;\n" +
+            "   int k = 5;\n" +
+            "   foo = k;" +
+            "}; \n"
+            + "for (i = 0; i < 5000; i++) { foo++; }; foo;";
 
-        ParserContext ctx = ParserContext.create();
-        ctx.addIndexedInput(varNames);
-        ctx.setIndexAllocation(true);
+    ParserContext ctx = ParserContext.create();
+    ctx.addIndexedInput(varNames);
+    ctx.setIndexAllocation(true);
 
-        SharedVariableSpaceModel model = VariableSpaceCompiler.compileShared(expr, ctx, values);
+    SharedVariableSpaceModel model = VariableSpaceCompiler.compileShared(expr, ctx, values);
 
-        Serializable indexCompile = MVEL.compileExpression(expr, ctx);
-        Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
+    Serializable indexCompile = MVEL.compileExpression(expr, ctx);
+    Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
 
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("x", 10);
-        map.put("y", 20);
-        map.put("z", 30);
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("x", 10);
+    map.put("y", 20);
+    map.put("z", 30);
 
-        assertEquals(MVEL.executeExpression(dynamicCompile, map),
-                MVEL.executeExpression(indexCompile, model.createFactory()));
+    assertEquals(MVEL.executeExpression(dynamicCompile, map),
+            MVEL.executeExpression(indexCompile, model.createFactory()));
 //
 //        for (int x = 0; x < 10; x++) {
 //            long tm = System.currentTimeMillis();
@@ -67,69 +67,69 @@ public class IndexedVariablesTests extends TestCase {
 //            System.out.println("(MapInjection    (ms): " + tm + ")");
 //        }
 
-    }
+  }
 
-    public void testVariableInjection2() {
-        String[] varNames = {"x", "y", "z"};
-        Object[] values = {10, 20, 30};
-
-
-        String expr = "foo = -1; res = x + y + z;\n" +
-                "if (x > 9) {\n" +
-                "   res = z - y - x;\n" +
-                "   int k = 5;\n" +
-                "   foo = k;" +
-                "}; \n"
-                + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
-
-        ParserContext ctx = ParserContext.create();
-        ctx.addIndexedInput(varNames);
-        ctx.setIndexAllocation(true);
-
-        SimpleVariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx);
-
-        Serializable indexCompile = MVEL.compileExpression(expr, ctx);
-        Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("x", 10);
-        map.put("y", 20);
-        map.put("z", 30);
-
-        assertEquals(MVEL.executeExpression(dynamicCompile, map),
-                MVEL.executeExpression(indexCompile, model.createFactory(values)));
-
-    }
-
-    public void testVariableInjection3() {
-        String[] varNames = {"x", "y", "z"};
-        Object[] values = {10, 20, 30};
+  public void testVariableInjection2() {
+    String[] varNames = {"x", "y", "z"};
+    Object[] values = {10, 20, 30};
 
 
-        String expr = "def add(a,b) { a + b }; foo = -1; res = x + y + z;\n" +
-                "if (x > 9) {\n" +
-                "   res = z - y - x;\n" +
-                "   int k = 5;\n" +
-                "   foo = add(5,10);" +
-                "}; \n"
-                + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
+    String expr = "foo = -1; res = x + y + z;\n" +
+            "if (x > 9) {\n" +
+            "   res = z - y - x;\n" +
+            "   int k = 5;\n" +
+            "   foo = k;" +
+            "}; \n"
+            + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
 
-        ParserContext ctx = ParserContext.create();
-        ctx.addIndexedInput(varNames);
-        ctx.setIndexAllocation(true);
+    ParserContext ctx = ParserContext.create();
+    ctx.addIndexedInput(varNames);
+    ctx.setIndexAllocation(true);
 
-        SimpleVariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx);
+    SimpleVariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx);
 
-        Serializable indexCompile = MVEL.compileExpression(expr, ctx);
-        Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
+    Serializable indexCompile = MVEL.compileExpression(expr, ctx);
+    Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
 
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("x", 10);
-        map.put("y", 20);
-        map.put("z", 30);
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("x", 10);
+    map.put("y", 20);
+    map.put("z", 30);
 
-        assertEquals(MVEL.executeExpression(dynamicCompile, map),
-                MVEL.executeExpression(indexCompile, model.createFactory(values)));
+    assertEquals(MVEL.executeExpression(dynamicCompile, map),
+            MVEL.executeExpression(indexCompile, model.createFactory(values)));
 
-    }
+  }
+
+  public void testVariableInjection3() {
+    String[] varNames = {"x", "y", "z"};
+    Object[] values = {10, 20, 30};
+
+
+    String expr = "def add(a,b) { a + b }; foo = -1; res = x + y + z;\n" +
+            "if (x > 9) {\n" +
+            "   res = z - y - x;\n" +
+            "   int k = 5;\n" +
+            "   foo = add(5,10);" +
+            "}; \n"
+            + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
+
+    ParserContext ctx = ParserContext.create();
+    ctx.addIndexedInput(varNames);
+    ctx.setIndexAllocation(true);
+
+    SimpleVariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx);
+
+    Serializable indexCompile = MVEL.compileExpression(expr, ctx);
+    Serializable dynamicCompile = MVEL.compileExpression(expr, ParserContext.create());
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("x", 10);
+    map.put("y", 20);
+    map.put("z", 30);
+
+    assertEquals(MVEL.executeExpression(dynamicCompile, map),
+            MVEL.executeExpression(indexCompile, model.createFactory(values)));
+
+  }
 }

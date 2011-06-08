@@ -19,7 +19,9 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -27,48 +29,47 @@ import java.lang.reflect.Method;
 
 @SuppressWarnings({"unchecked"})
 public class DynamicSetterAccessor implements AccessorNode {
-    //  private AccessorNode nextNode;
+  //  private AccessorNode nextNode;
 
-    private final Method method;
-    private Class targetType;
+  private final Method method;
+  private Class targetType;
 
-    public static final Object[] EMPTY = new Object[0];
+  public static final Object[] EMPTY = new Object[0];
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        try {
-            return method.invoke(ctx, convert(value, targetType));
-        }
-        catch (Exception e) {                                             
-            throw new RuntimeException("error binding property", e);
-        }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    try {
+      return method.invoke(ctx, convert(value, targetType));
+    } catch (Exception e) {
+      throw new RuntimeException("error binding property", e);
     }
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        return null;
-    }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    return null;
+  }
 
-    public DynamicSetterAccessor(Method method) {
-        this.method = method;
-        this.targetType = method.getParameterTypes()[0];
-    }
+  public DynamicSetterAccessor(Method method) {
+    this.method = method;
+    this.targetType = method.getParameterTypes()[0];
+  }
 
-    public Method getMethod() {
-        return method;
-    }
+  public Method getMethod() {
+    return method;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return null;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return null;
+  }
 
-    public AccessorNode getNextNode() {
-        return null;
-    }
+  public AccessorNode getNextNode() {
+    return null;
+  }
 
-    public String toString() {
-        return method.getDeclaringClass().getName() + "." + method.getName();
-    }
+  public String toString() {
+    return method.getDeclaringClass().getName() + "." + method.getName();
+  }
 
-    public Class getKnownEgressType() {
-        return targetType;
-    }
+  public Class getKnownEgressType() {
+    return targetType;
+  }
 }

@@ -23,35 +23,34 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class ThisValueAccessor implements AccessorNode {
-    private AccessorNode nextNode;
+  private AccessorNode nextNode;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        if (nextNode != null) {
-            return this.nextNode.getValue(elCtx, elCtx, vars);
-        }
-        else {
-            return elCtx;
-        }
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    if (nextNode != null) {
+      return this.nextNode.getValue(elCtx, elCtx, vars);
+    } else {
+      return elCtx;
     }
+  }
 
-    public ThisValueAccessor() {
-    }
+  public ThisValueAccessor() {
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        if (nextNode == null) throw new RuntimeException("assignment to reserved variable 'this' not permitted");
-        return this.nextNode.setValue(elCtx, elCtx, variableFactory, value);
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    if (nextNode == null) throw new RuntimeException("assignment to reserved variable 'this' not permitted");
+    return this.nextNode.setValue(elCtx, elCtx, variableFactory, value);
 
-    }
+  }
 
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

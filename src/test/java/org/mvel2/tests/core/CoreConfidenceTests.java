@@ -40,150 +40,150 @@ import static org.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
-    public void testWhileUsingImports() {
-        Map<String, Object> imports = new HashMap<String, Object>();
-        imports.put("ArrayList",
-                java.util.ArrayList.class);
-        imports.put("List",
-                java.util.List.class);
+  public void testWhileUsingImports() {
+    Map<String, Object> imports = new HashMap<String, Object>();
+    imports.put("ArrayList",
+            java.util.ArrayList.class);
+    imports.put("List",
+            java.util.List.class);
 
-        ParserContext context = new ParserContext(imports, null, "testfile");
-        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
-        assertTrue((Boolean) executeExpression(compiler.compile(context),
-                new DefaultLocalVariableResolverFactory()));
-    }
+    ParserContext context = new ParserContext(imports, null, "testfile");
+    ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
+    assertTrue((Boolean) executeExpression(compiler.compile(context),
+            new DefaultLocalVariableResolverFactory()));
+  }
 
-    public void testBooleanModeOnly2() {
-        assertEquals(false, (Object) DataConversion.convert(test("BWAH"), Boolean.class));
-    }
+  public void testBooleanModeOnly2() {
+    assertEquals(false, (Object) DataConversion.convert(test("BWAH"), Boolean.class));
+  }
 
-    public void testBooleanModeOnly4() {
-        assertEquals(true, test("hour == (hour + 0)"));
-    }
+  public void testBooleanModeOnly4() {
+    assertEquals(true, test("hour == (hour + 0)"));
+  }
 
-    // interpreted
+  // interpreted
 
-    public void testThisReferenceMapVirtualObjects() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("foo",
-                "bar");
+  public void testThisReferenceMapVirtualObjects() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("foo",
+            "bar");
 
-        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-        factory.createVariable("this", map);
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("this", map);
 
-        assertEquals(true,
-                eval("this.foo == 'bar'", map, factory));
-    }
+    assertEquals(true,
+            eval("this.foo == 'bar'", map, factory));
+  }
 
 
-    // compiled - reflective
+  // compiled - reflective
 
-    public void testThisReferenceMapVirtualObjects1() {
-        // Create our root Map object
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("foo", "bar");
+  public void testThisReferenceMapVirtualObjects1() {
+    // Create our root Map object
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("foo", "bar");
 
-        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-        factory.createVariable("this", map);
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("this", map);
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
+    OptimizerFactory.setDefaultOptimizer("reflective");
 
-        // Run test
-        assertEquals(true,
-                executeExpression(compileExpression("this.foo == 'bar'"),
-                        map,
-                        factory));
-    }
+    // Run test
+    assertEquals(true,
+            executeExpression(compileExpression("this.foo == 'bar'"),
+                    map,
+                    factory));
+  }
 
-    // compiled - asm
+  // compiled - asm
 
-    public void testThisReferenceMapVirtualObjects2() {
-        // Create our root Map object
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("foo",
-                "bar");
+  public void testThisReferenceMapVirtualObjects2() {
+    // Create our root Map object
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("foo",
+            "bar");
 
-        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-        factory.createVariable("this",
-                map);
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("this",
+            map);
 
-        // I think we can all figure this one out.
+    // I think we can all figure this one out.
 
-        if (!Boolean.getBoolean("mvel2.disable.jit")) OptimizerFactory.setDefaultOptimizer("ASM");
+    if (!Boolean.getBoolean("mvel2.disable.jit")) OptimizerFactory.setDefaultOptimizer("ASM");
 
-        // Run test
-        assertEquals(true,
-                executeExpression(compileExpression("this.foo == 'bar'"),
-                        map,
-                        factory));
-    }
+    // Run test
+    assertEquals(true,
+            executeExpression(compileExpression("this.foo == 'bar'"),
+                    map,
+                    factory));
+  }
 
-    public void testEvalToBoolean() {
-        assertEquals(true,
-                (boolean) evalToBoolean("true ",
-                        "true"));
-        assertEquals(true,
-                (boolean) evalToBoolean("true ",
-                        "true"));
-    }
+  public void testEvalToBoolean() {
+    assertEquals(true,
+            (boolean) evalToBoolean("true ",
+                    "true"));
+    assertEquals(true,
+            (boolean) evalToBoolean("true ",
+                    "true"));
+  }
 
-    public void testImport() {
-        assertEquals(HashMap.class,
-                test("import java.util.HashMap; HashMap;"));
-    }
+  public void testImport() {
+    assertEquals(HashMap.class,
+            test("import java.util.HashMap; HashMap;"));
+  }
 
-    public void testImport2() {
-        HashMap[] maps = (HashMap[]) MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps",
-                new HashMap());
+  public void testImport2() {
+    HashMap[] maps = (HashMap[]) MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps",
+            new HashMap());
 
-        //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
-        assertEquals(10,
-                maps.length);
-    }
+    //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
+    assertEquals(10,
+            maps.length);
+  }
 
-    public void testStaticImport() {
-        assertEquals(2.0,
-                test("import_static java.lang.Math.sqrt; sqrt(4)"));
-    }
+  public void testStaticImport() {
+    assertEquals(2.0,
+            test("import_static java.lang.Math.sqrt; sqrt(4)"));
+  }
 
-    /**
-     * Start collections framework based compliance tests
-     */
-    public void testCreationOfSet() {
-        assertEquals("foo bar foo bar",
-                test("set = new java.util.LinkedHashSet(); "
-                        + "set.add('foo');" + "set.add('bar');"
-                        + "output = '';" + "foreach (item : set) {"
-                        + "output = output + item + ' ';"
-                        + "} "
-                        + "foreach (item : set) {"
-                        + "output = output + item + ' ';"
-                        + "} " + "output = output.trim();"
-                        + "if (set.size() == 2) { return output; }"));
+  /**
+   * Start collections framework based compliance tests
+   */
+  public void testCreationOfSet() {
+    assertEquals("foo bar foo bar",
+            test("set = new java.util.LinkedHashSet(); "
+                    + "set.add('foo');" + "set.add('bar');"
+                    + "output = '';" + "foreach (item : set) {"
+                    + "output = output + item + ' ';"
+                    + "} "
+                    + "foreach (item : set) {"
+                    + "output = output + item + ' ';"
+                    + "} " + "output = output.trim();"
+                    + "if (set.size() == 2) { return output; }"));
 
-    }
+  }
 
-    public void testCreationOfList() {
-        assertEquals(5,
-                test("l = new java.util.LinkedList(); l.add('fun'); l.add('happy'); l.add('fun'); l.add('slide');"
-                        + "l.add('crap'); poo = new java.util.ArrayList(l); poo.size();"));
-    }
+  public void testCreationOfList() {
+    assertEquals(5,
+            test("l = new java.util.LinkedList(); l.add('fun'); l.add('happy'); l.add('fun'); l.add('slide');"
+                    + "l.add('crap'); poo = new java.util.ArrayList(l); poo.size();"));
+  }
 
-    public void testMapOperations() {
-        assertEquals("poo5",
-                test("l = new java.util.ArrayList(); l.add('plop'); l.add('poo'); m = new java.util.HashMap();"
-                        + "m.put('foo', l); m.put('cah', 'mah'); m.put('bar', 'foo'); m.put('sarah', 'mike');"
-                        + "m.put('edgar', 'poe'); if (m.edgar == 'poe') { return m.foo[1] + m.size(); }"));
-    }
+  public void testMapOperations() {
+    assertEquals("poo5",
+            test("l = new java.util.ArrayList(); l.add('plop'); l.add('poo'); m = new java.util.HashMap();"
+                    + "m.put('foo', l); m.put('cah', 'mah'); m.put('bar', 'foo'); m.put('sarah', 'mike');"
+                    + "m.put('edgar', 'poe'); if (m.edgar == 'poe') { return m.foo[1] + m.size(); }"));
+  }
 
-    public void testStackOperations() {
-        assertEquals(10,
-                test("stk = new java.util.Stack();" + "stk.push(5);" + "stk.push(5);" + "stk.pop() + stk.pop();"));
-    }
+  public void testStackOperations() {
+    assertEquals(10,
+            test("stk = new java.util.Stack();" + "stk.push(5);" + "stk.push(5);" + "stk.pop() + stk.pop();"));
+  }
 
-    public void testSystemOutPrint() {
-        test("a = 0;\r\nSystem.out.println('This is a test');");
-    }
+  public void testSystemOutPrint() {
+    test("a = 0;\r\nSystem.out.println('This is a test');");
+  }
 
 
 //    public void testClassImportViaFactory() {
@@ -213,2859 +213,2849 @@ public class CoreConfidenceTests extends AbstractTest {
 //    }
 
 
-    public void testCheeseConstructor() {
-        MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
-        ClassImportResolverFactory classes = new ClassImportResolverFactory();
-        classes.addClass(Cheese.class);
-
-        ResolverTools.appendFactory(mvf,
-                classes);
-        assertTrue(executeExpression(compileExpression("cheese = new Cheese(\"cheddar\", 15);",
-                classes.getImportedClasses()),
-                mvf) instanceof Cheese);
-    }
-
-    public void testInterceptors() {
-        Interceptor testInterceptor = new Interceptor() {
-            public int doBefore(ASTNode node,
-                                VariableResolverFactory factory) {
-                System.out.println("BEFORE Node: " + node.getName());
-                return 0;
-            }
-
-            public int doAfter(Object val,
-                               ASTNode node,
-                               VariableResolverFactory factory) {
-                System.out.println("AFTER Node: " + node.getName());
-                return 0;
-            }
-        };
-
-        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
-        interceptors.put("test",
-                testInterceptor);
-
-        executeExpression(compileExpression("@test System.out.println('MIDDLE');",
-                null,
-                interceptors));
-    }
-
-
-    public void testSubtractNoSpace1() {
-        assertEquals(59,
-                test("hour-1"));
-    }
-
-    public void testStrictTypingCompilation() {
-        //  OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-
-        ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
-        ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
-
-        try {
-            compiler.compile(ctx);
-        }
-        catch (CompileException e) {
-            e.printStackTrace();
-            return;
-        }
-        assertTrue(false);
-
-        // OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-    }
-
-
-    public void testEqualityRegression() {
-        ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
-        compiler.compile();
-    }
-
-    public void testEvaluationRegression() {
-        ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
-        compiler.compile();
-        assertTrue(compiler.getParserContextState().getInputs().containsKey("p"));
-    }
-
-    public void testIncrementAndAssignWithInputs() {
-        ExpressionCompiler compiler = new ExpressionCompiler("total += cheese");
-        compiler.compile();
-        assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
-        assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
-    }
-
-
-    public void testAssignmentRegression() {
-        ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
-        compiler.compile();
-    }
-
-    public void testTypeRegression() {
-        ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
-        ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
-        compiler.compile(ctx);
-        assertEquals(Integer.class,
-                compiler.getParserContextState().getVarOrInputType("total"));
-    }
-
-    public void testTestIntToLong() {
-        String s = "1+(long)a";
-
-        ParserContext pc = new ParserContext();
-        pc.addInput("a", Integer.class);
-
-        ExpressionCompiler compiler = new ExpressionCompiler(s, pc);
-        CompiledExpression expr = compiler.compile();
-
-        Map vars = new HashMap();
-        vars.put("a", 1);
-
-        Object r = ((ExecutableStatement) expr).getValue(null, new MapVariableResolverFactory(vars));
-        assertEquals(new Long(2), r);
-    }
-
-    public void testMapPropertyCreateCondensed() {
-        assertEquals("foo",
-                test("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
-    }
-
-
-    public void testDeepMethod() {
-        assertEquals(false,
-                test("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
-    }
-
-
-    public void testListAccessorAssign() {
-        String ex = "a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]";
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-
-        Serializable s = MVEL.compileExpression(ex);
-        assertEquals("bar", MVEL.executeExpression(s, new HashMap()));
-
-        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-
-        assertEquals("bar",
-                test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
-    }
-
-    public void testBracketInString() {
-        test("System.out.println('1)your guess was:');");
-    }
-
-    public void testNesting() {
-        assertEquals("foo",
-                test("new String(new String(new String(\"foo\")));"));
-    }
-
-    public void testTypeCast() {
-        assertEquals("10",
-                test("(String) 10"));
-    }
-
-    public void testTypeCast2() {
-        String ex = "map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
-                " ((java.util.ArrayList) map['doggie']).size()";
-
-        Map map = createTestMap();
-
-        assertEquals(0, MVEL.eval(ex, map));
-
-        assertEquals(0,
-                test(ex));
-    }
-
-
-    public void testMapAccessSemantics() {
-        Map<String, Object> outermap = new HashMap<String, Object>();
-        Map<String, Object> innermap = new HashMap<String, Object>();
-
-        innermap.put("test",
-                "foo");
-        outermap.put("innermap",
-                innermap);
-
-        assertEquals("foo",
-                testCompiledSimple("innermap['test']",
-                        outermap,
-                        null));
-    }
-
-    public void testMapBindingSemantics() {
-        Map<String, Object> outermap = new HashMap<String, Object>();
-        Map<String, Object> innermap = new HashMap<String, Object>();
-
-        innermap.put("test",
-                "foo");
-        outermap.put("innermap",
-                innermap);
-
-        setProperty(outermap,
-                "innermap['test']",
-                "bar");
-
-        assertEquals("bar",
-                testCompiledSimple("innermap['test']",
-                        outermap,
-                        null));
-    }
-
-    public void testMapNestedInsideList() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("User",
-                User.class);
-
-        ExpressionCompiler compiler =
-                new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
-                        "\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
-        //    Serializable s = compiler.compileShared(ctx);
-        List list = (List) executeExpression(compiler.compile(ctx),
-                new HashMap());
-        User user = (User) list.get(0);
-        assertEquals("Darth",
-                user.getFirstName());
-        user = (User) list.get(1);
-        assertEquals("Bobba",
-                user.getFirstName());
-
-        compiler =
-                new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
-                        "\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
-        list = (List) executeExpression(compiler.compile(ctx),
-                new HashMap());
-        user = (User) list.get(0);
-        assertEquals("Darth",
-                user.getFirstName());
-        user = (User) list.get(1);
-        assertEquals("Bobba",
-                user.getFirstName());
-    }
-
-    public void testListNestedInsideList() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("User",
-                User.class);
-
-        ExpressionCompiler compiler =
-                new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
-                        "new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
-        List list = (List) executeExpression(compiler.compile(ctx),
-                new HashMap());
-        User user = (User) list.get(0);
-        assertEquals("Darth",
-                user.getFirstName());
-        user = (User) list.get(1);
-        assertEquals("Bobba",
-                user.getFirstName());
-
-        compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
-                "new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
-        list = (List) executeExpression(compiler.compile(ctx),
-                new HashMap());
-        user = (User) list.get(0);
-        assertEquals("Darth",
-                user.getFirstName());
-        user = (User) list.get(1);
-        assertEquals("Bobba",
-                user.getFirstName());
-    }
-
-    public void testSetSemantics() {
-        Bar bar = new Bar();
-        Foo foo = new Foo();
-
-        assertEquals("dog",
-                MVEL.getProperty("name",
-                        bar));
-        assertEquals("dog",
-                MVEL.getProperty("name",
-                        foo));
-    }
-
-    public void testMapBindingSemantics2() {
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        Map<String, Object> outermap = new HashMap<String, Object>();
-        Map<String, Object> innermap = new HashMap<String, Object>();
-
-        innermap.put("test",
-                "foo");
-        outermap.put("innermap",
-                innermap);
-
-        executeSetExpression(compileSetExpression("innermap['test']"),
-                outermap,
-                "bar");
-
-        assertEquals("bar",
-                testCompiledSimple("innermap['test']",
-                        outermap,
-                        null));
-    }
-
-    public void testDynamicImports() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("java.util");
-
-        ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
-        Serializable s = compiler.compile(ctx);
-
-        assertEquals(HashMap.class,
-                executeExpression(s));
-
-        compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
-        s = compiler.compile(ctx);
-
-        assertEquals(0,
-                executeExpression(s,
-                        new DefaultLocalVariableResolverFactory()));
-    }
-
-    public void testDynamicImports3() {
-        String expression = "import java.util.*; HashMap map = new HashMap(); map.size()";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expression);
-        Serializable s = compiler.compile();
-
-        assertEquals(0,
-                executeExpression(s,
-                        new DefaultLocalVariableResolverFactory()));
-
-        assertEquals(0,
-                MVEL.eval(expression,
-                        new HashMap()));
-    }
-
-    public void testDynamicImportsInList() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel2.tests.core.res");
-
-        ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]");
-        List list = (List) executeExpression(compiler.compile(ctx));
-        User user = (User) list.get(0);
-        assertEquals("Bobba",
-                user.getFirstName());
-    }
-
-    public void testDynamicImportsInMap() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel2.tests.core.res");
-
-        ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]");
-        Map map = (Map) executeExpression(compiler.compile(ctx));
-        User user = (User) map.get("bobba");
-        assertEquals("Bobba",
-                user.getFirstName());
-    }
-
-    public void testDynamicImportsOnNestedExpressions() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel2.tests.core.res");
-
-        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))");
-
-        Cheesery p1 = new Cheesery("bobbo",
-                new Cheese("cheddar",
-                        15));
-        Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
-                new DefaultLocalVariableResolverFactory());
-
-        assertEquals(p1,
-                p2);
-    }
-
-    public void testDynamicImportsWithNullConstructorParam() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel2.tests.core.res");
-
-        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
-
-        Cheesery p1 = new Cheesery("bobbo",
-                null);
-        Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
-                new DefaultLocalVariableResolverFactory());
-
-        assertEquals(p1,
-                p2);
-    }
-
-    public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
-        ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel2.tests.core.res");
-        ctx.setStrictTypeEnforcement(false);
-
-        ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
-        compiler.compile(ctx);
-    }
-
-    public void testTypedAssignment() {
-        assertEquals("foobar",
-                test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
-    }
-
-    public void testFQCNwithStaticInList() {
-        assertEquals(Integer.MIN_VALUE,
-                test("list = [java.lang.Integer.MIN_VALUE]; list[0]"));
-    }
-
-    public void testPrecedenceOrder() {
-        assertTrue((Boolean) test("5 > 6 && 2 < 1 || 10 > 9"));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public void testDifferentImplSameCompile() {
-        Serializable compiled = compileExpression("a.funMap.hello");
-
-        Map testMap = new HashMap();
-
-        for (int i = 0; i < 100; i++) {
-            Base b = new Base();
-            b.funMap.put("hello",
-                    "dog");
-            testMap.put("a",
-                    b);
-
-            assertEquals("dog",
-                    executeExpression(compiled,
-                            testMap));
-
-            b = new Base();
-            b.funMap.put("hello",
-                    "cat");
-            testMap.put("a",
-                    b);
-
-            assertEquals("cat",
-                    executeExpression(compiled,
-                            testMap));
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public void testInterfaceMethodCallWithSpace() {
-        Map map = new HashMap();
-        DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
-        map.put("drools",
-                helper);
-        Cheese cheese = new Cheese("stilton",
-                15);
-        map.put("cheese",
-                cheese);
-
-        executeExpression(compileExpression("drools.retract (cheese)"),
-                map);
-        assertSame(cheese,
-                helper.retracted.get(0));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public void testInterfaceMethodCallWithMacro() {
-        Map macros = new HashMap(1);
-
-        macros.put("retract",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.retract";
-                    }
-                });
-
-        Map map = new HashMap();
-        DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
-        map.put("drools",
-                helper);
-        Cheese cheese = new Cheese("stilton",
-                15);
-        map.put("cheese",
-                cheese);
-
-        executeExpression(compileExpression(parseMacros("retract(cheese)",
-                macros)),
-                map);
-        assertSame(cheese,
-                helper.retracted.get(0));
-    }
-
-    public void testParsingStability1() {
-        assertEquals(true,
-                test("( order.number == 1 || order.number == ( 1+1) || order.number == $id )"));
-    }
-
-    public void testParsingStability2() {
-        ExpressionCompiler compiler =
-                new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
-
-        Map<String, Object> imports = new HashMap<String, Object>();
-        imports.put("java.awt.Dimension",
-                Dimension.class);
-
-        final ParserContext parserContext = new ParserContext(imports,
-                null,
-                "sourceFile");
-
-        parserContext.setStrictTypeEnforcement(false);
-        compiler.compile(parserContext);
-    }
-
-    public void testConcatWithLineBreaks() {
-        ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"");
-
-        ParserContext ctx = new ParserContext();
-        ctx.setDebugSymbols(true);
-        ctx.setSourceFile("source.mv");
-
-        assertEquals("foobar",
-                executeExpression(parser.compile(ctx)));
-    }
-
-
-    /**
-     * Provided by: Alex Roytman
-     */
-    public void testMethodResolutionWithNullParameter() {
-        Context ctx = new Context();
-        ctx.setBean(new Bean());
-        Map<String, Object> vars = new HashMap<String, Object>();
-        System.out.println("bean.today: " + eval("bean.today",
-                ctx,
-                vars));
-        System.out.println("formatDate(bean.today): " + eval("formatDate(bean.today)",
-                ctx,
-                vars));
-        //calling method with string param with null parameter works
-        System.out.println("formatString(bean.nullString): " + eval("formatString(bean.nullString)",
-                ctx,
-                vars));
-        System.out.println("bean.myDate = bean.nullDate: " + eval("bean.myDate = bean.nullDate; return bean.nullDate;",
-                ctx,
-                vars));
-        //calling method with Date param with null parameter fails
-        System.out.println("formatDate(bean.myDate): " + eval("formatDate(bean.myDate)",
-                ctx,
-                vars));
-        //same here
-        System.out.println(eval("formatDate(bean.nullDate)",
-                ctx,
-                vars));
-    }
-
-    /**
-     * Provided by: Phillipe Ombredanne
-     */
-    public void testCompileParserContextShouldNotLoopIndefinitelyOnValidJavaExpression() {
-        String expr = "		System.out.println( message );\n" + //
-                "m.setMessage( \"Goodbye cruel world\" );\n" + //
-                "System.out.println(m.getStatus());\n" + //
-                "m.setStatus( Message.GOODBYE );\n";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(false);
-
-        context.addImport("Message",
-                Message.class);
-        context.addInput("System",
-                void.class);
-        context.addInput("message",
-                Object.class);
-        context.addInput("m",
-                Object.class);
-
-        compiler.compile(context);
-    }
-
-    public void testStaticNested() {
-        assertEquals(1,
-                eval("org.mvel2.tests.core.AbstractTest$Message.GOODBYE",
-                        new HashMap()));
-    }
-
-    public void testStaticNestedWithImport() {
-        String expr = "Message.GOODBYE;\n";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(false);
-
-        context.addImport("Message",
-                Message.class);
-
-        assertEquals(1,
-                executeExpression(compiler.compile(context)));
-    }
-
-    public void testStaticNestedWithMethodCall() {
-        String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(false);
-
-        context.addImport("Message",
-                Message.class);
-        context.addImport("Item",
-                Item.class);
-        //   Serializable compiledExpression = compiler.compileShared(context);
-
-        Map vars = new HashMap();
-        vars.put("$msg",
-                new Message());
-        Message msg = (Message) executeExpression(compiler.compile(context),
-                vars);
-        Item item = (Item) msg.getItems().get(0);
-        assertEquals("Some Item",
-                item.getName());
-    }
-
-    public void testsequentialAccessorsThenMethodCall() {
-        String expr = "System.out.println(drools.workingMemory); " +
-                "drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(true);
-        context.addInput("drools",
-                KnowledgeHelper.class);
-
-        RuleBase ruleBase = new RuleBaseImpl();
-        WorkingMemory wm = new WorkingMemoryImpl(ruleBase);
-        KnowledgeHelper drools = new DefaultKnowledgeHelper(wm);
-
-        Map vars = new HashMap();
-        vars.put("drools",
-                drools);
-        executeExpression(compiler.compile(context),
-                vars);
-    }
-
-    /**
-     * Provided by: Aadi Deshpande
-     */
-    public void testPropertyVerfierShoudldNotLoopIndefinately() {
-        String expr = "\t\tmodel.latestHeadlines = $list;\n"
-                + "model.latestHeadlines.add( 0, (model.latestHeadlines[2]) );";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-        compiler.setVerifying(true);
-
-        ParserContext pCtx = new ParserContext();
-        pCtx.addInput("$list",
-                List.class);
-        pCtx.addInput("model",
-                Model.class);
-
-        compiler.compile(pCtx);
-    }
-
-    public void testCompileWithNewInsideMethodCall() {
-        String expr = "     p.name = \"goober\";\n" + "     System.out.println(p.name);\n"
-                + "     drools.insert(new Address(\"Latona\"));\n";
-
-        ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(false);
-
-        context.addImport("Person",
-                Person.class);
-        context.addImport("Address",
-                Address.class);
-
-        context.addInput("p",
-                Person.class);
-        context.addInput("drools",
-                Drools.class);
-
-        compiler.compile(context);
-    }
-
-    /**
-     * Submitted by: cleverpig
-     */
-    public void testBug4() {
-        ClassA A = new ClassA();
-        ClassB B = new ClassB();
-        System.out.println(MVEL.getProperty("date",
-                A));
-        System.out.println(MVEL.getProperty("date",
-                B));
-    }
-
-    public void testIndexer() {
-        assertEquals("foobar",
-                testCompiledSimple("import java.util.LinkedHashMap; LinkedHashMap map = new LinkedHashMap();"
-                        + " map.put('a', 'foo'); map.put('b', 'bar'); s = ''; " +
-                        "foreach (key : map.keySet()) { System.out.println(map[key]); s += map[key]; }; return s;",
-                        createTestMap()));
-    }
-
-    public void testLateResolveOfClass() {
-        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
-        ParserContext ctx = new ParserContext();
-        ctx.addImport(Foo.class);
-
-        compiler.removeParserContext();
-
-        System.out.println(executeExpression(compiler.compile(ctx)));
-    }
-
-    public void testClassAliasing() {
-        assertEquals("foobar",
-                test("Foo244 = String; new Foo244('foobar')"));
-    }
-
-    public void testRandomExpression1() {
-        assertEquals("HelloWorld",
-                test("if ((x15 = foo.bar) == foo.bar && x15 == foo.bar) { return 'HelloWorld'; } " +
-                        "else { return 'GoodbyeWorld' } "));
-    }
-
-    public void testRandomExpression4() {
-        assertEquals(true,
-                test("result = org.mvel2.MVEL.eval('10 * 3'); result == (10 * 3);"));
-    }
-
-    public void testRandomExpression5() {
-        assertEquals(true,
-                test("FooClassRef = foo.getClass(); fooInst = new FooClassRef();" +
-                        " name = org.mvel2.MVEL.eval('name', fooInst); return name == 'dog'"));
-    }
-
-    public void testRandomExpression6() {
-        assertEquals(500,
-                test("exprString = '250' + ' ' + '*' + ' ' + '2'; " +
-                        "compiledExpr = org.mvel2.MVEL.compileExpression(exprString);"
-                        + " return org.mvel2.MVEL.executeExpression(compiledExpr);"));
-    }
-
-    public void testRandomExpression7() {
-        assertEquals("FOOBAR",
-                test("'foobar'.toUpperCase();"));
-    }
-
-    public void testRandomExpression8() {
-        assertEquals(true,
-                test("'someString'.intern(); 'someString'.hashCode() == 'someString'.hashCode();"));
-    }
-
-    public void testRandomExpression9() {
-        assertEquals(false,
-                test("_abc = 'someString'.hashCode(); _xyz = _abc + 1; _abc == _xyz"));
-    }
-
-    public void testRandomExpression10() {
-        assertEquals(false,
-                test("(_abc = (_xyz = 'someString'.hashCode()) + 1); _abc == _xyz"));
-    }
-
-    /**
-     * Submitted by: Guerry Semones
-     */
-    private Map<Object, Object> outerMap;
-    private Map<Object, Object> innerMap;
-
-    public void testAddIntToMapWithMapSyntax() throws Throwable {
-        outerMap = new HashMap<Object, Object>();
-        innerMap = new HashMap<Object, Object>();
-        outerMap.put("innerMap",
-                innerMap);
-
-        // fails because mvel2 checks for 'tak' in the outerMap,
-        // rather than inside innerMap in outerMap
-        PropertyAccessor.set(outerMap,
-                "innerMap['foo']",
-                42);
-
-        // instead of here
-        assertEquals(42,
-                innerMap.get("foo"));
-    }
-
-    public void testUpdateIntInMapWithMapSyntax() throws Throwable {
-        outerMap = new HashMap<Object, Object>();
-        innerMap = new HashMap<Object, Object>();
-        outerMap.put("innerMap",
-                innerMap);
-
-        // fails because mvel2 checks for 'tak' in the outerMap,
-        // rather than inside innerMap in outerMap
-        innerMap.put("foo",
-                21);
-        PropertyAccessor.set(outerMap,
-                "innerMap['foo']",
-                42);
-
-        // instead of updating it here
-        assertEquals(42,
-                innerMap.get("foo"));
-    }
-
-    private HashMap<String, Object> context = new HashMap<String, Object>();
-
-    public void before() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
-
-        MyBean bean = new MyBean();
-        bean.setVar(4);
-
-        map.put("bean",
-                bean);
-        context.put("map",
-                map);
-    }
-
-    public void testDeepProperty() {
-        before();
-
-        Object obj = executeExpression(compileExpression("map.bean.var"),
-                context);
-        assertEquals(4,
-                obj);
-    }
-
-    public void testDeepProperty2() {
-        before();
-
-        Object obj = executeExpression(compileExpression("map.bean.getVar()"),
-                context);
-        assertEquals(4,
-                obj);
-    }
-
-    public class MyBean {
-        int var;
-
-        public int getVar() {
-            return var;
-        }
-
-        public void setVar(int var) {
-            this.var = var;
-        }
-    }
-
-
-    public void testBooleanEvaluation() {
-        assertEquals(true,
-                test("true||false||false"));
-    }
-
-    public void testBooleanEvaluation2() {
-        assertEquals(true,
-                test("equalityCheck(1,1)||fun||ackbar"));
-    }
-
-
-    public void testStaticWithExplicitParam() {
-        PojoStatic pojo = new PojoStatic("10");
-        eval("org.mvel2.tests.core.res.AStatic.Process('10')",
-                pojo,
-                new HashMap());
-    }
-
-    public void testSimpleExpression() {
-        PojoStatic pojo = new PojoStatic("10");
-        eval("value!= null",
-                pojo,
-                new HashMap());
-    }
-
-    public void testStaticWithExpressionParam() {
-        PojoStatic pojo = new PojoStatic("10");
-        assertEquals("java.lang.String",
-                eval("org.mvel2.tests.core.res.AStatic.Process(value.getClass().getName().toString())",
-                        pojo));
-    }
-
-    public void testStringIndex() {
-        assertEquals(true,
-                test("a = 'foobar'; a[4] == 'a'"));
-    }
-
-
-    public void testAssertKeyword() {
-        ExpressionCompiler compiler = new ExpressionCompiler("assert 1 == 2;");
-        Serializable s = compiler.compile();
-
-        try {
-            executeExpression(s);
-        }
-        catch (AssertionError e) {
-            return;
-        }
-
-        assertTrue(false);
-    }
-
-    public void testNullSafe() {
-        Foo foo = new Foo();
-
-        Map map = new HashMap();
-        map.put("foo",
-                foo);
-
-        String expression = "foo.?bar.name == null";
-        Serializable compiled = compileExpression(expression);
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        assertEquals(false,
-                executeExpression(compiled,
-                        map));
-        foo.setBar(null);
-        assertEquals(true,
-                executeExpression(compiled,
-                        map)); // execute a second time (to search for optimizer problems)
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        compiled = compileExpression(expression);
-        foo.setBar(new Bar());
-        assertEquals(false,
-                executeExpression(compiled,
-                        map));
-        foo.setBar(null);
-        assertEquals(true,
-                executeExpression(compiled,
-                        map)); // execute a second time (to search for optimizer problems)
-
-        assertEquals(true,
-                eval(expression,
-                        map));
-    }
-
-    /**
-     * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
-     */
-    public void testMethodInvocationWithCollectionElement() {
-        context = new HashMap();
-        context.put("pojo",
-                new POJO());
-        context.put("number",
-                "1192800637980");
-
-        Object result = MVEL.eval("pojo.function(pojo.dates[0].time)",
-                context);
-        assertEquals(String.valueOf(((POJO) context.get("pojo")).getDates().iterator().next().getTime()),
-                result);
-    }
-
-
-    public class POJO {
-        private Set<Date> dates = new HashSet<Date>();
-
-        public POJO() {
-            dates.add(new Date());
-        }
-
-        public Set<Date> getDates() {
-            return dates;
-        }
-
-        public void setDates(Set<Date> dates) {
-            this.dates = dates;
-        }
-
-        public String function(long num) {
-            return String.valueOf(num);
-        }
-    }
-
-    public void testNestedMethod1() {
-        Vector vectorA = new Vector();
-        Vector vectorB = new Vector();
-
-        vectorA.add("Foo244");
-
-        Map map = new HashMap();
-        map.put("vecA",
-                vectorA);
-        map.put("vecB",
-                vectorB);
-
-        testCompiledSimple("vecB.add(vecA.remove(0)); vecA.add('Foo244');",
-                null,
-                map);
-
-        assertEquals("Foo244",
-                vectorB.get(0));
-    }
-
-    public void testDynamicImports2() {
-        assertEquals(BufferedReader.class,
-                test("import java.io.*; BufferedReader"));
-    }
-
-    public void testUseOfVarKeyword() {
-        assertEquals("FOO_BAR",
-                test("var barfoo = 'FOO_BAR'; return barfoo;"));
-    }
-
-    public void testAssignment5() {
-        assertEquals(15,
-                test("x = (10) + (5); x"));
-    }
-
-    public void testSetExpressions1() {
-        Map<String, Object> myMap = new HashMap<String, Object>();
-
-        final Serializable fooExpr = compileSetExpression("foo");
-        executeSetExpression(fooExpr,
-                myMap,
-                "blah");
-        assertEquals("blah",
-                myMap.get("foo"));
-
-        executeSetExpression(fooExpr,
-                myMap,
-                "baz");
-        assertEquals("baz",
-                myMap.get("foo"));
-
-    }
+  public void testCheeseConstructor() {
+    MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
+    ClassImportResolverFactory classes = new ClassImportResolverFactory();
+    classes.addClass(Cheese.class);
+
+    ResolverTools.appendFactory(mvf,
+            classes);
+    assertTrue(executeExpression(compileExpression("cheese = new Cheese(\"cheddar\", 15);",
+            classes.getImportedClasses()),
+            mvf) instanceof Cheese);
+  }
+
+  public void testInterceptors() {
+    Interceptor testInterceptor = new Interceptor() {
+      public int doBefore(ASTNode node,
+                          VariableResolverFactory factory) {
+        System.out.println("BEFORE Node: " + node.getName());
+        return 0;
+      }
+
+      public int doAfter(Object val,
+                         ASTNode node,
+                         VariableResolverFactory factory) {
+        System.out.println("AFTER Node: " + node.getName());
+        return 0;
+      }
+    };
+
+    Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+    interceptors.put("test",
+            testInterceptor);
+
+    executeExpression(compileExpression("@test System.out.println('MIDDLE');",
+            null,
+            interceptors));
+  }
+
+
+  public void testSubtractNoSpace1() {
+    assertEquals(59,
+            test("hour-1"));
+  }
+
+  public void testStrictTypingCompilation() {
+    //  OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+
+    ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
+    ParserContext ctx = new ParserContext();
+    ctx.setStrictTypeEnforcement(true);
+
+    try {
+      compiler.compile(ctx);
+    } catch (CompileException e) {
+      e.printStackTrace();
+      return;
+    }
+    assertTrue(false);
+
+    // OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+  }
 
-    public void testDuplicateVariableDeclaration() {
-        ExpressionCompiler compiler = new ExpressionCompiler("String x = \"abc\"; Integer x = new Integer( 10 );");
-        ParserContext context = new ParserContext();
-
-        try {
-            compiler.compile(context);
-            fail("Compilation must fail with duplicate variable declaration exception.");
-        }
-        catch (RuntimeException ce) {
-            // success
-        }
-    }
+
+  public void testEqualityRegression() {
+    ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
+    compiler.compile();
+  }
 
-    public void testFullyQualifiedTypeAndCast() {
-        assertEquals(1,
-                test("java.lang.Integer number = (java.lang.Integer) '1';"));
-    }
+  public void testEvaluationRegression() {
+    ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
+    compiler.compile();
+    assertTrue(compiler.getParserContextState().getInputs().containsKey("p"));
+  }
 
-    public void testThreadSafetyInterpreter1() {
-        //First evaluation
-        System.out.println("First evaluation: " + MVEL.eval("true"));
-
-        new Thread(new Runnable() {
-            public void run() {
-                // Second evaluation - this succeeds only if the first evaluation is not commented out
-                System.out.println("Second evaluation: " + MVEL.eval("true"));
-            }
-        }).start();
-    }
+  public void testIncrementAndAssignWithInputs() {
+    ExpressionCompiler compiler = new ExpressionCompiler("total += cheese");
+    compiler.compile();
+    assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
+    assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
+  }
 
-    public void testArrayList() throws SecurityException,
-            NoSuchMethodException {
-        Collection<String> collection = new ArrayList<String>();
-        collection.add("I CAN HAS CHEEZBURGER");
-        assertEquals(collection.size(),
-                MVEL.eval("size()",
-                        collection));
-    }
 
-    public void testUnmodifiableCollection() throws SecurityException,
-            NoSuchMethodException {
-        Collection<String> collection = new ArrayList<String>();
-        collection.add("I CAN HAS CHEEZBURGER");
-        collection = unmodifiableCollection(collection);
-        assertEquals(collection.size(),
-                MVEL.eval("size()",
-                        collection));
-    }
+  public void testAssignmentRegression() {
+    ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
+    compiler.compile();
+  }
+
+  public void testTypeRegression() {
+    ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
+    ParserContext ctx = new ParserContext();
+    ctx.setStrictTypeEnforcement(true);
+    compiler.compile(ctx);
+    assertEquals(Integer.class,
+            compiler.getParserContextState().getVarOrInputType("total"));
+  }
+
+  public void testTestIntToLong() {
+    String s = "1+(long)a";
+
+    ParserContext pc = new ParserContext();
+    pc.addInput("a", Integer.class);
+
+    ExpressionCompiler compiler = new ExpressionCompiler(s, pc);
+    CompiledExpression expr = compiler.compile();
 
-    public void testSingleton() throws SecurityException,
-            NoSuchMethodException {
-        Collection<String> collection = Collections.singleton("I CAN HAS CHEEZBURGER");
-        assertEquals(collection.size(),
-                MVEL.eval("size()",
-                        collection));
-    }
+    Map vars = new HashMap();
+    vars.put("a", 1);
 
-    public static class TestClass2 {
-        public void addEqualAuthorizationConstraint(Foo leg,
-                                                    Bar ctrlClass,
-                                                    Integer authorization) {
-        }
-    }
+    Object r = ((ExecutableStatement) expr).getValue(null, new MapVariableResolverFactory(vars));
+    assertEquals(new Long(2), r);
+  }
 
-    public void testJIRA93() {
-        Map testMap = createTestMap();
-        testMap.put("testClass2",
-                new TestClass2());
+  public void testMapPropertyCreateCondensed() {
+    assertEquals("foo",
+            test("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
+  }
 
-        Serializable s = compileExpression("testClass2.addEqualAuthorizationConstraint(foo, foo.bar, 5)");
 
-        for (int i = 0; i < 5; i++) {
+  public void testDeepMethod() {
+    assertEquals(false,
+            test("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
+  }
+
+
+  public void testListAccessorAssign() {
+    String ex = "a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]";
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+
+    Serializable s = MVEL.compileExpression(ex);
+    assertEquals("bar", MVEL.executeExpression(s, new HashMap()));
+
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+
+    assertEquals("bar",
+            test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
+  }
+
+  public void testBracketInString() {
+    test("System.out.println('1)your guess was:');");
+  }
+
+  public void testNesting() {
+    assertEquals("foo",
+            test("new String(new String(new String(\"foo\")));"));
+  }
+
+  public void testTypeCast() {
+    assertEquals("10",
+            test("(String) 10"));
+  }
+
+  public void testTypeCast2() {
+    String ex = "map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
+            " ((java.util.ArrayList) map['doggie']).size()";
+
+    Map map = createTestMap();
+
+    assertEquals(0, MVEL.eval(ex, map));
+
+    assertEquals(0,
+            test(ex));
+  }
+
+
+  public void testMapAccessSemantics() {
+    Map<String, Object> outermap = new HashMap<String, Object>();
+    Map<String, Object> innermap = new HashMap<String, Object>();
+
+    innermap.put("test",
+            "foo");
+    outermap.put("innermap",
+            innermap);
+
+    assertEquals("foo",
+            testCompiledSimple("innermap['test']",
+                    outermap,
+                    null));
+  }
+
+  public void testMapBindingSemantics() {
+    Map<String, Object> outermap = new HashMap<String, Object>();
+    Map<String, Object> innermap = new HashMap<String, Object>();
+
+    innermap.put("test",
+            "foo");
+    outermap.put("innermap",
+            innermap);
+
+    setProperty(outermap,
+            "innermap['test']",
+            "bar");
+
+    assertEquals("bar",
+            testCompiledSimple("innermap['test']",
+                    outermap,
+                    null));
+  }
+
+  public void testMapNestedInsideList() {
+    ParserContext ctx = new ParserContext();
+    ctx.addImport("User",
+            User.class);
+
+    ExpressionCompiler compiler =
+            new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
+                    "\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
+    //    Serializable s = compiler.compileShared(ctx);
+    List list = (List) executeExpression(compiler.compile(ctx),
+            new HashMap());
+    User user = (User) list.get(0);
+    assertEquals("Darth",
+            user.getFirstName());
+    user = (User) list.get(1);
+    assertEquals("Bobba",
+            user.getFirstName());
+
+    compiler =
+            new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
+                    "\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
+    list = (List) executeExpression(compiler.compile(ctx),
+            new HashMap());
+    user = (User) list.get(0);
+    assertEquals("Darth",
+            user.getFirstName());
+    user = (User) list.get(1);
+    assertEquals("Bobba",
+            user.getFirstName());
+  }
+
+  public void testListNestedInsideList() {
+    ParserContext ctx = new ParserContext();
+    ctx.addImport("User",
+            User.class);
+
+    ExpressionCompiler compiler =
+            new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
+                    "new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
+    List list = (List) executeExpression(compiler.compile(ctx),
+            new HashMap());
+    User user = (User) list.get(0);
+    assertEquals("Darth",
+            user.getFirstName());
+    user = (User) list.get(1);
+    assertEquals("Bobba",
+            user.getFirstName());
+
+    compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
+            "new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
+    list = (List) executeExpression(compiler.compile(ctx),
+            new HashMap());
+    user = (User) list.get(0);
+    assertEquals("Darth",
+            user.getFirstName());
+    user = (User) list.get(1);
+    assertEquals("Bobba",
+            user.getFirstName());
+  }
+
+  public void testSetSemantics() {
+    Bar bar = new Bar();
+    Foo foo = new Foo();
+
+    assertEquals("dog",
+            MVEL.getProperty("name",
+                    bar));
+    assertEquals("dog",
+            MVEL.getProperty("name",
+                    foo));
+  }
+
+  public void testMapBindingSemantics2() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    Map<String, Object> outermap = new HashMap<String, Object>();
+    Map<String, Object> innermap = new HashMap<String, Object>();
+
+    innermap.put("test",
+            "foo");
+    outermap.put("innermap",
+            innermap);
+
+    executeSetExpression(compileSetExpression("innermap['test']"),
+            outermap,
+            "bar");
+
+    assertEquals("bar",
+            testCompiledSimple("innermap['test']",
+                    outermap,
+                    null));
+  }
+
+  public void testDynamicImports() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("java.util");
+
+    ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
+    Serializable s = compiler.compile(ctx);
+
+    assertEquals(HashMap.class,
+            executeExpression(s));
+
+    compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
+    s = compiler.compile(ctx);
+
+    assertEquals(0,
             executeExpression(s,
-                    testMap);
+                    new DefaultLocalVariableResolverFactory()));
+  }
+
+  public void testDynamicImports3() {
+    String expression = "import java.util.*; HashMap map = new HashMap(); map.size()";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expression);
+    Serializable s = compiler.compile();
+
+    assertEquals(0,
+            executeExpression(s,
+                    new DefaultLocalVariableResolverFactory()));
+
+    assertEquals(0,
+            MVEL.eval(expression,
+                    new HashMap()));
+  }
+
+  public void testDynamicImportsInList() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("org.mvel2.tests.core.res");
+
+    ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]");
+    List list = (List) executeExpression(compiler.compile(ctx));
+    User user = (User) list.get(0);
+    assertEquals("Bobba",
+            user.getFirstName());
+  }
+
+  public void testDynamicImportsInMap() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("org.mvel2.tests.core.res");
+
+    ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]");
+    Map map = (Map) executeExpression(compiler.compile(ctx));
+    User user = (User) map.get("bobba");
+    assertEquals("Bobba",
+            user.getFirstName());
+  }
+
+  public void testDynamicImportsOnNestedExpressions() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("org.mvel2.tests.core.res");
+
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))");
+
+    Cheesery p1 = new Cheesery("bobbo",
+            new Cheese("cheddar",
+                    15));
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+            new DefaultLocalVariableResolverFactory());
+
+    assertEquals(p1,
+            p2);
+  }
+
+  public void testDynamicImportsWithNullConstructorParam() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("org.mvel2.tests.core.res");
+
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
+
+    Cheesery p1 = new Cheesery("bobbo",
+            null);
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+            new DefaultLocalVariableResolverFactory());
+
+    assertEquals(p1,
+            p2);
+  }
+
+  public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
+    ParserContext ctx = new ParserContext();
+    ctx.addPackageImport("org.mvel2.tests.core.res");
+    ctx.setStrictTypeEnforcement(false);
+
+    ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
+    compiler.compile(ctx);
+  }
+
+  public void testTypedAssignment() {
+    assertEquals("foobar",
+            test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
+  }
+
+  public void testFQCNwithStaticInList() {
+    assertEquals(Integer.MIN_VALUE,
+            test("list = [java.lang.Integer.MIN_VALUE]; list[0]"));
+  }
+
+  public void testPrecedenceOrder() {
+    assertTrue((Boolean) test("5 > 6 && 2 < 1 || 10 > 9"));
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public void testDifferentImplSameCompile() {
+    Serializable compiled = compileExpression("a.funMap.hello");
+
+    Map testMap = new HashMap();
+
+    for (int i = 0; i < 100; i++) {
+      Base b = new Base();
+      b.funMap.put("hello",
+              "dog");
+      testMap.put("a",
+              b);
+
+      assertEquals("dog",
+              executeExpression(compiled,
+                      testMap));
+
+      b = new Base();
+      b.funMap.put("hello",
+              "cat");
+      testMap.put("a",
+              b);
+
+      assertEquals("cat",
+              executeExpression(compiled,
+                      testMap));
+    }
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public void testInterfaceMethodCallWithSpace() {
+    Map map = new HashMap();
+    DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+    map.put("drools",
+            helper);
+    Cheese cheese = new Cheese("stilton",
+            15);
+    map.put("cheese",
+            cheese);
+
+    executeExpression(compileExpression("drools.retract (cheese)"),
+            map);
+    assertSame(cheese,
+            helper.retracted.get(0));
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public void testInterfaceMethodCallWithMacro() {
+    Map macros = new HashMap(1);
+
+    macros.put("retract",
+            new Macro() {
+              public String doMacro() {
+                return "drools.retract";
+              }
+            });
+
+    Map map = new HashMap();
+    DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+    map.put("drools",
+            helper);
+    Cheese cheese = new Cheese("stilton",
+            15);
+    map.put("cheese",
+            cheese);
+
+    executeExpression(compileExpression(parseMacros("retract(cheese)",
+            macros)),
+            map);
+    assertSame(cheese,
+            helper.retracted.get(0));
+  }
+
+  public void testParsingStability1() {
+    assertEquals(true,
+            test("( order.number == 1 || order.number == ( 1+1) || order.number == $id )"));
+  }
+
+  public void testParsingStability2() {
+    ExpressionCompiler compiler =
+            new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
+
+    Map<String, Object> imports = new HashMap<String, Object>();
+    imports.put("java.awt.Dimension",
+            Dimension.class);
+
+    final ParserContext parserContext = new ParserContext(imports,
+            null,
+            "sourceFile");
+
+    parserContext.setStrictTypeEnforcement(false);
+    compiler.compile(parserContext);
+  }
+
+  public void testConcatWithLineBreaks() {
+    ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"");
+
+    ParserContext ctx = new ParserContext();
+    ctx.setDebugSymbols(true);
+    ctx.setSourceFile("source.mv");
+
+    assertEquals("foobar",
+            executeExpression(parser.compile(ctx)));
+  }
+
+
+  /**
+   * Provided by: Alex Roytman
+   */
+  public void testMethodResolutionWithNullParameter() {
+    Context ctx = new Context();
+    ctx.setBean(new Bean());
+    Map<String, Object> vars = new HashMap<String, Object>();
+    System.out.println("bean.today: " + eval("bean.today",
+            ctx,
+            vars));
+    System.out.println("formatDate(bean.today): " + eval("formatDate(bean.today)",
+            ctx,
+            vars));
+    //calling method with string param with null parameter works
+    System.out.println("formatString(bean.nullString): " + eval("formatString(bean.nullString)",
+            ctx,
+            vars));
+    System.out.println("bean.myDate = bean.nullDate: " + eval("bean.myDate = bean.nullDate; return bean.nullDate;",
+            ctx,
+            vars));
+    //calling method with Date param with null parameter fails
+    System.out.println("formatDate(bean.myDate): " + eval("formatDate(bean.myDate)",
+            ctx,
+            vars));
+    //same here
+    System.out.println(eval("formatDate(bean.nullDate)",
+            ctx,
+            vars));
+  }
+
+  /**
+   * Provided by: Phillipe Ombredanne
+   */
+  public void testCompileParserContextShouldNotLoopIndefinitelyOnValidJavaExpression() {
+    String expr = "		System.out.println( message );\n" + //
+            "m.setMessage( \"Goodbye cruel world\" );\n" + //
+            "System.out.println(m.getStatus());\n" + //
+            "m.setStatus( Message.GOODBYE );\n";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+    ParserContext context = new ParserContext();
+    context.setStrictTypeEnforcement(false);
+
+    context.addImport("Message",
+            Message.class);
+    context.addInput("System",
+            void.class);
+    context.addInput("message",
+            Object.class);
+    context.addInput("m",
+            Object.class);
+
+    compiler.compile(context);
+  }
+
+  public void testStaticNested() {
+    assertEquals(1,
+            eval("org.mvel2.tests.core.AbstractTest$Message.GOODBYE",
+                    new HashMap()));
+  }
+
+  public void testStaticNestedWithImport() {
+    String expr = "Message.GOODBYE;\n";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+    ParserContext context = new ParserContext();
+    context.setStrictTypeEnforcement(false);
+
+    context.addImport("Message",
+            Message.class);
+
+    assertEquals(1,
+            executeExpression(compiler.compile(context)));
+  }
+
+  public void testStaticNestedWithMethodCall() {
+    String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+    ParserContext context = new ParserContext();
+    context.setStrictTypeEnforcement(false);
+
+    context.addImport("Message",
+            Message.class);
+    context.addImport("Item",
+            Item.class);
+    //   Serializable compiledExpression = compiler.compileShared(context);
+
+    Map vars = new HashMap();
+    vars.put("$msg",
+            new Message());
+    Message msg = (Message) executeExpression(compiler.compile(context),
+            vars);
+    Item item = (Item) msg.getItems().get(0);
+    assertEquals("Some Item",
+            item.getName());
+  }
+
+  public void testsequentialAccessorsThenMethodCall() {
+    String expr = "System.out.println(drools.workingMemory); " +
+            "drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+    ParserContext context = new ParserContext();
+    context.setStrictTypeEnforcement(true);
+    context.addInput("drools",
+            KnowledgeHelper.class);
+
+    RuleBase ruleBase = new RuleBaseImpl();
+    WorkingMemory wm = new WorkingMemoryImpl(ruleBase);
+    KnowledgeHelper drools = new DefaultKnowledgeHelper(wm);
+
+    Map vars = new HashMap();
+    vars.put("drools",
+            drools);
+    executeExpression(compiler.compile(context),
+            vars);
+  }
+
+  /**
+   * Provided by: Aadi Deshpande
+   */
+  public void testPropertyVerfierShoudldNotLoopIndefinately() {
+    String expr = "\t\tmodel.latestHeadlines = $list;\n"
+            + "model.latestHeadlines.add( 0, (model.latestHeadlines[2]) );";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+    compiler.setVerifying(true);
+
+    ParserContext pCtx = new ParserContext();
+    pCtx.addInput("$list",
+            List.class);
+    pCtx.addInput("model",
+            Model.class);
+
+    compiler.compile(pCtx);
+  }
+
+  public void testCompileWithNewInsideMethodCall() {
+    String expr = "     p.name = \"goober\";\n" + "     System.out.println(p.name);\n"
+            + "     drools.insert(new Address(\"Latona\"));\n";
+
+    ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+    ParserContext context = new ParserContext();
+    context.setStrictTypeEnforcement(false);
+
+    context.addImport("Person",
+            Person.class);
+    context.addImport("Address",
+            Address.class);
+
+    context.addInput("p",
+            Person.class);
+    context.addInput("drools",
+            Drools.class);
+
+    compiler.compile(context);
+  }
+
+  /**
+   * Submitted by: cleverpig
+   */
+  public void testBug4() {
+    ClassA A = new ClassA();
+    ClassB B = new ClassB();
+    System.out.println(MVEL.getProperty("date",
+            A));
+    System.out.println(MVEL.getProperty("date",
+            B));
+  }
+
+  public void testIndexer() {
+    assertEquals("foobar",
+            testCompiledSimple("import java.util.LinkedHashMap; LinkedHashMap map = new LinkedHashMap();"
+                    + " map.put('a', 'foo'); map.put('b', 'bar'); s = ''; " +
+                    "foreach (key : map.keySet()) { System.out.println(map[key]); s += map[key]; }; return s;",
+                    createTestMap()));
+  }
+
+  public void testLateResolveOfClass() {
+    ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
+    ParserContext ctx = new ParserContext();
+    ctx.addImport(Foo.class);
+
+    compiler.removeParserContext();
+
+    System.out.println(executeExpression(compiler.compile(ctx)));
+  }
+
+  public void testClassAliasing() {
+    assertEquals("foobar",
+            test("Foo244 = String; new Foo244('foobar')"));
+  }
+
+  public void testRandomExpression1() {
+    assertEquals("HelloWorld",
+            test("if ((x15 = foo.bar) == foo.bar && x15 == foo.bar) { return 'HelloWorld'; } " +
+                    "else { return 'GoodbyeWorld' } "));
+  }
+
+  public void testRandomExpression4() {
+    assertEquals(true,
+            test("result = org.mvel2.MVEL.eval('10 * 3'); result == (10 * 3);"));
+  }
+
+  public void testRandomExpression5() {
+    assertEquals(true,
+            test("FooClassRef = foo.getClass(); fooInst = new FooClassRef();" +
+                    " name = org.mvel2.MVEL.eval('name', fooInst); return name == 'dog'"));
+  }
+
+  public void testRandomExpression6() {
+    assertEquals(500,
+            test("exprString = '250' + ' ' + '*' + ' ' + '2'; " +
+                    "compiledExpr = org.mvel2.MVEL.compileExpression(exprString);"
+                    + " return org.mvel2.MVEL.executeExpression(compiledExpr);"));
+  }
+
+  public void testRandomExpression7() {
+    assertEquals("FOOBAR",
+            test("'foobar'.toUpperCase();"));
+  }
+
+  public void testRandomExpression8() {
+    assertEquals(true,
+            test("'someString'.intern(); 'someString'.hashCode() == 'someString'.hashCode();"));
+  }
+
+  public void testRandomExpression9() {
+    assertEquals(false,
+            test("_abc = 'someString'.hashCode(); _xyz = _abc + 1; _abc == _xyz"));
+  }
+
+  public void testRandomExpression10() {
+    assertEquals(false,
+            test("(_abc = (_xyz = 'someString'.hashCode()) + 1); _abc == _xyz"));
+  }
+
+  /**
+   * Submitted by: Guerry Semones
+   */
+  private Map<Object, Object> outerMap;
+  private Map<Object, Object> innerMap;
+
+  public void testAddIntToMapWithMapSyntax() throws Throwable {
+    outerMap = new HashMap<Object, Object>();
+    innerMap = new HashMap<Object, Object>();
+    outerMap.put("innerMap",
+            innerMap);
+
+    // fails because mvel2 checks for 'tak' in the outerMap,
+    // rather than inside innerMap in outerMap
+    PropertyAccessor.set(outerMap,
+            "innerMap['foo']",
+            42);
+
+    // instead of here
+    assertEquals(42,
+            innerMap.get("foo"));
+  }
+
+  public void testUpdateIntInMapWithMapSyntax() throws Throwable {
+    outerMap = new HashMap<Object, Object>();
+    innerMap = new HashMap<Object, Object>();
+    outerMap.put("innerMap",
+            innerMap);
+
+    // fails because mvel2 checks for 'tak' in the outerMap,
+    // rather than inside innerMap in outerMap
+    innerMap.put("foo",
+            21);
+    PropertyAccessor.set(outerMap,
+            "innerMap['foo']",
+            42);
+
+    // instead of updating it here
+    assertEquals(42,
+            innerMap.get("foo"));
+  }
+
+  private HashMap<String, Object> context = new HashMap<String, Object>();
+
+  public void before() {
+    HashMap<String, Object> map = new HashMap<String, Object>();
+
+    MyBean bean = new MyBean();
+    bean.setVar(4);
+
+    map.put("bean",
+            bean);
+    context.put("map",
+            map);
+  }
+
+  public void testDeepProperty() {
+    before();
+
+    Object obj = executeExpression(compileExpression("map.bean.var"),
+            context);
+    assertEquals(4,
+            obj);
+  }
+
+  public void testDeepProperty2() {
+    before();
+
+    Object obj = executeExpression(compileExpression("map.bean.getVar()"),
+            context);
+    assertEquals(4,
+            obj);
+  }
+
+  public class MyBean {
+    int var;
+
+    public int getVar() {
+      return var;
+    }
+
+    public void setVar(int var) {
+      this.var = var;
+    }
+  }
+
+
+  public void testBooleanEvaluation() {
+    assertEquals(true,
+            test("true||false||false"));
+  }
+
+  public void testBooleanEvaluation2() {
+    assertEquals(true,
+            test("equalityCheck(1,1)||fun||ackbar"));
+  }
+
+
+  public void testStaticWithExplicitParam() {
+    PojoStatic pojo = new PojoStatic("10");
+    eval("org.mvel2.tests.core.res.AStatic.Process('10')",
+            pojo,
+            new HashMap());
+  }
+
+  public void testSimpleExpression() {
+    PojoStatic pojo = new PojoStatic("10");
+    eval("value!= null",
+            pojo,
+            new HashMap());
+  }
+
+  public void testStaticWithExpressionParam() {
+    PojoStatic pojo = new PojoStatic("10");
+    assertEquals("java.lang.String",
+            eval("org.mvel2.tests.core.res.AStatic.Process(value.getClass().getName().toString())",
+                    pojo));
+  }
+
+  public void testStringIndex() {
+    assertEquals(true,
+            test("a = 'foobar'; a[4] == 'a'"));
+  }
+
+
+  public void testAssertKeyword() {
+    ExpressionCompiler compiler = new ExpressionCompiler("assert 1 == 2;");
+    Serializable s = compiler.compile();
+
+    try {
+      executeExpression(s);
+    } catch (AssertionError e) {
+      return;
+    }
+
+    assertTrue(false);
+  }
+
+  public void testNullSafe() {
+    Foo foo = new Foo();
+
+    Map map = new HashMap();
+    map.put("foo",
+            foo);
+
+    String expression = "foo.?bar.name == null";
+    Serializable compiled = compileExpression(expression);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    assertEquals(false,
+            executeExpression(compiled,
+                    map));
+    foo.setBar(null);
+    assertEquals(true,
+            executeExpression(compiled,
+                    map)); // execute a second time (to search for optimizer problems)
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    compiled = compileExpression(expression);
+    foo.setBar(new Bar());
+    assertEquals(false,
+            executeExpression(compiled,
+                    map));
+    foo.setBar(null);
+    assertEquals(true,
+            executeExpression(compiled,
+                    map)); // execute a second time (to search for optimizer problems)
+
+    assertEquals(true,
+            eval(expression,
+                    map));
+  }
+
+  /**
+   * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
+   */
+  public void testMethodInvocationWithCollectionElement() {
+    context = new HashMap();
+    context.put("pojo",
+            new POJO());
+    context.put("number",
+            "1192800637980");
+
+    Object result = MVEL.eval("pojo.function(pojo.dates[0].time)",
+            context);
+    assertEquals(String.valueOf(((POJO) context.get("pojo")).getDates().iterator().next().getTime()),
+            result);
+  }
+
+
+  public class POJO {
+    private Set<Date> dates = new HashSet<Date>();
+
+    public POJO() {
+      dates.add(new Date());
+    }
+
+    public Set<Date> getDates() {
+      return dates;
+    }
+
+    public void setDates(Set<Date> dates) {
+      this.dates = dates;
+    }
+
+    public String function(long num) {
+      return String.valueOf(num);
+    }
+  }
+
+  public void testNestedMethod1() {
+    Vector vectorA = new Vector();
+    Vector vectorB = new Vector();
+
+    vectorA.add("Foo244");
+
+    Map map = new HashMap();
+    map.put("vecA",
+            vectorA);
+    map.put("vecB",
+            vectorB);
+
+    testCompiledSimple("vecB.add(vecA.remove(0)); vecA.add('Foo244');",
+            null,
+            map);
+
+    assertEquals("Foo244",
+            vectorB.get(0));
+  }
+
+  public void testDynamicImports2() {
+    assertEquals(BufferedReader.class,
+            test("import java.io.*; BufferedReader"));
+  }
+
+  public void testUseOfVarKeyword() {
+    assertEquals("FOO_BAR",
+            test("var barfoo = 'FOO_BAR'; return barfoo;"));
+  }
+
+  public void testAssignment5() {
+    assertEquals(15,
+            test("x = (10) + (5); x"));
+  }
+
+  public void testSetExpressions1() {
+    Map<String, Object> myMap = new HashMap<String, Object>();
+
+    final Serializable fooExpr = compileSetExpression("foo");
+    executeSetExpression(fooExpr,
+            myMap,
+            "blah");
+    assertEquals("blah",
+            myMap.get("foo"));
+
+    executeSetExpression(fooExpr,
+            myMap,
+            "baz");
+    assertEquals("baz",
+            myMap.get("foo"));
+
+  }
+
+  public void testDuplicateVariableDeclaration() {
+    ExpressionCompiler compiler = new ExpressionCompiler("String x = \"abc\"; Integer x = new Integer( 10 );");
+    ParserContext context = new ParserContext();
+
+    try {
+      compiler.compile(context);
+      fail("Compilation must fail with duplicate variable declaration exception.");
+    } catch (RuntimeException ce) {
+      // success
+    }
+  }
+
+  public void testFullyQualifiedTypeAndCast() {
+    assertEquals(1,
+            test("java.lang.Integer number = (java.lang.Integer) '1';"));
+  }
+
+  public void testThreadSafetyInterpreter1() {
+    //First evaluation
+    System.out.println("First evaluation: " + MVEL.eval("true"));
+
+    new Thread(new Runnable() {
+      public void run() {
+        // Second evaluation - this succeeds only if the first evaluation is not commented out
+        System.out.println("Second evaluation: " + MVEL.eval("true"));
+      }
+    }).start();
+  }
+
+  public void testArrayList() throws SecurityException,
+          NoSuchMethodException {
+    Collection<String> collection = new ArrayList<String>();
+    collection.add("I CAN HAS CHEEZBURGER");
+    assertEquals(collection.size(),
+            MVEL.eval("size()",
+                    collection));
+  }
+
+  public void testUnmodifiableCollection() throws SecurityException,
+          NoSuchMethodException {
+    Collection<String> collection = new ArrayList<String>();
+    collection.add("I CAN HAS CHEEZBURGER");
+    collection = unmodifiableCollection(collection);
+    assertEquals(collection.size(),
+            MVEL.eval("size()",
+                    collection));
+  }
+
+  public void testSingleton() throws SecurityException,
+          NoSuchMethodException {
+    Collection<String> collection = Collections.singleton("I CAN HAS CHEEZBURGER");
+    assertEquals(collection.size(),
+            MVEL.eval("size()",
+                    collection));
+  }
+
+  public static class TestClass2 {
+    public void addEqualAuthorizationConstraint(Foo leg,
+                                                Bar ctrlClass,
+                                                Integer authorization) {
+    }
+  }
+
+  public void testJIRA93() {
+    Map testMap = createTestMap();
+    testMap.put("testClass2",
+            new TestClass2());
+
+    Serializable s = compileExpression("testClass2.addEqualAuthorizationConstraint(foo, foo.bar, 5)");
+
+    for (int i = 0; i < 5; i++) {
+      executeExpression(s,
+              testMap);
+    }
+  }
+
+  public void testJIRA96() {
+    ParserContext ctx = new ParserContext();
+    ctx.setStrictTypeEnforcement(true);
+
+    ctx.addInput("fooString",
+            String[].class);
+
+    ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()");
+    compiler.compile(ctx);
+  }
+
+  public void testStringToArrayCast() {
+    Object o = test("(char[]) 'abcd'");
+
+    assertTrue(o instanceof char[]);
+  }
+
+  public void testStringToArrayCast2() {
+    assertTrue((Boolean) test("_xyxy = (char[]) 'abcd'; _xyxy[0] == 'a'"));
+  }
+
+  public void testStaticallyTypedArrayVar() {
+    String ex = "char[] _c___ = new char[10]; _c___ instanceof char[]";
+    assertTrue((Boolean) test(ex));
+  }
+
+  public void testParserErrorHandling() {
+    final ParserContext ctx = new ParserContext();
+    ExpressionCompiler compiler = new ExpressionCompiler("a[");
+    try {
+      compiler.compile(ctx);
+    } catch (Exception e) {
+      return;
+    }
+    assertTrue(false);
+  }
+
+  public void testJIRA100() {
+    assertEquals(new BigDecimal(20),
+            test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
+                    "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+  }
+
+  public void testJIRA100b() {
+    Serializable s = MVEL.compileExpression("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
+            "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; ");
+
+    assertEquals(new BigDecimal(20), executeExpression(s, new HashMap()));
+
+  }
+
+  public void testAssignToBean() {
+    Person person = new Person();
+    MVEL.eval("this.name = 'foo'",
+            person);
+
+    assertEquals("foo",
+            person.getName());
+
+    executeExpression(compileExpression("this.name = 'bar'"),
+            person);
+
+    assertEquals("bar",
+            person.getName());
+  }
+
+
+  public void testMapAssignmentNestedExpression() {
+    Map map = new HashMap();
+    map.put("map",
+            new HashMap());
+
+    String ex = "map[java.lang.Integer.MAX_VALUE] = 'bar'; map[java.lang.Integer.MAX_VALUE];";
+
+    assertEquals("bar",
+            executeExpression(compileExpression(ex),
+                    map));
+    assertEquals("bar",
+            MVEL.eval(ex,
+                    map));
+  }
+
+  public void testMapAssignmentNestedExpression2() {
+    Map map = new HashMap();
+    map.put("x",
+            "bar");
+    map.put("map",
+            new HashMap());
+
+    String ex = "map[x] = 'foo'; map['bar'];";
+    assertEquals("foo",
+            executeExpression(compileExpression(ex),
+                    map));
+    assertEquals("foo",
+            MVEL.eval(ex,
+                    map));
+  }
+
+  /**
+   * MVEL-103
+   */
+  public static class MvelContext {
+    public boolean singleCalled;
+    public boolean arrayCalled;
+    public String[] regkeys;
+
+    public void methodForTest(String string) {
+      System.out.println("sigle param method called!");
+      singleCalled = true;
+    }
+
+    public void methodForTest(String[] strings) {
+      System.out.println("array param method called!");
+      arrayCalled = true;
+    }
+
+    public void setRegkeys(String[] regkeys) {
+      this.regkeys = regkeys;
+    }
+
+    public void setRegkeys(String regkey) {
+      this.regkeys = regkey.split(",");
+    }
+  }
+
+  public void testMethodResolutionOrder() {
+    MvelContext mvelContext = new MvelContext();
+    MVEL.eval("methodForTest({'1','2'})",
+            mvelContext);
+    MVEL.eval("methodForTest('1')",
+            mvelContext);
+
+    assertTrue(mvelContext.arrayCalled && mvelContext.singleCalled);
+  }
+
+
+  public void testCustomPropertyHandler() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+    PropertyHandlerFactory.registerPropertyHandler(SampleBean.class,
+            new SampleBeanAccessor());
+    assertEquals("dog",
+            test("foo.sampleBean.bar.name"));
+    PropertyHandlerFactory.unregisterPropertyHandler(SampleBean.class);
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+
+  }
+
+  public void testSetAccessorOverloadedEqualsStrictMode() {
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("foo",
+            Foo.class);
+
+    try {
+      CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
+    } catch (CompileException e) {
+      // should fail.
+
+      e.printStackTrace();
+      return;
+    }
+
+    assertTrue(false);
+  }
+
+
+  private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
+
+  public void testAdd__Handle__Simple() {
+    String result = fixer.fix("update(myObject );");
+    assertEqualsIgnoreWhitespace("drools.update(myObject );",
+            result);
+
+    result = fixer.fix("update ( myObject );");
+    assertEqualsIgnoreWhitespace("drools.update( myObject );",
+            result);
+  }
+
+  public void testAdd__Handle__withNewLines() {
+    final String result = fixer.fix("\n\t\n\tupdate( myObject );");
+    assertEqualsIgnoreWhitespace("\n\t\n\tdrools.update( myObject );",
+            result);
+  }
+
+  public void testAdd__Handle__rComplex() {
+    String result = fixer.fix("something update( myObject); other");
+    assertEqualsIgnoreWhitespace("something drools.update( myObject); other",
+            result);
+
+    result = fixer.fix("something update ( myObject );");
+    assertEqualsIgnoreWhitespace("something drools.update( myObject );",
+            result);
+
+    result = fixer.fix(" update( myObject ); x");
+    assertEqualsIgnoreWhitespace(" drools.update( myObject ); x",
+            result);
+
+    //should not touch, as it is not a stand alone word
+    result = fixer.fix("xxupdate(myObject ) x");
+    assertEqualsIgnoreWhitespace("xxupdate(myObject ) x",
+            result);
+  }
+
+  public void testMultipleMatches() {
+    String result = fixer.fix("update(myObject); update(myObject );");
+    assertEqualsIgnoreWhitespace("drools.update(myObject); drools.update(myObject );",
+            result);
+
+    result = fixer.fix("xxx update(myObject ); update( myObject ); update( yourObject ); yyy");
+    assertEqualsIgnoreWhitespace("xxx drools.update(myObject ); " +
+            "drools.update( myObject ); drools.update( yourObject ); yyy",
+            result);
+  }
+
+  public void testAssert1() {
+    final String raw = "insert( foo );";
+    final String result = "drools.insert( foo );";
+    assertEqualsIgnoreWhitespace(result,
+            fixer.fix(raw));
+  }
+
+  public void testAssert2() {
+    final String raw = "some code; insert( new String(\"foo\") );\n More();";
+    final String result = "some code; drools.insert( new String(\"foo\") );\n More();";
+    assertEqualsIgnoreWhitespace(result,
+            fixer.fix(raw));
+  }
+
+  public void testAssertLogical() {
+    final String raw = "some code; insertLogical(new String(\"foo\"));\n More();";
+    final String result = "some code; drools.insertLogical(new String(\"foo\"));\n More();";
+    assertEqualsIgnoreWhitespace(result,
+            fixer.fix(raw));
+  }
+
+  public void testModifyRetractModifyInsert() {
+    final String raw = "some code; insert( bar ); modifyRetract( foo );\n More();" +
+            " retract( bar ); modifyInsert( foo );";
+    final String result = "some code; drools.insert( bar ); drools.modifyRetract( foo );\n More();" +
+            " drools.retract( bar ); drools.modifyInsert( foo );";
+    assertEqualsIgnoreWhitespace(result,
+            fixer.fix(raw));
+  }
+
+  public void testAllActionsMushedTogether() {
+    String result = fixer.fix("insert(myObject ); update(ourObject);\t retract(herObject);");
+    assertEqualsIgnoreWhitespace("drools.insert(myObject ); drools.update(ourObject);\t drools.retract(herObject);",
+            result);
+
+    result = fixer.fix("insert( myObject ); update(ourObject);\t retract(herObject  );\n" +
+            "insert(  myObject ); update(ourObject);\t retract(  herObject  );");
+    assertEqualsIgnoreWhitespace("drools.insert( myObject ); drools.update(ourObject);\t " +
+            "drools.retract(herObject  );\ndrools.insert(  myObject ); drools.update(ourObject);\t" +
+            " drools.retract(  herObject  );",
+            result);
+  }
+
+  public void testLeaveLargeAlone() {
+    final String original = "yeah yeah yeah minsert( xxx ) this is a long() thing Person" +
+            " (name=='drools') modify a thing";
+    final String result = fixer.fix(original);
+    assertEqualsIgnoreWhitespace(original,
+            result);
+  }
+
+  public void testWithNull() {
+    final String original = null;
+    final String result = fixer.fix(original);
+    assertEqualsIgnoreWhitespace(original,
+            result);
+  }
+
+  public void testLeaveAssertAlone() {
+    final String original = "drools.insert(foo)";
+    assertEqualsIgnoreWhitespace(original,
+            fixer.fix(original));
+  }
+
+  public void testLeaveAssertLogicalAlone() {
+    final String original = "drools.insertLogical(foo)";
+    assertEqualsIgnoreWhitespace(original,
+            fixer.fix(original));
+  }
+
+  public void testWackyAssert() {
+    final String raw = "System.out.println($person1.getName() + \" and \" + $person2.getName() " +
+            "+\" are sisters\");\n" + "insert($person1.getName(\"foo\") + \" and \" + $person2.getName() " +
+            "+\" are sisters\"); yeah();";
+    final String expected = "System.out.println($person1.getName() + \" and \" + $person2.getName()" +
+            " +\" are sisters\");\n" + "drools.insert($person1.getName(\"foo\") + \" and \" + $person2.getName() " +
+            "+\" are sisters\"); yeah();";
+
+    assertEqualsIgnoreWhitespace(expected,
+            fixer.fix(raw));
+  }
+
+  public void testMoreAssertCraziness() {
+    final String raw = "foobar(); (insert(new String(\"blah\").get()); bangBangYudoHono();)";
+    assertEqualsIgnoreWhitespace("foobar(); (drools.insert(new String(\"blah\").get()); bangBangYudoHono();)",
+            fixer.fix(raw));
+  }
+
+  public void testRetract() {
+    final String raw = "System.out.println(\"some text\");retract(object);";
+    assertEqualsIgnoreWhitespace("System.out.println(\"some text\");drools.retract(object);",
+            fixer.fix(raw));
+  }
+
+  private void assertEqualsIgnoreWhitespace(final String expected,
+                                            final String actual) {
+    if (expected == null || actual == null) {
+      assertEquals(expected,
+              actual);
+      return;
+    }
+    final String cleanExpected = expected.replaceAll("\\s+",
+            "");
+    final String cleanActual = actual.replaceAll("\\s+",
+            "");
+
+    assertEquals(cleanExpected,
+            cleanActual);
+  }
+
+  public void testIncrementInBooleanStatement() {
+    assertEquals(true,
+            test("hour++ < 61 && hour == 61"));
+  }
+
+  public void testIncrementInBooleanStatement2() {
+    assertEquals(true,
+            test("++hour == 61"));
+  }
+
+
+  public void testStaticallyTypedLong() {
+    assertEquals(10l,
+            test("10l"));
+  }
+
+
+  public void testNakedMethodCall() {
+    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+
+    Serializable c = compileExpression("tm = System.currentTimeMillis");
+    assertTrue(((Long) executeExpression(c,
+            new HashMap())) > 0);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+
+    assertTrue(((Long) executeExpression(c,
+            new HashMap())) > 0);
+
+    Map map = new HashMap();
+    map.put("foo",
+            new Foo());
+    c = compileExpression("foo.happy");
+    assertEquals("happyBar",
+            executeExpression(c,
+                    map));
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    c = compileExpression("foo.happy");
+
+    assertEquals("happyBar",
+            executeExpression(c,
+                    map));
+
+    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
+  }
+
+  public void testDecl() {
+    assertEquals((char) 100,
+            test("char chr; chr = 100; chr"));
+  }
+
+  public void testInlineUnion() {
+    assertEquals("test",
+            test("{'foo', 'test'}[1]"));
+  }
+
+  public static double minim(double[] tab) {
+    double min = Float.MAX_VALUE;
+    for (int i = 0; i < tab.length; i++) {
+      if (min > tab[i]) {
+        min = tab[i];
+      }
+    }
+    return min;
+  }
+
+  public void testJIRA113() {
+    assertEquals(true,
+            test("org.mvel2.tests.core.CoreConfidenceTests.minim( new double[] {456.2, 2.3} ) == 2.3"));
+  }
+
+
+  public void testChainedMethodCallsWithParams() {
+    assertEquals(true,
+            test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
+  }
+
+  public void testIsUsedInIf() {
+    assertEquals(true,
+            test("c = 'str'; if (c is String) { true; } else { false; } "));
+  }
+
+  public void testJIRA122() {
+    Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+
+    Map map = new HashMap();
+    map.put("name",
+            "Adam");
+
+    assertEquals(true,
+            executeExpression(s,
+                    map));
+    assertEquals(true,
+            executeExpression(s,
+                    map));
+  }
+
+  public void testJIRA122b() {
+    Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+
+    Map map = new HashMap();
+    map.put("name",
+            "Adam");
+
+    assertEquals(true,
+            executeExpression(s,
+                    map));
+    assertEquals(true,
+            executeExpression(s,
+                    map));
+  }
+
+
+  public void testJIRA103() {
+    MvelContext mvelContext = new MvelContext();
+    MVEL.setProperty(mvelContext,
+            "regkeys",
+            "s");
+  }
+
+  public void testJIRA103b() {
+    MvelContext mvelContext = new MvelContext();
+    Map map = new HashMap();
+    map.put("ctx",
+            mvelContext);
+    Serializable c = compileExpression("ctx.regkeys = 'foo'");
+    executeExpression(c,
+            map);
+    executeExpression(c,
+            map);
+  }
+
+  public void testMethodCaching() {
+    MVEL.eval("for (pet: getPets()) pet.run();",
+            new PetStore());
+  }
+
+  public static class PetStore {
+    public List getPets() {
+      List pets = new ArrayList();
+      pets.add(new Dog());
+      pets.add(new Cat());
+      return pets;
+    }
+  }
+
+  public static class Pet {
+    public void run() {
+    }
+  }
+
+  public static class Dog extends Pet {
+    @Override
+    public void run() {
+      System.out.println("dog is running");
+    }
+  }
+
+  public static class Cat extends Pet {
+    @Override
+    public void run() {
+      System.out.println("cat is running");
+    }
+  }
+
+  public void testSetExpressions2() {
+    Foo foo = new Foo();
+    Collection col = new ArrayList();
+    final Serializable fooExpr = compileSetExpression("collectionTest");
+    executeSetExpression(fooExpr,
+            foo,
+            col);
+    assertEquals(col,
+            foo.getCollectionTest());
+  }
+
+  public class Fruit {
+    public class Apple {
+
+    }
+  }
+
+  public void testInnerClassReference() {
+    assertEquals(Fruit.Apple.class,
+            test("import " + CoreConfidenceTests.class.getName() + "; CoreConfidenceTests.Fruit.Apple"));
+  }
+
+  public void testEdson() {
+    assertEquals("foo",
+            test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
+  }
+
+  public void testEnumSupport() {
+    MyInterface myInterface = new MyClass();
+    myInterface.setType(MyInterface.MY_ENUM.TWO,
+            true);
+    boolean isType = MVEL.eval("isType(org.mvel2.tests.core.res.MyInterface$MY_ENUM.ONE)",
+            myInterface,
+            Boolean.class);
+    System.out.println(isType);
+
+  }
+
+  public void testOperatorPrecedenceOrder() {
+    Serializable compiled =
+            compileExpression("bean1.successful && bean2.failed || bean1.failed && bean2.successful");
+    Map context = new HashMap();
+
+    BeanB bean1 = new BeanB(true);
+    BeanB bean2 = new BeanB(false);
+
+    context.put("bean1",
+            bean1);
+    context.put("bean2",
+            bean2);
+
+    System.out.println("interpreted: "
+            + MVEL.eval("bean1.successful && bean2.failed || bean1.failed && bean2.successful",
+            context));
+
+    assertEquals(bean1.isSuccessful() && bean2.isFailed() || bean1.isFailed() && bean2.isSuccessful(),
+            (boolean) executeExpression(compiled,
+                    context,
+                    Boolean.class));
+  }
+
+  public static class BeanB {
+    private boolean successful;
+
+    public BeanB(boolean successful) {
+      this.successful = successful;
+    }
+
+    public boolean isSuccessful() {
+      return successful;
+    }
+
+    public boolean isFailed() {
+      return !successful;
+    }
+  }
+
+  public void testJIRA139() {
+    ParserContext ctx = new ParserContext();
+    ctx.addImport("ReflectionUtil",
+            ReflectionUtil.class);
+    Serializable s = compileExpression("ReflectionUtil.getGetter('foo')",
+            ctx);
+    assertEquals(ReflectionUtil.getGetter("foo"),
+            executeExpression(s));
+  }
+
+  public void testJIRA140() {
+    ParserContext ctx = new ParserContext();
+    Serializable s = compileExpression("import org.mvel2.tests.core.res.*;"
+            + "cols = new Column[] { new Column('name', 20), new Column('age', 2) };"
+            + "grid = new Grid(new Model(cols));",
+            ctx);
+
+    Grid g = (Grid) executeExpression(s,
+            new HashMap());
+
+    assertEquals(g.getModel().getColumns()[0].getName(),
+            "name");
+    assertEquals(g.getModel().getColumns()[0].getLength(),
+            20);
+    assertEquals(g.getModel().getColumns()[1].getName(),
+            "age");
+    assertEquals(g.getModel().getColumns()[1].getLength(),
+            2);
+  }
+
+  public void testVerifierWithIndexedProperties() {
+    ParserContext ctx = new ParserContext();
+    ctx.setStrictTypeEnforcement(true);
+    ctx.addInput("base",
+            Base.class);
+
+    Serializable s = compileExpression("base.fooMap['foo'].setName('coffee')",
+            ctx);
+
+    Map vars = new HashMap();
+    vars.put("base",
+            new Base());
+
+    executeExpression(s,
+            vars);
+
+    assertEquals("coffee",
+            ((Base) vars.get("base")).fooMap.get("foo").getName());
+  }
+
+
+  public void testEmpty() {
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+
+    Serializable s = compileExpression("list = new java.util.ArrayList(); list == empty",
+            ctx);
+
+    Map vars = new HashMap();
+
+    Boolean x = (Boolean) executeExpression(s,
+            vars);
+
+    assertNotNull(x);
+    assertTrue(x.booleanValue());
+  }
+
+  public void testMapsAndLists() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addImport(HashMap.class);
+    ctx.addImport(ArrayList.class);
+    ctx.addInput("list",
+            List.class);
+
+    String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
+            "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
+
+    Serializable s = compileExpression(expression,
+            ctx);
+
+    Map vars = new HashMap();
+    List list = new ArrayList();
+    vars.put("list",
+            list);
+
+    Boolean result = (Boolean) executeExpression(s,
+            vars);
+
+    assertNotNull(result);
+    assertTrue(result);
+    assertEquals(1,
+            list.size());
+    assertEquals("first",
+            list.get(0));
+  }
+
+  public void testMapsAndLists2() {
+    OptimizerFactory.setDefaultOptimizer("reflective");
+
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addImport(HashMap.class);
+    ctx.addImport(ArrayList.class);
+    ctx.addInput("list",
+            List.class);
+
+    String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
+            "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
+
+    Serializable s = compileExpression(expression,
+            ctx);
+
+    Map vars = new HashMap();
+    List list = new ArrayList();
+    vars.put("list",
+            list);
+
+    Boolean result = (Boolean) executeExpression(s,
+            vars);
+
+    assertNotNull(result);
+    assertTrue(result);
+    assertEquals(1,
+            list.size());
+    assertEquals("first",
+            list.get(0));
+  }
+
+  public void testReturnBoolean() {
+    String ex = "list = new java.util.ArrayList(); return list != null";
+
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    Serializable s = compileExpression(ex,
+            ctx);
+
+    assertEquals(true,
+            executeExpression(s,
+                    new HashMap()));
+  }
+
+  public void testComaProblemStrikesBack() {
+    String ex = "a.explanation = \"There is a coma, in here\"";
+
+    ParserContext ctx = new ParserContext();
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    Serializable s = compiler.compile(ctx);
+
+    Base a = new Base();
+    Map<String, Object> variables = new HashMap<String, Object>();
+    variables.put("a",
+            a);
+
+    executeExpression(s,
+            variables);
+    assertEquals("There is a coma, in here",
+            a.data);
+  }
+
+
+  public static interface Services {
+    public final static String A_CONST = "Hello World";
+
+    public void log(String text);
+  }
+
+  public void testStringConcatenation() {
+    // debugging MVEL code, it seems that MVEL 'thinks' that the result of the expression:
+    // "Drop +5%: "+$sb+" avg: $"+$av+" price: $"+$pr
+    // is a double, and as so, he looks for a method:
+    // Services.log( double );
+    // but finds only:
+    // Services.log( String );
+    // raising the error.
+    String ex = "services.log((String) \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("$sb",
+            String.class);
+    ctx.addInput("$av",
+            double.class);
+    ctx.addInput("$pr",
+            double.class);
+    ctx.addInput("services",
+            Services.class);
+    try {
+      ExpressionCompiler compiler = new ExpressionCompiler(ex);
+      compiler.compile(ctx);
+    } catch (Throwable e) {
+      e.printStackTrace();
+      fail("Should not raise exception: " + e.getMessage());
+    }
+  }
+
+  public void testStringConcatenation2() {
+    String ex = "services.log( $cheese + \" some string \" );";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("$cheese",
+            Cheese.class);
+    ctx.addInput("services",
+            Services.class);
+    try {
+      ExpressionCompiler compiler = new ExpressionCompiler(ex);
+      compiler.compile(ctx);
+    } catch (Throwable e) {
+      e.printStackTrace();
+      fail("Should not raise exception: " + e.getMessage());
+    }
+  }
+
+  public void testStringConcatenation3() {
+    // BUG: return type of the string concatenation is inferred as double instead of String
+    String ex = "services.log($av + \"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.setStrictTypeEnforcement(true);
+    ctx.addInput("$sb",
+            String.class);
+    ctx.addInput("$av",
+            double.class);
+    ctx.addInput("$pr",
+            double.class);
+    ctx.addInput("services",
+            Services.class);
+    ctx.addImport("percent", MVEL.getStaticMethod(String.class, "valueOf", new Class[]{double.class}));
+    try {
+      Serializable compiledExpression = MVEL.compileExpression(ex, ctx);
+
+      Services services = new Services() {
+        public void log(String text) {
         }
-    }
-
-    public void testJIRA96() {
-        ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
-
-        ctx.addInput("fooString",
-                String[].class);
-
-        ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()");
-        compiler.compile(ctx);
-    }
-
-    public void testStringToArrayCast() {
-        Object o = test("(char[]) 'abcd'");
-
-        assertTrue(o instanceof char[]);
-    }
-
-    public void testStringToArrayCast2() {
-        assertTrue((Boolean) test("_xyxy = (char[]) 'abcd'; _xyxy[0] == 'a'"));
-    }
-
-    public void testStaticallyTypedArrayVar() {
-        String ex = "char[] _c___ = new char[10]; _c___ instanceof char[]";
-        assertTrue((Boolean) test(ex));
-    }
-
-    public void testParserErrorHandling() {
-        final ParserContext ctx = new ParserContext();
-        ExpressionCompiler compiler = new ExpressionCompiler("a[");
-        try {
-            compiler.compile(ctx);
-        }
-        catch (Exception e) {
-            return;
-        }
-        assertTrue(false);
-    }
-
-    public void testJIRA100() {
-        assertEquals(new BigDecimal(20),
-                test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
-                        "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
-    }
-
-    public void testJIRA100b() {
-        Serializable s = MVEL.compileExpression("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
-                "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; ");
-
-        assertEquals(new BigDecimal(20), executeExpression(s, new HashMap()));
-
-    }
-
-    public void testAssignToBean() {
-        Person person = new Person();
-        MVEL.eval("this.name = 'foo'",
-                person);
-
-        assertEquals("foo",
-                person.getName());
-
-        executeExpression(compileExpression("this.name = 'bar'"),
-                person);
-
-        assertEquals("bar",
-                person.getName());
-    }
-
-
-    public void testMapAssignmentNestedExpression() {
-        Map map = new HashMap();
-        map.put("map",
-                new HashMap());
-
-        String ex = "map[java.lang.Integer.MAX_VALUE] = 'bar'; map[java.lang.Integer.MAX_VALUE];";
-
-        assertEquals("bar",
-                executeExpression(compileExpression(ex),
-                        map));
-        assertEquals("bar",
-                MVEL.eval(ex,
-                        map));
-    }
-
-    public void testMapAssignmentNestedExpression2() {
-        Map map = new HashMap();
-        map.put("x",
-                "bar");
-        map.put("map",
-                new HashMap());
-
-        String ex = "map[x] = 'foo'; map['bar'];";
-        assertEquals("foo",
-                executeExpression(compileExpression(ex),
-                        map));
-        assertEquals("foo",
-                MVEL.eval(ex,
-                        map));
-    }
-
-    /**
-     * MVEL-103
-     */
-    public static class MvelContext {
-        public boolean singleCalled;
-        public boolean arrayCalled;
-        public String[] regkeys;
-
-        public void methodForTest(String string) {
-            System.out.println("sigle param method called!");
-            singleCalled = true;
-        }
-
-        public void methodForTest(String[] strings) {
-            System.out.println("array param method called!");
-            arrayCalled = true;
-        }
-
-        public void setRegkeys(String[] regkeys) {
-            this.regkeys = regkeys;
-        }
-
-        public void setRegkeys(String regkey) {
-            this.regkeys = regkey.split(",");
-        }
-    }
-
-    public void testMethodResolutionOrder() {
-        MvelContext mvelContext = new MvelContext();
-        MVEL.eval("methodForTest({'1','2'})",
-                mvelContext);
-        MVEL.eval("methodForTest('1')",
-                mvelContext);
-
-        assertTrue(mvelContext.arrayCalled && mvelContext.singleCalled);
-    }
-
-
-    public void testCustomPropertyHandler() {
-        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
-        PropertyHandlerFactory.registerPropertyHandler(SampleBean.class,
-                new SampleBeanAccessor());
-        assertEquals("dog",
-                test("foo.sampleBean.bar.name"));
-        PropertyHandlerFactory.unregisterPropertyHandler(SampleBean.class);
-        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
-
-    }
-
-    public void testSetAccessorOverloadedEqualsStrictMode() {
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("foo",
-                Foo.class);
-
-        try {
-            CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
-        }
-        catch (CompileException e) {
-            // should fail.
-
-            e.printStackTrace();
-            return;
-        }
-
-        assertTrue(false);
-    }
-
-
-    private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
-
-    public void testAdd__Handle__Simple() {
-        String result = fixer.fix("update(myObject );");
-        assertEqualsIgnoreWhitespace("drools.update(myObject );",
-                result);
-
-        result = fixer.fix("update ( myObject );");
-        assertEqualsIgnoreWhitespace("drools.update( myObject );",
-                result);
-    }
-
-    public void testAdd__Handle__withNewLines() {
-        final String result = fixer.fix("\n\t\n\tupdate( myObject );");
-        assertEqualsIgnoreWhitespace("\n\t\n\tdrools.update( myObject );",
-                result);
-    }
-
-    public void testAdd__Handle__rComplex() {
-        String result = fixer.fix("something update( myObject); other");
-        assertEqualsIgnoreWhitespace("something drools.update( myObject); other",
-                result);
-
-        result = fixer.fix("something update ( myObject );");
-        assertEqualsIgnoreWhitespace("something drools.update( myObject );",
-                result);
-
-        result = fixer.fix(" update( myObject ); x");
-        assertEqualsIgnoreWhitespace(" drools.update( myObject ); x",
-                result);
-
-        //should not touch, as it is not a stand alone word
-        result = fixer.fix("xxupdate(myObject ) x");
-        assertEqualsIgnoreWhitespace("xxupdate(myObject ) x",
-                result);
-    }
-
-    public void testMultipleMatches() {
-        String result = fixer.fix("update(myObject); update(myObject );");
-        assertEqualsIgnoreWhitespace("drools.update(myObject); drools.update(myObject );",
-                result);
-
-        result = fixer.fix("xxx update(myObject ); update( myObject ); update( yourObject ); yyy");
-        assertEqualsIgnoreWhitespace("xxx drools.update(myObject ); " +
-                "drools.update( myObject ); drools.update( yourObject ); yyy",
-                result);
-    }
-
-    public void testAssert1() {
-        final String raw = "insert( foo );";
-        final String result = "drools.insert( foo );";
-        assertEqualsIgnoreWhitespace(result,
-                fixer.fix(raw));
-    }
-
-    public void testAssert2() {
-        final String raw = "some code; insert( new String(\"foo\") );\n More();";
-        final String result = "some code; drools.insert( new String(\"foo\") );\n More();";
-        assertEqualsIgnoreWhitespace(result,
-                fixer.fix(raw));
-    }
-
-    public void testAssertLogical() {
-        final String raw = "some code; insertLogical(new String(\"foo\"));\n More();";
-        final String result = "some code; drools.insertLogical(new String(\"foo\"));\n More();";
-        assertEqualsIgnoreWhitespace(result,
-                fixer.fix(raw));
-    }
-
-    public void testModifyRetractModifyInsert() {
-        final String raw = "some code; insert( bar ); modifyRetract( foo );\n More();" +
-                " retract( bar ); modifyInsert( foo );";
-        final String result = "some code; drools.insert( bar ); drools.modifyRetract( foo );\n More();" +
-                " drools.retract( bar ); drools.modifyInsert( foo );";
-        assertEqualsIgnoreWhitespace(result,
-                fixer.fix(raw));
-    }
-
-    public void testAllActionsMushedTogether() {
-        String result = fixer.fix("insert(myObject ); update(ourObject);\t retract(herObject);");
-        assertEqualsIgnoreWhitespace("drools.insert(myObject ); drools.update(ourObject);\t drools.retract(herObject);",
-                result);
-
-        result = fixer.fix("insert( myObject ); update(ourObject);\t retract(herObject  );\n" +
-                "insert(  myObject ); update(ourObject);\t retract(  herObject  );");
-        assertEqualsIgnoreWhitespace("drools.insert( myObject ); drools.update(ourObject);\t " +
-                "drools.retract(herObject  );\ndrools.insert(  myObject ); drools.update(ourObject);\t" +
-                " drools.retract(  herObject  );",
-                result);
-    }
-
-    public void testLeaveLargeAlone() {
-        final String original = "yeah yeah yeah minsert( xxx ) this is a long() thing Person" +
-                " (name=='drools') modify a thing";
-        final String result = fixer.fix(original);
-        assertEqualsIgnoreWhitespace(original,
-                result);
-    }
-
-    public void testWithNull() {
-        final String original = null;
-        final String result = fixer.fix(original);
-        assertEqualsIgnoreWhitespace(original,
-                result);
-    }
-
-    public void testLeaveAssertAlone() {
-        final String original = "drools.insert(foo)";
-        assertEqualsIgnoreWhitespace(original,
-                fixer.fix(original));
-    }
-
-    public void testLeaveAssertLogicalAlone() {
-        final String original = "drools.insertLogical(foo)";
-        assertEqualsIgnoreWhitespace(original,
-                fixer.fix(original));
-    }
-
-    public void testWackyAssert() {
-        final String raw = "System.out.println($person1.getName() + \" and \" + $person2.getName() " +
-                "+\" are sisters\");\n" + "insert($person1.getName(\"foo\") + \" and \" + $person2.getName() " +
-                "+\" are sisters\"); yeah();";
-        final String expected = "System.out.println($person1.getName() + \" and \" + $person2.getName()" +
-                " +\" are sisters\");\n" + "drools.insert($person1.getName(\"foo\") + \" and \" + $person2.getName() " +
-                "+\" are sisters\"); yeah();";
-
-        assertEqualsIgnoreWhitespace(expected,
-                fixer.fix(raw));
-    }
-
-    public void testMoreAssertCraziness() {
-        final String raw = "foobar(); (insert(new String(\"blah\").get()); bangBangYudoHono();)";
-        assertEqualsIgnoreWhitespace("foobar(); (drools.insert(new String(\"blah\").get()); bangBangYudoHono();)",
-                fixer.fix(raw));
-    }
-
-    public void testRetract() {
-        final String raw = "System.out.println(\"some text\");retract(object);";
-        assertEqualsIgnoreWhitespace("System.out.println(\"some text\");drools.retract(object);",
-                fixer.fix(raw));
-    }
-
-    private void assertEqualsIgnoreWhitespace(final String expected,
-                                              final String actual) {
-        if (expected == null || actual == null) {
-            assertEquals(expected,
-                    actual);
-            return;
-        }
-        final String cleanExpected = expected.replaceAll("\\s+",
-                "");
-        final String cleanActual = actual.replaceAll("\\s+",
-                "");
-
-        assertEquals(cleanExpected,
-                cleanActual);
-    }
-
-    public void testIncrementInBooleanStatement() {
-        assertEquals(true,
-                test("hour++ < 61 && hour == 61"));
-    }
-
-    public void testIncrementInBooleanStatement2() {
-        assertEquals(true,
-                test("++hour == 61"));
-    }
-
-
-    public void testStaticallyTypedLong() {
-        assertEquals(10l,
-                test("10l"));
-    }
-
-
-    public void testNakedMethodCall() {
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-
-        Serializable c = compileExpression("tm = System.currentTimeMillis");
-        assertTrue(((Long) executeExpression(c,
-                new HashMap())) > 0);
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-
-        assertTrue(((Long) executeExpression(c,
-                new HashMap())) > 0);
-
-        Map map = new HashMap();
-        map.put("foo",
-                new Foo());
-        c = compileExpression("foo.happy");
-        assertEquals("happyBar",
-                executeExpression(c,
-                        map));
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        c = compileExpression("foo.happy");
-
-        assertEquals("happyBar",
-                executeExpression(c,
-                        map));
-
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
-    }
-
-    public void testDecl() {
-        assertEquals((char) 100,
-                test("char chr; chr = 100; chr"));
-    }
-
-    public void testInlineUnion() {
-        assertEquals("test",
-                test("{'foo', 'test'}[1]"));
-    }
-
-    public static double minim(double[] tab) {
-        double min = Float.MAX_VALUE;
-        for (int i = 0; i < tab.length; i++) {
-            if (min > tab[i]) {
-                min = tab[i];
-            }
-        }
-        return min;
-    }
-
-    public void testJIRA113() {
-        assertEquals(true,
-                test("org.mvel2.tests.core.CoreConfidenceTests.minim( new double[] {456.2, 2.3} ) == 2.3"));
-    }
-
-
-    public void testChainedMethodCallsWithParams() {
-        assertEquals(true,
-                test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
-    }
-
-    public void testIsUsedInIf() {
-        assertEquals(true,
-                test("c = 'str'; if (c is String) { true; } else { false; } "));
-    }
-
-    public void testJIRA122() {
-        Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-
-        Map map = new HashMap();
-        map.put("name",
-                "Adam");
-
-        assertEquals(true,
-                executeExpression(s,
-                        map));
-        assertEquals(true,
-                executeExpression(s,
-                        map));
-    }
-
-    public void testJIRA122b() {
-        Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-
-        Map map = new HashMap();
-        map.put("name",
-                "Adam");
-
-        assertEquals(true,
-                executeExpression(s,
-                        map));
-        assertEquals(true,
-                executeExpression(s,
-                        map));
-    }
-
-
-    public void testJIRA103() {
-        MvelContext mvelContext = new MvelContext();
-        MVEL.setProperty(mvelContext,
-                "regkeys",
-                "s");
-    }
-
-    public void testJIRA103b() {
-        MvelContext mvelContext = new MvelContext();
-        Map map = new HashMap();
-        map.put("ctx",
-                mvelContext);
-        Serializable c = compileExpression("ctx.regkeys = 'foo'");
-        executeExpression(c,
-                map);
-        executeExpression(c,
-                map);
-    }
-
-    public void testMethodCaching() {
-        MVEL.eval("for (pet: getPets()) pet.run();",
-                new PetStore());
-    }
-
-    public static class PetStore {
-        public List getPets() {
-            List pets = new ArrayList();
-            pets.add(new Dog());
-            pets.add(new Cat());
-            return pets;
-        }
-    }
-
-    public static class Pet {
-        public void run() {
-        }
-    }
-
-    public static class Dog extends Pet {
-        @Override
-        public void run() {
-            System.out.println("dog is running");
-        }
-    }
-
-    public static class Cat extends Pet {
-        @Override
-        public void run() {
-            System.out.println("cat is running");
-        }
-    }
-
-    public void testSetExpressions2() {
-        Foo foo = new Foo();
-        Collection col = new ArrayList();
-        final Serializable fooExpr = compileSetExpression("collectionTest");
-        executeSetExpression(fooExpr,
-                foo,
-                col);
-        assertEquals(col,
-                foo.getCollectionTest());
-    }
-
-    public class Fruit {
-        public class Apple {
-
-        }
-    }
-
-    public void testInnerClassReference() {
-        assertEquals(Fruit.Apple.class,
-                test("import " + CoreConfidenceTests.class.getName() + "; CoreConfidenceTests.Fruit.Apple"));
-    }
-
-    public void testEdson() {
-        assertEquals("foo",
-                test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
-    }
-
-    public void testEnumSupport() {
-        MyInterface myInterface = new MyClass();
-        myInterface.setType(MyInterface.MY_ENUM.TWO,
-                true);
-        boolean isType = MVEL.eval("isType(org.mvel2.tests.core.res.MyInterface$MY_ENUM.ONE)",
-                myInterface,
-                Boolean.class);
-        System.out.println(isType);
-
-    }
-
-    public void testOperatorPrecedenceOrder() {
-        Serializable compiled =
-                compileExpression("bean1.successful && bean2.failed || bean1.failed && bean2.successful");
-        Map context = new HashMap();
-
-        BeanB bean1 = new BeanB(true);
-        BeanB bean2 = new BeanB(false);
-
-        context.put("bean1",
-                bean1);
-        context.put("bean2",
-                bean2);
-
-        System.out.println("interpreted: "
-                + MVEL.eval("bean1.successful && bean2.failed || bean1.failed && bean2.successful",
-                context));
-
-        assertEquals(bean1.isSuccessful() && bean2.isFailed() || bean1.isFailed() && bean2.isSuccessful(),
-                (boolean) executeExpression(compiled,
-                        context,
-                        Boolean.class));
-    }
-
-    public static class BeanB {
-        private boolean successful;
-
-        public BeanB(boolean successful) {
-            this.successful = successful;
-        }
-
-        public boolean isSuccessful() {
-            return successful;
-        }
-
-        public boolean isFailed() {
-            return !successful;
-        }
-    }
-
-    public void testJIRA139() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("ReflectionUtil",
-                ReflectionUtil.class);
-        Serializable s = compileExpression("ReflectionUtil.getGetter('foo')",
-                ctx);
-        assertEquals(ReflectionUtil.getGetter("foo"),
-                executeExpression(s));
-    }
-
-    public void testJIRA140() {
-        ParserContext ctx = new ParserContext();
-        Serializable s = compileExpression("import org.mvel2.tests.core.res.*;"
-                + "cols = new Column[] { new Column('name', 20), new Column('age', 2) };"
-                + "grid = new Grid(new Model(cols));",
-                ctx);
-
-        Grid g = (Grid) executeExpression(s,
-                new HashMap());
-
-        assertEquals(g.getModel().getColumns()[0].getName(),
-                "name");
-        assertEquals(g.getModel().getColumns()[0].getLength(),
-                20);
-        assertEquals(g.getModel().getColumns()[1].getName(),
-                "age");
-        assertEquals(g.getModel().getColumns()[1].getLength(),
-                2);
-    }
-
-    public void testVerifierWithIndexedProperties() {
-        ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
-        ctx.addInput("base",
-                Base.class);
-
-        Serializable s = compileExpression("base.fooMap['foo'].setName('coffee')",
-                ctx);
-
-        Map vars = new HashMap();
-        vars.put("base",
-                new Base());
-
-        executeExpression(s,
-                vars);
-
-        assertEquals("coffee",
-                ((Base) vars.get("base")).fooMap.get("foo").getName());
-    }
-
-
-    public void testEmpty() {
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-
-        Serializable s = compileExpression("list = new java.util.ArrayList(); list == empty",
-                ctx);
-
-        Map vars = new HashMap();
-
-        Boolean x = (Boolean) executeExpression(s,
-                vars);
-
-        assertNotNull(x);
-        assertTrue(x.booleanValue());
-    }
-
-    public void testMapsAndLists() {
-        OptimizerFactory.setDefaultOptimizer("ASM");
-
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addImport(HashMap.class);
-        ctx.addImport(ArrayList.class);
-        ctx.addInput("list",
-                List.class);
-
-        String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
-                "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
-
-        Serializable s = compileExpression(expression,
-                ctx);
-
-        Map vars = new HashMap();
-        List list = new ArrayList();
-        vars.put("list",
-                list);
-
-        Boolean result = (Boolean) executeExpression(s,
-                vars);
-
-        assertNotNull(result);
-        assertTrue(result);
-        assertEquals(1,
-                list.size());
-        assertEquals("first",
-                list.get(0));
-    }
-
-    public void testMapsAndLists2() {
-        OptimizerFactory.setDefaultOptimizer("reflective");
-
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addImport(HashMap.class);
-        ctx.addImport(ArrayList.class);
-        ctx.addInput("list",
-                List.class);
-
-        String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
-                "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
-
-        Serializable s = compileExpression(expression,
-                ctx);
-
-        Map vars = new HashMap();
-        List list = new ArrayList();
-        vars.put("list",
-                list);
-
-        Boolean result = (Boolean) executeExpression(s,
-                vars);
-
-        assertNotNull(result);
-        assertTrue(result);
-        assertEquals(1,
-                list.size());
-        assertEquals("first",
-                list.get(0));
-    }
-
-    public void testReturnBoolean() {
-        String ex = "list = new java.util.ArrayList(); return list != null";
-
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        Serializable s = compileExpression(ex,
-                ctx);
-
-        assertEquals(true,
-                executeExpression(s,
-                        new HashMap()));
-    }
-
-    public void testComaProblemStrikesBack() {
-        String ex = "a.explanation = \"There is a coma, in here\"";
-
-        ParserContext ctx = new ParserContext();
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-        Serializable s = compiler.compile(ctx);
-
-        Base a = new Base();
-        Map<String, Object> variables = new HashMap<String, Object>();
-        variables.put("a",
-                a);
-
-        executeExpression(s,
-                variables);
-        assertEquals("There is a coma, in here",
-                a.data);
-    }
-
-
-    public static interface Services {
-        public final static String A_CONST = "Hello World";
-
-        public void log(String text);
-    }
-
-    public void testStringConcatenation() {
-        // debugging MVEL code, it seems that MVEL 'thinks' that the result of the expression:
-        // "Drop +5%: "+$sb+" avg: $"+$av+" price: $"+$pr
-        // is a double, and as so, he looks for a method:
-        // Services.log( double );
-        // but finds only:
-        // Services.log( String );
-        // raising the error.
-        String ex = "services.log((String) \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("$sb",
-                String.class);
-        ctx.addInput("$av",
-                double.class);
-        ctx.addInput("$pr",
-                double.class);
-        ctx.addInput("services",
-                Services.class);
-        try {
-            ExpressionCompiler compiler = new ExpressionCompiler(ex);
-            compiler.compile(ctx);
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-            fail("Should not raise exception: " + e.getMessage());
-        }
-    }
+      };
+      Map<String, Object> vars = new HashMap<String, Object>();
+      vars.put("services", services);
+      vars.put("$sb", "RHT");
+      vars.put("$av", 15.0);
+      vars.put("$pr", 10.0);
+
+      MVEL.executeExpression(compiledExpression, vars);
+    } catch (Throwable e) {
+      e.printStackTrace();
+      fail("Should not raise exception: " + e.getMessage());
+    }
+  }
+
+  public void testMapsWithVariableAsKey() {
+    String ex = "aMap[aKey] == 'aValue'";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(false);
+
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    compiler.setVerifyOnly(true);
+    compiler.compile(ctx);
+
+    Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
+    assertTrue(requiredInputs.contains("aMap"));
+    assertTrue(requiredInputs.contains("aKey"));
+  }
+
+  public static void testProjectionUsingThis() {
+    Set records = new HashSet();
+    for (int i = 0; i < 53; i++) {
+      Bean2 record = new Bean2(i);
+      records.add(record);
+    }
+
+    Object result = MVEL.eval("(_prop in this)",
+            records);
+    System.out.println("result: " + result);
+  }
+
+  public static final class Bean2 {
+    public final int _prop;
+
+    public Bean2(int prop_) {
+      _prop = prop_;
+    }
+
+    public int getProp() {
+      return _prop;
+    }
+
+    public String toString() {
+      return Integer.toString(_prop);
+    }
+  }
+
+  public void testUnaryOpNegation1() {
+    assertEquals(false,
+            test("!new Boolean(true)"));
+  }
+
+  public void testUnaryOpNegation2() {
+    assertEquals(true,
+            test("!isdef _foozy_"));
+  }
+
+  public class Az {
+    public void foo(String s) {
+    }
+  }
+
+  public class Bz extends Az {
+  }
+
+  public void testJIRA151() {
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+    Bz b = new Bz();
+    ParserContext context = new ParserContext();
+    Object expression = MVEL.compileExpression("a.foo(value)",
+            context);
+    Map<String, Object> variables = new HashMap<String, Object>();
+
+    variables.put("a",
+            b);
+    variables.put("value",
+            123);
+    for (int i = 0; i < 100; i++) {
+      System.out.println("i: " + i);
+      System.out.flush();
+      executeExpression(expression,
+              variables);
+    }
+  }
+
+  public void testJIRA151b() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    Bz b = new Bz();
+    ParserContext context = new ParserContext();
+    Object expression = MVEL.compileExpression("a.foo(value)",
+            context);
+    Map<String, Object> variables = new HashMap<String, Object>();
+
+    variables.put("a",
+            b);
+    variables.put("value",
+            123);
+    for (int i = 0; i < 100; i++) {
+      System.out.println("i: " + i);
+      System.out.flush();
+      executeExpression(expression,
+              variables);
+    }
+  }
+
+
+  public void testJIRA153() {
+    assertEquals(false,
+            MVEL.eval("!(true)"));
+    assertEquals(false,
+            executeExpression(MVEL.compileExpression("!(true)")));
+  }
+
+  public void testJIRA154() {
+    Map m = createTestMap();
+    m.put("returnTrue",
+            MVEL.getStaticMethod(CoreConfidenceTests.class,
+                    "returnTrue",
+                    new Class[0]));
+
+    assertEquals(false,
+            MVEL.eval("!returnTrue()",
+                    m));
+  }
+
+  public void testJIRA154b() {
+    ParserContext pctx = new ParserContext();
+    pctx.addImport("returnTrue",
+            MVEL.getStaticMethod(CoreConfidenceTests.class,
+                    "returnTrue",
+                    new Class[0]));
+
+    assertEquals(false,
+            executeExpression(MVEL.compileExpression("!(returnTrue())",
+                    pctx)));
+  }
+
+  public void testJIRA155() {
+    ParserContext pctx = new ParserContext();
+    pctx.addImport("returnTrue",
+            MVEL.getStaticMethod(CoreConfidenceTests.class,
+                    "returnTrue",
+                    new Class[0]));
+
+    assertEquals(true,
+            executeExpression(MVEL.compileExpression("!true || returnTrue()",
+                    pctx)));
+  }
+
+  public void testJIRA155b() {
+    ParserContext pctx = new ParserContext();
+    pctx.addImport("returnTrue",
+            MVEL.getStaticMethod(CoreConfidenceTests.class,
+                    "returnTrue",
+                    new Class[0]));
+
+    assertEquals(true,
+            executeExpression(MVEL.compileExpression("!(!true || !returnTrue())",
+                    pctx)));
+  }
+
+  public void testJIRA156() throws Throwable {
+    ClassProvider provider = new ClassProvider();
+    provider.getPrivate().foo();
+
+    PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
+
+    String script = "provider.getPrivate().foo()";
+    HashMap<String, Object> vars = new HashMap<String, Object>();
+    vars.put("provider",
+            provider);
+    MVEL.eval(script,
+            vars);
+  }
+
+  public void testJIRA156b() throws Throwable {
+    ClassProvider provider = new ClassProvider();
+    provider.getPrivate().foo();
+
+    PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
+
+    String script = "provider.getPrivate().foo()";
+
+    Serializable s = MVEL.compileExpression(script);
+
+    HashMap<String, Object> vars = new HashMap<String, Object>();
+    vars.put("provider",
+            provider);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    executeExpression(s,
+            vars);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    executeExpression(s,
+            vars);
+  }
+
+  public void testJIRA156c() throws Throwable {
+    ClassProvider provider = new ClassProvider();
+    provider.getPublic().foo();
+
+    PublicClass.class.getMethod("foo").invoke(provider.getPublic());
+
+    String script = "provider.getPublic().foo()";
+
+    Serializable s = MVEL.compileExpression(script);
+
+    HashMap<String, Object> vars = new HashMap<String, Object>();
+    vars.put("provider",
+            provider);
+
+    MVEL.eval(script,
+            vars);
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    executeExpression(s,
+            vars);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    executeExpression(s,
+            vars);
+  }
+
+  public static boolean returnTrue() {
+    return true;
+  }
+
+  public static class TestHelper {
+    public static void method(int id,
+                              Object[] arr) {
+      System.out.println(id + " -> " + arr.length);
+    }
+
+    public static void method(Object obj1, Object obj2) {
+      System.out.println(obj1 + "-> " + obj2);
+    }
+
+    public static Calendar minDate() {
+      return Calendar.getInstance();
+    }
+
+    public static Calendar maxDate() {
+      return Calendar.getInstance();
+    }
+  }
+
+  public static class Fooz {
+    public Fooz(String id) {
+    }
+  }
+
+  public void testArray() {
+    String ex = " TestHelper.method(1, new String[]{\"a\", \"b\"});\n"
+            + " TestHelper.method(2, new String[]{new String(\"a\"), new String(\"b\")});\n"
+            + " TestHelper.method(3, new Fooz[]{new Fooz(\"a\"), new Fooz(\"b\")});";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addImport(TestHelper.class);
+    ctx.addImport(Fooz.class);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    CompiledExpression expr = compiler.compile(ctx);
+    executeExpression(expr);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    expr = compiler.compile(ctx);
+    executeExpression(expr);
+  }
+
+  public void testArray2() {
+    String ex = " TestHelper.method(1, {\"a\", \"b\"});\n"
+            + " TestHelper.method(2, {new String(\"a\"), new String(\"b\")});\n"
+            + " TestHelper.method(3, {new Fooz(\"a\"), new Fooz(\"b\")});";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addImport(TestHelper.class);
+    ctx.addImport(Fooz.class);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    CompiledExpression expr = compiler.compile(ctx);
+    executeExpression(expr);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    expr = compiler.compile(ctx);
+    executeExpression(expr);
+  }
+
+
+  public void testJIRA166() {
+    Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;"
+            + " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
+            new HashMap());
+    assertEquals("foo",
+            v);
+  }
+
+  public static class Beano {
+    public String getProperty1() {
+      return null;
+    }
+
+    public boolean isProperty2() {
+      return true;
+    }
+
+    public boolean isProperty3() {
+      return false;
+    }
+  }
+
+  public void testJIRA167() {
+    Map context = new HashMap();
+    context.put("bean",
+            new Beano());
+    MVEL.eval("bean.property1==null?bean.isProperty2():bean.isProperty3()",
+            context);
+  }
+
+  public void testJIRA168() {
+    boolean before = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
+    try {
+      Map<String, Object> st = new HashMap<String, Object>();
+      st.put("__fact__", new ArrayList());
+      st.put("__expected__", 0);
+
+      String expressionNaked = "__fact__.size == __expected__";
+      String expressionNonNaked = "__fact__.size() == __expected__";
+      MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+
+      // the following works fine
+      ParserContext ctx = new ParserContext();
+      for (Map.Entry<String, Object> entry : st.entrySet()) {
+        ctx.addInput(entry.getKey(),
+                entry.getValue().getClass());
+      }
+      CompiledExpression expr = new ExpressionCompiler(expressionNaked).compile(ctx);
+
+      Boolean result = (Boolean) executeExpression(expr,
+              st);
+      assertTrue(result);
+
+      // the following works fine
+      result = (Boolean) MVEL.eval(expressionNonNaked, st);
+      assertTrue(result);
+
+      // the following fails
+      result = (Boolean) MVEL.eval(expressionNaked, st);
+      assertTrue(result);
+    } finally {
+      MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = before;
+    }
+  }
+
+  public void testJIRA170() {
+    OptimizerFactory.setDefaultOptimizer("reflective");
+
+    List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
+    List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
+
+    //      invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+    //      invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
+    invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+  }
 
-    public void testStringConcatenation2() {
-        String ex = "services.log( $cheese + \" some string \" );";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("$cheese",
-                Cheese.class);
-        ctx.addInput("services",
-                Services.class);
-        try {
-            ExpressionCompiler compiler = new ExpressionCompiler(ex);
-            compiler.compile(ctx);
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-            fail("Should not raise exception: " + e.getMessage());
-        }
-    }
-
-    public void testStringConcatenation3() {
-        // BUG: return type of the string concatenation is inferred as double instead of String
-        String ex = "services.log($av + \"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.setStrictTypeEnforcement(true);
-        ctx.addInput("$sb",
-                String.class);
-        ctx.addInput("$av",
-                double.class);
-        ctx.addInput("$pr",
-                double.class);
-        ctx.addInput("services",
-                Services.class);
-        ctx.addImport("percent", MVEL.getStaticMethod(String.class, "valueOf", new Class[]{double.class}));
-        try {
-            Serializable compiledExpression = MVEL.compileExpression(ex, ctx);
-
-            Services services = new Services() {
-                public void log(String text) {
-                }
-            };
-            Map<String, Object> vars = new HashMap<String, Object>();
-            vars.put("services", services);
-            vars.put("$sb", "RHT");
-            vars.put("$av", 15.0);
-            vars.put("$pr", 10.0);
-
-            MVEL.executeExpression(compiledExpression, vars);
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-            fail("Should not raise exception: " + e.getMessage());
-        }
-    }
-
-    public void testMapsWithVariableAsKey() {
-        String ex = "aMap[aKey] == 'aValue'";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(false);
-
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-        compiler.setVerifyOnly(true);
-        compiler.compile(ctx);
-
-        Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
-        assertTrue(requiredInputs.contains("aMap"));
-        assertTrue(requiredInputs.contains("aKey"));
-    }
-
-    public static void testProjectionUsingThis() {
-        Set records = new HashSet();
-        for (int i = 0; i < 53; i++) {
-            Bean2 record = new Bean2(i);
-            records.add(record);
-        }
-
-        Object result = MVEL.eval("(_prop in this)",
-                records);
-        System.out.println("result: " + result);
-    }
-
-    public static final class Bean2 {
-        public final int _prop;
+  public void testJIRA170b() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
 
-        public Bean2(int prop_) {
-            _prop = prop_;
-        }
-
-        public int getProp() {
-            return _prop;
-        }
-
-        public String toString() {
-            return Integer.toString(_prop);
-        }
-    }
-
-    public void testUnaryOpNegation1() {
-        assertEquals(false,
-                test("!new Boolean(true)"));
-    }
-
-    public void testUnaryOpNegation2() {
-        assertEquals(true,
-                test("!isdef _foozy_"));
-    }
-
-    public class Az {
-        public void foo(String s) {
-        }
-    }
+    List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
+    List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
 
-    public class Bz extends Az {
-    }
+    //       invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+    //       invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
+    invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+  }
 
-    public void testJIRA151() {
-        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
-        Bz b = new Bz();
-        ParserContext context = new ParserContext();
-        Object expression = MVEL.compileExpression("a.foo(value)",
-                context);
-        Map<String, Object> variables = new HashMap<String, Object>();
-
-        variables.put("a",
-                b);
-        variables.put("value",
-                123);
-        for (int i = 0; i < 100; i++) {
-            System.out.println("i: " + i);
-            System.out.flush();
-            executeExpression(expression,
-                    variables);
-        }
-    }
+  public void invokeJIRA170(String name, ParserContext pctx, Map<String, ?> vars, Collection<Integer> expected) {
+    Serializable expression = MVEL.compileExpression("x.remove((Object) y); x ", pctx);
+    Object result = executeExpression(expression, vars);
 
-    public void testJIRA151b() {
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        Bz b = new Bz();
-        ParserContext context = new ParserContext();
-        Object expression = MVEL.compileExpression("a.foo(value)",
-                context);
-        Map<String, Object> variables = new HashMap<String, Object>();
-
-        variables.put("a",
-                b);
-        variables.put("value",
-                123);
-        for (int i = 0; i < 100; i++) {
-            System.out.println("i: " + i);
-            System.out.flush();
-            executeExpression(expression,
-                    variables);
-        }
-    }
+    assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
+    result = executeExpression(expression, vars);
 
+    assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
+  }
 
-    public void testJIRA153() {
-        assertEquals(false,
-                MVEL.eval("!(true)"));
-        assertEquals(false,
-                executeExpression(MVEL.compileExpression("!(true)")));
-    }
 
-    public void testJIRA154() {
-        Map m = createTestMap();
-        m.put("returnTrue",
-                MVEL.getStaticMethod(CoreConfidenceTests.class,
-                        "returnTrue",
-                        new Class[0]));
-
-        assertEquals(false,
-                MVEL.eval("!returnTrue()",
-                        m));
-    }
+  private Map<String, ?> varsJIRA170() {
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("x", new ArrayList<Integer>(Arrays.asList(3, 2, 1, 0)));
+    vars.put("y", 3);
+    return vars;
+  }
 
-    public void testJIRA154b() {
-        ParserContext pctx = new ParserContext();
-        pctx.addImport("returnTrue",
-                MVEL.getStaticMethod(CoreConfidenceTests.class,
-                        "returnTrue",
-                        new Class[0]));
-
-        assertEquals(false,
-                executeExpression(MVEL.compileExpression("!(returnTrue())",
-                        pctx)));
-    }
+  private ParserContext ctxJIRA170(boolean strictTypeEnforcement, boolean strongTyping) {
+    ParserContext ctx = new ParserContext();
+    //    ctx.setStrictTypeEnforcement(strictTypeEnforcement);
+    ctx.setStrongTyping(strongTyping);
+    ctx.addInput("x", Collection.class, new Class[]{Integer.class});
+    ctx.addInput("y", Integer.class);
+    return ctx;
+  }
 
-    public void testJIRA155() {
-        ParserContext pctx = new ParserContext();
-        pctx.addImport("returnTrue",
-                MVEL.getStaticMethod(CoreConfidenceTests.class,
-                        "returnTrue",
-                        new Class[0]));
-
-        assertEquals(true,
-                executeExpression(MVEL.compileExpression("!true || returnTrue()",
-                        pctx)));
-    }
 
-    public void testJIRA155b() {
-        ParserContext pctx = new ParserContext();
-        pctx.addImport("returnTrue",
-                MVEL.getStaticMethod(CoreConfidenceTests.class,
-                        "returnTrue",
-                        new Class[0]));
-
-        assertEquals(true,
-                executeExpression(MVEL.compileExpression("!(!true || !returnTrue())",
-                        pctx)));
+  public static class JIRA167Step {
+    public String getParent() {
+      return null;
     }
+  }
 
-    public void testJIRA156() throws Throwable {
-        ClassProvider provider = new ClassProvider();
-        provider.getPrivate().foo();
-
-        PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
-
-        String script = "provider.getPrivate().foo()";
-        HashMap<String, Object> vars = new HashMap<String, Object>();
-        vars.put("provider",
-                provider);
-        MVEL.eval(script,
-                vars);
+  public static class JIRA167Node {
+    public boolean isServer() {
+      return true;
     }
-
-    public void testJIRA156b() throws Throwable {
-        ClassProvider provider = new ClassProvider();
-        provider.getPrivate().foo();
+  }
 
-        PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
+  public void testJIRA167b() {
+    Map context = new HashMap();
+    context.put("current", new JIRA167Step());
+    context.put("node", new JIRA167Node());
+    MVEL.eval("current.parent==null?node.isServer():(node==current.parent.node)", context);
+  }
 
-        String script = "provider.getPrivate().foo()";
+  public void testJIRA167c() {
+    MVEL.eval("true?true:(false)");
+  }
 
-        Serializable s = MVEL.compileExpression(script);
 
-        HashMap<String, Object> vars = new HashMap<String, Object>();
-        vars.put("provider",
-                provider);
+  public void testJIRA176() {
+    Map innerMap = new HashMap();
+    innerMap.put("testKey[MyValue=newValue]", "test");
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        executeExpression(s,
-                vars);
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        executeExpression(s,
-                vars);
-    }
-
-    public void testJIRA156c() throws Throwable {
-        ClassProvider provider = new ClassProvider();
-        provider.getPublic().foo();
+    Map vars = new HashMap();
+    vars.put("mappo", innerMap);
 
-        PublicClass.class.getMethod("foo").invoke(provider.getPublic());
+    assertEquals("test", MVEL.eval("mappo['testKey[MyValue=newValue]']", vars));
+  }
 
-        String script = "provider.getPublic().foo()";
+  public void testJIRA176b() {
+    Map innerMap = new HashMap();
+    innerMap.put("testKey[MyValue=newValue]", "test");
 
-        Serializable s = MVEL.compileExpression(script);
+    Map vars = new HashMap();
+    vars.put("mappo", innerMap);
 
-        HashMap<String, Object> vars = new HashMap<String, Object>();
-        vars.put("provider",
-                provider);
+    Serializable s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
+    OptimizerFactory.setDefaultOptimizer("reflective");
 
-        MVEL.eval(script,
-                vars);
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        executeExpression(s,
-                vars);
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        executeExpression(s,
-                vars);
-    }
+    assertEquals("test", executeExpression(s, vars));
 
-    public static boolean returnTrue() {
-        return true;
-    }
+    s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
+    OptimizerFactory.setDefaultOptimizer("ASM");
 
-    public static class TestHelper {
-        public static void method(int id,
-                                  Object[] arr) {
-            System.out.println(id + " -> " + arr.length);
-        }
-
-        public static void method(Object obj1, Object obj2) {
-            System.out.println(obj1 + "-> " + obj2);
-        }
-
-        public static Calendar minDate() {
-            return Calendar.getInstance();
-        }
-
-        public static Calendar maxDate() {
-            return Calendar.getInstance();
-        }
-    }
+    assertEquals("test", executeExpression(s, vars));
+  }
 
-    public static class Fooz {
-        public Fooz(String id) {
-        }
-    }
+  public void testRandomSomething() {
 
-    public void testArray() {
-        String ex = " TestHelper.method(1, new String[]{\"a\", \"b\"});\n"
-                + " TestHelper.method(2, new String[]{new String(\"a\"), new String(\"b\")});\n"
-                + " TestHelper.method(3, new Fooz[]{new Fooz(\"a\"), new Fooz(\"b\")});";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addImport(TestHelper.class);
-        ctx.addImport(Fooz.class);
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        CompiledExpression expr = compiler.compile(ctx);
-        executeExpression(expr);
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        expr = compiler.compile(ctx);
-        executeExpression(expr);
-    }
+    Foo foo = new Foo();
+    foo.setName("foo1");
 
-    public void testArray2() {
-        String ex = " TestHelper.method(1, {\"a\", \"b\"});\n"
-                + " TestHelper.method(2, {new String(\"a\"), new String(\"b\")});\n"
-                + " TestHelper.method(3, {new Fooz(\"a\"), new Fooz(\"b\")});";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addImport(TestHelper.class);
-        ctx.addImport(Fooz.class);
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        CompiledExpression expr = compiler.compile(ctx);
-        executeExpression(expr);
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        expr = compiler.compile(ctx);
-        executeExpression(expr);
-    }
+    Foo foo2 = new Foo();
+    foo2.setName("foo2");
 
+    MVEL.setProperty(foo, "name", 5);
 
-    public void testJIRA166() {
-        Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;"
-                + " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
-                new HashMap());
-        assertEquals("foo",
-                v);
-    }
+    Serializable s = MVEL.compileExpression("name.toUpperCase()", ParserContext.create().stronglyTyped().withInput("name", String.class));
 
-    public static class Beano {
-        public String getProperty1() {
-            return null;
-        }
-
-        public boolean isProperty2() {
-            return true;
-        }
-
-        public boolean isProperty3() {
-            return false;
-        }
-    }
+    Object _return = executeExpression(s, foo);
 
-    public void testJIRA167() {
-        Map context = new HashMap();
-        context.put("bean",
-                new Beano());
-        MVEL.eval("bean.property1==null?bean.isProperty2():bean.isProperty3()",
-                context);
-    }
+    System.out.println("returned value: " + String.valueOf(_return));
 
-    public void testJIRA168() {
-        boolean before = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
-        try {
-            Map<String, Object> st = new HashMap<String, Object>();
-            st.put("__fact__", new ArrayList());
-            st.put("__expected__", 0);
-
-            String expressionNaked = "__fact__.size == __expected__";
-            String expressionNonNaked = "__fact__.size() == __expected__";
-            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
-
-            // the following works fine
-            ParserContext ctx = new ParserContext();
-            for (Map.Entry<String, Object> entry : st.entrySet()) {
-                ctx.addInput(entry.getKey(),
-                        entry.getValue().getClass());
-            }
-            CompiledExpression expr = new ExpressionCompiler(expressionNaked).compile(ctx);
-
-            Boolean result = (Boolean) executeExpression(expr,
-                    st);
-            assertTrue(result);
-
-            // the following works fine        
-            result = (Boolean) MVEL.eval(expressionNonNaked, st);
-            assertTrue(result);
-
-            // the following fails
-            result = (Boolean) MVEL.eval(expressionNaked, st);
-            assertTrue(result);
-        }
-        finally {
-            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = before;
-        }
-    }
+    _return = executeExpression(s, foo2);
 
-    public void testJIRA170() {
-        OptimizerFactory.setDefaultOptimizer("reflective");
+    System.out.println("returned value: " + String.valueOf(_return));
 
-        List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
-        List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
+  }
 
-        //      invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
-        //      invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
-        invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+  public static class ProcessManager {
+    public void startProcess(String name, Map<String, Object> variables) {
+      System.out.println("Process started");
     }
-
-    public void testJIRA170b() {
-        OptimizerFactory.setDefaultOptimizer("ASM");
+  }
 
-        List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
-        List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
-
-        //       invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
-        //       invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
-        invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+  public static class KnowledgeRuntimeHelper {
+    public ProcessManager getProcessManager() {
+      return new ProcessManager();
     }
-
-    public void invokeJIRA170(String name, ParserContext pctx, Map<String, ?> vars, Collection<Integer> expected) {
-        Serializable expression = MVEL.compileExpression("x.remove((Object) y); x ", pctx);
-        Object result = executeExpression(expression, vars);
+  }
 
-        assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
-        result = executeExpression(expression, vars);
-
-        assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
-    }
+  public void testDeepMethodNameResolution() {
+    String expression = "variables = [ \"symbol\" : \"RHT\" ]; \n" +
+            "drools.getProcessManager().startProcess(\"id\", variables );";
 
+    // third pass
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("drools", KnowledgeRuntimeHelper.class);
+    Map vars = new HashMap();
+    vars.put("drools", new KnowledgeRuntimeHelper());
+    Serializable expr = MVEL.compileExpression(expression, ctx);
+    executeExpression(expr, vars);
+  }
 
-    private Map<String, ?> varsJIRA170() {
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("x", new ArrayList<Integer>(Arrays.asList(3, 2, 1, 0)));
-        vars.put("y", 3);
-        return vars;
-    }
+  public void testJIRA183() {
+    String exp1 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
+            " { end = 'attribute'.length()} 'attribute'.substring(0, end);";
+    Object val1 = MVEL.eval(exp1, new HashMap<String, Object>());
 
-    private ParserContext ctxJIRA170(boolean strictTypeEnforcement, boolean strongTyping) {
-        ParserContext ctx = new ParserContext();
-        //    ctx.setStrictTypeEnforcement(strictTypeEnforcement);
-        ctx.setStrongTyping(strongTyping);
-        ctx.addInput("x", Collection.class, new Class[]{Integer.class});
-        ctx.addInput("y", Integer.class);
-        return ctx;
-    }
+    String exp2 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
+            " { end = 'attribute'.length() } 'attribute'.substring(0, end);";
+    Object val2 = MVEL.eval(exp2, new HashMap<String, Object>());
+  }
 
 
-    public static class JIRA167Step {
-        public String getParent() {
-            return null;
-        }
-    }
+  public void testContextAssignments() {
+    Foo foo = new Foo();
+    MVEL.eval("this.name = 'bar'", foo);
 
-    public static class JIRA167Node {
-        public boolean isServer() {
-            return true;
-        }
-    }
+    assertEquals("bar", foo.getName());
+  }
 
-    public void testJIRA167b() {
-        Map context = new HashMap();
-        context.put("current", new JIRA167Step());
-        context.put("node", new JIRA167Node());
-        MVEL.eval("current.parent==null?node.isServer():(node==current.parent.node)", context);
-    }
+  public void testMVEL187() {
+    ParserContext context = new ParserContext();
+    context.addPackageImport("test");
+    context.addInput("outer", Outer.class);
 
-    public void testJIRA167c() {
-        MVEL.eval("true?true:(false)");
-    }
+    Object compiled = MVEL.compileExpression(
+            "outer.getInner().getValue()", context);
 
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("outer", new Outer());
+    VariableResolverFactory varsResolver = new MapVariableResolverFactory(vars);
 
-    public void testJIRA176() {
-        Map innerMap = new HashMap();
-        innerMap.put("testKey[MyValue=newValue]", "test");
+    assertEquals(2, executeExpression(compiled, varsResolver));
+  }
 
-        Map vars = new HashMap();
-        vars.put("mappo", innerMap);
+  public void testMVEL190() {
+    ParserContext context = new ParserContext();
+    context.addImport(Ship.class);
+    context.addImport(MapObject.class);
 
-        assertEquals("test", MVEL.eval("mappo['testKey[MyValue=newValue]']", vars));
-    }
+    context.addInput("obj", MapObject.class);
 
-    public void testJIRA176b() {
-        Map innerMap = new HashMap();
-        innerMap.put("testKey[MyValue=newValue]", "test");
+    Object compiled = MVEL.compileExpression(
+            "((Ship) obj).getName()", context);
 
-        Map vars = new HashMap();
-        vars.put("mappo", innerMap);
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("obj", new Ship());
 
-        Serializable s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
-        OptimizerFactory.setDefaultOptimizer("reflective");
+    VariableResolverFactory varsResolver
+            = new MapVariableResolverFactory(vars);
 
-        assertEquals("test", executeExpression(s, vars));
+    System.out.println(
+            executeExpression(compiled, varsResolver));
+  }
 
-        s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
-        OptimizerFactory.setDefaultOptimizer("ASM");
+  public void testMethodScoring() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    ParserConfiguration pconf = new ParserConfiguration();
+    for (Method m : StaticMethods.class.getMethods()) {
+      if (Modifier.isStatic(m.getModifiers())) {
+        pconf.addImport(m.getName(), m);
 
-        assertEquals("test", executeExpression(s, vars));
+      }
     }
-
-    public void testRandomSomething() {
-
-        Foo foo = new Foo();
-        foo.setName("foo1");
+    pconf.addImport("TestCase", TestCase.class);
+    ParserContext pctx = new ParserContext(pconf);
 
-        Foo foo2 = new Foo();
-        foo2.setName("foo2");
+    Map<String, Object> vars = new HashMap<String, Object>();
 
-        MVEL.setProperty(foo, "name", 5);
+    // this is successful
+    TestCase.assertTrue(StaticMethods.is(StaticMethods.getList(java.util.Formatter.class)));
 
-        Serializable s = MVEL.compileExpression("name.toUpperCase()", ParserContext.create().stronglyTyped().withInput("name", String.class));
+    // this also should be fine
+    Serializable expr = MVEL.compileExpression("TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx);
+    executeExpression(expr, vars);
+  }
 
-        Object _return = executeExpression(s, foo);
-
-        System.out.println("returned value: " + String.valueOf(_return));
-
-        _return = executeExpression(s, foo2);
-
-        System.out.println("returned value: " + String.valueOf(_return));
-
-    }
-
-    public static class ProcessManager {
-        public void startProcess(String name, Map<String, Object> variables) {
-            System.out.println("Process started");
-        }
-    }
-
-    public static class KnowledgeRuntimeHelper {
-        public ProcessManager getProcessManager() {
-            return new ProcessManager();
-        }
+  public static class StaticMethods {
+    public static <T> boolean is(List<T> arg) {
+      return true;
     }
 
-    public void testDeepMethodNameResolution() {
-        String expression = "variables = [ \"symbol\" : \"RHT\" ]; \n" +
-                "drools.getProcessManager().startProcess(\"id\", variables );";
-
-        // third pass
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("drools", KnowledgeRuntimeHelper.class);
-        Map vars = new HashMap();
-        vars.put("drools", new KnowledgeRuntimeHelper());
-        Serializable expr = MVEL.compileExpression(expression, ctx);
-        executeExpression(expr, vars);
+    public static boolean is(Collection arg) {
+      throw new RuntimeException("Wrong method called");
     }
 
-    public void testJIRA183() {
-        String exp1 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
-                " { end = 'attribute'.length()} 'attribute'.substring(0, end);";
-        Object val1 = MVEL.eval(exp1, new HashMap<String, Object>());
-
-        String exp2 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
-                " { end = 'attribute'.length() } 'attribute'.substring(0, end);";
-        Object val2 = MVEL.eval(exp2, new HashMap<String, Object>());
+    public static List<Object> getList(Class<?> arg) {
+      ArrayList<Object> result = new ArrayList<Object>();
+      result.add(arg);
+      return result;
     }
 
-
-    public void testContextAssignments() {
-        Foo foo = new Foo();
-        MVEL.eval("this.name = 'bar'", foo);
-
-        assertEquals("bar", foo.getName());
+    public static String throwException() {
+      throw new RuntimeException("this should throw an exception");
     }
-
-    public void testMVEL187() {
-        ParserContext context = new ParserContext();
-        context.addPackageImport("test");
-        context.addInput("outer", Outer.class);
-
-        Object compiled = MVEL.compileExpression(
-                "outer.getInner().getValue()", context);
+  }
 
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("outer", new Outer());
-        VariableResolverFactory varsResolver = new MapVariableResolverFactory(vars);
+  public void testSetterViaDotNotation() {
 
-        assertEquals(2, executeExpression(compiled, varsResolver));
-    }
+    TestClass tc = new TestClass();
+    tc.getExtra().put("test", "value");
 
-    public void testMVEL190() {
-        ParserContext context = new ParserContext();
-        context.addImport(Ship.class);
-        context.addImport(MapObject.class);
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    String expression = "extra.test";
+    Serializable compiled = MVEL.compileSetExpression(expression, ctx);
+    MVEL.executeSetExpression(compiled, tc, "value2");
+    assertEquals("value2", tc.getExtra().get("test"));
+  }
 
-        context.addInput("obj", MapObject.class);
+  public void testSetterViaMapNotation() {
 
-        Object compiled = MVEL.compileExpression(
-                "((Ship) obj).getName()", context);
+    TestClass tc = new TestClass();
+    tc.getExtra().put("test", "value");
 
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("obj", new Ship());
+    ParserContext ctx = new ParserContext();
+    ctx.withInput("this", TestClass.class);
+    ctx.setStrongTyping(true);
+    String expression = "extra[\"test\"]";
+    Serializable compiled = MVEL.compileSetExpression(expression, tc.getClass(), ctx);
+    MVEL.executeSetExpression(compiled, tc, "value3");
+    assertEquals("value3", tc.getExtra().get("test"));
+  }
 
-        VariableResolverFactory varsResolver
-                = new MapVariableResolverFactory(vars);
 
-        System.out.println(
-                executeExpression(compiled, varsResolver));
-    }
+  public void testGetterViaDotNotation() {
+    TestClass tc = new TestClass();
+    tc.getExtra().put("test", "value");
 
-    public void testMethodScoring() {
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        ParserConfiguration pconf = new ParserConfiguration();
-        for (Method m : StaticMethods.class.getMethods()) {
-            if (Modifier.isStatic(m.getModifiers())) {
-                pconf.addImport(m.getName(), m);
-
-            }
-        }
-        pconf.addImport("TestCase", TestCase.class);
-        ParserContext pctx = new ParserContext(pconf);
-
-        Map<String, Object> vars = new HashMap<String, Object>();
-
-        // this is successful
-        TestCase.assertTrue(StaticMethods.is(StaticMethods.getList(java.util.Formatter.class)));
-
-        // this also should be fine
-        Serializable expr = MVEL.compileExpression("TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx);
-        executeExpression(expr, vars);
-    }
+    Map vars = new HashMap();
+    vars.put("tc", tc);
 
-    public static class StaticMethods {
-        public static <T> boolean is(List<T> arg) {
-            return true;
-        }
-
-        public static boolean is(Collection arg) {
-            throw new RuntimeException("Wrong method called");
-        }
-
-        public static List<Object> getList(Class<?> arg) {
-            ArrayList<Object> result = new ArrayList<Object>();
-            result.add(arg);
-            return result;
-        }
-
-        public static String throwException() {
-            throw new RuntimeException("this should throw an exception");
-        }
-    }
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("tc", tc.getClass());
+    String expression = "tc.extra.test";
+    Serializable compiled = MVEL.compileExpression(expression, ctx);
+    String val = (String) executeExpression(compiled, vars);
+    assertEquals("value", val);
+  }
 
-    public void testSetterViaDotNotation() {
+  public void testGetterViaMapNotation() {
+    TestClass tc = new TestClass();
+    tc.getExtra().put("test", "value");
 
-        TestClass tc = new TestClass();
-        tc.getExtra().put("test", "value");
+    Map vars = new HashMap();
+    vars.put("tc", tc);
 
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        String expression = "extra.test";
-        Serializable compiled = MVEL.compileSetExpression(expression, ctx);
-        MVEL.executeSetExpression(compiled, tc, "value2");
-        assertEquals("value2", tc.getExtra().get("test"));
-    }
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("tc", tc.getClass());
+    String expression = "tc.extra[\"test\"]";
+    Serializable compiled = MVEL.compileExpression(expression, ctx);
+    String val = (String) executeExpression(compiled, vars);
+    assertEquals("value", val);
+  }
 
-    public void testSetterViaMapNotation() {
-
-        TestClass tc = new TestClass();
-        tc.getExtra().put("test", "value");
-
-        ParserContext ctx = new ParserContext();
-        ctx.withInput("this", TestClass.class);
-        ctx.setStrongTyping(true);
-        String expression = "extra[\"test\"]";
-        Serializable compiled = MVEL.compileSetExpression(expression, tc.getClass(), ctx);
-        MVEL.executeSetExpression(compiled, tc, "value3");
-        assertEquals("value3", tc.getExtra().get("test"));
-    }
+  public void testGetterViaMapGetter() {
+    TestClass tc = new TestClass();
+    tc.getExtra().put("test", "value");
 
+    Map vars = new HashMap();
+    vars.put("tc", tc);
 
-    public void testGetterViaDotNotation() {
-        TestClass tc = new TestClass();
-        tc.getExtra().put("test", "value");
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addInput("tc", tc.getClass());
+    String expression = "tc.extra.get(\"test\")";
+    Serializable compiled = MVEL.compileExpression(expression, ctx);
+    String val = (String) executeExpression(compiled, vars);
+    assertEquals("value", val);
+  }
 
-        Map vars = new HashMap();
-        vars.put("tc", tc);
 
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("tc", tc.getClass());
-        String expression = "tc.extra.test";
-        Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) executeExpression(compiled, vars);
-        assertEquals("value", val);
-    }
+  public void testJIRA209() {
+    Map vars = new LinkedHashMap();
+    vars.put("bal", new BigDecimal("999.99"));
 
-    public void testGetterViaMapNotation() {
-        TestClass tc = new TestClass();
-        tc.getExtra().put("test", "value");
-
-        Map vars = new HashMap();
-        vars.put("tc", tc);
-
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("tc", tc.getClass());
-        String expression = "tc.extra[\"test\"]";
-        Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) executeExpression(compiled, vars);
-        assertEquals("value", val);
-    }
+    String[] testCases = {
+            //        "bal < 100 or bal > 200",
+            //        "bal < 100 || bal > 200",
+            "bal > 200 or bal < 100",
+            "bal > 200 || bal < 100",
+            "bal < 100 and bal > 200",
+            "bal < 100 && bal > 200",
+            "bal > 200 and bal < 100",
+            "bal > 200 && bal < 100"
+    };
 
-    public void testGetterViaMapGetter() {
-        TestClass tc = new TestClass();
-        tc.getExtra().put("test", "value");
-
-        Map vars = new HashMap();
-        vars.put("tc", tc);
-
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("tc", tc.getClass());
-        String expression = "tc.extra.get(\"test\")";
-        Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) executeExpression(compiled, vars);
-        assertEquals("value", val);
+    Object val1, val2;
+    for (String expr : testCases) {
+      System.out.println("Evaluating '" + expr + "': ......");
+      val1 = MVEL.eval(expr, vars);
+      assertNotNull(val1);
+      Serializable compiled = MVEL.compileExpression(expr);
+      val2 = executeExpression(compiled, vars);
+      assertNotNull(val2);
+      assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
     }
-
+  }
 
-    public void testJIRA209() {
-        Map vars = new LinkedHashMap();
-        vars.put("bal", new BigDecimal("999.99"));
-
-        String[] testCases = {
-                //        "bal < 100 or bal > 200",
-                //        "bal < 100 || bal > 200",
-                "bal > 200 or bal < 100",
-                "bal > 200 || bal < 100",
-                "bal < 100 and bal > 200",
-                "bal < 100 && bal > 200",
-                "bal > 200 and bal < 100",
-                "bal > 200 && bal < 100"
-        };
-
-        Object val1, val2;
-        for (String expr : testCases) {
-            System.out.println("Evaluating '" + expr + "': ......");
-            val1 = MVEL.eval(expr, vars);
-            assertNotNull(val1);
-            Serializable compiled = MVEL.compileExpression(expr);
-            val2 = executeExpression(compiled, vars);
-            assertNotNull(val2);
-            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
-        }
-    }
+  public void testConstructor() {
+    String ex = " TestHelper.method(new Person('bob', 30), new Person('mark', 40, 999, 55, 10));\n";
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addImport(TestHelper.class);
+    ctx.addImport(Person.class);
 
-    public void testConstructor() {
-        String ex = " TestHelper.method(new Person('bob', 30), new Person('mark', 40, 999, 55, 10));\n";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addImport(TestHelper.class);
-        ctx.addImport(Person.class);
-
-        // un-comment the following line to see how MVEL is converting the int argument 40 into a
-        // string and then executing the wrong constructor on the Person class
-        try {
-            MVEL.compileExpression(ex, ctx);
-            fail("Constructor should not have been found.");
-        }
-        catch (CompileException e) {
-            // yay.
-        }
-        // fail( "The Person constructor used in the expression does not exist, so an error should have been raised during compilation." );
+    // un-comment the following line to see how MVEL is converting the int argument 40 into a
+    // string and then executing the wrong constructor on the Person class
+    try {
+      MVEL.compileExpression(ex, ctx);
+      fail("Constructor should not have been found.");
+    } catch (CompileException e) {
+      // yay.
     }
+    // fail( "The Person constructor used in the expression does not exist, so an error should have been raised during compilation." );
+  }
 
-    public void testAmbiguousGetName() {
-        Map<String, Object> vars = createTestMap();
-        vars.put("Foo244", Foo.class);
+  public void testAmbiguousGetName() {
+    Map<String, Object> vars = createTestMap();
+    vars.put("Foo244", Foo.class);
 
-        Serializable s = MVEL.compileExpression("foo.getClass().getName()");
+    Serializable s = MVEL.compileExpression("foo.getClass().getName()");
 
-        System.out.println(MVEL.executeExpression(s, vars));
+    System.out.println(MVEL.executeExpression(s, vars));
 
-        s = MVEL.compileExpression("Foo244.getName()");
+    s = MVEL.compileExpression("Foo244.getName()");
 
-        System.out.println(MVEL.executeExpression(s, vars));
-    }
+    System.out.println(MVEL.executeExpression(s, vars));
+  }
 
-    public void testBindingNullToPrimitiveTypes() {
-        Map<String, Object> vars = createTestMap();
-        ((Foo) vars.get("foo")).setCountTest(10);
+  public void testBindingNullToPrimitiveTypes() {
+    Map<String, Object> vars = createTestMap();
+    ((Foo) vars.get("foo")).setCountTest(10);
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.countTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.countTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+    assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        s = MVEL.compileSetExpression("foo.countTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    s = MVEL.compileSetExpression("foo.countTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+    assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
 
-        MVEL.executeSetExpression(s, vars, null);
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
-    }
+    assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+  }
 
-    public void testBindingNullToPrimitiveTypes2() {
-        Map<String, Object> vars = createTestMap();
-        ((Foo) vars.get("foo")).setCountTest(10);
+  public void testBindingNullToPrimitiveTypes2() {
+    Map<String, Object> vars = createTestMap();
+    ((Foo) vars.get("foo")).setCountTest(10);
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.boolTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.boolTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertFalse(((Foo) vars.get("foo")).isBoolTest());
+    assertFalse(((Foo) vars.get("foo")).isBoolTest());
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        s = MVEL.compileSetExpression("foo.boolTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    s = MVEL.compileSetExpression("foo.boolTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertFalse(((Foo) vars.get("foo")).isBoolTest());
+    assertFalse(((Foo) vars.get("foo")).isBoolTest());
 
-        MVEL.executeSetExpression(s, vars, null);
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertFalse(((Foo) vars.get("foo")).isBoolTest());
-    }
+    assertFalse(((Foo) vars.get("foo")).isBoolTest());
+  }
 
-    public void testBindingNullToPrimitiveTypes3() {
-        Map<String, Object> vars = createTestMap();
-        ((Foo) vars.get("foo")).setCharTest('a');
+  public void testBindingNullToPrimitiveTypes3() {
+    Map<String, Object> vars = createTestMap();
+    ((Foo) vars.get("foo")).setCharTest('a');
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.charTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.charTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+    assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        s = MVEL.compileSetExpression("foo.charTest");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    s = MVEL.compileSetExpression("foo.charTest");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+    assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
 
-        MVEL.executeSetExpression(s, vars, null);
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
-    }
+    assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+  }
 
 
-    public void testBindingNullToPrimitiveTypes4() {
-        Map<String, Object> vars = createTestMap();
-        ((Foo) vars.get("foo")).charTestFld = 'a';
+  public void testBindingNullToPrimitiveTypes4() {
+    Map<String, Object> vars = createTestMap();
+    ((Foo) vars.get("foo")).charTestFld = 'a';
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.charTestFld");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.charTestFld");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+    assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        s = MVEL.compileSetExpression("foo.charTestFld");
-        MVEL.executeSetExpression(s, vars, null);
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    s = MVEL.compileSetExpression("foo.charTestFld");
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+    assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
 
-        MVEL.executeSetExpression(s, vars, null);
+    MVEL.executeSetExpression(s, vars, null);
 
-        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
-    }
+    assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+  }
 
-    public void testBindListToArray() {
-        Map<String, Object> vars = createTestMap();
+  public void testBindListToArray() {
+    Map<String, Object> vars = createTestMap();
 
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("a");
-        list.add("b");
-        list.add("c");
+    ArrayList<String> list = new ArrayList<String>();
+    list.add("a");
+    list.add("b");
+    list.add("c");
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.charArray");
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.charArray");
 
-        MVEL.executeSetExpression(s, vars, list);
+    MVEL.executeSetExpression(s, vars, list);
 
-        assertEquals(((Foo) vars.get("foo")).getCharArray().length, 3);
-    }
+    assertEquals(((Foo) vars.get("foo")).getCharArray().length, 3);
+  }
 
-    public void testBindListToMultiArray() {
-        Map<String, Object> vars = createTestMap();
+  public void testBindListToMultiArray() {
+    Map<String, Object> vars = createTestMap();
 
-        ArrayList<List<String>> list = new ArrayList<List<String>>();
+    ArrayList<List<String>> list = new ArrayList<List<String>>();
 
-        List<String> l1 = new ArrayList<String>();
-        l1.add("a");
-        l1.add("b");
-        l1.add("c");
+    List<String> l1 = new ArrayList<String>();
+    l1.add("a");
+    l1.add("b");
+    l1.add("c");
 
-        List<String> l2 = new ArrayList<String>();
-        l2.add("d");
-        l2.add("e");
-        l2.add("f");
+    List<String> l2 = new ArrayList<String>();
+    l2.add("d");
+    l2.add("e");
+    l2.add("f");
 
-        List<String> l3 = new ArrayList<String>();
-        l3.add("g");
-        l3.add("h");
-        l3.add("i");
+    List<String> l3 = new ArrayList<String>();
+    l3.add("g");
+    l3.add("h");
+    l3.add("i");
 
-        list.add(l1);
-        list.add(l2);
-        list.add(l3);
+    list.add(l1);
+    list.add(l2);
+    list.add(l3);
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable s = MVEL.compileSetExpression("foo.charArrayMulti");
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    Serializable s = MVEL.compileSetExpression("foo.charArrayMulti");
 
-        MVEL.executeSetExpression(s, vars, list);
+    MVEL.executeSetExpression(s, vars, list);
 
-        Foo foo = (Foo) vars.get("foo");
+    Foo foo = (Foo) vars.get("foo");
 
-        assertEquals(foo.getCharArrayMulti().length, 3);
-        assertEquals(foo.getCharArrayMulti()[2][2], 'i');
-    }
+    assertEquals(foo.getCharArrayMulti().length, 3);
+    assertEquals(foo.getCharArrayMulti()[2][2], 'i');
+  }
 
-    public void testMVEL224() {
-        ParserContext ctx = new ParserContext();
-        MVEL.compileExpression("(pin == 1)", ctx);
-    }
+  public void testMVEL224() {
+    ParserContext ctx = new ParserContext();
+    MVEL.compileExpression("(pin == 1)", ctx);
+  }
 
 
-    public static class A221 {
+  public static class A221 {
 
-        public B221 b;
-    }
+    public B221 b;
+  }
 
-    public static class B221 {
+  public static class B221 {
 
-        public String c = "something";
-    }
+    public String c = "something";
+  }
 
-    public void testMVEL221() {
-        A221 a1 = new A221();
-        a1.b = new B221();
+  public void testMVEL221() {
+    A221 a1 = new A221();
+    a1.b = new B221();
 
-        A221 a2 = new A221();
+    A221 a2 = new A221();
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
+    OptimizerFactory.setDefaultOptimizer("ASM");
 
-        String expression = "this.?b.c";
-        Serializable compiledExpression = MVEL.compileExpression(expression);
+    String expression = "this.?b.c";
+    Serializable compiledExpression = MVEL.compileExpression(expression);
 
-        assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
-        assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
+    assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
+    assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
+    OptimizerFactory.setDefaultOptimizer("reflective");
 
-        compiledExpression = MVEL.compileExpression(expression);
+    compiledExpression = MVEL.compileExpression(expression);
 
-        assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
-        assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
-    }
+    assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
+    assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
+  }
 
-    public void testMVEL222() throws IOException {
-        String script = "for (int i= 0; i < 10; i++ ){ values[i] = 1.0; }";
-        Map<String, Object> scriptVars = new HashMap<String, Object>();
-        double[] values = new double[10];
-        scriptVars.put("values", values);
-        Serializable expression = MVEL.compileExpression(script);
-        for (int i = 0; i < 6; i++) {
-            scriptVars.put("values", values);
-            MVEL.executeExpression(expression, scriptVars);
-        }
+  public void testMVEL222() throws IOException {
+    String script = "for (int i= 0; i < 10; i++ ){ values[i] = 1.0; }";
+    Map<String, Object> scriptVars = new HashMap<String, Object>();
+    double[] values = new double[10];
+    scriptVars.put("values", values);
+    Serializable expression = MVEL.compileExpression(script);
+    for (int i = 0; i < 6; i++) {
+      scriptVars.put("values", values);
+      MVEL.executeExpression(expression, scriptVars);
     }
+  }
 
-    public void testMVEL238() throws IOException {
-        String expr = new String(loadFromFile(new File("src/test/java/org/mvel2/tests/MVEL238.mvel")));
+  public void testMVEL238() throws IOException {
+    String expr = new String(loadFromFile(new File("src/test/java/org/mvel2/tests/MVEL238.mvel")));
 
-        Serializable s = MVEL.compileExpression(expr);
+    Serializable s = MVEL.compileExpression(expr);
 
-        System.out.println(MVEL.executeExpression(s, new HashMap()));
-        System.out.println(MVEL.executeExpression(s, new HashMap()));
-    }
+    System.out.println(MVEL.executeExpression(s, new HashMap()));
+    System.out.println(MVEL.executeExpression(s, new HashMap()));
+  }
 
-    public void testParsingRegression() {
-        String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
-        MVEL.eval(expr);
-    }
+  public void testParsingRegression() {
+    String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
+    MVEL.eval(expr);
+  }
 
 
-    public static class StaticClassWithStaticMethod {
-        public static String getString() {
-            return "hello";
-        }
+  public static class StaticClassWithStaticMethod {
+    public static String getString() {
+      return "hello";
     }
+  }
 
 //    public void testStaticImportWithWildcard() {
 //        // this isn't supported yet
@@ -3073,180 +3063,179 @@ public class CoreConfidenceTests extends AbstractTest {
 //                test("import_static " + getClass().getName() + ".StaticClassWithStaticMethod.*; getString()"));
 //    }
 
-    public void testArrayLength() {
-        ParserContext context = new ParserContext();
-        context.setStrongTyping(true);
-        context.addInput("x",
-                String[].class);
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
-    }
+  public void testArrayLength() {
+    ParserContext context = new ParserContext();
+    context.setStrongTyping(true);
+    context.addInput("x",
+            String[].class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
+  }
 
-    public void testEmptyConstructorWithSpace() throws Exception {
-        ParserConfiguration pconf = new ParserConfiguration();
-        pconf.addImport("getString", StaticClassWithStaticMethod.class.getMethod("getString", null));
+  public void testEmptyConstructorWithSpace() throws Exception {
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.addImport("getString", StaticClassWithStaticMethod.class.getMethod("getString", null));
 
-        String text = "getString( )";
+    String text = "getString( )";
 
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrongTyping(true);
-        pctx.setStrictTypeEnforcement(true);
-
-
-        MVEL.compileExpression(text, pctx);
-    }
-
-    public void testJavaLangImport() throws Exception {
-        String s = "Exception e = null;";
-        ParserConfiguration pconf = new ParserConfiguration();
-        ParserContext pctx = new ParserContext(pconf);
-        MVEL.compileExpression(s, pctx);
-    }
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.setStrictTypeEnforcement(true);
 
 
-    public void testContextFieldNotFound() {
-        String str = "'stilton'.equals( type );";
+    MVEL.compileExpression(text, pctx);
+  }
 
-        ParserConfiguration pconf = new ParserConfiguration();
-
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.addInput("this", Cheese.class);
-        pctx.setStrictTypeEnforcement(true);
-        pctx.setStrongTyping(true);
-
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        MVEL.executeExpression(stmt, new Cheese(), new HashMap());
-    }
-
-    public void testVarArgs() throws Exception {
-        ParserContext parserContext = new ParserContext();
-        parserContext.setStrictTypeEnforcement(true);
-        parserContext.setStrongTyping(true);
-
-        MVEL.analyze("String.format(\"\");", parserContext);
-    }
+  public void testJavaLangImport() throws Exception {
+    String s = "Exception e = null;";
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    MVEL.compileExpression(s, pctx);
+  }
 
 
-    public void testOperatorPrecedence() throws IOException {
-        String script = "list = [1, 2, 3]; x = 10; list contains x || x == 20";
-        Serializable expression = MVEL.compileExpression(script);
-        Object result = MVEL.executeExpression(expression, new HashMap());
+  public void testContextFieldNotFound() {
+    String str = "'stilton'.equals( type );";
 
-        assertEquals(Boolean.FALSE, result);
-    }
+    ParserConfiguration pconf = new ParserConfiguration();
+
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput("this", Cheese.class);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    MVEL.executeExpression(stmt, new Cheese(), new HashMap());
+  }
+
+  public void testVarArgs() throws Exception {
+    ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+
+    MVEL.analyze("String.format(\"\");", parserContext);
+  }
 
 
-    public void testNestedEnum() throws Exception {
+  public void testOperatorPrecedence() throws IOException {
+    String script = "list = [1, 2, 3]; x = 10; list contains x || x == 20";
+    Serializable expression = MVEL.compileExpression(script);
+    Object result = MVEL.executeExpression(expression, new HashMap());
+
+    assertEquals(Boolean.FALSE, result);
+  }
+
+
+  public void testNestedEnum() throws Exception {
 //        assertEquals(Triangle.Foo.class, MVEL.analyze("import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" , ParserContext.create()));
 
-        //       Serializable o = MVEL.compileExpression( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" );
+    //       Serializable o = MVEL.compileExpression( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" );
 
-        //     assertEquals( Triangle.Foo.OBTUSE, MVEL.executeExpression(o, new HashMap()) );
+    //     assertEquals( Triangle.Foo.OBTUSE, MVEL.executeExpression(o, new HashMap()) );
 
-        MVEL.eval("import " + Triangle.class.getCanonicalName() + "; Triangle.Foo.OBTUSE", new HashMap());
-    }
-    
-    public void testNestedNumInMapKey() {
-        String str = "objectKeyMaptributes[Triangle.Foo.OBTUSE]";
+    MVEL.eval("import " + Triangle.class.getCanonicalName() + "; Triangle.Foo.OBTUSE", new HashMap());
+  }
 
-        ParserConfiguration pconf = new ParserConfiguration();
-        pconf.addImport( "Triangle", Triangle.class );
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.addInput("this", Person.class);
-        pctx.setStrictTypeEnforcement(true);
-        pctx.setStrongTyping(true);
+  public void testNestedNumInMapKey() {
+    String str = "objectKeyMaptributes[Triangle.Foo.OBTUSE]";
 
-        Foo foo = new Foo();
-        Person p = new Person();
-        Map<Object, Foo> map = new HashMap<Object, Foo>();
-        map.put( Triangle.Foo.OBTUSE, foo );
-        p.setObjectKeyMaptributes( map );
-        
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        MVEL.executeExpression(stmt, p, new HashMap());        
-    }
-    
-    public void testNestedClassWithNestedGenericsOnNakedMethod() {
-        String str = "deliveries.size";
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.addImport("Triangle", Triangle.class);
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput("this", Person.class);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
 
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
-        ParserConfiguration pconf = new ParserConfiguration();
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.addInput("this", Triangle.class);
-        pctx.setStrongTyping(true);
-        
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        assertEquals( Integer.valueOf( 0 ), (Integer) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));  
-        
-        str = "deliveries.size == 0";
-        
-        stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        assertTrue( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
-    }    
+    Foo foo = new Foo();
+    Person p = new Person();
+    Map<Object, Foo> map = new HashMap<Object, Foo>();
+    map.put(Triangle.Foo.OBTUSE, foo);
+    p.setObjectKeyMaptributes(map);
 
-    public static class Triangle {
-        public static enum Foo {
-            INCOMPLETE, UNCLASSIFIED,
-            EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
-        }
-        
-        private List<Map<String, Object>> deliveries = new ArrayList<Map<String,Object>>();
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    MVEL.executeExpression(stmt, p, new HashMap());
+  }
 
-        public List<Map<String, Object>> getDeliveries() {
-            return deliveries;
-        }
+  public void testNestedClassWithNestedGenericsOnNakedMethod() {
+    String str = "deliveries.size";
+
+    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput("this", Triangle.class);
+    pctx.setStrongTyping(true);
+
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    assertEquals(Integer.valueOf(0), (Integer) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));
+
+    str = "deliveries.size == 0";
+
+    stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    assertTrue((Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));
+  }
+
+  public static class Triangle {
+    public static enum Foo {
+      INCOMPLETE, UNCLASSIFIED,
+      EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
     }
 
-    public void testStrictModeAddAll() {
-        String str = "list.addAll( o );";
+    private List<Map<String, Object>> deliveries = new ArrayList<Map<String, Object>>();
 
-        ParserConfiguration pconf = new ParserConfiguration();
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrongTyping(true);
-        pctx.addInput("o", Object.class);
-        pctx.addInput("list", ArrayList.class);
-        try {
-            ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-            fail("This should not compileShared, as o is not of a type Collection");
-        }
-        catch (Exception e) {
-
-        }
+    public List<Map<String, Object>> getDeliveries() {
+      return deliveries;
     }
+  }
 
-    public void testNestedEnumFromJar() throws ClassNotFoundException,
-            SecurityException,
-            NoSuchFieldException {
-        String expr = "EventRequest.Status.ACTIVE";
+  public void testStrictModeAddAll() {
+    String str = "list.addAll( o );";
 
-        // creating a classloader for the jar
-        URL resource = getClass().getResource("/eventing-example.jar");
-        assertNotNull(resource);
-        URLClassLoader loader = new URLClassLoader(new URL[]{resource},
-                getClass().getClassLoader());
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("o", Object.class);
+    pctx.addInput("list", ArrayList.class);
+    try {
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      fail("This should not compileShared, as o is not of a type Collection");
+    } catch (Exception e) {
 
-        // loading the class to prove it works
-        Class<?> er = loader.loadClass("org.drools.examples.eventing.EventRequest");
-        assertNotNull(er);
-        assertEquals("org.drools.examples.eventing.EventRequest",
-                er.getCanonicalName());
-
-        // getting the value of the enum to prove it works:
-        Class<?> st = er.getDeclaredClasses()[0];
-        assertNotNull(st);
-        Field active = st.getField("ACTIVE");
-        assertNotNull(active);
-
-        // now, trying with MVEL
-        ParserConfiguration pconf = new ParserConfiguration();
-        pconf.setClassLoader(loader);
-        pconf.addImport(er);
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrongTyping(true);
-
-        Serializable compiled = MVEL.compileExpression(expr, pctx);
-        Object result = MVEL.executeExpression(compiled);
-
-        assertNotNull(result);
     }
+  }
+
+  public void testNestedEnumFromJar() throws ClassNotFoundException,
+          SecurityException,
+          NoSuchFieldException {
+    String expr = "EventRequest.Status.ACTIVE";
+
+    // creating a classloader for the jar
+    URL resource = getClass().getResource("/eventing-example.jar");
+    assertNotNull(resource);
+    URLClassLoader loader = new URLClassLoader(new URL[]{resource},
+            getClass().getClassLoader());
+
+    // loading the class to prove it works
+    Class<?> er = loader.loadClass("org.drools.examples.eventing.EventRequest");
+    assertNotNull(er);
+    assertEquals("org.drools.examples.eventing.EventRequest",
+            er.getCanonicalName());
+
+    // getting the value of the enum to prove it works:
+    Class<?> st = er.getDeclaredClasses()[0];
+    assertNotNull(st);
+    Field active = st.getField("ACTIVE");
+    assertNotNull(active);
+
+    // now, trying with MVEL
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.setClassLoader(loader);
+    pconf.addImport(er);
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+
+    Serializable compiled = MVEL.compileExpression(expr, pctx);
+    Object result = MVEL.executeExpression(compiled);
+
+    assertNotNull(result);
+  }
 
 }

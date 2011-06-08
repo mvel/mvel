@@ -8,27 +8,27 @@ package org.mvel2.tests.core.res;
  * To change this template use File | Settings | File Templates.
  */
 public class Column {
-    private String name;
-    private int length;
+  private String name;
+  private int length;
 
-    public Column(String name, int length) {
-        this.name = name;
-        this.length = length;
-    }
+  public Column(String name, int length) {
+    this.name = name;
+    this.length = length;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public int getLength() {
-        return length;
-    }
+  public int getLength() {
+    return length;
+  }
 
-    public void setLength(int length) {
-        this.length = length;
-    }
+  public void setLength(int length) {
+    this.length = length;
+  }
 }

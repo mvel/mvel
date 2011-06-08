@@ -33,41 +33,41 @@ import java.util.HashMap;
  * @author Christopher Brock
  */
 public class WhileNode extends BlockNode {
-    protected String item;
-    protected ExecutableStatement condition;
+  protected String item;
+  protected ExecutableStatement condition;
 
-    public WhileNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
-        expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
-                Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+  public WhileNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+    expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
+            Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
 
-        if (pCtx != null) {
-            pCtx.pushVariableScope();
-        }
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, pCtx);
+    if (pCtx != null) {
+      pCtx.pushVariableScope();
+    }
+    this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, pCtx);
 
-        if (pCtx != null) {
-            pCtx.popVariableScope();
+    if (pCtx != null) {
+      pCtx.popVariableScope();
 
-        }
+    }
+  }
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
+    while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
+      compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
-        while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, ctxFactory);
-        }
+    return null;
+  }
 
-        return null;
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
+
+    while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
+      compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
-
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
-
-        while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, ctxFactory);
-        }
-        return null;
-    }
+    return null;
+  }
 
 }

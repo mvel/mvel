@@ -27,25 +27,23 @@ import java.util.Collection;
 import java.util.List;
 
 public class ListCH implements ConversionHandler {
-    public Object convertFrom(Object in) {
-        Class type = in.getClass();
-        List newList = new ArrayList();
-        if (type.isArray()) {
-            newList.addAll(Arrays.asList(((Object[]) in)));
-        }
-        else if (Collection.class.isAssignableFrom(type)) {
-            newList.addAll((Collection) in);
-        }
-        else if (Iterable.class.isAssignableFrom(type)) {
-            for (Object o : (Iterable) in) {
-                newList.add(o);
-            }
-        }
-
-        return newList;
+  public Object convertFrom(Object in) {
+    Class type = in.getClass();
+    List newList = new ArrayList();
+    if (type.isArray()) {
+      newList.addAll(Arrays.asList(((Object[]) in)));
+    } else if (Collection.class.isAssignableFrom(type)) {
+      newList.addAll((Collection) in);
+    } else if (Iterable.class.isAssignableFrom(type)) {
+      for (Object o : (Iterable) in) {
+        newList.add(o);
+      }
     }
 
-    public boolean canConvertFrom(Class cls) {
-        return cls.isArray() || Collection.class.isAssignableFrom(cls) || Iterable.class.isAssignableFrom(cls);
-    }
+    return newList;
+  }
+
+  public boolean canConvertFrom(Class cls) {
+    return cls.isArray() || Collection.class.isAssignableFrom(cls) || Iterable.class.isAssignableFrom(cls);
+  }
 }

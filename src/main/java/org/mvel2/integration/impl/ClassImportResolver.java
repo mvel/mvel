@@ -22,48 +22,47 @@ import org.mvel2.CompileException;
 import org.mvel2.integration.VariableResolver;
 
 public class ClassImportResolver implements VariableResolver {
-    private String name;
-    private Class type;
+  private String name;
+  private Class type;
 
-    public ClassImportResolver(String fqcn, String name) {
-        this.name = name;
-        try {
-            this.type = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
-        }
-        catch (Exception e) {
-            throw new RuntimeException("failed import", e);
-        }
+  public ClassImportResolver(String fqcn, String name) {
+    this.name = name;
+    try {
+      this.type = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
+    } catch (Exception e) {
+      throw new RuntimeException("failed import", e);
     }
+  }
 
-    public ClassImportResolver(String name, Class type) {
-        this.name = name;
-        this.type = type;
-    }
+  public ClassImportResolver(String name, Class type) {
+    this.name = name;
+    this.type = type;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setStaticType(Class knownType) {
-        this.type = knownType;
-    }
+  public void setStaticType(Class knownType) {
+    this.type = knownType;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public Class getType() {
-        return Class.class;
-    }
+  public Class getType() {
+    return Class.class;
+  }
 
-    public Object getValue() {
-        return type;
-    }
+  public Object getValue() {
+    return type;
+  }
 
-    public int getFlags() {
-        return 0;
-    }
+  public int getFlags() {
+    return 0;
+  }
 
-    public void setValue(Object value) {
-    }
+  public void setValue(Object value) {
+  }
 }

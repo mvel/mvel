@@ -28,15 +28,15 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class EndNode extends Node {
-    public Object eval(TemplateRuntime runtie, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        return appender.toString();
-    }
+  public Object eval(TemplateRuntime runtie, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    return appender.toString();
+  }
 
-    public String toString() {
-        return "EndNode";
-    }
+  public String toString() {
+    return "EndNode";
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

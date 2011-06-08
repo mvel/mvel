@@ -32,41 +32,41 @@ import java.io.PrintStream;
 import java.io.OutputStream;
 
 public class CodeNode extends Node {
-    public CodeNode() {
-    }
+  public CodeNode() {
+  }
 
-    private int start;
-    private int offset;
+  private int start;
+  private int offset;
 
-    public CodeNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.start = start;
-        this.offset = end - start - 1;
+  public CodeNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.start = start;
+    this.offset = end - start - 1;
 
-        //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-    }
+    //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  }
 
-    public CodeNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
-        this.begin = begin;
-        //     this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-        this.next = next;
-        this.start = start;
-        this.offset = end - start - 1;
-    }
+  public CodeNode(int begin, String name, char[] template, int start, int end, Node next) {
+    this.name = name;
+    this.begin = begin;
+    //     this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+    this.next = next;
+    this.start = start;
+    this.offset = end - start - 1;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        MVEL.eval(contents, start, offset, ctx, factory);
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    MVEL.eval(contents, start, offset, ctx, factory);
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 
-    public String toString() {
-        return "CodeNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
-    }
+  public String toString() {
+    return "CodeNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
+  }
 }

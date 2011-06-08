@@ -19,81 +19,82 @@
 package org.mvel2.ast;
 
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.*;
 
 /**
  * @author Christopher Brock
  */
 public class TypedVarNode extends ASTNode implements Assignment {
-    private String name;
+  private String name;
 
-    private ExecutableStatement statement;
+  private ExecutableStatement statement;
 
-    public TypedVarNode(char[] expr, int start, int offset, int fields, Class type, ParserContext pCtx) {
-        this.egressType = type;
-        this.fields = fields;
+  public TypedVarNode(char[] expr, int start, int offset, int fields, Class type, ParserContext pCtx) {
+    this.egressType = type;
+    this.fields = fields;
 
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        int assignStart;
-        if ((assignStart = find(this.expr = expr, start, offset, '=')) != -1) {
-            checkNameSafety(name = createStringTrimmed(expr, start, assignStart - start));
-            this.offset -= (assignStart - start);
-            this.start = assignStart + 1;
+    int assignStart;
+    if ((assignStart = find(this.expr = expr, start, offset, '=')) != -1) {
+      checkNameSafety(name = createStringTrimmed(expr, start, assignStart - start));
+      this.offset -= (assignStart - start);
+      this.start = assignStart + 1;
 
-            if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
-            }
-        }
-        else {
-            checkNameSafety(name = new String(expr, start, offset));
-        }
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            Class x = pCtx.getVarOrInputType(name);
-            if (x != null && !x.isAssignableFrom(egressType)) {
-                throw new RuntimeException("statically-typed variable already defined in scope: " + name);
-            }
-            pCtx.addVariable(name, egressType, false);
-        }
+      if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
+        statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
+      }
+    } else {
+      checkNameSafety(name = new String(expr, start, offset));
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement == null) statement = (ExecutableStatement) subCompileExpression(expr, start, offset);
-        factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
-        return ctx;
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      Class x = pCtx.getVarOrInputType(name);
+      if (x != null && !x.isAssignableFrom(egressType)) {
+        throw new RuntimeException("statically-typed variable already defined in scope: " + name);
+      }
+      pCtx.addVariable(name, egressType, false);
     }
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, ctx = eval(expr, start, offset, thisValue, factory), egressType);
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (statement == null) statement = (ExecutableStatement) subCompileExpression(expr, start, offset);
+    factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
+    return ctx;
+  }
+
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.createVariable(name, ctx = eval(expr, start, offset, thisValue, factory), egressType);
+    return ctx;
+  }
 
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
 
-    public String getAssignmentVar() {
-        return name;
-    }
+  public String getAssignmentVar() {
+    return name;
+  }
 
-    public char[] getExpression() {
-        return expr;
-    }
+  public char[] getExpression() {
+    return expr;
+  }
 
-    public boolean isNewDeclaration() {
-        return true;
-    }
+  public boolean isNewDeclaration() {
+    return true;
+  }
 
-    public void setValueStatement(ExecutableStatement stmt) {
-        this.statement = stmt;
-    }
+  public void setValueStatement(ExecutableStatement stmt) {
+    this.statement = stmt;
+  }
 }

@@ -29,20 +29,20 @@ import java.io.Serializable;
 
 public class CompiledIfNode extends IfNode {
 
-    private Serializable ce;
+  private Serializable ce;
 
-    public CompiledIfNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
-        super(begin, name, template, start, end);
-        while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
-        if (cStart != cEnd) {
-            ce = MVEL.compileExpression(template, cStart, cEnd - start, context);
-        }
+  public CompiledIfNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
+    super(begin, name, template, start, end);
+    while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
+    if (cStart != cEnd) {
+      ce = MVEL.compileExpression(template, cStart, cEnd - start, context);
     }
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (ce == null || MVEL.executeExpression(ce, ctx, factory, Boolean.class)) {
-            return trueNode.eval(runtime, appender, ctx, factory);
-        }
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (ce == null || MVEL.executeExpression(ce, ctx, factory, Boolean.class)) {
+      return trueNode.eval(runtime, appender, ctx, factory);
     }
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 }

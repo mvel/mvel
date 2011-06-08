@@ -4,14 +4,14 @@ import java.util.Set;
 
 
 public class Cake {
-    private Set ingredients;
+  private Set ingredients;
 
-    public Set getIngredients() {
-        return ingredients;
-    }
+  public Set getIngredients() {
+    return ingredients;
+  }
 
-    public void setIngredients(Set ingredients) {
-        this.ingredients = ingredients;
-    }
+  public void setIngredients(Set ingredients) {
+    this.ingredients = ingredients;
+  }
 }
 

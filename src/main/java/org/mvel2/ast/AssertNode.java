@@ -23,50 +23,47 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 /**
  * @author Christopher Brock
  */
 public class AssertNode extends ASTNode {
-    public ExecutableStatement assertion;
-    public ExecutableStatement fail;
+  public ExecutableStatement assertion;
+  public ExecutableStatement fail;
 
-    public AssertNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public AssertNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            assertion = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      assertion = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
-            if (!((Boolean) assertion.getValue(ctx, thisValue, factory))) {
-                throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
-            }
-            else {
-                return true;
-            }
-        }
-        catch (ClassCastException e) {
-            throw new CompileException("assertion does not contain a boolean statement", expr, start);
-        }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    try {
+      if (!((Boolean) assertion.getValue(ctx, thisValue, factory))) {
+        throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
+      } else {
+        return true;
+      }
+    } catch (ClassCastException e) {
+      throw new CompileException("assertion does not contain a boolean statement", expr, start);
     }
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
-            if (!((Boolean) MVEL.eval(this.expr, ctx, factory))) {
-               throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
-            }
-            else {
-                return true;
-            }
-        }
-        catch (ClassCastException e) {
-            throw new CompileException("assertion does not contain a boolean statement", expr, start);
-        }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    try {
+      if (!((Boolean) MVEL.eval(this.expr, ctx, factory))) {
+        throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
+      } else {
+        return true;
+      }
+    } catch (ClassCastException e) {
+      throw new CompileException("assertion does not contain a boolean statement", expr, start);
     }
+  }
 }

@@ -13,84 +13,84 @@ import org.mvel2.util.VariableSpaceModel;
 import java.io.Serializable;
 
 public class IntegrationTests extends AbstractTest {
-    class NullPropertyHandler implements PropertyHandler {
+  class NullPropertyHandler implements PropertyHandler {
 
-        public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
-            return null;
-        }
-
-        public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
-            return null;
-        }
+    public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+      return null;
     }
 
-
-    class MyClass {
-        public String getWhatever() {
-            return "foo";
-        }
+    public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
+      return null;
     }
+  }
 
-    class MySubClass extends MyClass {
+
+  class MyClass {
+    public String getWhatever() {
+      return "foo";
     }
+  }
 
-    interface MyInterface {
-    }
+  class MySubClass extends MyClass {
+  }
 
-    class MyInterfacedClass implements MyInterface {
-    }
+  interface MyInterface {
+  }
 
-    class MyInterfacedSubClass extends MyInterfacedClass {
-    }
+  class MyInterfacedClass implements MyInterface {
+  }
+
+  class MyInterfacedSubClass extends MyInterfacedClass {
+  }
 
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
-        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
-        PropertyHandlerFactory.registerPropertyHandler(MyClass.class, new NullPropertyHandler());
-        PropertyHandlerFactory.registerPropertyHandler(MyInterface.class, new NullPropertyHandler());
-    }
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+    PropertyHandlerFactory.registerPropertyHandler(MyClass.class, new NullPropertyHandler());
+    PropertyHandlerFactory.registerPropertyHandler(MyInterface.class, new NullPropertyHandler());
+  }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+  @Override
+  protected void tearDown() throws Exception {
+    super.tearDown();
 
-        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
 
-        PropertyHandlerFactory.unregisterPropertyHandler(MyClass.class);
-        PropertyHandlerFactory.unregisterPropertyHandler(MyInterface.class);
-    }
+    PropertyHandlerFactory.unregisterPropertyHandler(MyClass.class);
+    PropertyHandlerFactory.unregisterPropertyHandler(MyInterface.class);
+  }
 
-    public void test1() {
-        // handler for subclass is not found, but its superclass handler is registered
-        // why didn't use its superclass handler?
-        assertEquals(null, MVEL.eval("whatever", new MySubClass()));
-    }
+  public void test1() {
+    // handler for subclass is not found, but its superclass handler is registered
+    // why didn't use its superclass handler?
+    assertEquals(null, MVEL.eval("whatever", new MySubClass()));
+  }
 
-    public void test2() {
-        // "NullPointerException" fired
-        assertEquals(null, MVEL.eval("whatever", new MyInterfacedSubClass()));
-    }
+  public void test2() {
+    // "NullPointerException" fired
+    assertEquals(null, MVEL.eval("whatever", new MyInterfacedSubClass()));
+  }
 
-    public void testIndexedVariableFactory() {
-        ParserContext ctx = ParserContext.create();
-        String[] vars = {"a", "b"};
-        Object[] vals = {"foo", "bar"};
-        ctx.setIndexAllocation(true);
-        ctx.addIndexedInput(vars);
+  public void testIndexedVariableFactory() {
+    ParserContext ctx = ParserContext.create();
+    String[] vars = {"a", "b"};
+    Object[] vals = {"foo", "bar"};
+    ctx.setIndexAllocation(true);
+    ctx.addIndexedInput(vars);
 
-        String expr = "def myfunc(z) { a + b + z }; myfunc('poop');";
+    String expr = "def myfunc(z) { a + b + z }; myfunc('poop');";
 
-        SharedVariableSpaceModel model = VariableSpaceCompiler.compileShared(expr, ctx, vals);
+    SharedVariableSpaceModel model = VariableSpaceCompiler.compileShared(expr, ctx, vals);
 
-        Serializable s = MVEL.compileExpression(expr, ctx);
+    Serializable s = MVEL.compileExpression(expr, ctx);
 
 //        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
 //        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
 
-        assertEquals("foobarpoop", MVEL.executeExpression(s, model.createFactory()));
-    }
+    assertEquals("foobarpoop", MVEL.executeExpression(s, model.createFactory()));
+  }
 }

@@ -29,35 +29,35 @@ import java.io.Serializable;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledCodeNode extends Node {
-    private Serializable ce;
+  private Serializable ce;
 
-    public CompiledCodeNode() {
-    }
+  public CompiledCodeNode() {
+  }
 
-    public CompiledCodeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        ce = MVEL.compileExpression(template, cStart, cEnd - cStart, context);
+  public CompiledCodeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    ce = MVEL.compileExpression(template, cStart, cEnd - cStart, context);
 
 //        ce = MVEL.compileExpression(
 //                this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1),
 //                   context);
-    }
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        MVEL.executeExpression(ce, ctx, factory);
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    MVEL.executeExpression(ce, ctx, factory);
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 
-    public String toString() {
-        return "CodeNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
-    }
+  public String toString() {
+    return "CodeNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
+  }
 }

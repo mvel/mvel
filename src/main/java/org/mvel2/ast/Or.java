@@ -18,45 +18,47 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.CompilerTools.expectType;
+
 import org.mvel2.ast.BooleanNode;
 
 public class Or extends BooleanNode {
-    public Or(ASTNode left, ASTNode right, boolean strongTyping) {
-        expectType(this.left = left, Boolean.class, strongTyping);
-        expectType(this.right = right, Boolean.class, strongTyping);
-    }
+  public Or(ASTNode left, ASTNode right, boolean strongTyping) {
+    expectType(this.left = left, Boolean.class, strongTyping);
+    expectType(this.right = right, Boolean.class, strongTyping);
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
-                || ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
+            || ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new RuntimeException("improper use of AST element");
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    throw new RuntimeException("improper use of AST element");
+  }
 
-    public void setRightMost(ASTNode right) {
-        Or n = this;
-        while (n.right != null && n.right instanceof Or) {
-            n = (Or) n.right;
-        }
-        n.right = right;
+  public void setRightMost(ASTNode right) {
+    Or n = this;
+    while (n.right != null && n.right instanceof Or) {
+      n = (Or) n.right;
     }
+    n.right = right;
+  }
 
-    public ASTNode getRightMost() {
-        Or n = this;
-        while (n.right != null && n.right instanceof Or) {
-            n = (Or) n.right;
-        }
-        return n.right;
+  public ASTNode getRightMost() {
+    Or n = this;
+    while (n.right != null && n.right instanceof Or) {
+      n = (Or) n.right;
     }
+    return n.right;
+  }
 
-    public String toString() {
-        return "(" + left.toString() + " || " + right.toString() + ")";
-    }
+  public String toString() {
+    return "(" + left.toString() + " || " + right.toString() + ")";
+  }
 
-    public Class getEgressType() {
-        return Boolean.class;
-    }
+  public Class getEgressType() {
+    return Boolean.class;
+  }
 }

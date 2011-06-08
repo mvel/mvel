@@ -22,6 +22,7 @@ import org.mvel2.DataConversion;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.util.Map;
@@ -30,69 +31,66 @@ import java.util.Map;
  * @author Christopher Brock
  */
 public class MapAccessorNest implements AccessorNode {
-    private AccessorNode nextNode;
-    private ExecutableStatement property;
-    private Class conversionType;
+  private AccessorNode nextNode;
+  private ExecutableStatement property;
+  private Class conversionType;
 
-    public MapAccessorNest() {
+  public MapAccessorNest() {
+  }
+
+  public MapAccessorNest(ExecutableStatement property, Class conversionType) {
+    this.property = property;
+    this.conversionType = conversionType;
+  }
+
+  public MapAccessorNest(String property, Class conversionType) {
+    this.property = (ExecutableStatement) subCompileExpression(property.toCharArray());
+    this.conversionType = conversionType;
+  }
+
+
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
+    if (nextNode != null) {
+      return nextNode.getValue(((Map) ctx).get(property.getValue(ctx, elCtx, vrf)), elCtx, vrf);
+    } else {
+      return ((Map) ctx).get(property.getValue(ctx, elCtx, vrf));
     }
+  }
 
-    public MapAccessorNest(ExecutableStatement property, Class conversionType) {
-        this.property = property;
-        this.conversionType = conversionType;
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+    if (nextNode != null) {
+      return nextNode.setValue(((Map) ctx).get(property.getValue(ctx, elCtx, vars)), elCtx, vars, value);
+    } else {
+      if (conversionType != null) {
+        ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
+      } else {
+        ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
+      }
+      return value;
     }
+  }
 
-    public MapAccessorNest(String property, Class conversionType) {
-        this.property = (ExecutableStatement) subCompileExpression(property.toCharArray());
-        this.conversionType = conversionType;
-    }
+  public ExecutableStatement getProperty() {
+    return property;
+  }
 
+  public void setProperty(ExecutableStatement property) {
+    this.property = property;
+  }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (nextNode != null) {
-            return nextNode.getValue(((Map) ctx).get(property.getValue(ctx, elCtx, vrf)), elCtx, vrf);
-        }
-        else {
-            return ((Map) ctx).get(property.getValue(ctx, elCtx, vrf));
-        }
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
-        if (nextNode != null) {
-            return nextNode.setValue(((Map) ctx).get(property.getValue(ctx, elCtx, vars)), elCtx, vars, value);
-        }
-        else {
-            if (conversionType != null) {
-                ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
-            }
-            else {
-                ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
-            }
-            return value;
-        }
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public ExecutableStatement getProperty() {
-        return property;
-    }
+  public String toString() {
+    return "Map Accessor -> [" + property + "]";
+  }
 
-    public void setProperty(ExecutableStatement property) {
-        this.property = property;
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
-
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
-
-    public String toString() {
-        return "Map Accessor -> [" + property + "]";
-    }
-
-    public Class getKnownEgressType() {
-        return Object.class;
-    }
+  public Class getKnownEgressType() {
+    return Object.class;
+  }
 }

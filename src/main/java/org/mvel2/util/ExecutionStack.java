@@ -25,169 +25,165 @@ import static java.lang.String.valueOf;
 import static org.mvel2.math.MathProcessor.doOperations;
 
 public class ExecutionStack {
-    private StackElement element;
-    private int size = 0;
+  private StackElement element;
+  private int size = 0;
 
-    public boolean isEmpty() {
-        return size == 0;
+  public boolean isEmpty() {
+    return size == 0;
+  }
+
+  public void add(Object o) {
+    size++;
+    StackElement el = element;
+    if (el != null) {
+      while (el.next != null) {
+        el = el.next;
+      }
+      el.next = new StackElement(null, o);
+    } else {
+      element = new StackElement(null, o);
     }
+  }
 
-    public void add(Object o) {
-        size++;
-        StackElement el = element;
-        if (el != null) {
-            while (el.next != null) {
-                el = el.next;
-            }
-            el.next = new StackElement(null, o);
-        }
-        else {
-            element = new StackElement(null, o);
-        }
+  public void push(Object o) {
+    size++;
+    element = new StackElement(element, o);
+  }
+
+  public Object pushAndPeek(Object o) {
+    size++;
+    element = new StackElement(element, o);
+    return o;
+  }
+
+  public void push(Object obj1, Object obj2) {
+    size += 2;
+    element = new StackElement(new StackElement(element, obj1), obj2);
+  }
+
+  public void push(Object obj1, Object obj2, Object obj3) {
+    size += 3;
+    element = new StackElement(new StackElement(new StackElement(element, obj1), obj2), obj3);
+  }
+
+  public Object peek() {
+    if (size == 0) return null;
+    else return element.value;
+  }
+
+  public Boolean peekBoolean() {
+    if (size == 0) return null;
+    if (element.value instanceof Boolean) return (Boolean) element.value;
+    throw new ScriptRuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+  }
+
+  public void copy2(ExecutionStack es) {
+    element = new StackElement(new StackElement(element, es.element.value), es.element.next.value);
+    es.element = es.element.next.next;
+    size += 2;
+    es.size -= 2;
+  }
+
+  public void copyx2(ExecutionStack es) {
+    element = new StackElement(new StackElement(element, es.element.next.value), es.element.value);
+    es.element = es.element.next.next;
+    size += 2;
+    es.size -= 2;
+  }
+
+  public Object peek2() {
+    return element.next.value;
+  }
+
+  public Object pop() {
+    if (size-- == 0) {
+      return null;
     }
-
-    public void push(Object o) {
-        size++;
-        element = new StackElement(element, o);
+    try {
+      return element.value;
+    } finally {
+      element = element.next;
     }
+  }
 
-    public Object pushAndPeek(Object o) {
-        size++;
-        element = new StackElement(element, o);
-        return o;
+  public Boolean popBoolean() {
+    if (size-- == 0) {
+      return null;
     }
-
-    public void push(Object obj1, Object obj2) {
-        size += 2;
-        element = new StackElement(new StackElement(element, obj1), obj2);
+    try {
+      if (element.value instanceof Boolean) return (Boolean) element.value;
+      throw new ScriptRuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+    } finally {
+      element = element.next;
     }
+  }
 
-    public void push(Object obj1, Object obj2, Object obj3) {
-        size += 3;
-        element = new StackElement(new StackElement(new StackElement(element, obj1), obj2), obj3);
+  public Object pop2() {
+    try {
+      size -= 2;
+      return element.value;
+    } finally {
+      element = element.next.next;
     }
+  }
 
-    public Object peek() {
-        if (size == 0) return null;
-        else return element.value;
+  public void discard() {
+    if (size != 0) {
+      size--;
+      element = element.next;
     }
+  }
 
-    public Boolean peekBoolean() {
-        if (size == 0) return null;
-        if (element.value instanceof Boolean) return (Boolean) element.value;
-        throw new ScriptRuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+  public int size() {
+    return size;
+  }
+
+  public boolean isReduceable() {
+    return size > 1;
+  }
+
+  public void clear() {
+    size = 0;
+    element = null;
+  }
+
+  public void xswap_op() {
+    element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.next.value, element.value));
+    size -= 2;
+  }
+
+  public void op() {
+    element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.value, element.next.value));
+    size -= 2;
+
+  }
+
+  public void op(int operator) {
+    element = new StackElement(element.next.next, doOperations(element.next.value, operator, element.value));
+    size--;
+  }
+
+  public void xswap() {
+    StackElement e = element.next;
+    StackElement relink = e.next;
+    e.next = element;
+    (element = e).next.next = relink;
+  }
+
+  public String toString() {
+    StackElement el = element;
+
+    if (element == null) return "<EMPTY>";
+
+    StringBuilder appender = new StringBuilder().append("[");
+    do {
+      appender.append(valueOf(el.value));
+      if (el.next != null) appender.append(", ");
     }
+    while ((el = el.next) != null);
 
-    public void copy2(ExecutionStack es) {
-        element = new StackElement(new StackElement(element, es.element.value), es.element.next.value);
-        es.element = es.element.next.next;
-        size += 2;
-        es.size -= 2;
-    }
+    appender.append("]");
 
-    public void copyx2(ExecutionStack es) {
-        element = new StackElement(new StackElement(element, es.element.next.value), es.element.value);
-        es.element = es.element.next.next;
-        size += 2;
-        es.size -= 2;
-    }
-
-    public Object peek2() {
-        return element.next.value;
-    }
-
-    public Object pop() {
-        if (size-- == 0) {
-            return null;
-        }
-        try {
-            return element.value;
-        }
-        finally {
-            element = element.next;
-        }
-    }
-
-    public Boolean popBoolean() {
-        if (size-- == 0) {
-            return null;
-        }
-        try {
-            if (element.value instanceof Boolean) return (Boolean) element.value;
-            throw new ScriptRuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
-        }
-        finally {
-            element = element.next;
-        }
-    }
-
-    public Object pop2() {
-        try {
-            size -= 2;
-            return element.value;
-        }
-        finally {
-            element = element.next.next;
-        }
-    }
-
-    public void discard() {
-        if (size != 0) {
-            size--;
-            element = element.next;
-        }
-    }
-
-    public int size() {
-        return size;
-    }
-
-    public boolean isReduceable() {
-        return size > 1;
-    }
-
-    public void clear() {
-        size = 0;
-        element = null;
-    }
-
-    public void xswap_op() {
-        element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.next.value, element.value));
-        size -= 2;
-    }
-
-    public void op() {
-        element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.value, element.next.value));
-        size -= 2;
-
-    }
-
-    public void op(int operator) {
-        element = new StackElement(element.next.next, doOperations(element.next.value, operator, element.value));
-        size--;
-    }
-
-    public void xswap() {
-        StackElement e = element.next;
-        StackElement relink = e.next;
-        e.next = element;
-        (element = e).next.next = relink;
-    }
-
-    public String toString() {
-        StackElement el = element;
-
-        if (element == null) return "<EMPTY>";
-
-        StringBuilder appender = new StringBuilder().append("[");
-        do {
-            appender.append(valueOf(el.value));
-            if (el.next != null) appender.append(", ");
-        }
-        while ((el = el.next) != null);
-
-        appender.append("]");
-
-        return appender.toString();
-    }
+    return appender.toString();
+  }
 }

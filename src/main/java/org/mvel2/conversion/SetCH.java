@@ -26,25 +26,23 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SetCH implements ConversionHandler {
-    public Object convertFrom(Object in) {
-        Class type = in.getClass();
-        Set newSet = new LinkedHashSet();
-        if (type.isArray()) {
-            newSet.addAll(Arrays.asList(((Object[]) in)));
-        }
-        else if (Collection.class.isAssignableFrom(type)) {
-            newSet.addAll((Collection) in);
-        }
-        else if (Iterable.class.isAssignableFrom(type)) {
-            for (Object o : (Iterable) in) {
-                newSet.add(o);
-            }
-        }
-
-        return newSet;
+  public Object convertFrom(Object in) {
+    Class type = in.getClass();
+    Set newSet = new LinkedHashSet();
+    if (type.isArray()) {
+      newSet.addAll(Arrays.asList(((Object[]) in)));
+    } else if (Collection.class.isAssignableFrom(type)) {
+      newSet.addAll((Collection) in);
+    } else if (Iterable.class.isAssignableFrom(type)) {
+      for (Object o : (Iterable) in) {
+        newSet.add(o);
+      }
     }
 
-    public boolean canConvertFrom(Class cls) {
-        return cls.isArray() || Collection.class.isAssignableFrom(cls) || Iterable.class.isAssignableFrom(cls);
-    }
+    return newSet;
+  }
+
+  public boolean canConvertFrom(Class cls) {
+    return cls.isArray() || Collection.class.isAssignableFrom(cls) || Iterable.class.isAssignableFrom(cls);
+  }
 }

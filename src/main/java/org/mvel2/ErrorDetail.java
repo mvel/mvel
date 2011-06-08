@@ -22,102 +22,101 @@ import org.mvel2.compiler.Parser;
 
 public class ErrorDetail {
 
-    private char[] expr;
-    private int cursor;
-    private boolean critical;
-    private String message;
+  private char[] expr;
+  private int cursor;
+  private boolean critical;
+  private String message;
 
-    private int lineNumber;
-    private int column;
+  private int lineNumber;
+  private int column;
 
 
-    public ErrorDetail(char[] expr, int cursor, boolean critical, String message) {
-        this.expr = expr;
-        this.cursor = cursor;
-        this.critical = critical;
-        this.message = message;
+  public ErrorDetail(char[] expr, int cursor, boolean critical, String message) {
+    this.expr = expr;
+    this.cursor = cursor;
+    this.critical = critical;
+    this.message = message;
 
-        calcRowAndColumn();
+    calcRowAndColumn();
+  }
+
+  public boolean isCritical() {
+    return critical;
+  }
+
+  public void setCritical(boolean critical) {
+    this.critical = critical;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+  public int getCursor() {
+    return cursor;
+  }
+
+  public void calcRowAndColumn() {
+    int row = 1;
+    int col = 1;
+
+    if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
+
+    for (int i = 0; i < cursor; i++) {
+      switch (expr[i]) {
+        case '\r':
+          continue;
+        case '\n':
+          row++;
+          col = 0;
+          break;
+
+        default:
+          col++;
+      }
     }
 
-    public boolean isCritical() {
-        return critical;
+    this.lineNumber = row;
+    this.column = col;
+  }
+
+  public int getLineNumber() {
+    return lineNumber;
+  }
+
+  public int getColumn() {
+    return column;
+  }
+
+  public void setCursor(int cursor) {
+    this.cursor = cursor;
+  }
+
+  public void setExpr(char[] expr) {
+    this.expr = expr;
+  }
+
+  public char[] getExpr() {
+    return expr;
+  }
+
+  public void setLineNumber(int lineNumber) {
+    this.lineNumber = lineNumber;
+  }
+
+  public void setColumn(int column) {
+    this.column = column;
+  }
+
+  public String toString() {
+    if (critical) {
+      return "(" + lineNumber + "," + column + ") " + message;
+    } else {
+      return "(" + lineNumber + "," + column + ") WARNING: " + message;
     }
-
-    public void setCritical(boolean critical) {
-        this.critical = critical;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public int getCursor() {
-        return cursor;
-    }
-
-    public void calcRowAndColumn() {
-        int row = 1;
-        int col = 1;
-
-        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
-
-        for (int i = 0; i < cursor; i++) {
-            switch (expr[i]) {
-                case '\r':
-                    continue;
-                case '\n':
-                    row++;
-                    col = 0;
-                    break;
-
-                default:
-                    col++;
-            }
-        }
-
-        this.lineNumber = row;
-        this.column = col;
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
-    public void setCursor(int cursor) {
-        this.cursor = cursor;
-    }
-
-    public void setExpr(char[] expr) {
-        this.expr = expr;
-    }
-
-    public char[] getExpr() {
-        return expr;
-    }
-
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
-
-    public void setColumn(int column) {
-        this.column = column;
-    }
-
-    public String toString() {
-        if (critical) {
-            return "(" + lineNumber + "," + column + ") " + message;
-        }
-        else {
-            return "(" + lineNumber + "," + column + ") WARNING: " + message;
-        }
-    }
+  }
 }

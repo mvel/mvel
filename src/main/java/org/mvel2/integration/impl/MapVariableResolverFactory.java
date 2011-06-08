@@ -30,105 +30,99 @@ import java.util.Set;
 
 @SuppressWarnings({"unchecked"})
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
-    /**
-     * Holds the instance of the variables.
-     */
-    protected Map<String, Object> variables;
+  /**
+   * Holds the instance of the variables.
+   */
+  protected Map<String, Object> variables;
 
-    public MapVariableResolverFactory() {
-        this.variables = new HashMap();
+  public MapVariableResolverFactory() {
+    this.variables = new HashMap();
+  }
+
+  public MapVariableResolverFactory(Map variables) {
+    this.variables = variables;
+  }
+
+  public MapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
+    this.variables = variables;
+    this.nextFactory = nextFactory;
+  }
+
+  public MapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
+    this.variables = variables;
+  }
+
+  public VariableResolver createVariable(String name, Object value) {
+    VariableResolver vr;
+
+    try {
+      (vr = getVariableResolver(name)).setValue(value);
+      return vr;
+    } catch (UnresolveablePropertyException e) {
+      addResolver(name, vr = new MapVariableResolver(variables, name)).setValue(value);
+      return vr;
+    }
+  }
+
+  public VariableResolver createVariable(String name, Object value, Class<?> type) {
+    VariableResolver vr;
+    try {
+      vr = getVariableResolver(name);
+    } catch (UnresolveablePropertyException e) {
+      vr = null;
     }
 
-    public MapVariableResolverFactory(Map variables) {
-        this.variables = variables;
+    if (vr != null && vr.getType() != null) {
+      throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
+    } else {
+      addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
+      return vr;
+    }
+  }
+
+  public VariableResolver getVariableResolver(String name) {
+    VariableResolver vr = variableResolvers.get(name);
+    if (vr != null) {
+      return vr;
+    } else if (variables.containsKey(name)) {
+      variableResolvers.put(name, vr = new MapVariableResolver(variables, name));
+      return vr;
+    } else if (nextFactory != null) {
+      return nextFactory.getVariableResolver(name);
     }
 
-    public MapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
-        this.variables = variables;
-        this.nextFactory = nextFactory;
+    throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
+  }
+
+
+  public boolean isResolveable(String name) {
+    return (variableResolvers.containsKey(name))
+            || (variables != null && variables.containsKey(name))
+            || (nextFactory != null && nextFactory.isResolveable(name));
+  }
+
+  protected VariableResolver addResolver(String name, VariableResolver vr) {
+    variableResolvers.put(name, vr);
+    return vr;
+  }
+
+
+  public boolean isTarget(String name) {
+    return variableResolvers.containsKey(name);
+  }
+
+  public Set<String> getKnownVariables() {
+    if (nextFactory == null) {
+      if (variables != null) return new HashSet<String>(variables.keySet());
+      return new HashSet<String>(0);
+    } else {
+      if (variables != null) return new HashSet<String>(variables.keySet());
+      return new HashSet<String>(0);
     }
+  }
 
-    public MapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
-        this.variables = variables;
-    }
-
-    public VariableResolver createVariable(String name, Object value) {
-        VariableResolver vr;
-
-        try {
-            (vr = getVariableResolver(name)).setValue(value);
-            return vr;
-        }
-        catch (UnresolveablePropertyException e) {
-            addResolver(name, vr = new MapVariableResolver(variables, name)).setValue(value);
-            return vr;
-        }
-    }
-
-    public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        VariableResolver vr;
-        try {
-            vr = getVariableResolver(name);
-        }
-        catch (UnresolveablePropertyException e) {
-            vr = null;
-        }
-
-        if (vr != null && vr.getType() != null) {
-            throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-        }
-        else {
-            addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
-            return vr;
-        }
-    }
-
-    public VariableResolver getVariableResolver(String name) {
-        VariableResolver vr = variableResolvers.get(name);
-        if (vr != null) {
-            return vr;
-        }
-        else if (variables.containsKey(name)) {
-            variableResolvers.put(name, vr = new MapVariableResolver(variables, name));
-            return vr;
-        }
-        else if (nextFactory != null) {
-            return nextFactory.getVariableResolver(name);
-        }
-
-        throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
-    }
-
-
-    public boolean isResolveable(String name) {
-        return (variableResolvers.containsKey(name))
-                || (variables != null && variables.containsKey(name))
-                || (nextFactory != null && nextFactory.isResolveable(name));
-    }
-
-    protected VariableResolver addResolver(String name, VariableResolver vr) {
-        variableResolvers.put(name, vr);
-        return vr;
-    }
-
-
-    public boolean isTarget(String name) {
-        return variableResolvers.containsKey(name);
-    }
-
-    public Set<String> getKnownVariables() {
-        if (nextFactory == null) {
-            if (variables != null) return new HashSet<String>(variables.keySet());
-            return new HashSet<String>(0);
-        }
-        else {
-            if (variables != null) return new HashSet<String>(variables.keySet());
-            return new HashSet<String>(0);
-        }
-    }
-
-    public void clear() {
-        variableResolvers.clear();
-        variables.clear();
-    }
+  public void clear() {
+    variableResolvers.clear();
+    variables.clear();
+  }
 }

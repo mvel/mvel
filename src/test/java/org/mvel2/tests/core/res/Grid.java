@@ -8,17 +8,17 @@ package org.mvel2.tests.core.res;
  * To change this template use File | Settings | File Templates.
  */
 public class Grid {
-    private Model model;
+  private Model model;
 
-    public Grid(Model model) {
-        this.model = model;
-    }
+  public Grid(Model model) {
+    this.model = model;
+  }
 
-    public Model getModel() {
-        return model;
-    }
+  public Model getModel() {
+    return model;
+  }
 
-    public void setModel(Model model) {
-        this.model = model;
-    }
+  public void setModel(Model model) {
+    this.model = model;
+  }
 }

@@ -21,7 +21,7 @@ package org.mvel2.compiler;
 import java.io.Serializable;
 
 public interface AccessorNode extends Accessor, Serializable {
-    public AccessorNode getNextNode();
+  public AccessorNode getNextNode();
 
-    public AccessorNode setNextNode(AccessorNode accessorNode);
+  public AccessorNode setNextNode(AccessorNode accessorNode);
 }

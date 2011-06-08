@@ -30,40 +30,40 @@ import org.mvel2.math.MathProcessor;
 import org.mvel2.ParserContext;
 
 public class OperativeAssign extends ASTNode {
-    private String varName;
-    private ExecutableStatement statement;
-    private final int operation;
-    private int knownInType = -1;
+  private String varName;
+  private ExecutableStatement statement;
+  private final int operation;
+  private int knownInType = -1;
 
-    public OperativeAssign(String variableName, char[] expr, int start, int offset, int operation, int fields, ParserContext pCtx) {
-        this.varName = variableName;
-        this.operation = operation;
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public OperativeAssign(String variableName, char[] expr, int start, int offset, int operation, int fields, ParserContext pCtx) {
+    this.varName = variableName;
+    this.operation = operation;
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            egressType = (statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      egressType = (statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
 
-            if (pCtx.isStrongTyping()) {
-                knownInType = ParseTools.__resolveType(egressType);
-            }
+      if (pCtx.isStrongTyping()) {
+        knownInType = ParseTools.__resolveType(egressType);
+      }
 
-            if (!pCtx.hasVarOrInput(varName)) {
-                pCtx.addInput(varName, egressType);
-            }
-        }
+      if (!pCtx.hasVarOrInput(varName)) {
+        pCtx.addInput(varName, egressType);
+      }
     }
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, knownInType, statement.getValue(ctx, thisValue, factory)));
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver resolver = factory.getVariableResolver(varName);
+    resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, knownInType, statement.getValue(ctx, thisValue, factory)));
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(expr, start, offset, ctx, factory)));
-        return ctx;
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver resolver = factory.getVariableResolver(varName);
+    resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(expr, start, offset, ctx, factory)));
+    return ctx;
+  }
 }

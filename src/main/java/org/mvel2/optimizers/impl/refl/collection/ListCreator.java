@@ -29,25 +29,25 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class ListCreator implements Accessor {
-    public Accessor[] values;
+  public Accessor[] values;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        Object[] template = new Object[values.length];
-        for (int i = 0; i < values.length; i++) {
-            template[i] = values[i].getValue(ctx, elCtx, variableFactory);
-        }
-        return new ArrayList<Object>(Arrays.asList(template));
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    Object[] template = new Object[values.length];
+    for (int i = 0; i < values.length; i++) {
+      template[i] = values[i].getValue(ctx, elCtx, variableFactory);
     }
+    return new ArrayList<Object>(Arrays.asList(template));
+  }
 
-    public ListCreator(Accessor[] values) {
-        this.values = values;
-    }
+  public ListCreator(Accessor[] values) {
+    this.values = values;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
-    }
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    return null;
+  }
 
-    public Class getKnownEgressType() {
-        return List.class;
-    }
+  public Class getKnownEgressType() {
+    return List.class;
+  }
 }

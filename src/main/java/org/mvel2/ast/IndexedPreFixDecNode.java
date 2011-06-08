@@ -28,20 +28,20 @@ import org.mvel2.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class IndexedPreFixDecNode extends ASTNode {
-    private int register;
+  private int register;
 
-    public IndexedPreFixDecNode(int register, ParserContext pCtx) {
-        this.register = register;
-        this.egressType = pCtx.getVarOrInputType(pCtx.getIndexedVarNames()[register]);
-    }
+  public IndexedPreFixDecNode(int register, ParserContext pCtx) {
+    this.register = register;
+    this.egressType = pCtx.getVarOrInputType(pCtx.getIndexedVarNames()[register]);
+  }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver vResolver = factory.getIndexedVariableResolver(register);
-        vResolver.setValue(ctx = MathProcessor.doOperations(vResolver.getValue(), Operator.SUB, DataTypes.INTEGER, 1));
-        return ctx;
-    }
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    VariableResolver vResolver = factory.getIndexedVariableResolver(register);
+    vResolver.setValue(ctx = MathProcessor.doOperations(vResolver.getValue(), Operator.SUB, DataTypes.INTEGER, 1));
+    return ctx;
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    return getReducedValueAccelerated(ctx, thisValue, factory);
+  }
 }

@@ -11,12 +11,12 @@ import java.io.PrintWriter;
 
 public class TestPluginNode extends Node {
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append("THIS_IS_A_TEST");
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    appender.append("THIS_IS_A_TEST");
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

@@ -22,10 +22,14 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.TemplateRuntime;
+
 import static org.mvel2.templates.util.TemplateTools.captureToEOS;
+
 import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ExecutionStack;
+
 import static org.mvel2.util.ParseTools.subset;
+
 import org.mvel2.util.StringAppender;
 
 import java.io.*;
@@ -34,85 +38,82 @@ public class IncludeNode extends Node {
 //    private char[] includeExpression;
 //    private char[] preExpression;
 
-    int includeStart;
-    int includeOffset;
+  int includeStart;
+  int includeOffset;
 
-    int preStart;
-    int preOffset;
+  int preStart;
+  int preOffset;
 
-    public IncludeNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  public IncludeNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
 
-        int mark = captureToEOS(contents, 0);
-        includeStart = cStart;
-        includeOffset = mark - cStart;
-        preStart = ++mark;
-        preOffset = cEnd - mark;
+    int mark = captureToEOS(contents, 0);
+    includeStart = cStart;
+    includeOffset = mark - cStart;
+    preStart = ++mark;
+    preOffset = cEnd - mark;
 
-        //this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0));
+    //this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0));
 //        if (mark != contents.length) this.preExpression = subset(contents, ++mark, contents.length - mark);
+  }
+
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    String file = MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class);
+
+    if (preOffset != 0) {
+      MVEL.eval(contents, preStart, preOffset, ctx, factory);
     }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        String file = MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class);
-
-        if (preOffset != 0) {
-            MVEL.eval(contents, preStart, preOffset, ctx, factory);
-        }
-
-        if (next != null) {
-            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readInFile(runtime, file), ctx, factory))), ctx, factory);
-        }
-        else {
-            return appender.append(String.valueOf(MVEL.eval(readInFile(runtime, file), ctx, factory)));
-        }
+    if (next != null) {
+      return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readInFile(runtime, file), ctx, factory))), ctx, factory);
+    } else {
+      return appender.append(String.valueOf(MVEL.eval(readInFile(runtime, file), ctx, factory)));
     }
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
+
+
+  public static String readInFile(TemplateRuntime runtime, String fileName) {
+    File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
+
+    try {
+      FileInputStream instream = new FileInputStream(file);
+      BufferedInputStream bufstream = new BufferedInputStream(instream);
+
+      runtime.getRelPath().push(file.getParent());
+
+      byte[] buf = new byte[10];
+      int read;
+      int i;
+
+      StringBuilder appender = new StringBuilder();
+
+      while ((read = bufstream.read(buf)) != -1) {
+        for (i = 0; i < read; i++) {
+          appender.append((char) buf[i]);
+        }
+      }
+
+      bufstream.close();
+      instream.close();
+
+      runtime.getRelPath().pop();
+
+      return appender.toString();
+
+    } catch (FileNotFoundException e) {
+      throw new TemplateError("cannot include template '" + fileName + "': file not found.");
+    } catch (IOException e) {
+      throw new TemplateError("unknown I/O exception while including '" + fileName + "' (stacktrace nested)", e);
     }
-
-
-    public static String readInFile(TemplateRuntime runtime, String fileName) {
-        File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
-
-        try {
-            FileInputStream instream = new FileInputStream(file);
-            BufferedInputStream bufstream = new BufferedInputStream(instream);
-
-            runtime.getRelPath().push(file.getParent());
-
-            byte[] buf = new byte[10];
-            int read;
-            int i;
-
-            StringBuilder appender = new StringBuilder();
-
-            while ((read = bufstream.read(buf)) != -1) {
-                for (i = 0; i < read; i++) {
-                    appender.append((char) buf[i]);
-                }
-            }
-
-            bufstream.close();
-            instream.close();
-
-            runtime.getRelPath().pop();
-
-            return appender.toString();
-
-        }
-        catch (FileNotFoundException e) {
-            throw new TemplateError("cannot include template '" + fileName + "': file not found.");
-        }
-        catch (IOException e) {
-            throw new TemplateError("unknown I/O exception while including '" + fileName + "' (stacktrace nested)", e);
-        }
-    }
+  }
 }

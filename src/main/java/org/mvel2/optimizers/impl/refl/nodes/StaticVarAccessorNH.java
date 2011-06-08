@@ -27,56 +27,52 @@ import org.mvel2.integration.PropertyHandler;
 import java.lang.reflect.Field;
 
 public class StaticVarAccessorNH implements AccessorNode {
-    private AccessorNode nextNode;
-    Field field;
-    private PropertyHandler nullHandler;
+  private AccessorNode nextNode;
+  Field field;
+  private PropertyHandler nullHandler;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            Object v = field.get(ctx);
-            if (v == null) v = nullHandler.getProperty(field.getName(), elCtx, vars);
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+    try {
+      Object v = field.get(ctx);
+      if (v == null) v = nullHandler.getProperty(field.getName(), elCtx, vars);
 
-            if (nextNode != null) {
-                return nextNode.getValue(v, elCtx, vars);
-            }
-            else {
-                return v;
-            }
-        }
-        catch (Exception e) {
-            throw new OptimizationFailure("unable to access static field", e);
-        }
+      if (nextNode != null) {
+        return nextNode.getValue(v, elCtx, vars);
+      } else {
+        return v;
+      }
+    } catch (Exception e) {
+      throw new OptimizationFailure("unable to access static field", e);
     }
+  }
 
-    public StaticVarAccessorNH(Field field, PropertyHandler handler) {
-        this.field = field;
-        this.nullHandler = handler;
-    }
+  public StaticVarAccessorNH(Field field, PropertyHandler handler) {
+    this.field = field;
+    this.nullHandler = handler;
+  }
 
-    public AccessorNode getNextNode() {
-        return nextNode;
-    }
+  public AccessorNode getNextNode() {
+    return nextNode;
+  }
 
-    public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
-    }
+  public AccessorNode setNextNode(AccessorNode nextNode) {
+    return this.nextNode = nextNode;
+  }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        try {
-            if (nextNode == null) {
-                field.set(null, value);
-            }
-            else {
-                return nextNode.setValue(field.get(null), elCtx, variableFactory, value);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("error accessing static variable", e);
-        }
-        return value;
+  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    try {
+      if (nextNode == null) {
+        field.set(null, value);
+      } else {
+        return nextNode.setValue(field.get(null), elCtx, variableFactory, value);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("error accessing static variable", e);
     }
+    return value;
+  }
 
-    public Class getKnownEgressType() {
-        return field.getClass();
-    }
+  public Class getKnownEgressType() {
+    return field.getClass();
+  }
 }

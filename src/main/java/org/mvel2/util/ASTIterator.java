@@ -28,39 +28,39 @@ import java.io.Serializable;
  * much like bytecode instructions.
  */
 public interface ASTIterator extends Serializable {
-    public void reset();
+  public void reset();
 
-    public ASTNode nextNode();
+  public ASTNode nextNode();
 
-    public void skipNode();
+  public void skipNode();
 
-    public ASTNode peekNext();
+  public ASTNode peekNext();
 
-    public ASTNode peekNode();
+  public ASTNode peekNode();
 
-    public ASTNode peekLast();
+  public ASTNode peekLast();
 
-    //  public boolean peekNextTokenFlags(int flags);
-    public void back();
+  //  public boolean peekNextTokenFlags(int flags);
+  public void back();
 
-    public ASTNode nodesBack(int offset);
+  public ASTNode nodesBack(int offset);
 
-    public ASTNode nodesAhead(int offset);
+  public ASTNode nodesAhead(int offset);
 
-    public boolean hasMoreNodes();
+  public boolean hasMoreNodes();
 
-    public String showNodeChain();
+  public String showNodeChain();
 
-    public ASTNode firstNode();
+  public ASTNode firstNode();
 
-    public int size();
+  public int size();
 
-    public int index();
+  public int index();
 
-    public void finish();
+  public void finish();
 
-    public void addTokenNode(ASTNode node);
+  public void addTokenNode(ASTNode node);
 
-    public void addTokenNode(ASTNode node1, ASTNode node2);
+  public void addTokenNode(ASTNode node1, ASTNode node2);
 
 }

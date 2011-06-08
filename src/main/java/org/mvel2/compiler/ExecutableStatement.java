@@ -23,25 +23,25 @@ import org.mvel2.integration.VariableResolverFactory;
 import java.io.Serializable;
 
 public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
-    public Object getValue(Object staticContext, VariableResolverFactory factory);
+  public Object getValue(Object staticContext, VariableResolverFactory factory);
 
-    public void setKnownIngressType(Class type);
+  public void setKnownIngressType(Class type);
 
-    public void setKnownEgressType(Class type);
+  public void setKnownEgressType(Class type);
 
-    public Class getKnownIngressType();
+  public Class getKnownIngressType();
 
-    public Class getKnownEgressType();
+  public Class getKnownEgressType();
 
-    public boolean isExplicitCast();
+  public boolean isExplicitCast();
 
-    public boolean isConvertableIngressEgress();
+  public boolean isConvertableIngressEgress();
 
-    public void computeTypeConversionRule();
+  public void computeTypeConversionRule();
 
-    public boolean intOptimized();
+  public boolean intOptimized();
 
-    public boolean isLiteralOnly();
+  public boolean isLiteralOnly();
 
-    public boolean isEmptyStatement();
+  public boolean isEmptyStatement();
 }

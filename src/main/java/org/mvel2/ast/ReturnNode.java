@@ -30,43 +30,43 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
  */
 public class ReturnNode extends ASTNode {
 
-    public ReturnNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
-        this.expr = expr;
-        this.start = start;
-        this.offset = offset;
+  public ReturnNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this.expr = expr;
+    this.start = start;
+    this.offset = offset;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            setAccessor((Accessor) subCompileExpression(expr, start, offset, pCtx));
-        }
+    if ((fields & COMPILE_IMMEDIATE) != 0) {
+      setAccessor((Accessor) subCompileExpression(expr, start, offset, pCtx));
+    }
+  }
+
+  public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    if (accessor == null) {
+      setAccessor((Accessor) subCompileExpression(expr, start, offset));
     }
 
-    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accessor == null) {
-            setAccessor((Accessor) subCompileExpression(expr, start, offset));
-        }
+    factory.setTiltFlag(true);
 
-        factory.setTiltFlag(true);
+    return accessor.getValue(ctx, thisValue, factory);
+  }
 
-        return accessor.getValue(ctx, thisValue, factory);
-    }
+  public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    factory.setTiltFlag(true);
+    return eval(expr, start, offset, ctx, factory);
+  }
 
-    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.setTiltFlag(true);
-        return eval(expr, start, offset, ctx, factory);
-    }
+  @Override
+  public boolean isOperator() {
+    return true;
+  }
 
-    @Override
-    public boolean isOperator() {
-        return true;
-    }
+  @Override
+  public Integer getOperator() {
+    return Operator.RETURN;
+  }
 
-    @Override
-    public Integer getOperator() {
-        return Operator.RETURN;
-    }
-
-    @Override
-    public boolean isOperator(Integer operator) {
-        return Operator.RETURN == operator;
-    }
+  @Override
+  public boolean isOperator(Integer operator) {
+    return Operator.RETURN == operator;
+  }
 }

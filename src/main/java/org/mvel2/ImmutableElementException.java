@@ -20,23 +20,23 @@
 package org.mvel2;
 
 /**
- *  Exception thrown by internal immutable structures if any modifications are attempted.
+ * Exception thrown by internal immutable structures if any modifications are attempted.
  */
 public class ImmutableElementException extends RuntimeException {
 
-    public ImmutableElementException() {
-        super();
-    }
+  public ImmutableElementException() {
+    super();
+  }
 
-    public ImmutableElementException(String s) {
-        super(s);
-    }
+  public ImmutableElementException(String s) {
+    super(s);
+  }
 
-    public ImmutableElementException(String s, Throwable throwable) {
-        super(s, throwable);
-    }
+  public ImmutableElementException(String s, Throwable throwable) {
+    super(s, throwable);
+  }
 
-    public ImmutableElementException(Throwable throwable) {
-        super(throwable);
-    }
+  public ImmutableElementException(Throwable throwable) {
+    super(throwable);
+  }
 }

@@ -37,51 +37,50 @@ public class NamedIncludeNode extends Node {
   //  private char[] includeExpression;
   //  private char[] preExpression;
 
-    int includeStart;
-    int includeOffset;
+  int includeStart;
+  int includeOffset;
 
-    int preStart;
-    int preOffset;
+  int preStart;
+  int preOffset;
 
-    public NamedIncludeNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
-        this.name = name;
-        this.contents = template;
-        this.cStart = start;
-        this.cEnd = end - 1;
-        this.end = end;
-        //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+  public NamedIncludeNode(int begin, String name, char[] template, int start, int end) {
+    this.begin = begin;
+    this.name = name;
+    this.contents = template;
+    this.cStart = start;
+    this.cEnd = end - 1;
+    this.end = end;
+    //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
 
-        int mark = captureToEOS(contents, 0);
-        includeStart = cStart;
-        includeOffset = mark - cStart;
-        preStart = ++mark;
-        preOffset = cEnd - mark;
+    int mark = captureToEOS(contents, 0);
+    includeStart = cStart;
+    includeOffset = mark - cStart;
+    preStart = ++mark;
+    preOffset = cEnd - mark;
 
 //        int mark;
 //        this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0));
 //        if (mark != contents.length) this.preExpression = subset(contents, ++mark, contents.length - mark);
+  }
+
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    if (preOffset != 0) {
+      MVEL.eval(contents, preStart, preOffset, ctx, factory);
     }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (preOffset != 0) {
-            MVEL.eval(contents, preStart, preOffset, ctx, factory);
-        }
-
-        if (next != null) {
-            return next.eval(runtime,
-                    appender.append(String.valueOf(TemplateRuntime.execute(runtime
-                            .getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset,
-                                    ctx, factory, String.class)), ctx, factory))), ctx, factory);
-        }
-        else {
-            return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry()
-                    .getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class)),
-                    ctx, factory)));
-        }
+    if (next != null) {
+      return next.eval(runtime,
+              appender.append(String.valueOf(TemplateRuntime.execute(runtime
+                      .getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset,
+                              ctx, factory, String.class)), ctx, factory))), ctx, factory);
+    } else {
+      return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry()
+              .getNamedTemplate(MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class)),
+              ctx, factory)));
     }
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

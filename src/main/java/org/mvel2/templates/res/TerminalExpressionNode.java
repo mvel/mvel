@@ -22,29 +22,31 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+
 import static org.mvel2.util.ParseTools.subset;
+
 import org.mvel2.util.StringAppender;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
 public class TerminalExpressionNode extends Node {
-    public TerminalExpressionNode() {
-    }
+  public TerminalExpressionNode() {
+  }
 
-    public TerminalExpressionNode(Node node) {
-        this.begin = node.begin;
-        this.name = node.name;
-        this.contents = node.contents;
-        this.cStart = node.cStart;
-        this.cEnd = node.cEnd;
-    }
+  public TerminalExpressionNode(Node node) {
+    this.begin = node.begin;
+    this.name = node.name;
+    this.contents = node.contents;
+    this.cStart = node.cStart;
+    this.cEnd = node.cEnd;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        return MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory);
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    return MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory);
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

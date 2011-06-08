@@ -20,5 +20,5 @@
 package org.mvel2.conversion;
 
 public interface Converter {
-    public Object convert(Object o);
+  public Object convert(Object o);
 }

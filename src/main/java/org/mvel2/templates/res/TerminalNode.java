@@ -27,19 +27,19 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 public class TerminalNode extends Node {
-    public TerminalNode() {
-    }
+  public TerminalNode() {
+  }
 
-    public TerminalNode(int begin, int end) {
-        this.begin = begin;
-        this.end = end;
-    }
+  public TerminalNode(int begin, int end) {
+    this.begin = begin;
+    this.end = end;
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        return next != null ? next.eval(runtime, appender, ctx, factory) : null;
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }

@@ -29,19 +29,19 @@ import java.io.Serializable;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledTerminalExpressionNode extends TerminalExpressionNode {
-    private Serializable ce;
+  private Serializable ce;
 
-    public CompiledTerminalExpressionNode(Node node, ParserContext context) {
-        this.begin = node.begin;
-        this.name = node.name;
-        ce = MVEL.compileExpression(node.contents, node.cStart, node.cEnd - node.cStart, context);
-    }
+  public CompiledTerminalExpressionNode(Node node, ParserContext context) {
+    this.begin = node.begin;
+    this.name = node.name;
+    ce = MVEL.compileExpression(node.contents, node.cStart, node.cEnd - node.cStart, context);
+  }
 
-    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        return MVEL.executeExpression(ce, ctx, factory);
-    }
+  public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    return MVEL.executeExpression(ce, ctx, factory);
+  }
 
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+  public boolean demarcate(Node terminatingNode, char[] template) {
+    return false;
+  }
 }
