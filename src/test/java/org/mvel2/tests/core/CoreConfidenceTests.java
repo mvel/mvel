@@ -3250,4 +3250,18 @@ public class CoreConfidenceTests extends AbstractTest {
     assertNotNull(result);
   }
 
+  public void testContextObjMethodCall() {
+      String str = "getName() == \"bob\"";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "this", Bar.class );
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      Bar ctx = new Bar();
+      ctx.setName( "bob" );
+      Boolean result = (Boolean) MVEL.executeExpression( stmt, ctx );
+      assertTrue( result );
+  }
+
 }
