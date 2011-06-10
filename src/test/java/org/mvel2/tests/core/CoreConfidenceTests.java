@@ -3309,6 +3309,8 @@ public class CoreConfidenceTests extends AbstractTest {
         fail("should have failed");
       }
       catch (CompileException e) {
+
+        System.out.println();
         return;
       }
     }
@@ -3330,14 +3332,21 @@ public class CoreConfidenceTests extends AbstractTest {
 
       try {
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        fail("should have failed");
       }
       catch (CompileException e) {
-        return;
+        fail("should have failed");
+
       }
     }
     finally {
       MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
+  }
+
+  public void testNarrowToWideCompare() {
+    Serializable s = MVEL.compileExpression("new String('foo') == new Object()",
+            ParserContext.create().stronglyTyped());
+
+    assertFalse((Boolean) MVEL.executeExpression(s));
   }
 }

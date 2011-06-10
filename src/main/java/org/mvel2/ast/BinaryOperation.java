@@ -91,13 +91,14 @@ public class BinaryOperation extends BooleanNode {
         if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
           if (right.isLiteral() && canConvert(right.getEgressType(), left.getEgressType())) {
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
-          }
-          else if (!(Number.class.isAssignableFrom(right.getEgressType()) && Number.class.isAssignableFrom(left.getEgressType()))
-              && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
-              || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
+          } else if (!right.getEgressType().equals(Object.class)
+                  && !(Number.class.isAssignableFrom(right.getEgressType())
+                  && Number.class.isAssignableFrom(left.getEgressType()))
+                  && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
+                  || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
 
             throw new CompileException("incompatible types in statement: " + right.getEgressType()
-                + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
+                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
           }
         }
     }
@@ -108,8 +109,7 @@ public class BinaryOperation extends BooleanNode {
     if (this.left.isLiteral() && this.right.isLiteral()) {
       if (this.left.egressType == this.right.egressType) {
         lType = rType = ParseTools.__resolveType(left.egressType);
-      }
-      else {
+      } else {
         lType = ParseTools.__resolveType(this.left.egressType);
         rType = ParseTools.__resolveType(this.right.egressType);
       }
