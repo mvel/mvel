@@ -400,7 +400,8 @@ public class ExpressionCompiler extends AbstractParser {
             pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);
           }
 
-          if (!returnType.isEnum() && !pCtx.isOptimizerNotified() && pCtx.isStrongTyping()
+          if (!propVerifier.isMethodCall() && !returnType.isEnum() && !pCtx.isOptimizerNotified() && pCtx
+                  .isStrongTyping()
               && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
             throw new CompileException("no such identifier: " + tk.getAbsoluteName(), expr, tk.getStart());
           }
@@ -414,7 +415,7 @@ public class ExpressionCompiler extends AbstractParser {
           //    pCtx.makeVisible(a.getAssignmentVar());
 
           PropertyVerifier propVerifier = new PropertyVerifier(a.getAssignmentVar(), pCtx);
-          tk.setEgressType(returnType = propVerifier.analyze());
+          tk.setEgressType(returnType = propVerifier.analyze( ));
 
           if (!a.isNewDeclaration() && propVerifier.isResolvedExternally()) {
             pCtx.addInput(tk.getAbsoluteName(), returnType);

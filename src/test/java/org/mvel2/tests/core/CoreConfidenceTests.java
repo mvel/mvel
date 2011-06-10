@@ -3279,7 +3279,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testContextObjMethodCall() {
-    String str = "name == \"bob\"";
+    String str = "getName() == \"bob\"";
 
     ParserConfiguration pconf = new ParserConfiguration();
     ParserContext pctx = new ParserContext(pconf);

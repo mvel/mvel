@@ -626,6 +626,10 @@ public class PropertyVerifier extends AbstractOptimizer {
     return resolvedExternally && !methodCall;
   }
 
+  public boolean isMethodCall() {
+    return methodCall;
+  }
+
   public boolean isFqcn() {
     return fqcn;
   }
