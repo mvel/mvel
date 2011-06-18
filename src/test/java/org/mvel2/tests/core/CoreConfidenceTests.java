@@ -3319,29 +3319,29 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
-  public void testStrDoubleEqualsEquals() {
-
-    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
-    try {
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.addInput("this", Triangle.class);
-      pctx.setStrongTyping(true);
-
-      String str = "strLabel == doubleVal";
-
-      try {
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-      }
-      catch (CompileException e) {
-        fail("should have failed");
-
-      }
-    }
-    finally {
-      MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
-    }
-  }
+//  public void testStrDoubleEqualsEquals() {
+//
+//    MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+//    try {
+//      ParserConfiguration pconf = new ParserConfiguration();
+//      ParserContext pctx = new ParserContext(pconf);
+//      pctx.addInput("this", Triangle.class);
+//      pctx.setStrongTyping(true);
+//
+//      String str = "strLabel == doubleVal";
+//
+//      try {
+//        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+//      }
+//      catch (CompileException e) {
+//        fail("should have failed");
+//
+//      }
+//    }
+//    finally {
+//      MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
+//    }
+//  }
 
   public void testNarrowToWideCompare() {
     Serializable s = MVEL.compileExpression("new String('foo') == new Object()",
@@ -3350,39 +3350,6 @@ public class CoreConfidenceTests extends AbstractTest {
     assertFalse((Boolean) MVEL.executeExpression(s));
   }
   
-  public static class A {
-      private Map<String,String> map;
 
-    /**
-     * @return the map
-     */
-    public Map<String, String> getMap() {
-        return map;
-    }
 
-    /**
-     * @param map the map to set
-     */
-    public void setMap( Map<String, String> map ) {
-        this.map = map;
-    }
-      
-  }
-  
-  public void testGenericMethods() {
-      String str = "Integer.parseInt( a.getMap().get(\"x\") )";
-
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput( "a", A.class );
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-      A a = new A();
-      a.setMap( new HashMap<String,String>() );
-      a.getMap().put( "x", "10" );
-      Map<String,Object> variables = new HashMap<String, Object>();
-      variables.put( "a", a );
-      Number result = (Number) MVEL.executeExpression( stmt, null, variables );
-      assertEquals( 10,  result.intValue() );
-  }
 }

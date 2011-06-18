@@ -555,6 +555,15 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
 
+      if (pCtx.isStrictTypeEnforcement() && ctx.getTypeParameters().length != 0 && pCtx.getLastTypeParameters() !=
+              null && pCtx.getLastTypeParameters().length == ctx.getTypeParameters().length) {
+
+        TypeVariable[] typeVariables = ctx.getTypeParameters();
+        for (int i = 0; i < typeVariables.length; i++) {
+          typeArgs.put(typeVariables[i].getName(), (Class) pCtx.getLastTypeParameters()[i]);
+        }
+      }
+
       /**
        * Get the return type argument
        */
