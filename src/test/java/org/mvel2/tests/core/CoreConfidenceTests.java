@@ -3334,6 +3334,32 @@ public class CoreConfidenceTests extends AbstractTest {
       MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
   }
+  
+  public enum Status {
+      Ready
+  }  
+
+  public void testSysoutNullVariable() {
+      // Create our root Map object
+      Map<String, String> map = new HashMap<String, String>();
+      map.put("foo", null);
+
+      VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+      factory.createVariable("this", map);
+
+      org.mvel2.MVEL.executeExpression(org.mvel2.MVEL.compileExpression("System.out.println(foo);"), map, factory);
+  }
+  
+  public void testPackageImportEnum() {
+      String str = "Status.Ready";
+      ParserConfiguration pconf = new ParserConfiguration();
+//      pconf.addImport(org.jbpm.task.service.Status.class.getSimpleName(), Status.class);
+      pconf.addPackageImport("org.mvel2.tests.core");
+     
+      ParserContext context = new ParserContext(pconf);
+      Serializable s = MVEL.compileExpression(str.trim(), context);
+      System.out.println(MVEL.executeExpression(s));
+  }
 
 //  public void testStrDoubleEqualsEquals() {
 //
