@@ -2,16 +2,13 @@
  * MVEL 2.0
  * Copyright (C) 2007  MVFLEX/Valhalla Project and the Codehaus
  * Mike Brock, Dhanji Prasanna, John Graham, Mark Proctor
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -50,29 +47,16 @@ public class MVEL {
   public static final String VERSION = "2.1";
   public static final String VERSION_SUB = "0";
   public static final String CODENAME = "liberty";
-
   static boolean DEBUG_FILE = getBoolean("mvel2.debug.fileoutput");
-
-  static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel2.debugging.file") == null ? "mvel_debug.txt"
-      : System.getProperty("mvel2.debugging.file");
-
+  static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel2.debugging.file") == null ? "mvel_debug.txt" : System.getProperty("mvel2.debugging.file");
   static boolean ADVANCED_DEBUG = getBoolean("mvel2.advanced_debugging");
   static boolean WEAK_CACHE = getBoolean("mvel2.weak_caching");
   static boolean NO_JIT = getBoolean("mvel2.disable.jit");
   public static boolean INVOKED_METHOD_EXCEPTIONS_BUBBLE = getBoolean("mvel2.invoked_meth_exceptions_bubble");
-
-  public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL =
-      getBoolean("mvel2.compiler.allow_naked_meth_calls");
-
-  public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING =
-      getBoolean("mvel2.compiler.allow_override_all_prophandling");
-
-  public static boolean COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION =
-      getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
-
-  public static boolean COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS =
-      getBoolean("mvel2.compiler.support_java_style_class_literals");
-
+  public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL = getBoolean("mvel2.compiler.allow_naked_meth_calls");
+  public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = getBoolean("mvel2.compiler.allow_override_all_prophandling");
+  public static boolean COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
+  public static boolean COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = getBoolean("mvel2.compiler.support_java_style_class_literals");
   static boolean OPTIMIZER = true;
 
   static {
@@ -81,7 +65,6 @@ public class MVEL {
     }
   }
 
-  // don't construct this!
   private MVEL() {
   }
 
@@ -184,7 +167,6 @@ public class MVEL {
     }
   }
 
-
   /**
    * Evaluates an expression against a context object and externally injected variables.  This is a wrapper
    * convenience method which wraps the provided Map of vars in a {@link MapVariableResolverFactory}
@@ -205,7 +187,6 @@ public class MVEL {
     }
   }
 
-
   /**
    * Evaluates an expression and, if necessary, coerces the resultant value to the specified type. Example:
    * <pre><code>
@@ -222,7 +203,6 @@ public class MVEL {
     return convert(new MVELInterpretedRuntime(expression).parse(), toType);
   }
 
-
   /**
    * Evaluates an expression against a context object and, if necessary, coerces the resultant value to the specified
    * type.
@@ -236,7 +216,6 @@ public class MVEL {
   public static <T> T eval(String expression, Object ctx, Class<T> toType) {
     return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
   }
-
 
   /**
    * Evaluates an expression against externally injected variables and, if necessary, coerces the resultant value
@@ -253,11 +232,9 @@ public class MVEL {
     return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
   }
 
-
   /**
    * Evaluates an expression against externally injected variables.  The resultant value is coerced to the specified
-   * type if necessary. This is a wrapper convenience method which wraps the provided Map of vars in a
-   * {@link MapVariableResolverFactory}
+   * type if necessary. This is a wrapper convenience method which wraps the provided Map of vars in a{@link MapVariableResolverFactory}
    *
    * @param expression A string containing the expression to be evaluated.
    * @param vars       A map of vars to be injected
@@ -429,11 +406,9 @@ public class MVEL {
     return new MVELInterpretedRuntime(expression, start, offset, ctx, vars).parse();
   }
 
-  public static <T> T eval(char[] expression, int start, int offset, Object ctx,
-                           VariableResolverFactory vars, Class<T> toType) {
+  public static <T> T eval(char[] expression, int start, int offset, Object ctx, VariableResolverFactory vars, Class<T> toType) {
     return convert(new MVELInterpretedRuntime(expression, start, offset, ctx, vars).parse(), toType);
   }
-
 
   /**
    * Evaluate an expression against a context object and return the value
@@ -724,11 +699,11 @@ public class MVEL {
    * <p/>
    * int total = 0;
    * for (int i = 0; i < 100; i++) {
-   *     // Update the 'x' variable.
-   *     vars.put("x", i);
+   * // Update the 'x' variable.
+   * vars.put("x", i);
    * <p/>
-   *     // Execute the expression against the compiled payload and factory, and add the result to the total variable.
-   *     total += (Integer) MVEL.executeExpression(compiled, factory);
+   * // Execute the expression against the compiled payload and factory, and add the result to the total variable.
+   * total += (Integer) MVEL.executeExpression(compiled, factory);
    * }
    * <p/>
    * // Total should be 49500
@@ -778,8 +753,7 @@ public class MVEL {
    * Compiles an expression and returns a Serializable object containing the compiled expression. This method
    * accepts a Map of imports and Interceptors.  See {@link #compileExpression(String, Map)} for information on
    * imports.  The imports parameter in this method is <em>optional</em> and it is safe to pass a <tt>null</tt>
-   * value.<br/>
-   * {@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
+   * value.<br/>{@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
    * to be tied into the expression.
    * <p/>
    * <pre><code>
@@ -788,13 +762,13 @@ public class MVEL {
    * <p/>
    * // Create a simple interceptor.
    * Interceptor logInterceptor = new Interceptor() {
-   *   public int doBefore(ASTNode node, VariableResolverFactory factory) {
-   *       System.out.println("Interceptor called before!");
-   *   }
+   * public int doBefore(ASTNode node, VariableResolverFactory factory) {
+   * System.out.println("Interceptor called before!");
+   * }
    * <p/>
-   *   public int doAfter(Object exitValue, ASTNode node, VariableResolverFactory factory) {
-   *       System.out.println("Interceptor called after!");
-   *   }
+   * public int doAfter(Object exitValue, ASTNode node, VariableResolverFactory factory) {
+   * System.out.println("Interceptor called after!");
+   * }
    * };
    * <p/>
    * // Add the interceptor to the Map.
@@ -818,8 +792,7 @@ public class MVEL {
    * @param interceptors A Map of registered interceptors.
    * @return A cacheable compiled payload.
    */
-  public static Serializable compileExpression(String expression, Map<String, Object> imports,
-                                               Map<String, Interceptor> interceptors) {
+  public static Serializable compileExpression(String expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
     return compileExpression(expression, imports, interceptors, null);
   }
 
@@ -841,10 +814,8 @@ public class MVEL {
     return optimizeTree(c._compile());
   }
 
-  public static Serializable compileExpression(String expression, Map<String, Object> imports,
-                                               Map<String, Interceptor> interceptors, String sourceName) {
+  public static Serializable compileExpression(String expression, Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceName) {
     return compileExpression(expression, new ParserContext(imports, interceptors, sourceName));
-
   }
 
   public static Serializable compileExpression(char[] expression, ParserContext ctx) {
@@ -861,8 +832,7 @@ public class MVEL {
    * @param sourceName   The name of the source file being evaluated (optional)
    * @return The cacheable compiled payload
    */
-  public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
-                                               Map<String, Interceptor> interceptors, String sourceName) {
+  public static Serializable compileExpression(char[] expression, Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceName) {
     return compileExpression(expression, new ParserContext(imports, interceptors, sourceName));
   }
 
@@ -922,7 +892,6 @@ public class MVEL {
     return new CompiledAccExpression(expression, ingressType, ctx);
   }
 
-
   public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
     ((CompiledAccExpression) compiledSet).setValue(ctx, ctx, new ImmutableDefaultFactory(), value);
   }
@@ -947,7 +916,6 @@ public class MVEL {
   @SuppressWarnings({"unchecked"})
   public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
     CachingMapVariableResolverFactory factory = vars != null ? new CachingMapVariableResolverFactory(vars) : null;
-
     try {
       return ((ExecutableStatement) compiledExpression).getValue(ctx, factory);
     }
@@ -1021,7 +989,6 @@ public class MVEL {
     return convert(executeExpression(compiledExpression, ctx, vars), toType);
   }
 
-
   /**
    * Execute a compiled expression and convert the result to a type
    *
@@ -1079,7 +1046,6 @@ public class MVEL {
 
   public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
     if (compiledExpressions == null) return GetterAccessor.EMPTY;
-
     Object[] o = new Object[compiledExpressions.length];
     for (int i = 0; i < compiledExpressions.length; i++) {
       o[i] = executeExpression(compiledExpressions[i], ctx, vars);
@@ -1089,14 +1055,11 @@ public class MVEL {
 
   public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
     if (expression.isImportInjectionRequired()) {
-      return execute(true, expression, ctx, new ClassImportResolverFactory(expression
-          .getParserContext().getParserConfiguration(), vars, false));
-    }
-    else {
+      return execute(true, expression, ctx, new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), vars, false));
+    } else {
       return execute(true, expression, ctx, vars);
     }
   }
-
 
   public static String parseMacros(String input, Map<String, Macro> macros) {
     return new MacroProcessor(macros).parse(input);
@@ -1136,11 +1099,12 @@ public class MVEL {
       Method m = cls.getMethod(methodName, signature);
       if ((m.getModifiers() & Modifier.STATIC) == 0)
         throw new RuntimeException("method not a static method: " + methodName);
-
       return m;
     }
     catch (NoSuchMethodException e) {
       throw new RuntimeException("no such method: " + methodName);
     }
   }
+
+
 }

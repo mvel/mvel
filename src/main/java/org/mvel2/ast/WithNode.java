@@ -180,7 +180,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                               block, _st, _end - _st, oper), pCtx)
                       //or
                       : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                  , block, _st, Object.class, pCtx));
+                  , block, _st, egressType, pCtx));
             }
             catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
@@ -230,7 +230,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                       pCtx)
                   //or
                   : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-              , block, _st, Object.class, pCtx));
+              , block, _st, egressType, pCtx));
         }
       }
       catch (CompileException e) {

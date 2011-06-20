@@ -51,9 +51,6 @@ public class TypeDescriptor implements Serializable {
   private ExecutableStatement[] compiledArraySize;
   int endRange;
 
-  public TypeDescriptor() {
-  }
-
   public TypeDescriptor(char[] name, int start, int offset, int fields) {
     updateClassName(this.expr = name, this.start = start, this.offset = offset, fields);
   }

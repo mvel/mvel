@@ -1517,4 +1517,69 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertEquals(10, result.intValue());
   }
 
+  public static class Address {
+    private String street;
+
+    public Address(String street) {
+      this.street = street;
+    }
+
+    public String getStreet() {
+      return street;
+    }
+
+    public void setStreet(String street) {
+      this.street = street;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((street == null) ? 0 : street.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      Address other = (Address) obj;
+      if (street == null) {
+        if (other.street != null) return false;
+      } else if (!street.equals(other.street)) return false;
+      return true;
+    }
+
+  }
+
+  public static class PersonAddresses {
+    private List<Address> addresses = new ArrayList<Address>();
+
+    public List<Address> getAddresses() {
+      return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+      this.addresses = addresses;
+    }
+  }
+
+  public void testGenerics1() {
+    String str = "addresses[0] == new Address(\"s1\") && addresses[0].street == new Address(\"s1\").street";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", PersonAddresses.class);
+    pctx.addImport(Address.class);
+    pctx.addImport(PersonAddresses.class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    PersonAddresses ctx = new PersonAddresses();
+    ctx.getAddresses().add(new Address("s1"));
+    Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+    assertTrue(result);
+  }
+
 }
