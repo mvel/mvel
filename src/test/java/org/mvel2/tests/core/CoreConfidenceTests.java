@@ -3292,6 +3292,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testInlineConstructor() {
+      String str = "cheese = new Cheese().{ type = $c.type };";
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("$c", Cheese.class);
+      pctx.addImport( Cheese.class );
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      Cheese $c = new Cheese();
+      $c.setType( "stilton" );
+      Map<String,Object> vars = new HashMap<String, Object>();
+      vars.put( "$c", $c );
+      Cheese cheese = (Cheese) MVEL.executeExpression(stmt, vars);
+      assertEquals("stilton", cheese.getType() );
+    }
+
   public void testStrTriangleEqualsEquals() {
 
     MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
