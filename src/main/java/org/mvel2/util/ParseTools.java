@@ -2054,6 +2054,15 @@ public class ParseTools {
     return false;
   }
 
+  public static boolean isPropertyOnly(char[] array, int start, int end) {
+    end = start + (end - start);
+    for (int i = start; i < end; i++) {
+      if (!isIdentifierPart(array[i])) return false;
+    }
+
+    return true;
+  }
+
   public static final class WithStatementPair implements java.io.Serializable {
     private String parm;
     private String value;

@@ -125,14 +125,13 @@ public class NewObjectNode extends ASTNode {
           }
 
           if (cnsResid.length == 2) {
-            String residualProperty = cnsResid[1].trim().startsWith(".") ? cnsResid[1].trim().substring(1) :
+            String residualProperty =
                     cnsResid[1].trim();
 
             if (residualProperty.length() == 0) return;
 
-          this.egressType = new PropertyVerifier(residualProperty, pCtx, egressType).analyze();
+            this.egressType = new PropertyVerifier(residualProperty, pCtx, egressType).analyze();
           }
-
         }
       }
     }

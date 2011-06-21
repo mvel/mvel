@@ -19,15 +19,6 @@ package org.mvel2.util;
 
 public class ArrayTools {
 
-  public static boolean isLiteralOnly(char[] array, int start, int end) {
-    end = start + (end - start);
-    for (int i = start; i < end; i++) {
-      if (!ParseTools.isIdentifierPart(array[i])) return false;
-    }
-
-    return true;
-  }
-
   public static int findFirst(char c, int start, int offset, char[] array) {
     int end = start + offset;
     for (int i = start; i < end; i++) {

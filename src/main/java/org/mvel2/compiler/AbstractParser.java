@@ -31,7 +31,7 @@ import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ArrayTools.isLiteralOnly;
+import static org.mvel2.util.ParseTools.isPropertyOnly;
 
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
@@ -1059,15 +1059,14 @@ public class AbstractParser implements Parser, Serializable {
             }
 
             case '>': {
-              if (expr[cursor + 1] == '>') {
-                if (expr[cursor += 2] == '>') cursor++;
-                return createOperator(expr, st, cursor);
-              }
-              else if (expr[cursor + 1] == '=') {
-                return createOperator(expr, st, cursor += 2);
-              }
-              else {
-                return createOperator(expr, st, ++cursor);
+              switch (expr[cursor + 1]) {
+                case '>':
+                  if (expr[cursor += 2] == '>') cursor++;
+                  return createOperator(expr, st, cursor);
+                case '=':
+                  return createOperator(expr, st, cursor += 2);
+                default:
+                  return createOperator(expr, st, ++cursor);
               }
             }
 
@@ -1292,7 +1291,7 @@ public class AbstractParser implements Parser, Serializable {
   private ASTNode createPropertyToken(int st, int end) {
     String tmp;
 
-    if (isLiteralOnly(expr, st, end)) {
+    if (isPropertyOnly(expr, st, end)) {
       if (pCtx != null && pCtx.hasImports()) {
         int find;
 

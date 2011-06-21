@@ -81,6 +81,10 @@ public class PropertyVerifier extends AbstractOptimizer {
   public PropertyVerifier(String property, ParserContext parserContext, Class root) {
     this.end = this.length = (this.expr = property.toCharArray()).length;
 
+    if (!property.isEmpty() && property.charAt(0) == '.') {
+      this.cursor = this.st = this.start = 1;
+    }
+
     this.pCtx = parserContext;
     this.ctx = root;
   }
