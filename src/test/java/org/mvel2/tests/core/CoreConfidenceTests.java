@@ -3292,6 +3292,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testInlineConstructor() {
+      String str = "cheese = new Cheese().{ type = $c.type };";
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("$c", Cheese.class);
+      pctx.addImport( Cheese.class );
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      Cheese $c = new Cheese();
+      $c.setType( "stilton" );
+      Map<String,Object> vars = new HashMap<String, Object>();
+      vars.put( "$c", $c );
+      Cheese cheese = (Cheese) MVEL.executeExpression(stmt, vars);
+      assertEquals("stilton", cheese.getType() );
+    }
+
   public void testStrTriangleEqualsEquals() {
 
     MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
@@ -3317,6 +3333,32 @@ public class CoreConfidenceTests extends AbstractTest {
     finally {
       MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
+  }
+  
+  public enum Status {
+      Ready
+  }  
+
+  public void testSysoutNullVariable() {
+      // Create our root Map object
+      Map<String, String> map = new HashMap<String, String>();
+      map.put("foo", null);
+
+      VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+      factory.createVariable("this", map);
+
+      org.mvel2.MVEL.executeExpression(org.mvel2.MVEL.compileExpression("System.out.println(foo);"), map, factory);
+  }
+  
+  public void testPackageImportEnum() {
+      String str = "Status.Ready";
+      ParserConfiguration pconf = new ParserConfiguration();
+//      pconf.addImport(org.jbpm.task.service.Status.class.getSimpleName(), Status.class);
+      pconf.addPackageImport("org.mvel2.tests.core");
+     
+      ParserContext context = new ParserContext(pconf);
+      Serializable s = MVEL.compileExpression(str.trim(), context);
+      System.out.println(MVEL.executeExpression(s));
   }
 
 //  public void testStrDoubleEqualsEquals() {
