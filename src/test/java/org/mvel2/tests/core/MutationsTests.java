@@ -82,11 +82,11 @@ public class MutationsTests extends AbstractTest {
     assertEquals(2.0, test(ex));
   }
 
-  public void ignoreTestFunctionPointerAsParam() {
+  public void testFunctionPointerAsParam() {
     assertEquals("2.0", test("squareRoot = Math.sqrt; new String(String.valueOf(squareRoot(4)));"));
   }
 
-  public void ignoreTestFunctionPointerInAssignment() {
+  public void testFunctionPointerInAssignment() {
     assertEquals(5.0, test("squareRoot = Math.sqrt; i = squareRoot(25); return i;"));
   }
 
