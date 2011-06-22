@@ -3355,7 +3355,7 @@ public class CoreConfidenceTests extends AbstractTest {
     
     Serializable s = MVEL.compileExpression(str.trim(), context);
     assertEquals( new Status( Status.START ), MVEL.executeExpression(s) ) ;
-    assertEquals( new Status( Status.STOP ), MVEL.executeExpression(s) ) ;
+    assertFalse( new Status( Status.STOP ).equals( MVEL.executeExpression(s) ) ) ;
   }
 
 //  public void testStrDoubleEqualsEquals() {

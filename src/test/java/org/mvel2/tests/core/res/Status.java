@@ -5,7 +5,7 @@ package org.mvel2.tests.core.res;
 */
 public class Status {
     public static final int START = 0;
-    public static final int STOP = 0;
+    public static final int STOP = 1;
     
     private int value;
     
@@ -34,6 +34,10 @@ public class Status {
         if ( value != other.value ) return false;
         return true;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Status [value=" + value + "]";
+    }
     
 }
