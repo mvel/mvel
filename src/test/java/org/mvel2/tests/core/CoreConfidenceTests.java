@@ -3347,13 +3347,15 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testPackageImportEnum() {
-    String str = "Status.Ready";
+    String str = "new Status( Status.START )";
     ParserConfiguration pconf = new ParserConfiguration();
     pconf.addPackageImport("org.mvel2.tests.core.res");
-
     ParserContext context = new ParserContext(pconf);
+    context.setStrongTyping( true );
+    
     Serializable s = MVEL.compileExpression(str.trim(), context);
-    System.out.println(MVEL.executeExpression(s));
+    assertEquals( new Status( Status.START ), MVEL.executeExpression(s) ) ;
+    assertFalse( new Status( Status.STOP ).equals( MVEL.executeExpression(s) ) ) ;
   }
 
 //  public void testStrDoubleEqualsEquals() {
