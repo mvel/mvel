@@ -1,7 +1,7 @@
 /**
  * Sample MVEL 2.1 Script
  * "Functional QuickSort"
- * by: Christopher Michael Brock, Inspired by: Dhanji Prasanna
+ * by: Mike Brock, Inspired by: Dhanji Prasanna
  */
 
 def quicksort(list) {

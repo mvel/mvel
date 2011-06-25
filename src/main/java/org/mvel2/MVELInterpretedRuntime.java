@@ -31,7 +31,6 @@ import org.mvel2.util.ExecutionStack;
 import java.util.Map;
 
 import static org.mvel2.Operator.*;
-import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
 
 
 /**
@@ -144,7 +143,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             continue;
         }
 
-        if (procBooleanOperator(operator) == -1) return stk.peek();
+        if (procBooleanOperator(operator) == OP_TERMINATE) return stk.peek();
       }
 
       if (holdOverRegister != null) {
@@ -186,11 +185,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
             return -1;
           } else {
             stk.clear();
-            return 0;
+            return OP_RESET_FRAME;
           }
         } else {
           stk.discard();
-          return 0;
+          return OP_RESET_FRAME;
         }
 
       case OR:
@@ -198,19 +197,19 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
         if (stk.peekBoolean()) {
           if (unwindStatement(operator)) {
-            return -1;
+            return OP_TERMINATE;
           } else {
             stk.clear();
-            return 0;
+            return OP_RESET_FRAME;
           }
         } else {
           stk.discard();
-          return 0;
+          return OP_RESET_FRAME;
         }
 
       case CHOR:
         if (!BlankLiteral.INSTANCE.equals(stk.peek())) {
-          return -1;
+          return OP_TERMINATE;
         }
         break;
 
@@ -219,16 +218,18 @@ public class MVELInterpretedRuntime extends AbstractParser {
           stk.clear();
 
           ASTNode tk;
-          while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
-            //nothing
+
+          for (;;){
+            if ((tk = nextToken()) == null || tk.isOperator(Operator.TERNARY_ELSE))
+              break;
           }
         }
 
-        return 0;
+        return OP_RESET_FRAME;
 
       case TERNARY_ELSE:
         captureToEOS();
-        return 0;
+        return OP_RESET_FRAME;
 
       case END_OF_STMT:
         /**
@@ -246,10 +247,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
           stk.clear();
         }
 
-        return 0;
+        return OP_RESET_FRAME;
     }
 
-    return 1;
+    return OP_CONTINUE;
   }
 
   /**
@@ -291,11 +292,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
     }
     return tk == null;
-  }
-
-  public MVELInterpretedRuntime setExpressionArray(char[] expressionArray) {
-    this.length = (this.expr = expressionArray).length;
-    return this;
   }
 
   MVELInterpretedRuntime(char[] expression, Object ctx, Map<String, Object> variables) {
@@ -353,24 +349,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
     setExpression(expression);
     this.ctx = ctx;
     this.variableFactory = new ImmutableDefaultFactory();
-  }
-
-  protected boolean hasImport(String name) {
-    if (pCtx == null) pCtx = getParserContext();
-
-    if (pCtx.hasImport(name)) {
-      return true;
-    } else {
-      VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
-      return vrf != null && vrf.isResolveable(name);
-    }
-  }
-
-  protected Class getImport(String name) {
-    if (pCtx == null) pCtx = getParserContext();
-    if (pCtx.hasImport(name)) return pCtx.getImport(name);
-
-    return (Class) findClassImportResolverFactory(variableFactory).getVariableResolver(name).getValue();
   }
 }
 
