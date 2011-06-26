@@ -23,6 +23,7 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
 import org.mvel2.util.ProtoParser;
@@ -1139,13 +1140,7 @@ public class AbstractParser implements Parser, Serializable {
       throw new CompileException("unexpected end of statement", expr, cursor, e);
     }
     catch (CompileException e) {
-      if (e.getExpr() != expr) {
-        e.setExpr(expr);
-        e.setLineNumber(pCtx == null ? 1 : pCtx.getLineCount());
-        e.setCursor(cursor);
-        e.setColumn(cursor - (pCtx == null ? 0 : pCtx.getLineOffset()));
-      }
-      throw e;
+      throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
     }
   }
 

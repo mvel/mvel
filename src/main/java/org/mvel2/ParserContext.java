@@ -697,16 +697,18 @@ public class ParserContext implements Serializable {
       return false;
     }
 
-    if (AbstractParser.LITERALS.containsKey(var)) return true;
+    if (AbstractParser.LITERALS.containsKey(var) || hasImport(var)) {
+      return true;
+    }
 
     int pos = variableVisibility.size() - 1;
+
     do {
       if (variableVisibility.get(pos).contains(var)) {
         return true;
       }
     }
     while (pos-- != 0);
-
 
     return false;
   }

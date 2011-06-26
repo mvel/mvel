@@ -307,7 +307,7 @@ public class ExpressionCompiler extends AbstractParser {
       throw new CompileException("not a statement, or badly formed structure", expr, st, e);
     }
     catch (CompileException e) {
-      throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
+      throw ErrorUtil.rewriteIfNeeded(e, expr, st);
     }
     catch (Throwable e) {
       parserContext.set(null);
