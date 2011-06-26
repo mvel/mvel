@@ -201,7 +201,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
           if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Type>();
           for (int i = 0; i < gpt.length; i++) {
-            paramTypes.put(classArgs[i].toString(), (Class) gpt[i]);
+            paramTypes.put(classArgs[i].toString(), gpt[i]);
           }
         }
 
@@ -294,7 +294,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         catch (ClassNotFoundException cnfe) {
           // fall through.
         }
-
       }
 
       if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
@@ -364,9 +363,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       addFatalError("unterminated [ in token");
     }
 
-    ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
-    compiler.setVerifyOnly(true);
-    compiler.compile(pCtx);
+    MVEL.analysisCompile(new String(expr, start, cursor - start), pCtx);
 
     ++cursor;
 
@@ -435,7 +432,6 @@ public class PropertyVerifier extends AbstractOptimizer {
       tk = "";
     }
 
-
     cursor++;
 
     /**
@@ -476,8 +472,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         if (errors.size() < pCtx.getErrorList().size()) {
           for (ErrorDetail detail : pCtx.getErrorList()) {
-            if (errors.contains(detail)) continue;
-            else {
+            if (!errors.contains(detail)) {
               detail.setExpr(expr);
               detail.setCursor(new String(expr).substring(this.st).indexOf(new String(subtokens.get(i))) + this.st);
               detail.setColumn(0);
@@ -488,10 +483,8 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         if (rethrow != null) {
-
           throw rethrow;
         }
-
       }
     }
 
@@ -521,10 +514,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (pCtx.isStrictTypeEnforcement()) {
           throw new CompileException("unable to resolve method using strict-mode: "
               + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", expr, tkStart);
-
-          //   addFatalError();
         }
-
 
         return Object.class;
       }

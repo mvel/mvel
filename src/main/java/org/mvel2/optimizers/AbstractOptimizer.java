@@ -44,7 +44,6 @@ public class AbstractOptimizer extends AbstractParser {
 
   protected int tkStart;
 
-
   /**
    * Try static access of the property, and return an instance of the Field, Method of Class if successful.
    *
@@ -250,11 +249,9 @@ public class AbstractOptimizer extends AbstractParser {
             return false;
           }
       }
-
     }
     return true;
   }
-
 
   protected int findLastUnion() {
     int split = -1;
@@ -286,6 +283,4 @@ public class AbstractOptimizer extends AbstractParser {
 
     return split;
   }
-
-
 }

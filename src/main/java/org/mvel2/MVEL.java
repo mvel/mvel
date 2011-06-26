@@ -1105,6 +1105,4 @@ public class MVEL {
       throw new RuntimeException("no such method: " + methodName);
     }
   }
-
-
 }

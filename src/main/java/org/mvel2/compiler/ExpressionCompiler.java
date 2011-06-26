@@ -184,7 +184,6 @@ public class ExpressionCompiler extends AbstractParser {
 
               firstLA = true;
 
-
               /**
                * Now we need to check to see if this is a continuing reduction.
                */
@@ -243,7 +242,6 @@ public class ExpressionCompiler extends AbstractParser {
                 }
               }
 
-
               /**
                * If there are no more tokens left to parse, we check to see if
                * we've been doing any reducing, and if so we create the token
@@ -277,7 +275,6 @@ public class ExpressionCompiler extends AbstractParser {
           else {
             literalOnly = 0;
           }
-
         }
 
         astBuild.addTokenNode(verify(pCtx, tk));
@@ -293,7 +290,6 @@ public class ExpressionCompiler extends AbstractParser {
         throw new CompileException("COMPILE ERROR: non-empty stack after compileShared.", expr, cursor);
       }
 
-
       if (!verifyOnly) {
         return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
       }
@@ -301,7 +297,6 @@ public class ExpressionCompiler extends AbstractParser {
         returnType = CompilerTools.getReturnType(astBuild);
         return null;
       }
-
     }
     catch (NullPointerException e) {
       throw new CompileException("not a statement, or badly formed structure", expr, st, e);
@@ -381,7 +376,6 @@ public class ExpressionCompiler extends AbstractParser {
       if (tk.isIdentifier()) {
         PropertyVerifier propVerifier = new PropertyVerifier(expr, tk.getStart(), tk.getOffset(), pCtx);
 
-
         if (tk instanceof Union) {
           propVerifier.setCtx(((Union) tk).getLeftEgressType());
           tk.setEgressType(returnType = propVerifier.analyze());
@@ -405,7 +399,6 @@ public class ExpressionCompiler extends AbstractParser {
               && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
             throw new CompileException("no such identifier: " + tk.getAbsoluteName(), expr, tk.getStart());
           }
-
         }
       }
       else if (tk.isAssignment()) {
@@ -512,7 +505,6 @@ public class ExpressionCompiler extends AbstractParser {
     this.end = trimLeft(this.end);
     this.length = this.end - start;
 
-
     contextControl(SET, ctx, this);
   }
 
@@ -525,7 +517,6 @@ public class ExpressionCompiler extends AbstractParser {
 
     contextControl(SET, ctx, this);
   }
-
 
   public ExpressionCompiler(char[] expression, ParserContext ctx) {
     setExpression(expression);
@@ -547,7 +538,6 @@ public class ExpressionCompiler extends AbstractParser {
   public void setVerifyOnly(boolean verifyOnly) {
     this.verifyOnly = verifyOnly;
   }
-
 
   public Class getReturnType() {
     return returnType;

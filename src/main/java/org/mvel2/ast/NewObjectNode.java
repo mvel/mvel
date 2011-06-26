@@ -299,10 +299,6 @@ public class NewObjectNode extends ASTNode {
     }
   }
 
-  public Accessor getNewObjectOptimizer() {
-    return newObjectOptimizer;
-  }
-
   public static class NewObjectArray implements Accessor, Serializable {
     private ExecutableStatement[] sizes;
     private Class arrayType;

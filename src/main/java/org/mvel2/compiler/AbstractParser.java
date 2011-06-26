@@ -2155,7 +2155,6 @@ public class AbstractParser implements Parser, Serializable {
     pCtx.addError(new ErrorDetail(expr, start, true, message));
   }
 
-
   public static final int LEVEL_5_CONTROL_FLOW = 5;
   public static final int LEVEL_4_ASSIGNMENT = 4;
   public static final int LEVEL_3_ITERATION = 3;

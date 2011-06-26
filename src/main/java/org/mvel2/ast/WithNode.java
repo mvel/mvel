@@ -153,7 +153,7 @@ public class WithNode extends BlockNode implements NestedStatement {
               parms.add(
                   new ParmValuePair(null, (ExecutableStatement)
                       subCompileExpression(expr, pCtx),
-                      block, _st, egressType, pCtx)
+                          egressType, pCtx)
               );
 
             }
@@ -180,7 +180,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                               block, _st, _end - _st, oper), pCtx)
                       //or
                       : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                  , block, _st, egressType, pCtx));
+                  , egressType, pCtx));
             }
             catch (CompileException e) {
               e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
@@ -214,7 +214,7 @@ public class WithNode extends BlockNode implements NestedStatement {
           parms.add(
               new ParmValuePair(null, (ExecutableStatement)
                   subCompileExpression(expr, pCtx),
-                  block, _st, egressType, pCtx)
+                      egressType, pCtx)
           );
         }
         else {
@@ -230,15 +230,11 @@ public class WithNode extends BlockNode implements NestedStatement {
                       pCtx)
                   //or
                   : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-              , block, _st, egressType, pCtx));
+              , egressType, pCtx));
         }
       }
       catch (CompileException e) {
         throw ErrorUtil.rewriteIfNeeded(e, block, _st);
-
-//                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
-//                e.setExpr(block);
-//                throw e;
       }
     }
 
@@ -252,22 +248,15 @@ public class WithNode extends BlockNode implements NestedStatement {
     return compiledBlock;
   }
 
-  public ParmValuePair[] getWithExpressions() {
-    return withExpressions;
-  }
+//  public ParmValuePair[] getWithExpressions() {
+//    return withExpressions;
+//  }
 
   public static final class ParmValuePair implements Serializable {
-    private char[] expr;
-    private int cursor;
     private Serializable setExpression;
     private ExecutableStatement statement;
 
-    public ParmValuePair() {
-    }
-
-    public ParmValuePair(String parameter, ExecutableStatement statement, char[] expr, int cursor, Class ingressType, ParserContext pCtx) {
-      this.expr = expr;
-      this.cursor = cursor;
+    public ParmValuePair(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
       if (parameter != null && parameter.length() != 0) {
         this.setExpression = MVEL.compileSetExpression(parameter,
             ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
@@ -280,16 +269,8 @@ public class WithNode extends BlockNode implements NestedStatement {
       return setExpression;
     }
 
-    public void setSetExpression(Serializable setExpression) {
-      this.setExpression = setExpression;
-    }
-
     public ExecutableStatement getStatement() {
       return statement;
-    }
-
-    public void setStatement(ExecutableStatement statement) {
-      this.statement = statement;
     }
 
     public void eval(Object ctx, VariableResolverFactory factory) {
