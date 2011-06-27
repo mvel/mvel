@@ -123,9 +123,12 @@ public class DebuggerTests extends AbstractTest {
 
     MVELRuntime.registerBreakpoint("test.mv", 7);
 
+    final Set<Integer> breaked = new HashSet<Integer>();
+
     Debugger testDebugger = new Debugger() {
       public int onBreak(Frame frame) {
         System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+        breaked.add(frame.getLineNumber());
 
         return 0;
       }
@@ -134,6 +137,7 @@ public class DebuggerTests extends AbstractTest {
     MVELRuntime.setThreadDebugger(testDebugger);
 
     assertEquals(10, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(createTestMap())));
+    assertTrue("did not break at line 7", breaked.contains(7));
   }
 
   public void testBreakpoints2() {
@@ -275,9 +279,12 @@ public class DebuggerTests extends AbstractTest {
     MVELRuntime.registerBreakpoint("test2.mv", 9);
     MVELRuntime.registerBreakpoint("test2.mv", 10);
 
+    final Set<Integer> breaked = new HashSet<Integer>();
+
     Debugger testDebugger = new Debugger() {
       public int onBreak(Frame frame) {
         System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+        breaked.add(frame.getLineNumber());
         return 0;
       }
     };
@@ -285,6 +292,7 @@ public class DebuggerTests extends AbstractTest {
     MVELRuntime.setThreadDebugger(testDebugger);
 
     assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(createTestMap())));
+    assertEquals("did not break at expected lines", Make.Set.<Integer>$()._(6)._(8)._(9)._(10)._(), breaked);
   }
 
   public void testBreakpoints4() {
