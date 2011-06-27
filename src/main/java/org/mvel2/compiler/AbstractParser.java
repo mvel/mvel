@@ -230,7 +230,9 @@ public class AbstractParser implements Parser, Serializable {
             throw new CompileException("unable to produce debugging symbols: source name must be provided.", expr, st);
           }
 
-          line = pCtx.getLineCount();
+          if (!pCtx.isLineMapped(pCtx.getSourceFile())) {
+            pCtx.initLineMapping(pCtx.getSourceFile(), expr);
+          }
 
           skipWhitespace();
 
@@ -238,9 +240,12 @@ public class AbstractParser implements Parser, Serializable {
             return null;
           }
 
-          if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
+          int line = pCtx.getLineFor(pCtx.getSourceFile(), cursor);
+
+          if (!pCtx.isVisitedLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
             lastWasLineLabel = true;
-            pCtx.setLineAndOffset(line, cursor);
+            pCtx.visitLine(pCtx.getSourceFile(), line);
+
             return lastNode = pCtx.setLastLineLabel(new LineLabel(pCtx.getSourceFile(), line));
           }
         } else {

@@ -24,6 +24,8 @@ import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Parser;
 import org.mvel2.integration.Interceptor;
+import org.mvel2.util.LineMapper;
+import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
@@ -64,7 +66,9 @@ public class ParserContext implements Serializable {
 
   private transient List<ErrorDetail> errorList;
 
-  private HashMap<String, Set<Integer>> sourceMap;
+  private transient Map<String, LineMapper.LineLookup> sourceLineLookups;
+  private transient Map<String, Set<Integer>> visitedLines;
+
   private LineLabel lastLineLabel;
 
   private transient Parser rootParser;
@@ -113,7 +117,7 @@ public class ParserContext implements Serializable {
     ctx.addIndexedInputs(indexedInputs);
     ctx.addTypeParameters(typeParameters);
 
-    ctx.sourceMap = sourceMap;
+    ctx.sourceLineLookups = sourceLineLookups;
     ctx.lastLineLabel = lastLineLabel;
     ctx.variableVisibility = variableVisibility;
 
@@ -178,7 +182,7 @@ public class ParserContext implements Serializable {
     ctx.indexedInputs = indexedInputs;
     ctx.typeParameters = typeParameters;
 
-    ctx.sourceMap = sourceMap;
+    ctx.sourceLineLookups = sourceLineLookups;
     ctx.lastLineLabel = lastLineLabel;
 
     ctx.globalFunctions = globalFunctions;
@@ -211,7 +215,7 @@ public class ParserContext implements Serializable {
    */
   public boolean hasVarOrInput(String name) {
     return (variables != null && variables.containsKey(name))
-        || (inputs != null && inputs.containsKey(name));
+            || (inputs != null && inputs.containsKey(name));
   }
 
   /**
@@ -224,8 +228,7 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputType(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    }
-    else if (inputs != null && inputs.containsKey(name)) {
+    } else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return Object.class;
@@ -234,8 +237,7 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputTypeOrNull(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    }
-    else if (inputs != null && inputs.containsKey(name)) {
+    } else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return null;
@@ -295,7 +297,7 @@ public class ParserContext implements Serializable {
    * @param lineOffset The line offset
    */
   public void setLineAndOffset(int lineCount, int lineOffset) {
-    addKnownLine(this.lineCount = lineCount);
+    //addKnownLine(this.lineCount = lineCount);
     this.lineOffset = lineOffset;
   }
 
@@ -448,11 +450,10 @@ public class ParserContext implements Serializable {
         for (Method m : ctxType.getMethods()) {
           if ((m.getModifiers() & Modifier.PUBLIC) != 0) {
             if (m.getName().startsWith("get")
-                || (m.getName().startsWith("is")
-                && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
+                    || (m.getName().startsWith("is")
+                    && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
               scope.add(ReflectionUtil.getPropertyFromAccessor(m.getName()));
-            }
-            else {
+            } else {
               scope.add(m.getName());
             }
           }
@@ -555,8 +556,8 @@ public class ParserContext implements Serializable {
     else {
       for (ErrorDetail detail : errorList) {
         if (detail.getMessage().equals(errorDetail.getMessage())
-            && detail.getColumn() == errorDetail.getColumn()
-            && detail.getLineNumber() == errorDetail.getLineNumber()) {
+                && detail.getColumn() == errorDetail.getColumn()
+                && detail.getLineNumber() == errorDetail.getLineNumber()) {
           return;
         }
       }
@@ -647,14 +648,11 @@ public class ParserContext implements Serializable {
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
       if ((val = entry.getValue()) instanceof Class) {
         addImport(entry.getKey(), (Class) val);
-      }
-      else if (val instanceof Method) {
+      } else if (val instanceof Method) {
         addImport(entry.getKey(), (Method) val);
-      }
-      else if (val instanceof MethodStub) {
+      } else if (val instanceof MethodStub) {
         addImport(entry.getKey(), (MethodStub) val);
-      }
-      else {
+      } else {
         throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
       }
     }
@@ -737,19 +735,52 @@ public class ParserContext implements Serializable {
     this.debugSymbols = debugSymbols;
   }
 
-  public boolean isKnownLine(String sourceName, int lineNumber) {
-    return sourceMap != null && sourceMap.containsKey(sourceName) && sourceMap.get(sourceName).contains(lineNumber);
+  public boolean isLineMapped(String sourceName) {
+    return sourceLineLookups != null && sourceLineLookups.containsKey(sourceName);
   }
 
-  public void addKnownLine(String sourceName, int lineNumber) {
-    if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
-    if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
-    sourceMap.get(sourceName).add(lineNumber);
+  public void initLineMapping(String sourceName, char[] expr) {
+    if (sourceLineLookups == null) {
+      sourceLineLookups = new HashMap<String, LineMapper.LineLookup>();
+    }
+    sourceLineLookups.put(sourceName, new LineMapper(expr).map());
   }
 
-  public void addKnownLine(int lineNumber) {
-    addKnownLine(sourceFile, lineNumber);
+  public int getLineFor(String sourceName, int cursor) {
+    return (sourceLineLookups != null
+            && sourceLineLookups.containsKey(sourceName)) ?
+            sourceLineLookups.get(sourceName).getLineFromCursor(cursor) : -1;
   }
+
+  public boolean isVisitedLine(String sourceName, int lineNumber) {
+    return visitedLines != null
+            && visitedLines.containsKey(sourceName)
+            && visitedLines.get(sourceName).contains(lineNumber);
+  }
+
+  public void visitLine(String sourceName, int lineNumber) {
+    if (visitedLines == null) {
+      visitedLines = new HashMap<String, Set<Integer>>();
+    }
+
+    if (!visitedLines.containsKey(sourceName)) {
+      visitedLines.put(sourceName, new TreeSet<Integer>());
+    }
+
+    visitedLines.get(sourceName).add(lineNumber);
+  }
+
+
+
+//  public void addKnownLine(String sourceName, int lineNumber) {
+//    if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
+//    if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
+//    sourceMap.get(sourceName).add(lineNumber);
+//  }
+
+//  public void addKnownLine(int lineNumber) {
+//    addKnownLine(sourceFile, lineNumber);
+//  }
 
   public LineLabel getLastLineLabel() {
     return lastLineLabel;

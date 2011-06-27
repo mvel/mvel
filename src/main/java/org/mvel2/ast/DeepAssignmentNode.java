@@ -60,7 +60,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
       property = createStringTrimmed(expr, start, mark - start);
 
       // this.start = mark + 1;
-      this.start = skipWhitespace(expr, mark + 1, pCtx);
+      this.start = skipWhitespace(expr, mark + 1);
 
       if (this.start >= start + offset) {
         throw new CompileException("unexpected end of statement", expr, mark + 1);

@@ -52,7 +52,7 @@ public class ProtoParser {
 
     Mainloop:
     while (cursor < endOffset) {
-      cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
+      cursor = ParseTools.skipWhitespace(expr, cursor);
 
       int start = cursor;
 
@@ -64,7 +64,7 @@ public class ProtoParser {
 
           if ("def".equals(tk1) || "function".equals(tk1)) {
             cursor++;
-            cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
+            cursor = ParseTools.skipWhitespace(expr, cursor);
             start = cursor;
             while (cursor < endOffset && isIdentifierPart(expr[cursor])) cursor++;
 
@@ -85,7 +85,7 @@ public class ProtoParser {
           }
         }
 
-        cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
+        cursor = ParseTools.skipWhitespace(expr, cursor);
       }
 
       if (cursor > endOffset) {
@@ -113,7 +113,7 @@ public class ProtoParser {
 
         case '=':
           cursor++;
-          cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
+          cursor = ParseTools.skipWhitespace(expr, cursor);
           start = cursor;
 
           Loop:

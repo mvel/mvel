@@ -55,7 +55,7 @@ public class FunctionParser {
       startCond++;
       cursor++;
 
-      cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
+      cursor = ParseTools.skipWhitespace(expr, cursor);
 
       if (cursor >= end) {
         throw new CompileException("incomplete statement", expr, cursor);

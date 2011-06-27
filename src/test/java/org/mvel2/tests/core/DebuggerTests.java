@@ -1,5 +1,6 @@
 package org.mvel2.tests.core;
 
+import apple.laf.JRSUIConstants;
 import org.mvel2.MVEL;
 
 import static org.mvel2.MVEL.parseMacros;
@@ -24,9 +25,9 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Cheese;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.util.Make;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class DebuggerTests extends AbstractTest {
 
@@ -147,9 +148,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpoints3() {
     String expr = "System.out.println( \"a1\" );\n" +
-        "System.out.println( \"a2\" );\n" +
-        "System.out.println( \"a3\" );\n" +
-        "System.out.println( \"a4\" );\n";
+            "System.out.println( \"a2\" );\n" +
+            "System.out.println( \"a3\" );\n" +
+            "System.out.println( \"a4\" );\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -176,7 +177,7 @@ public class DebuggerTests extends AbstractTest {
     String line1 = "System.out.println( \"a1\" );\n";
     String line2 = "c = new Cheese();\n";
     String line3 = "with ( c ) { type = 'cheddar',\n" +
-        "             price = 10 };\n";
+            "             price = 10 };\n";
     String line4 = "System.out.println( \"a1\" );\n";
     String expr = line1 + line2 + line3 + line4;
 
@@ -206,14 +207,14 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpointsAcrossComments() {
     String expression = "/** This is a comment\n" +  // 1
-        " *  Second comment line\n" +        // 2
-        " *  Third Comment Line\n" +         // 3
-        " */\n" +                         // 4
-        "System.out.println('4');\n" +   // 5
-        "System.out.println('5');\n" +   // 6
-        "a = 0;\n" +                     // 7
-        "b = 1;\n" +                    // 8
-        "a + b";                        // 9
+            " *  Second comment line\n" +        // 2
+            " *  Third Comment Line\n" +         // 3
+            " */\n" +                         // 4
+            "System.out.println('4');\n" +   // 5
+            "System.out.println('5');\n" +   // 6
+            "a = 0;\n" +                     // 7
+            "b = 1;\n" +                    // 8
+            "a + b";                        // 9
 
     ExpressionCompiler compiler = new ExpressionCompiler(expression);
 
@@ -229,34 +230,38 @@ public class DebuggerTests extends AbstractTest {
 
     MVELRuntime.registerBreakpoint("test2.mv", 9);
 
+    final Set<Integer> linesEncountered = new HashSet<Integer>();
+
     Debugger testDebugger = new Debugger() {
 
       public int onBreak(Frame frame) {
+        linesEncountered.add(frame.getLineNumber());
+
         System.out.println("Breakpoint Encountered [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
         System.out.println("vars:" + frame.getFactory().getKnownVariables());
         System.out.println("Resume Execution");
         return 0;
       }
-
     };
 
     MVELRuntime.setThreadDebugger(testDebugger);
 
     assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(createTestMap())));
+    assertTrue("Debugger did not break at line 9", linesEncountered.contains(9));
   }
 
   public void testBreakpointsAcrossComments2() {
     ExpressionCompiler compiler = new ExpressionCompiler(
-        "// This is a comment\n" +                  // 1
-            "//Second comment line\n" +         // 2
-            "//Third Comment Line\n" +          // 3
-            "\n" +                              // 4
-            "//Test\n" +                        // 5
-            "System.out.println('4');\n" +      // 6
-            "//System.out.println('5'); \n" +    // 7
-            "a = 0;\n" +                        // 8
-            "b = 1;\n" +                        // 9
-            " a + b");                          // 10
+            "// This is a comment\n" +                  // 1
+                    "//Second comment line\n" +         // 2
+                    "//Third Comment Line\n" +          // 3
+                    "\n" +                              // 4
+                    "//Test\n" +                        // 5
+                    "System.out.println('4');\n" +      // 6
+                    "//System.out.println('5'); \n" +    // 7
+                    "a = 0;\n" +                        // 8
+                    "b = 1;\n" +                        // 9
+                    " a + b");                          // 10
 
 
     ParserContext ctx = new ParserContext();
@@ -284,25 +289,34 @@ public class DebuggerTests extends AbstractTest {
 
   public void testBreakpoints4() {
     String expression = "System.out.println('foo');\n" +
-        "a = new Foo244();\n" +
-        "update (a) { name = 'bar' };\n" +
-        "System.out.println('name:' + a.name);\n" +
-        "return a.name;";
+            "a = new Foo244();\n" +
+            "update (a) { name = 'bar' };\n" +
+            "System.out.println('name:' + a.name);\n" +
+            "return a.name;";
 
 
     Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
     Map<String, Macro> macros = new HashMap<String, Macro>();
 
+    class TestResult {
+      boolean firedBefore;
+      boolean firedAfter;
+    }
+
+    final TestResult result = new TestResult();
+
     interceptors.put("Update", new Interceptor() {
       public int doBefore(ASTNode node, VariableResolverFactory factory) {
         ((WithNode) node).getNestedStatement().getValue(null,
-            factory);
+                factory);
         System.out.println("fired update interceptor -- before");
+        result.firedBefore = true;
         return 0;
       }
 
       public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
         System.out.println("fired update interceptor -- after");
+        result.firedAfter = true;
         return 0;
       }
     });
@@ -333,51 +347,38 @@ public class DebuggerTests extends AbstractTest {
     MVELRuntime.registerBreakpoint("test2.mv", 4);
     MVELRuntime.registerBreakpoint("test2.mv", 5);
 
+    final Set<Integer> breaked = new HashSet<Integer>();
+
     Debugger testDebugger = new Debugger() {
       public int onBreak(Frame frame) {
         System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+        breaked.add(frame.getLineNumber());
         return 0;
       }
     };
 
+
     MVELRuntime.setThreadDebugger(testDebugger);
 
     assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(createTestMap())));
+    assertTrue("did not fire before", result.firedBefore);
+    assertTrue("did not fire after", result.firedAfter);
+    assertEquals("did not break at expected points", Make.Set.<Integer>$()._(3)._(4)._(5)._(), breaked);
   }
 
   public void testBreakpoints5() {
     OptimizerFactory.setDefaultOptimizer("ASM");
     String expression = "System.out.println('foo');\r\n" +
-        "a = new Foo244();\r\n" +
-        "a.name = 'bar';\r\n" +
-        "foo.happy();\r\n" +
-        "System.out.println( 'name:' + a.name );               \r\n" +
-        "System.out.println( 'name:' + a.name );         \r\n" +
-        "System.out.println( 'name:' + a.name );     \r\n" +
-        "return a.name;";
+            "a = new Foo244();\r\n" +
+            "a.name = 'bar';\r\n" +
+            "foo.happy();\r\n" +
+            "System.out.println( 'name:' + a.name );               \r\n" +
+            "System.out.println( 'name:' + a.name );         \r\n" +
+            "System.out.println( 'name:' + a.name );     \r\n" +
+            "return a.name;";
 
     Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
     Map<String, Macro> macros = new HashMap<String, Macro>();
-
-    interceptors.put("Update", new Interceptor() {
-      public int doBefore(ASTNode node, VariableResolverFactory factory) {
-        ((WithNode) node).getNestedStatement().getValue(null,
-            factory);
-        System.out.println("fired update interceptor -- before");
-        return 0;
-      }
-
-      public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
-        System.out.println("fired update interceptor -- after");
-        return 0;
-      }
-    });
-
-    macros.put("update", new Macro() {
-      public String doMacro() {
-        return "@Update with";
-      }
-    });
 
     expression = parseMacros(expression, macros);
 
@@ -398,9 +399,12 @@ public class DebuggerTests extends AbstractTest {
     System.out.println(DebugTools.decompile(compiled));
     MVELRuntime.registerBreakpoint("test2.mv", 1);
 
+    final Set<Integer> breaked = new HashSet<Integer>();
+
     Debugger testDebugger = new Debugger() {
       public int onBreak(Frame frame) {
         System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+        breaked.add(frame.getLineNumber());
         return Debugger.STEP_OVER;
       }
     };
@@ -410,13 +414,15 @@ public class DebuggerTests extends AbstractTest {
     System.out.println("\n==RUN==\n");
 
     assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(createTestMap())));
+    assertTrue("did not break at line 1", breaked.contains(1));
+
   }
 
   public void testDebugSymbolsWithWindowsLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\r\n" +
-        "   System.out.println( \"a2\" );\r\n" +
-        "   System.out.println( \"a3\" );\r\n" +
-        "   System.out.println( \"a4\" );\r\n";
+            "   System.out.println( \"a2\" );\r\n" +
+            "   System.out.println( \"a3\" );\r\n" +
+            "   System.out.println( \"a4\" );\r\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -439,9 +445,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testDebugSymbolsWithUnixLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\n" +
-        "   System.out.println( \"a2\" );\n" +
-        "   System.out.println( \"a3\" );\n" +
-        "   System.out.println( \"a4\" );\n";
+            "   System.out.println( \"a2\" );\n" +
+            "   System.out.println( \"a3\" );\n" +
+            "   System.out.println( \"a4\" );\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -463,9 +469,9 @@ public class DebuggerTests extends AbstractTest {
 
   public void testDebugSymbolsWithMixedLinedEndings() throws Exception {
     String expr = "   System.out.println( \"a1\" );\n" +
-        "   System.out.println( \"a2\" );\r\n" +
-        "   System.out.println( \"a3\" );\n" +
-        "   System.out.println( \"a4\" );\r\n";
+            "   System.out.println( \"a2\" );\r\n" +
+            "   System.out.println( \"a3\" );\n" +
+            "   System.out.println( \"a4\" );\r\n";
 
     ExpressionCompiler compiler = new ExpressionCompiler(expr);
 

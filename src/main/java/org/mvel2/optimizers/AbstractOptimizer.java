@@ -19,12 +19,10 @@ package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
-import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.ParseTools.*;
 
 import static java.lang.Thread.currentThread;
-import static org.mvel2.util.ParseTools.skipWhitespace;
 
 import java.lang.reflect.Method;
 

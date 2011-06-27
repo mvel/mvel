@@ -44,7 +44,6 @@ import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.main;
 import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
@@ -1152,7 +1151,7 @@ public class ParseTools {
     return i;
   }
 
-  public static int skipWhitespace(char[] expr, int cursor, ParserContext pCtx) {
+  public static int skipWhitespace(char[] expr, int cursor) {
 //        int line = 0;
 //        int lastLineStart = 0;
 //

@@ -20,7 +20,6 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
-import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 
@@ -147,7 +146,7 @@ public class CollectionParser {
             list.add(curr = o);
           }
 
-          cursor = skipWhitespace(property, ++cursor, pCtx);
+          cursor = skipWhitespace(property, ++cursor);
 
           if ((st = cursor) < end && property[cursor] == ',') {
             st = cursor + 1;
@@ -203,7 +202,7 @@ public class CollectionParser {
 
         case '.':
           cursor++;
-          cursor = skipWhitespace(property, cursor, pCtx);
+          cursor = skipWhitespace(property, cursor);
           if (cursor != end && property[cursor] == '{') {
             cursor = balancedCapture(property, cursor, '{');
           }
@@ -212,7 +211,7 @@ public class CollectionParser {
     }
 
     if (st < end && isWhitespace(property[st])) {
-      st = skipWhitespace(property, st, pCtx);
+      st = skipWhitespace(property, st);
     }
 
     if (st < end) {

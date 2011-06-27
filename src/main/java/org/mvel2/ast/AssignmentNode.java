@@ -55,7 +55,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     if ((assignStart = find(expr, start, offset, '=')) != -1) {
       this.varName = createStringTrimmed(expr, start, assignStart - start);
 
-      this.start = skipWhitespace(expr, assignStart + 1, pCtx);
+      this.start = skipWhitespace(expr, assignStart + 1);
       if (this.start >= start + offset) {
         throw new CompileException("unexpected end of statement", expr, assignStart + 1);
       }
