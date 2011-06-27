@@ -45,7 +45,7 @@ public class OptimizerFactory {
      * By default, activate the JIT if ASM is present in the classpath
      */
     try {
-      currentThread().getContextClassLoader().loadClass("org.mvel2.asm.ClassWriter");
+      OptimizerFactory.class.getClassLoader().loadClass("org.mvel2.asm.ClassWriter");
       accessorCompilers.put("ASM", new ASMAccessorOptimizer());
     }
     catch (ClassNotFoundException e) {
