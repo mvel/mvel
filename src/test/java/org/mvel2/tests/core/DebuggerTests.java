@@ -1,10 +1,6 @@
 package org.mvel2.tests.core;
 
-import apple.laf.JRSUIConstants;
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.parseMacros;
-
 import org.mvel2.MVELRuntime;
 import org.mvel2.Macro;
 import org.mvel2.ParserContext;
@@ -13,9 +9,6 @@ import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.debug.DebugTools;
-
-import static org.mvel2.debug.DebugTools.decompile;
-
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.Frame;
 import org.mvel2.integration.Interceptor;
@@ -27,7 +20,13 @@ import org.mvel2.tests.core.res.Cheese;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel2.util.Make;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.mvel2.MVEL.parseMacros;
+import static org.mvel2.debug.DebugTools.decompile;
 
 public class DebuggerTests extends AbstractTest {
 
