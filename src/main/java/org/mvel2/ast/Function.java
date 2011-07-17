@@ -108,10 +108,7 @@ public class Function extends ASTNode implements Safe {
 
     this.egressType = this.compiledBlock.getKnownEgressType();
 
-//        if (pCtx.isIndexAllocation()) {
     pCtx.addVariable(name, Function.class);
-//        }
-
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -155,7 +152,8 @@ public class Function extends ASTNode implements Safe {
       return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
     }
     else {
-      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory).setNoTilt(true));
+      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory,
+              parameters).setNoTilt(true));
     }
   }
 
