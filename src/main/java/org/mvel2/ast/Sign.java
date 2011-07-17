@@ -3,16 +3,15 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.util.ParseTools;
-
-import static org.mvel2.util.ParseTools.boxPrimitive;
-
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ParseTools;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.io.Serializable;
+
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class Sign extends ASTNode {
   private Signer signer;

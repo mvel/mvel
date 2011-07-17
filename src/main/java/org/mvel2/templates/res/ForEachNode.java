@@ -27,12 +27,11 @@ import org.mvel2.templates.TemplateRuntimeError;
 import org.mvel2.templates.util.ArrayIterator;
 import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ParseTools;
-import org.mvel2.util.StringAppender;
 
-import java.awt.image.renderable.ParameterBlock;
-import java.util.*;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class ForEachNode extends Node {
   public Node nestedNode;

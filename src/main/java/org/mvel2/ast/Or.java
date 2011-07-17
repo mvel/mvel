@@ -21,8 +21,6 @@ import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.CompilerTools.expectType;
 
-import org.mvel2.ast.BooleanNode;
-
 public class Or extends BooleanNode {
   public Or(ASTNode left, ASTNode right, boolean strongTyping) {
     expectType(this.left = left, Boolean.class, strongTyping);

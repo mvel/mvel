@@ -14,29 +14,29 @@
  */
 package org.mvel2;
 
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.MVELRuntime.execute;
-
-import org.mvel2.compiler.*;
+import org.mvel2.compiler.CompiledAccExpression;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.*;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 
-import static org.mvel2.util.ParseTools.loadFromFile;
-import static org.mvel2.util.ParseTools.optimizeTree;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-
-import static java.lang.Boolean.getBoolean;
-import static java.lang.String.valueOf;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.Boolean.getBoolean;
+import static java.lang.String.valueOf;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVELRuntime.execute;
+import static org.mvel2.util.ParseTools.loadFromFile;
+import static org.mvel2.util.ParseTools.optimizeTree;
 
 /**
  * The MVEL convienence class is a collection of static methods that provides a set of easy integration points for

@@ -17,25 +17,10 @@
  */
 package org.mvel2.math;
 
-import org.mvel2.CompileException;
-import org.mvel2.ConversionException;
-
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.DataTypes;
-
-import static org.mvel2.DataTypes.BIG_DECIMAL;
-import static org.mvel2.DataTypes.EMPTY;
-import static org.mvel2.Operator.*;
-
 import org.mvel2.Unit;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.util.InternalNumber;
-
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.Soundex.soundex;
-
-import static java.lang.String.valueOf;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -43,6 +28,14 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static java.lang.String.valueOf;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.DataTypes.BIG_DECIMAL;
+import static org.mvel2.DataTypes.EMPTY;
+import static org.mvel2.Operator.*;
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.Soundex.soundex;
 
 /**
  * @author Christopher Brock

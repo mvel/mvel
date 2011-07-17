@@ -18,15 +18,12 @@
 
 package org.mvel2.integration.impl;
 
-import org.mvel2.CompileException;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.integration.VariableResolver;
 
 import java.util.Map;
-import java.util.HashMap;
+
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
 
 public class MapVariableResolver implements VariableResolver {
   private String name;

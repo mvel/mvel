@@ -23,10 +23,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ParseTools;
-import org.mvel2.util.StringAppender;
-
-import java.io.PrintStream;
-import java.io.PrintWriter;
 
 public class IfNode extends Node {
   protected Node trueNode;

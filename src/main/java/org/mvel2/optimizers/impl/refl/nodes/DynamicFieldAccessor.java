@@ -18,7 +18,6 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;

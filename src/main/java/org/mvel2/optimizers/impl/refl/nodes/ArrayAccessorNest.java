@@ -18,14 +18,14 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.Array;
+
+import static org.mvel2.DataConversion.convert;
 
 public class ArrayAccessorNest implements AccessorNode {
   private AccessorNode nextNode;

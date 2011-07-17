@@ -18,7 +18,6 @@
 
 package org.mvel2.templates;
 
-import org.mvel2.MVELRuntime;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;

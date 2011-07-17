@@ -19,29 +19,22 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
-
-import static org.mvel2.Operator.NOOP;
-
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
-
-import static org.mvel2.PropertyAccessor.get;
-
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 
-import static org.mvel2.optimizers.OptimizerFactory.*;
-import static org.mvel2.util.CompilerTools.getInjectedImports;
-import static org.mvel2.util.ParseTools.handleNumericConversion;
-import static org.mvel2.util.ParseTools.isNumber;
-
 import java.io.Serializable;
 
 import static java.lang.Thread.currentThread;
-import static org.mvel2.util.ParseTools.subArray;
+import static org.mvel2.Operator.NOOP;
+import static org.mvel2.PropertyAccessor.get;
+import static org.mvel2.optimizers.OptimizerFactory.*;
+import static org.mvel2.util.CompilerTools.getInjectedImports;
+import static org.mvel2.util.ParseTools.*;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
 public class ASTNode implements Cloneable, Serializable {

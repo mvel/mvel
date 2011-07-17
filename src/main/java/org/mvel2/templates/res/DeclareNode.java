@@ -25,14 +25,6 @@ import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
-import static org.mvel2.util.ParseTools.subset;
-
-import org.mvel2.util.StringAppender;
-
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-
 public class DeclareNode extends Node {
   private Node nestedNode;
 

@@ -54,7 +54,6 @@ import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
-import static org.mvel2.util.PropertyTools.getGetter;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
   private AccessorNode rootNode;

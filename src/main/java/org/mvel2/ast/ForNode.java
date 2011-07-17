@@ -29,7 +29,6 @@ import java.util.HashMap;
 
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
-import static org.mvel2.util.ParseTools.subset;
 
 /**
  * @author Christopher Brock

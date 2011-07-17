@@ -2,12 +2,10 @@ package org.mvel2.integration.impl;
 
 import org.mvel2.integration.VariableResolver;
 
+import java.util.Map;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
-
-import org.mvel2.CompileException;
-
-import java.util.Map;
 
 public class PrecachedMapVariableResolver implements VariableResolver {
   private String name;

@@ -21,11 +21,6 @@ package org.mvel2.templates.res;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.util.StringAppender;
-
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 
 public class EndNode extends Node {
   public Object eval(TemplateRuntime runtie, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

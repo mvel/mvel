@@ -18,11 +18,10 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
 import org.mvel2.OptimizationFailure;
 import org.mvel2.compiler.AccessorNode;
-import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.VariableResolverFactory;
 
 import java.lang.reflect.Field;
 

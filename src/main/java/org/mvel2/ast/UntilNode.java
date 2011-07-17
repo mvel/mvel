@@ -18,16 +18,15 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 
+import java.util.HashMap;
+
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
-
-import org.mvel2.ParserContext;
-
-import java.util.HashMap;
 
 /**
  * @author Christopher Brock

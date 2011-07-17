@@ -1,6 +1,5 @@
 package org.mvel2.ast;
 
-import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class NewPrototypeNode extends ASTNode {

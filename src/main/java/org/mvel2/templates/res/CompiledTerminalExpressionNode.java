@@ -26,8 +26,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 
 import java.io.Serializable;
 
-import static org.mvel2.util.ParseTools.subset;
-
 public class CompiledTerminalExpressionNode extends TerminalExpressionNode {
   private Serializable ce;
 

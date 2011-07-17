@@ -18,18 +18,15 @@
  */
 package org.mvel2.optimizers.impl.refl.collection;
 
-import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
 
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
 import static org.mvel2.util.ParseTools.getSubComponentType;
 
 /**

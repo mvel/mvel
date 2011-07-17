@@ -17,17 +17,15 @@
  */
 package org.mvel2.ast;
 
-import static org.mvel2.MVEL.eval;
-
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
-
-import static org.mvel2.util.ParseTools.subCompileExpression;
-
-import org.mvel2.util.ParseTools;
 import org.mvel2.math.MathProcessor;
-import org.mvel2.ParserContext;
+import org.mvel2.util.ParseTools;
+
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class OperativeAssign extends ASTNode {
   private String varName;

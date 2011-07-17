@@ -18,15 +18,12 @@
 
 package org.mvel2.compiler;
 
-import static java.lang.reflect.Array.getLength;
-import static org.mvel2.util.ParseTools.isNumeric;
-
 import java.io.Serializable;
+import java.util.Collection;
 
 import static java.lang.String.valueOf;
-
-import java.lang.reflect.Array;
-import java.util.Collection;
+import static java.lang.reflect.Array.getLength;
+import static org.mvel2.util.ParseTools.isNumeric;
 
 public class BlankLiteral implements Serializable {
   public static final BlankLiteral INSTANCE = new BlankLiteral();

@@ -19,15 +19,11 @@
 package org.mvel2;
 
 import org.mvel2.compiler.AbstractParser;
-
-import static org.mvel2.util.ParseTools.isWhitespace;
-import static org.mvel2.util.ParseTools.isIdentifierPart;
-import static org.mvel2.util.ParseTools.captureStringLiteral;
-
 import org.mvel2.util.StringAppender;
-import org.mvel2.util.ParseTools;
 
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * A simple, fast, macro processor.  This processor works by simply replacing a matched identifier with a set of code.

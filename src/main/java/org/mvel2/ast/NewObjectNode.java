@@ -17,37 +17,33 @@
  */
 package org.mvel2.ast;
 
-import org.mvel2.*;
-
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.MVEL.analyze;
-import static org.mvel2.MVEL.eval;
-
+import org.mvel2.CompileException;
+import org.mvel2.ErrorDetail;
+import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessor;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.PropertyVerifier;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
-
-import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
-
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ArrayTools;
 import org.mvel2.util.ErrorUtil;
 
-import static org.mvel2.util.CompilerTools.getInjectedImports;
-import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ParseTools.*;
-
 import java.io.Serializable;
-
-import static java.lang.Thread.currentThread;
-import static java.lang.reflect.Array.newInstance;
-import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
-
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+
+import static java.lang.Thread.currentThread;
+import static java.lang.reflect.Array.newInstance;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVEL.analyze;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+import static org.mvel2.util.ArrayTools.findFirst;
+import static org.mvel2.util.CompilerTools.getInjectedImports;
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * @author Christopher Brock

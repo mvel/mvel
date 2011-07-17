@@ -23,7 +23,6 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 

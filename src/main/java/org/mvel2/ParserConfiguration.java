@@ -18,19 +18,18 @@
 
 package org.mvel2;
 
+import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.PropertyTools;
-import org.mvel2.ast.Proto;
 
 import java.io.Serializable;
-
-import static java.lang.Thread.currentThread;
-
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.Thread.currentThread;
 
 /**
  * The resusable parser configuration object.

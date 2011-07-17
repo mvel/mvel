@@ -21,9 +21,6 @@ package org.mvel2.sh.command.basic;
 import org.mvel2.sh.Command;
 import org.mvel2.sh.ShellSession;
 import org.mvel2.sh.text.TextUtil;
-
-import static org.mvel2.sh.text.TextUtil.padTwo;
-
 import org.mvel2.util.StringAppender;
 
 import java.io.BufferedOutputStream;
@@ -34,6 +31,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.mvel2.sh.text.TextUtil.padTwo;
 
 public class ObjectInspector implements Command {
   private static final int PADDING = 17;

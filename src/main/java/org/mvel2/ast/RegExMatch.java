@@ -19,22 +19,17 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.subCompileExpression;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static java.lang.String.valueOf;
-
-import java.util.regex.Pattern;
-
 import static java.util.regex.Pattern.compile;
-
-import java.util.regex.PatternSyntaxException;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class RegExMatch extends ASTNode {
   private ExecutableStatement stmt;

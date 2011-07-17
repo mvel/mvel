@@ -18,13 +18,11 @@
 
 package org.mvel2.ast;
 
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 
+import static org.mvel2.MVEL.eval;
 import static org.mvel2.util.ParseTools.*;
 
 /**

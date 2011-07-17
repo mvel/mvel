@@ -18,7 +18,6 @@
 
 package org.mvel2.util;
 
-import org.mvel2.CompileException;
 import org.mvel2.ScriptRuntimeException;
 
 import static java.lang.String.valueOf;

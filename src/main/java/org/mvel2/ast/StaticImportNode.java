@@ -21,14 +21,11 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ArrayTools.findLast;
-import static org.mvel2.util.ParseTools.subset;
-
-import static java.lang.Thread.currentThread;
-
 import java.lang.reflect.Method;
 
+import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Modifier.isStatic;
+import static org.mvel2.util.ArrayTools.findLast;
 
 /**
  * @author Christopher Brock

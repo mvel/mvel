@@ -19,9 +19,7 @@
 package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.util.MVELClassLoader;
-import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
 import java.util.LinkedList;
 
 

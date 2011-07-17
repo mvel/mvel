@@ -18,11 +18,9 @@
 
 package org.mvel2.util;
 
-import static java.lang.System.arraycopy;
-
 import java.io.UnsupportedEncodingException;
-import java.io.PrintWriter;
-import java.io.Writer;
+
+import static java.lang.System.arraycopy;
 
 public class StringAppender implements CharSequence {
   private static final int DEFAULT_SIZE = 15;

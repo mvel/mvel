@@ -1,15 +1,13 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
-
-import static org.mvel2.util.ParseTools.getBestCandidate;
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.PropertyTools;
 
 import java.lang.reflect.Method;
+
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 public class SetterAccessor implements AccessorNode {
   private AccessorNode nextNode;

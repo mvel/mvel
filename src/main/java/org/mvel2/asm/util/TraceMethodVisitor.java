@@ -29,12 +29,7 @@
  */
 package org.mvel2.asm.util;
 
-import org.mvel2.asm.AnnotationVisitor;
-import org.mvel2.asm.Attribute;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Label;
-import org.mvel2.asm.Opcodes;
-import org.mvel2.asm.Type;
+import org.mvel2.asm.*;
 import org.mvel2.asm.signature.SignatureReader;
 
 import java.util.HashMap;

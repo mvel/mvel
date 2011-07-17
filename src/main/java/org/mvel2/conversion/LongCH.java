@@ -21,12 +21,12 @@ package org.mvel2.conversion;
 import org.mvel2.ConversionException;
 import org.mvel2.ConversionHandler;
 
-import static java.lang.String.valueOf;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.String.valueOf;
 
 public class LongCH implements ConversionHandler {
   private static final Map<Class, Converter> CNV =

@@ -18,18 +18,15 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
-
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.getBestCandidate;
-
 import java.lang.reflect.Method;
+
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 
 public class MethodAccessorNH implements AccessorNode {

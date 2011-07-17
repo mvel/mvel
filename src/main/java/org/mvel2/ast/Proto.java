@@ -1,10 +1,6 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
@@ -17,6 +13,9 @@ import org.mvel2.util.SimpleIndexHashMapWrapper;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
 
 public class Proto extends ASTNode {
   private String name;

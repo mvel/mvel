@@ -23,13 +23,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
-import static org.mvel2.util.ParseTools.subset;
-
-import org.mvel2.util.StringAppender;
-
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
 public class TerminalExpressionNode extends Node {
   public TerminalExpressionNode() {
   }

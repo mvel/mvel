@@ -24,7 +24,6 @@ import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
 import static java.lang.String.valueOf;
-import static org.mvel2.util.ParseTools.subset;
 
 public class EvalNode extends Node {
   public EvalNode() {

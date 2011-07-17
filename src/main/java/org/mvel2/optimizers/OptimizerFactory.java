@@ -18,12 +18,9 @@
 
 package org.mvel2.optimizers;
 
-import org.mvel2.CompileException;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-
-import static java.lang.Thread.currentThread;
 
 import java.util.HashMap;
 import java.util.Map;

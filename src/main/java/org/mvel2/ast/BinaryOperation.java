@@ -19,26 +19,18 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.Operator;
+import org.mvel2.ParserContext;
+import org.mvel2.ScriptRuntimeException;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ParseTools;
 
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
-
-import org.mvel2.Operator;
-
 import static org.mvel2.Operator.PTABLE;
-
-import org.mvel2.ParserContext;
-
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
-
-import org.mvel2.ScriptRuntimeException;
-import org.mvel2.integration.VariableResolverFactory;
-
 import static org.mvel2.math.MathProcessor.doOperations;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
-
-import org.mvel2.util.ParseTools;
-
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class BinaryOperation extends BooleanNode {

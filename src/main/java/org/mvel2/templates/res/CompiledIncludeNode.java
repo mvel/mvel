@@ -26,13 +26,10 @@ import org.mvel2.templates.TemplateCompiler;
 import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.util.ExecutionStack;
-import org.mvel2.util.StringAppender;
 
 import java.io.*;
 
 import static org.mvel2.templates.util.TemplateTools.captureToEOS;
-import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledIncludeNode extends Node {
 

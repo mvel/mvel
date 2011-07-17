@@ -18,9 +18,6 @@
 
 package org.mvel2.util;
 
-import org.mvel2.util.StringAppender;
-
-
 /**
  * An implementation of Knuth's soundex algorithm.  Used by the <tt>soundslike</tt> operator.
  */

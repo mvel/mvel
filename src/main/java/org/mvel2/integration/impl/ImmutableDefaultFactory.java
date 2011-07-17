@@ -18,7 +18,6 @@
 
 package org.mvel2.integration.impl;
 
-import org.mvel2.CompileException;
 import org.mvel2.ScriptRuntimeException;
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;

@@ -7,9 +7,9 @@ import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.ExecutableStatement;
 
-import static org.mvel2.util.ParseTools.*;
-
 import java.util.*;
+
+import static org.mvel2.util.ParseTools.*;
 
 public class ProtoParser {
   private char[] expr;

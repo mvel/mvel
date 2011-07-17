@@ -29,11 +29,11 @@
  */
 package org.mvel2.asm.util;
 
+import org.mvel2.asm.Attribute;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.mvel2.asm.Attribute;
 
 /**
  * An abstract visitor.

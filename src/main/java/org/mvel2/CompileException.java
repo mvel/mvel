@@ -20,12 +20,10 @@ package org.mvel2;
 
 import org.mvel2.util.StringAppender;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static java.lang.String.copyValueOf;
-import static org.mvel2.util.ParseTools.isIdentifierPart;
 import static org.mvel2.util.ParseTools.isWhitespace;
 import static org.mvel2.util.ParseTools.repeatChar;
 

@@ -18,7 +18,6 @@
 
 package org.mvel2.integration.impl;
 
-import org.mvel2.CompileException;
 import org.mvel2.ast.Function;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;

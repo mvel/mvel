@@ -1,12 +1,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.compiler.Accessor;
-import org.mvel2.util.ParseTools;
 import org.mvel2.util.CompilerTools;
-import org.mvel2.MVEL;
-import org.mvel2.CompileException;
 
 
 public class Instance extends ASTNode {

@@ -28,8 +28,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 
 import java.io.Serializable;
 
-import static org.mvel2.util.ParseTools.subset;
-
 public class CompiledDeclareNode extends Node {
   private Node nestedNode;
   private Serializable ce;

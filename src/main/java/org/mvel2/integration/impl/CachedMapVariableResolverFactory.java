@@ -1,14 +1,13 @@
 package org.mvel2.integration.impl;
 
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.VariableResolver;
 import org.mvel2.UnresolveablePropertyException;
-import org.mvel2.CompileException;
+import org.mvel2.integration.VariableResolver;
+import org.mvel2.integration.VariableResolverFactory;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public class CachedMapVariableResolverFactory extends BaseVariableResolverFactory {

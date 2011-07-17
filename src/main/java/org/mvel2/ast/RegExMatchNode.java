@@ -18,12 +18,11 @@
 
 package org.mvel2.ast;
 
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.integration.VariableResolverFactory;
 
 import static java.lang.String.valueOf;
 import static java.util.regex.Pattern.compile;
+import static org.mvel2.MVEL.eval;
 
 public class RegExMatchNode extends ASTNode {
   private ASTNode node;

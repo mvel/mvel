@@ -18,22 +18,22 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CollectionParser;
 
-import static org.mvel2.util.ParseTools.*;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * @author Christopher Brock

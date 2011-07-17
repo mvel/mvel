@@ -20,11 +20,6 @@ package org.mvel2.util;
 
 import static java.lang.System.arraycopy;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Utilities for working with reflection.
  */

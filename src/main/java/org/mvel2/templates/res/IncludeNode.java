@@ -22,17 +22,11 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.TemplateRuntime;
-
-import static org.mvel2.templates.util.TemplateTools.captureToEOS;
-
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.util.ExecutionStack;
-
-import static org.mvel2.util.ParseTools.subset;
-
-import org.mvel2.util.StringAppender;
 
 import java.io.*;
+
+import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 
 public class IncludeNode extends Node {
 //    private char[] includeExpression;

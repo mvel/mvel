@@ -17,44 +17,35 @@
  */
 package org.mvel2;
 
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.ast.Function;
 import org.mvel2.ast.Proto;
 import org.mvel2.ast.TypeDescriptor;
-
-import static org.mvel2.ast.TypeDescriptor.getClassReference;
-import static org.mvel2.compiler.AbstractParser.LITERALS;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 import org.mvel2.integration.GlobalListenerFactory;
-
-import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
-import static org.mvel2.integration.PropertyHandlerFactory.*;
-
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
-
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
-
 import org.mvel2.util.StringAppender;
-
-import static java.lang.Character.isJavaIdentifierPart;
-import static java.lang.Thread.currentThread;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
-
-import static java.lang.reflect.Array.getLength;
-
 import java.util.*;
+
+import static java.lang.Character.isJavaIdentifierPart;
+import static java.lang.Thread.currentThread;
+import static java.lang.reflect.Array.getLength;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.ast.TypeDescriptor.getClassReference;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
+import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 
 @SuppressWarnings({"unchecked"})

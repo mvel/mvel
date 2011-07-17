@@ -1,8 +1,8 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.compiler.AccessorNode;
-import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.GlobalListenerFactory;
+import org.mvel2.integration.VariableResolverFactory;
 
 
 public class Notify implements AccessorNode {

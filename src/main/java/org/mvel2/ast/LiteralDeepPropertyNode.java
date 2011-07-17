@@ -17,13 +17,12 @@
  */
 package org.mvel2.ast;
 
-import static org.mvel2.PropertyAccessor.get;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 
+import static org.mvel2.PropertyAccessor.get;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 /**

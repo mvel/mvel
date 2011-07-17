@@ -20,20 +20,18 @@ package org.mvel2.templates;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.templates.res.*;
 import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
 
-import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
-import static org.mvel2.util.ParseTools.endsWith;
-import static org.mvel2.util.ParseTools.subset;
-
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.subset;
 
 /**
  * The TemplateCompiler class is used for pre-compiling MVEL Templates.  To execute a compiled template see

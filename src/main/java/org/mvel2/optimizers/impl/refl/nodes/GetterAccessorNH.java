@@ -19,16 +19,14 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
-
-import static org.mvel2.MVEL.getProperty;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.getBestCandidate;
-
 import java.lang.reflect.Method;
+
+import static org.mvel2.MVEL.getProperty;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 public class GetterAccessorNH implements AccessorNode {
   private AccessorNode nextNode;

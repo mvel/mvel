@@ -20,25 +20,19 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-
-import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
-
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
-
-import static org.mvel2.util.ArrayTools.findFirst;
-
 import org.mvel2.util.ParseTools;
 
-import static org.mvel2.util.ParseTools.*;
-
 import java.io.Serializable;
-
-import static java.lang.Character.isDigit;
-
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import static java.lang.Character.isDigit;
+import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
+import static org.mvel2.util.ArrayTools.findFirst;
+import static org.mvel2.util.ParseTools.*;
 
 public class TypeDescriptor implements Serializable {
   private String className;

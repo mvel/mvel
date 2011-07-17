@@ -29,17 +29,11 @@
  */
 package org.mvel2.asm.util;
 
+import org.mvel2.asm.*;
+import org.mvel2.asm.signature.SignatureReader;
+
 import java.io.FileInputStream;
 import java.io.PrintWriter;
-
-import org.mvel2.asm.AnnotationVisitor;
-import org.mvel2.asm.Attribute;
-import org.mvel2.asm.ClassReader;
-import org.mvel2.asm.ClassVisitor;
-import org.mvel2.asm.FieldVisitor;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Opcodes;
-import org.mvel2.asm.signature.SignatureReader;
 
 /**
  * A {@link ClassVisitor} that prints a disassembled view of the classes it

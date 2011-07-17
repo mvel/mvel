@@ -19,7 +19,6 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.ParseTools.containsCheck;
 

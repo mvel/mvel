@@ -23,9 +23,9 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.subCompileExpression;
-
 import java.util.List;
+
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class ListAccessorNest implements AccessorNode {
   private AccessorNode nextNode;

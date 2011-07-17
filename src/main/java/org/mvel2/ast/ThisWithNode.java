@@ -20,10 +20,9 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
+import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.MVEL.executeSetExpression;
-
-import org.mvel2.integration.VariableResolverFactory;
 
 /**
  * @author Christopher Brock

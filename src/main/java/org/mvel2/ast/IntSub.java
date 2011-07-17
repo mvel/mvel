@@ -1,7 +1,7 @@
 package org.mvel2.ast;
 
-import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.Operator;
+import org.mvel2.integration.VariableResolverFactory;
 
 
 public class IntSub extends BinaryOperation implements IntOptimized {

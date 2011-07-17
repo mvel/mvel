@@ -27,10 +27,9 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.ParseTools;
 
-import static org.mvel2.util.ParseTools.*;
-
 import java.lang.reflect.Array;
-import java.util.Iterator;
+
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * @author Christopher Brock

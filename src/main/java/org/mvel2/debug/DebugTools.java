@@ -19,11 +19,10 @@
 package org.mvel2.debug;
 
 import org.mvel2.Operator;
-
-import static org.mvel2.Operator.ADD;
-import static org.mvel2.Operator.SUB;
-
-import org.mvel2.ast.*;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.BinaryOperation;
+import org.mvel2.ast.NestedStatement;
+import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableAccessor;
 import org.mvel2.compiler.ExecutableLiteral;
@@ -35,6 +34,9 @@ import org.mvel2.util.ASTLinkedList;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mvel2.Operator.ADD;
+import static org.mvel2.Operator.SUB;
 
 /**
  * @author Christopher Brock

@@ -1,6 +1,5 @@
 package org.mvel2.ast;
 
-import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;

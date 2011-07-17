@@ -4,7 +4,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 
 public class StandardOutputStream implements TemplateOutputStream {
   private OutputStream outputStream;

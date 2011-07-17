@@ -1,24 +1,17 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.executeSetExpression;
-
 import org.mvel2.ParserContext;
 import org.mvel2.ast.WithNode;
-
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.ParseTools;
-import org.mvel2.util.PropertyTools;
-
-import static org.mvel2.util.PropertyTools.getReturnType;
-import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.io.Serializable;
+
+import static org.mvel2.MVEL.executeSetExpression;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.util.PropertyTools.getReturnType;
 
 public class WithAccessor implements AccessorNode {
   private AccessorNode nextNode;

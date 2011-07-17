@@ -20,11 +20,10 @@ package org.mvel2.optimizers;
 import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
 
-import static org.mvel2.util.ParseTools.*;
+import java.lang.reflect.Method;
 
 import static java.lang.Thread.currentThread;
-
-import java.lang.reflect.Method;
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * @author Christopher Brock

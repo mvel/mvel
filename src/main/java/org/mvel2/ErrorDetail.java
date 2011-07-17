@@ -18,8 +18,6 @@
 
 package org.mvel2;
 
-import org.mvel2.compiler.Parser;
-
 public class ErrorDetail {
 
   private char[] expr;

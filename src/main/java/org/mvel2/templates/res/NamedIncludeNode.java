@@ -21,17 +21,9 @@ package org.mvel2.templates.res;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
-
-import static org.mvel2.templates.util.TemplateTools.captureToEOS;
-
 import org.mvel2.templates.util.TemplateOutputStream;
 
-import static org.mvel2.util.ParseTools.subset;
-
-import org.mvel2.util.StringAppender;
-
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 
 public class NamedIncludeNode extends Node {
   //  private char[] includeExpression;

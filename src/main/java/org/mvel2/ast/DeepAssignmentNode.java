@@ -18,19 +18,16 @@
 
 package org.mvel2.ast;
 
-import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-
-import static org.mvel2.PropertyAccessor.set;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
+import static org.mvel2.MVEL.compileSetExpression;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.PropertyAccessor.set;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel2.util.ParseTools.*;
 
 /**

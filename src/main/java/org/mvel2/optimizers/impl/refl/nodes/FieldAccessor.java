@@ -18,15 +18,13 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
-
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.PropertyTools;
 
 import java.lang.reflect.Field;
+
+import static org.mvel2.DataConversion.convert;
 
 public class FieldAccessor implements AccessorNode {
   private AccessorNode nextNode;

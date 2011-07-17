@@ -18,8 +18,6 @@
 
 package org.mvel2.sh.text;
 
-import org.mvel2.util.StringAppender;
-
 import static java.lang.String.valueOf;
 
 public class TextUtil {

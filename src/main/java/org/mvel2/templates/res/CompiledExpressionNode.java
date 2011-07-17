@@ -27,7 +27,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 import java.io.Serializable;
 
 import static java.lang.String.valueOf;
-import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledExpressionNode extends ExpressionNode {
   private Serializable ce;

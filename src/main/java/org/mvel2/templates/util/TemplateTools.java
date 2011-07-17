@@ -22,16 +22,12 @@ import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.res.Node;
 import org.mvel2.templates.res.TerminalNode;
 
-import static org.mvel2.util.ParseTools.balancedCapture;
-
-import org.mvel2.util.StringAppender;
-
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import static java.nio.ByteBuffer.allocateDirect;
-
-import java.nio.channels.FileChannel;
+import static org.mvel2.util.ParseTools.balancedCapture;
 
 public class TemplateTools {
   public static Node getLastNode(Node node) {

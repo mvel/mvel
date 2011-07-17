@@ -20,7 +20,6 @@ package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
@@ -28,7 +27,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 import java.io.Serializable;
 
 import static java.lang.String.valueOf;
-import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledEvalNode extends Node {
   private Serializable ce;

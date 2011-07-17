@@ -19,8 +19,8 @@
 package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;

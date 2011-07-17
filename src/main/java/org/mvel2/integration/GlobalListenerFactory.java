@@ -1,7 +1,7 @@
 package org.mvel2.integration;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 public class GlobalListenerFactory {
   private static List<Listener> propertyGetListeners;

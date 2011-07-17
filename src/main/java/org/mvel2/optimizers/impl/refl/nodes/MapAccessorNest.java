@@ -23,9 +23,9 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.subCompileExpression;
-
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 /**
  * @author Christopher Brock

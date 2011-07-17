@@ -1,6 +1,5 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;

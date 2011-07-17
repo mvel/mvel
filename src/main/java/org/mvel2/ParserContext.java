@@ -25,7 +25,6 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Parser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.LineMapper;
-import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 

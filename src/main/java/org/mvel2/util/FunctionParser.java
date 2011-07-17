@@ -2,12 +2,11 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.Function;
+import org.mvel2.compiler.AbstractParser;
 
 import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
-import static org.mvel2.util.ParseTools.createStringTrimmed;
 
 public class FunctionParser {
   private String name;

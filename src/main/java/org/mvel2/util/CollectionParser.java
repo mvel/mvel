@@ -23,12 +23,12 @@ import org.mvel2.DataConversion;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 
-import static org.mvel2.util.ParseTools.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.*;
 
 /**
  * This is the inline collection sub-parser.  It produces a skeleton model of the collection which is in turn translated

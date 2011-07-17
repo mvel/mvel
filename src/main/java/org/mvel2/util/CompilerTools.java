@@ -20,24 +20,19 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
-
-import static org.mvel2.Operator.PTABLE;
-
 import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
-
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 import org.mvel2.compiler.*;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 
-import static org.mvel2.util.ParseTools.__resolveType;
-import static org.mvel2.util.ParseTools.boxPrimitive;
-
-import java.lang.management.OperatingSystemMXBean;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.mvel2.Operator.PTABLE;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.util.ParseTools.__resolveType;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class CompilerTools {
   /**

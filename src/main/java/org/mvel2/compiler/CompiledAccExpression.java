@@ -22,9 +22,9 @@ import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 
-import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
-
 import java.io.Serializable;
+
+import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 public class CompiledAccExpression implements ExecutableStatement, Serializable {
   private char[] expression;

@@ -1,7 +1,6 @@
 package org.mvel2.templates.util.io;
 
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.util.StringAppender;
 
 public class StringBuilderStream implements TemplateOutputStream {
   private StringBuilder appender;

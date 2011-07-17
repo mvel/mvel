@@ -18,14 +18,12 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.CompileException;
-
-import static org.mvel2.DataConversion.convert;
-
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
+
+import static org.mvel2.DataConversion.convert;
 
 @SuppressWarnings({"unchecked"})
 public class DynamicSetterAccessor implements AccessorNode {

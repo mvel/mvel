@@ -23,15 +23,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
-import static org.mvel2.util.ParseTools.subset;
-
-import org.mvel2.util.StringAppender;
-
 import static java.lang.String.valueOf;
-
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 
 public class ExpressionNode extends Node {
   public ExpressionNode() {

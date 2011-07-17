@@ -23,8 +23,6 @@ import org.mvel2.integration.VariableResolver;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 
-import org.mvel2.CompileException;
-
 public class SimpleSTValueResolver implements VariableResolver {
   private Object value;
   private Class type;

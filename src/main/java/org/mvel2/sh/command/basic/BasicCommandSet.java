@@ -21,9 +21,8 @@ package org.mvel2.sh.command.basic;
 import org.mvel2.sh.Command;
 import org.mvel2.sh.CommandSet;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class BasicCommandSet implements CommandSet {
 
