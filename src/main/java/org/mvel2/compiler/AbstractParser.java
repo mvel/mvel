@@ -82,6 +82,7 @@ public class AbstractParser implements Parser, Serializable {
   private static final WeakHashMap<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
 
   public static HashMap<String, Object> LITERALS;
+  public static HashMap<String, Object> CLASS_LITERALS;
   public static HashMap<String, Integer> OPERATORS;
 
   protected ExecutionStack stk;
@@ -107,8 +108,70 @@ public class AbstractParser implements Parser, Serializable {
   public static void setupParser() {
     if (LITERALS == null || LITERALS.isEmpty()) {
       LITERALS = new HashMap<String, Object>();
+      CLASS_LITERALS = new HashMap<String, Object>();
       OPERATORS = new HashMap<String, Integer>();
 
+      /**
+       * Add System and all the class wrappers from the JCL.
+       */
+      CLASS_LITERALS.put("System", System.class);
+      CLASS_LITERALS.put("String", String.class);
+      CLASS_LITERALS.put("CharSequence", CharSequence.class);
+
+      CLASS_LITERALS.put("Integer", Integer.class);
+      CLASS_LITERALS.put("int", Integer.class);
+
+      CLASS_LITERALS.put("Long", Long.class);
+      CLASS_LITERALS.put("long", Long.class);
+
+      CLASS_LITERALS.put("Boolean", Boolean.class);
+      CLASS_LITERALS.put("boolean", Boolean.class);
+
+      CLASS_LITERALS.put("Short", Short.class);
+      CLASS_LITERALS.put("short", Short.class);
+
+      CLASS_LITERALS.put("Character", Character.class);
+      CLASS_LITERALS.put("char", Character.class);
+
+      CLASS_LITERALS.put("Double", Double.class);
+      CLASS_LITERALS.put("double", Double.class);
+
+      CLASS_LITERALS.put("Float", Float.class);
+      CLASS_LITERALS.put("float", Float.class);
+
+      CLASS_LITERALS.put("Byte", Byte.class);
+      CLASS_LITERALS.put("byte", Byte.class);
+
+      CLASS_LITERALS.put("Math", Math.class);
+      CLASS_LITERALS.put("Void", Void.class);
+      CLASS_LITERALS.put("Object", Object.class);
+      CLASS_LITERALS.put("Number", Number.class);
+
+      CLASS_LITERALS.put("Class", Class.class);
+      CLASS_LITERALS.put("ClassLoader", ClassLoader.class);
+      CLASS_LITERALS.put("Runtime", Runtime.class);
+      CLASS_LITERALS.put("Thread", Thread.class);
+      CLASS_LITERALS.put("Compiler", Compiler.class);
+      CLASS_LITERALS.put("StringBuffer", StringBuffer.class);
+      CLASS_LITERALS.put("ThreadLocal", ThreadLocal.class);
+      CLASS_LITERALS.put("SecurityManager", SecurityManager.class);
+      CLASS_LITERALS.put("StrictMath", StrictMath.class);
+
+      CLASS_LITERALS.put("Exception", Exception.class);
+
+      CLASS_LITERALS.put("Array", java.lang.reflect.Array.class);
+
+      if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
+        try {
+          CLASS_LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
+        }
+        catch (Exception e) {
+          throw new RuntimeException("cannot resolve a built-in literal", e);
+        }
+      }
+
+      // Setup LITERALS
+      LITERALS.putAll(CLASS_LITERALS);
       LITERALS.put("true", TRUE);
       LITERALS.put("false", FALSE);
 
@@ -116,65 +179,6 @@ public class AbstractParser implements Parser, Serializable {
       LITERALS.put("nil", null);
 
       LITERALS.put("empty", BlankLiteral.INSTANCE);
-
-      /**
-       * Add System and all the class wrappers from the JCL.
-       */
-      LITERALS.put("System", System.class);
-      LITERALS.put("String", String.class);
-      LITERALS.put("CharSequence", CharSequence.class);
-
-      LITERALS.put("Integer", Integer.class);
-      LITERALS.put("int", Integer.class);
-
-      LITERALS.put("Long", Long.class);
-      LITERALS.put("long", Long.class);
-
-      LITERALS.put("Boolean", Boolean.class);
-      LITERALS.put("boolean", Boolean.class);
-
-      LITERALS.put("Short", Short.class);
-      LITERALS.put("short", Short.class);
-
-      LITERALS.put("Character", Character.class);
-      LITERALS.put("char", Character.class);
-
-      LITERALS.put("Double", Double.class);
-      LITERALS.put("double", Double.class);
-
-      LITERALS.put("Float", Float.class);
-      LITERALS.put("float", Float.class);
-
-      LITERALS.put("Byte", Byte.class);
-      LITERALS.put("byte", Byte.class);
-
-      LITERALS.put("Math", Math.class);
-      LITERALS.put("Void", Void.class);
-      LITERALS.put("Object", Object.class);
-      LITERALS.put("Number", Number.class);
-
-      LITERALS.put("Class", Class.class);
-      LITERALS.put("ClassLoader", ClassLoader.class);
-      LITERALS.put("Runtime", Runtime.class);
-      LITERALS.put("Thread", Thread.class);
-      LITERALS.put("Compiler", Compiler.class);
-      LITERALS.put("StringBuffer", StringBuffer.class);
-      LITERALS.put("ThreadLocal", ThreadLocal.class);
-      LITERALS.put("SecurityManager", SecurityManager.class);
-      LITERALS.put("StrictMath", StrictMath.class);
-
-      LITERALS.put("Exception", Exception.class);
-
-      LITERALS.put("Array", java.lang.reflect.Array.class);
-
-      if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
-        try {
-          LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
-        }
-        catch (Exception e) {
-          throw new RuntimeException("cannot resolve a built-in literal", e);
-        }
-      }
 
       setLanguageLevel(Boolean.getBoolean("mvel.future.lang.support") ? 6 : 5);
     }
