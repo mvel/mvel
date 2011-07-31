@@ -35,8 +35,9 @@ import static java.lang.Thread.currentThread;
  * The resusable parser configuration object.
  */
 public class ParserConfiguration implements Serializable {
-  protected Map<String, Object> imports;
+  protected Map<String, Object> imports = new ConcurrentHashMap<String, Object>();
   protected HashSet<String> packageImports;
+  private Set<String> nonValidImports = new HashSet<String>();
   protected Map<String, Interceptor> interceptors;
   protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
 
@@ -63,18 +64,17 @@ public class ParserConfiguration implements Serializable {
   }
 
   public Class getImport(String name) {
-    if (imports != null && imports.containsKey(name) && imports.get(name) instanceof Class) {
-      return (Class) imports.get(name);
-    }
+    Object imp = imports.get(name);
+    if (imp != null && imp instanceof Class) return (Class) imp;
     return (Class) (AbstractParser.LITERALS.get(name) instanceof Class ? AbstractParser.LITERALS.get(name) : null);
   }
 
   public MethodStub getStaticImport(String name) {
-    return imports != null ? (MethodStub) imports.get(name) : null;
+    return (MethodStub) imports.get(name);
   }
 
   public Object getStaticOrClassImport(String name) {
-    return (imports != null && imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name));
+    return imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name);
   }
 
   public void addPackageImport(String packageName) {
@@ -85,7 +85,6 @@ public class ParserConfiguration implements Serializable {
   public void addAllImports(Map<String, Object> imports) {
     if (imports == null) return;
 
-    if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
     Object o;
 
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
@@ -98,12 +97,10 @@ public class ParserConfiguration implements Serializable {
     }
   }
 
-  public void setAllImports(Map<String, Object> imports) {
-    this.imports = imports;
-  }
-
   private boolean checkForDynamicImport(String className) {
     if (packageImports == null) return false;
+    if (!Character.isJavaIdentifierStart(className.charAt(0))) return false;
+    if (nonValidImports.contains(className)) return false;
 
     int found = 0;
     Class cls = null;
@@ -126,24 +123,20 @@ public class ParserConfiguration implements Serializable {
       }
     }
 
-    if (found > 1) {
-      throw new RuntimeException("ambiguous class name: " + className);
-    }
-    else if (found == 1) {
+    if (found > 1) throw new RuntimeException("ambiguous class name: " + className);
+    if (found == 1) {
       addImport(className, cls);
       return true;
     }
-    else {
-      return false;
-    }
+
+    nonValidImports.add(className);
+    return false;
   }
 
   public boolean hasImport(String name) {
-    return (imports != null && imports.containsKey(name)) ||
-        (!"this".equals(name) && !"self".equals(name) && !"empty".equals(name) && !"null".equals(name) &&
-            !"nil".equals(name) && !"true".equals(name) && !"false".equals(name)
-            && AbstractParser.LITERALS.containsKey(name))
-        || checkForDynamicImport(name);
+    return imports.containsKey(name) ||
+        AbstractParser.CLASS_LITERALS.containsKey(name) ||
+        checkForDynamicImport(name);
   }
 
   public void addImport(Class cls) {
@@ -151,12 +144,10 @@ public class ParserConfiguration implements Serializable {
   }
 
   public void addImport(String name, Class cls) {
-    if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
     this.imports.put(name, cls);
   }
 
   public void addImport(String name, Proto proto) {
-    if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
     this.imports.put(name, proto);
   }
 
@@ -165,7 +156,6 @@ public class ParserConfiguration implements Serializable {
   }
 
   public void addImport(String name, MethodStub method) {
-    if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
     this.imports.put(name, method);
   }
 
@@ -206,7 +196,7 @@ public class ParserConfiguration implements Serializable {
   }
 
   public boolean hasImports() {
-    return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
+    return !imports.isEmpty() || (packageImports != null && packageImports.size() != 0);
   }
 
   public ClassLoader getClassLoader() {
@@ -217,7 +207,13 @@ public class ParserConfiguration implements Serializable {
     this.classLoader = classLoader;
   }
 
+  public void setAllImports(Map<String, Object> imports) {
+    this.imports.clear();
+    if (imports != null) this.imports.putAll(imports);
+  }
+
   public void setImports(HashMap<String, Object> imports) {
-    this.imports = imports;
+    // TODO: this method is here for backward compatibility. Could it be removed/deprecated?
+    setAllImports(imports);
   }
 }
