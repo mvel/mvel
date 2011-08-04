@@ -152,19 +152,19 @@ public class TemplateRuntime {
   }
 
   public static Object execute(CompiledTemplate compiled) {
-    return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
+    return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, new ImmutableDefaultFactory(), null);
   }
 
   public static void execute(CompiledTemplate compiled, OutputStream stream) {
-    execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), null, null, null);
+    execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), null, new ImmutableDefaultFactory(), null);
   }
 
   public static Object execute(CompiledTemplate compiled, Object context) {
-    return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, null);
+    return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, new ImmutableDefaultFactory(), null);
   }
 
   public static void execute(CompiledTemplate compiled, Object context, OutputStream stream) {
-    execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, null, null);
+    execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, new ImmutableDefaultFactory(), null);
   }
 
   public static Object execute(CompiledTemplate compiled, Map vars) {

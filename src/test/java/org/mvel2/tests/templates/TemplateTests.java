@@ -919,7 +919,6 @@ public class TemplateTests extends TestCase {
     model.put("foo", foo);
 
     System.out.println(TemplateRuntime.execute(compiledTemplate, new ParserContext(), new MapVariableResolverFactory(model)));
-
   }
 
   public static class Foo244 {

@@ -58,7 +58,7 @@ public class DoNode extends BlockNode {
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
 
     do {
       compiledBlock.getValue(ctx, thisValue, ctxFactory);
@@ -69,7 +69,7 @@ public class DoNode extends BlockNode {
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+    VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
 
     do {
       compiledBlock.getValue(ctx, thisValue, ctxFactory);
