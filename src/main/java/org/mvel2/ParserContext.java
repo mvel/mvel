@@ -208,7 +208,6 @@ public class ParserContext implements Serializable {
     return ctx;
   }
 
-
   /**
    * Tests whether or not a variable or input exists in the current parser context.
    *
@@ -463,7 +462,6 @@ public class ParserContext implements Serializable {
       }
     }
   }
-
 
   public void addVariable(String name, Class type, boolean failIfNewAssignment) {
     initializeTables();
@@ -1037,11 +1035,8 @@ public class ParserContext implements Serializable {
 
   public ParserContext withIndexedVars(String[] varNames) {
     indexedInputs = new ArrayList<String>();
-    for (String s : varNames) {
-      indexedInputs.add(s);
-    }
+    Collections.addAll(indexedInputs, varNames);
 
     return this;
   }
-
 }

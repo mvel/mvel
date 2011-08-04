@@ -191,14 +191,6 @@ public class TemplateTests extends TestCase {
 
   }
 
-//    public void testTemplateFile2() {
-//        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel2/tests/templates/templateDeclareTest.mv"),
-//                base, new MapVariableResolverFactory(map), null);
-//
-//        System.out.println(s);
-//
-//    }
-
   public void testInclusionOfNamedTemplate() {
     SimpleTemplateRegistry registry = new SimpleTemplateRegistry();
     registry.addNamedTemplate("footemplate", compileTemplate("@{_foo_}@{_bar_}"));
@@ -607,7 +599,6 @@ public class TemplateTests extends TestCase {
     assertEquals(true, test("@{this}") instanceof Base);
   }
 
-
   public void testIfLoopInTemplate() {
     assertEquals("ONETWOTHREE", test("@foreach{item :things}@if{item.name=='Bob'}ONE@elseif{item.name=='Smith'}TWO@elseif{item.name=='Cow'}THREE@end{}@end{}"));
   }
@@ -632,7 +623,6 @@ public class TemplateTests extends TestCase {
     assertEquals("foo", test("@eval{\"@{'foo'}\"}"));
   }
 
-
   public void testIteration1() {
     List<String> list = new ArrayList<String>();
     list.add("a1");
@@ -646,7 +636,6 @@ public class TemplateTests extends TestCase {
     System.out.println("r: " + r);
     assertEquals("aaa", r);
   }
-
 
   public void testIteration2() {
     Folder f1 = new Folder("f1", null);
@@ -692,7 +681,6 @@ public class TemplateTests extends TestCase {
 
     assertEquals("a", value);
   }
-
 
   public void testEscaping() {
     String template = "@@{'foo'}ABC";
@@ -754,7 +742,6 @@ public class TemplateTests extends TestCase {
 
     assertEquals("foofar", sb.toString());
   }
-
 
   private Map<String, Object> setupVarsMVEL219() {
     Map<String, Object> vars = new LinkedHashMap<String, Object>();
@@ -880,7 +867,6 @@ public class TemplateTests extends TestCase {
     }
   }
 
-
   public void testTemplateMVEL219() {
     Map<String, Object> vars = setupVarsMVEL219();
 
@@ -922,13 +908,11 @@ public class TemplateTests extends TestCase {
   }
 
   public static class Foo244 {
-
     private List<Foo244> liste = new ArrayList<Foo244>();
 
     private String val = "";
 
     public Foo244() {
-
     }
 
     public Foo244(String plop) {
@@ -959,6 +943,4 @@ public class TemplateTests extends TestCase {
       this.val = val;
     }
   }
-
-
 }
