@@ -47,6 +47,7 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.integration.ResolverTools.appendFactory;
 import static org.mvel2.integration.ResolverTools.insertFactory;
 
 
@@ -871,7 +872,7 @@ public class ParseTools {
       throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
     }
     else {
-      return insertFactory(factory, new ClassImportResolverFactory());
+      return appendFactory(factory, new ClassImportResolverFactory());
     }
   }
 
