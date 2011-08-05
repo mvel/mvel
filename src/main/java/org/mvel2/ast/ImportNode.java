@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
 
@@ -70,7 +71,13 @@ public class ImportNode extends ASTNode {
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if (!packageImport) {
-      return findClassImportResolverFactory(factory).addClass(importClass);
+      if (MVEL.COMPILER_OPT_ALLOCATE_TYPE_LITERALS_TO_SHARED_SYMBOL_TABLE) {
+        factory.createVariable(importClass.getSimpleName(), importClass);
+        return importClass;
+      }
+      else {
+        return findClassImportResolverFactory(factory).addClass(importClass);
+      }
     }
     else {
       findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
