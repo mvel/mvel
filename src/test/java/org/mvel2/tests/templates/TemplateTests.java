@@ -908,7 +908,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testImportsInTemplate() {
-        String template = "@code{import java.util.HashMap; i = 10;}_____________@code{new HashxMap().toString() + i}";
+        String template = "@code{import java.util.HashMap; i = 10;}_____________@code{new HashMap().toString() + i}";
 
         Map map = new HashMap();
         Object result = TemplateRuntime.eval(template, map);
