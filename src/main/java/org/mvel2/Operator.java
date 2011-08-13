@@ -155,4 +155,7 @@ public interface Operator {
   public static final int PUSH = 102;
   public static final int POP = 103;
   public static final int LOAD = 104;
+  public static final int LDTYPE = 105;
+  public static final int INVOKE = 106;
+
 }

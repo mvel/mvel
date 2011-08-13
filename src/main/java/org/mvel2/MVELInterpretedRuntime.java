@@ -97,7 +97,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (stk.isEmpty()) {
           if ((tk.fields & ASTNode.STACKLANG) != 0) {
             stk.push(tk.getReducedValue(stk, ctx, variableFactory));
-            arithmeticFunctionReduction((Integer) stk.peek());
+            Object o = stk.peek();
+            if (o instanceof Integer) {
+              arithmeticFunctionReduction((Integer) o);
+            }
           }
           else {
             stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
