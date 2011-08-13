@@ -1,6 +1,10 @@
 package org.mvel2.tests.core;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.mvel2.MVEL;
+import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.KnowledgeHelperFixer;
 
 import static org.mvel2.MVEL.compileExpression;
@@ -119,6 +123,11 @@ public class CommentParsingTests extends AbstractTest {
   public void testComments5() {
     assertEquals("dog",
         test("foo./*Hey!*/name"));
+  }
+  
+  public void testMultiLineCommentInList() {
+      assertEquals(  Arrays.asList( new Integer[] { 10, 20 }),
+                                    test("import " + Foo.class.getName() + ";\n [ 10, 20 /* ... */ ]") );
   }
 
 }
