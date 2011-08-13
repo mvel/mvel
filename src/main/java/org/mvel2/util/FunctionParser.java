@@ -91,7 +91,7 @@ public class FunctionParser {
     /**
      * Trim any whitespace from the captured block range.
      */
-    blockStart = ParseTools.trimRight(expr, start, blockStart + 1);
+    blockStart = ParseTools.trimRight(expr, blockStart + 1);
     blockEnd = ParseTools.trimLeft(expr, start, blockEnd);
 
     cursor++;

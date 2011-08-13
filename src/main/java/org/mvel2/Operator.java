@@ -151,5 +151,8 @@ public interface Operator {
   public static final int RETURN = 99;
 
   public static final int FUNCTION = 100;
-
+  public static final int STACKLANG = 101;
+  public static final int PUSH = 102;
+  public static final int POP = 103;
+  public static final int LOAD = 104;
 }

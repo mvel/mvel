@@ -65,6 +65,8 @@ public class ASTNode implements Cloneable, Serializable {
 
   public static final int FQCN = 1 << 20;
 
+  public static final int STACKLANG = 1 << 22;
+
   public static final int DEFERRED_TYPE_RES = 1 << 23;
   public static final int STRONG_TYPING = 1 << 24;
   public static final int PCTX_STORED = 1 << 25;
@@ -74,6 +76,7 @@ public class ASTNode implements Cloneable, Serializable {
   public static final int DEOP = 1 << 28;
 
   public static final int DISCARD = 1 << 29;
+
 
   // *** //
 

@@ -233,6 +233,9 @@ public class DebugTools {
       case Operator.CHOR:
         return "or";
 
+      case Operator.STACKLANG:
+        return "stacklang";
+
     }
 
     return "UNKNOWN_OPERATOR";
@@ -344,7 +347,8 @@ public class DebugTools {
         return "WHILE";
       case Operator.CHOR:
         return "CHAINED_OR";
-
+      case Operator.STACKLANG:
+        return "STACKLANG";
 
     }
 

@@ -24,10 +24,12 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.integration.impl.MapVariableResolver;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.mvel2.Operator.*;
@@ -55,7 +57,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
       if (cursor >= length) {
         throw new CompileException("unexpected end of statement", expr, length);
-      } else {
+      }
+      else {
         throw e;
       }
     }
@@ -92,7 +95,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
          * onto the stack.
          */
         if (stk.isEmpty()) {
-          stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+          if ((tk.fields & ASTNode.STACKLANG) != 0) {
+            stk.push(tk.getReducedValue(stk, ctx, variableFactory));
+            arithmeticFunctionReduction((Integer) stk.peek());
+          }
+          else {
+            stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+          }
 
           /**
            * If this is a substatement, we need to move the result into the d-stack to preserve
@@ -107,7 +116,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
               else
                 continue;
             }
-          } else {
+          }
+          else {
             continue;
           }
         }
@@ -156,14 +166,15 @@ public class MVELInterpretedRuntime extends AbstractParser {
     catch (NullPointerException e) {
       if (tk != null && tk.isOperator()) {
         CompileException ce = new CompileException("incomplete statement: "
-                + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")"
-                , expr, st, e);
+            + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")"
+            , expr, st, e);
 
         ce.setExpr(expr);
         ce.setLineNumber(line);
         ce.setCursor(cursor);
         throw ce;
-      } else {
+      }
+      else {
         throw e;
       }
     }
@@ -183,11 +194,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (!stk.peekBoolean()) {
           if (unwindStatement(operator)) {
             return -1;
-          } else {
+          }
+          else {
             stk.clear();
             return OP_RESET_FRAME;
           }
-        } else {
+        }
+        else {
           stk.discard();
           return OP_RESET_FRAME;
         }
@@ -198,11 +211,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (stk.peekBoolean()) {
           if (unwindStatement(operator)) {
             return OP_TERMINATE;
-          } else {
+          }
+          else {
             stk.clear();
             return OP_RESET_FRAME;
           }
-        } else {
+        }
+        else {
           stk.discard();
           return OP_RESET_FRAME;
         }
@@ -219,7 +234,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
           ASTNode tk;
 
-          for (;;){
+          for (; ; ) {
             if ((tk = nextToken()) == null || tk.isOperator(Operator.TERNARY_ELSE))
               break;
           }

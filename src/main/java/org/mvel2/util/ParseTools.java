@@ -282,7 +282,8 @@ public class ParseTools {
             else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
               score += 4;
             }
-            else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
+            else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))
+                && Object.class != arguments[i]) {
               score += 3 + scoreInterface(parmTypes[i], arguments[i]);
             }
             else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
@@ -984,14 +985,6 @@ public class ParseTools {
     else return __resolveType(o.getClass());
   }
 
-  public static int resolveType(Class cls) {
-    Integer i = typeResolveMap.get(cls);
-    if (i == null) return DataTypes.OBJECT;
-    else {
-      return i;
-    }
-  }
-
   private static final Map<Class, Integer> typeCodes = new HashMap<Class, Integer>(30, 0.5f);
 
   static {
@@ -1164,8 +1157,6 @@ public class ParseTools {
     while (cursor != expr.length) {
       switch (expr[cursor]) {
         case '\n':
-//                    line++;
-//                    lastLineStart = cursor;
         case '\r':
           cursor++;
           continue;
@@ -1176,21 +1167,12 @@ public class ParseTools {
                 expr[cursor++] = ' ';
                 while (cursor != expr.length && expr[cursor] != '\n') expr[cursor++] = ' ';
                 if (cursor != expr.length) expr[cursor++] = ' ';
-
-//                                line++;
-//                                lastLineStart = cursor;
-
                 continue;
 
               case '*':
                 int len = expr.length - 1;
                 expr[cursor++] = ' ';
                 while (cursor != len && !(expr[cursor] == '*' && expr[cursor + 1] == '/')) {
-//                                    if (expr[cursor] == '\n') {
-//                                        line++;
-//                                        lastLineStart = cursor;
-//                                    }
-
                   expr[cursor++] = ' ';
                 }
                 if (cursor != len) expr[cursor++] = expr[cursor++] = ' ';
@@ -1207,11 +1189,6 @@ public class ParseTools {
       }
       cursor++;
     }
-//
-//        if (pCtx != null) {
-//            pCtx.setLineCount(line);
-//            pCtx.setLineOffset(lastLineStart);
-//        }
 
     return cursor;
   }
@@ -1254,6 +1231,8 @@ public class ParseTools {
    * From the specified cursor position, trim out any whitespace between the current position and the end of the
    * last non-whitespace character.
    *
+   * @param expr -
+   * @param start -
    * @param pos - current position
    * @return new position.
    */
@@ -1267,10 +1246,12 @@ public class ParseTools {
    * From the specified cursor position, trim out any whitespace between the current position and beginning of the
    * first non-whitespace character.
    *
+   *
+   * @param expr -
    * @param pos -
    * @return -
    */
-  public static int trimRight(char[] expr, int start, int pos) {
+  public static int trimRight(char[] expr, int pos) {
     while (pos != expr.length && isWhitespace(expr[pos])) pos++;
     return pos;
   }
@@ -1774,7 +1755,7 @@ public class ParseTools {
   public static boolean isNumber(Object val) {
     if (val == null) return false;
     if (val instanceof String) return isNumber((String) val);
-    if (val instanceof char[]) return isNumber((char[]) val);
+    if (val instanceof char[]) return isNumber(new String((char[]) val));
     return val instanceof Integer || val instanceof BigDecimal || val instanceof BigInteger
         || val instanceof Float || val instanceof Double || val instanceof Long
         || val instanceof Short || val instanceof Character;
@@ -2063,41 +2044,6 @@ public class ParseTools {
     return true;
   }
 
-  public static final class WithStatementPair implements java.io.Serializable {
-    private String parm;
-    private String value;
-
-    public WithStatementPair(String parm, String value) {
-      this.parm = parm;
-      this.value = value;
-    }
-
-    public String getParm() {
-      return parm;
-    }
-
-    public void setParm(String parm) {
-      this.parm = parm;
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public void setValue(String value) {
-      this.value = value;
-    }
-
-    public void eval(Object ctx, VariableResolverFactory vrf) {
-      if (parm == null) {
-        MVEL.eval(value, ctx, vrf);
-      }
-      else {
-        MVEL.setProperty(ctx, parm, MVEL.eval(value, ctx, vrf));
-      }
-    }
-  }
-
   public static void checkNameSafety(String name) {
     if (isReservedWord(name)) {
       throw new RuntimeException("illegal use of reserved word: " + name);
@@ -2247,5 +2193,4 @@ public class ParseTools {
       if (inStream != null) inStream.close();
     }
   }
-
 }
