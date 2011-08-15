@@ -160,4 +160,5 @@ public interface Operator {
   public static final int GETFIELD = 107;
   public static final int STOREFIELD = 108;
   public static final int STORE = 109;
+  public static final int DUP = 110;
 }

@@ -149,6 +149,9 @@ public class Stacklang extends BlockNode {
           break;
         case Operator.POP:
           stack.pop();
+          break;
+        case Operator.DUP:
+          stack.push(stack.peek());
       }
     }
 
@@ -188,5 +191,8 @@ public class Stacklang extends BlockNode {
     opcodes.put("ldtype", Operator.LDTYPE);
     opcodes.put("invoke", Operator.INVOKE);
     opcodes.put("store", Operator.STORE);
+    opcodes.put("getfield", Operator.GETFIELD);
+    opcodes.put("storefield", Operator.STOREFIELD);
+    opcodes.put("dup", Operator.DUP);
   }
 }
