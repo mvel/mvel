@@ -157,5 +157,7 @@ public interface Operator {
   public static final int LOAD = 104;
   public static final int LDTYPE = 105;
   public static final int INVOKE = 106;
-
+  public static final int GETFIELD = 107;
+  public static final int STOREFIELD = 108;
+  public static final int STORE = 109;
 }

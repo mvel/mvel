@@ -52,7 +52,6 @@ public class TypeCast extends ASTNode {
               + statement.getKnownEgressType() + "; to: " + cast, expr, start);
         }
       }
-
     }
   }
 
