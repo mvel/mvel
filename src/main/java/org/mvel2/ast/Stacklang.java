@@ -61,7 +61,10 @@ public class Stacklang extends BlockNode {
   @Override
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     ExecutionStack stack = (ExecutionStack) ctx;
-    for (Instruction instruction : instructionList) {
+    Map<String, Integer> jumptable = null;
+
+    for (int i1 = 0, instructionListSize = instructionList.size(); i1 < instructionListSize; i1++) {
+      Instruction instruction = instructionList.get(i1);
       switch (instruction.opcode) {
         case Operator.STORE:
           stack.push(factory.createVariable(instruction.expr, stack.pop()).getValue());
@@ -152,6 +155,24 @@ public class Stacklang extends BlockNode {
           break;
         case Operator.DUP:
           stack.push(stack.peek());
+          break;
+        case Operator.LABEL:
+          if (jumptable == null) {
+            jumptable = new HashMap<String, Integer>();
+          }
+          jumptable.put(instruction.expr, i1);
+          break;
+        case Operator.JUMP:
+          if (jumptable != null && jumptable.containsKey(instruction.expr)) {
+            i1 = jumptable.get(instruction.expr);
+          }
+          else {
+            for (int i2 = i1 + 1; i1 < instructionList.size(); i2++) {
+              if (instruction.expr.equals(instructionList.get(i2).expr)) {
+                i1 = i2;
+              }
+            }
+          }
       }
     }
 
@@ -194,5 +215,7 @@ public class Stacklang extends BlockNode {
     opcodes.put("getfield", Operator.GETFIELD);
     opcodes.put("storefield", Operator.STOREFIELD);
     opcodes.put("dup", Operator.DUP);
+    opcodes.put("jump", Operator.JUMP);
+    opcodes.put("label", Operator.LABEL);
   }
 }
