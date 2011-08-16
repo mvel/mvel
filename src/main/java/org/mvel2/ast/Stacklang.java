@@ -162,17 +162,31 @@ public class Stacklang extends BlockNode {
           }
           jumptable.put(instruction.expr, i1);
           break;
+        case Operator.JUMPIF:
+           if (!stack.popBoolean()) continue;
+
         case Operator.JUMP:
           if (jumptable != null && jumptable.containsKey(instruction.expr)) {
             i1 = jumptable.get(instruction.expr);
           }
           else {
-            for (int i2 = i1 + 1; i1 < instructionList.size(); i2++) {
+            for (int i2 = i1 + 1; i2 < instructionList.size(); i2++) {
               if (instruction.expr.equals(instructionList.get(i2).expr)) {
                 i1 = i2;
               }
             }
           }
+          break;
+        case Operator.EQUAL:
+          stack.push(stack.pop().equals(stack.pop()));
+          break;
+        case Operator.NEQUAL:
+          stack.push(!stack.pop().equals(stack.pop()));
+          break;
+
+        case Operator.REDUCE:
+          stack.op();
+          break;
       }
     }
 
@@ -216,6 +230,10 @@ public class Stacklang extends BlockNode {
     opcodes.put("storefield", Operator.STOREFIELD);
     opcodes.put("dup", Operator.DUP);
     opcodes.put("jump", Operator.JUMP);
+    opcodes.put("jumpif", Operator.JUMPIF);
     opcodes.put("label", Operator.LABEL);
+    opcodes.put("eq", Operator.EQUAL);
+    opcodes.put("ne", Operator.NEQUAL);
+    opcodes.put("reduce", Operator.REDUCE);
   }
 }
