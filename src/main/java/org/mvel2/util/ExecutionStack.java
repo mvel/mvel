@@ -71,6 +71,11 @@ public class ExecutionStack {
     else return element.value;
   }
 
+  public void dup() {
+    size++;
+    element = new StackElement(element, element.value);
+  }
+
   public Boolean peekBoolean() {
     if (size == 0) return null;
     if (element.value instanceof Boolean) return (Boolean) element.value;

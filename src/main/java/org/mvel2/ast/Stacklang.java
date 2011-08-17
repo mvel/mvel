@@ -4,11 +4,13 @@ import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
+import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,10 +69,18 @@ public class Stacklang extends BlockNode {
       Instruction instruction = instructionList.get(i1);
       switch (instruction.opcode) {
         case Operator.STORE:
-          stack.push(factory.createVariable(instruction.expr, stack.pop()).getValue());
+          if (instruction.cache == null) {
+            instruction.cache = factory.createVariable(instruction.expr, stack.peek());
+          }
+          else {
+            ((VariableResolver) instruction.cache).setValue(stack.peek());
+          }
           break;
         case Operator.LOAD:
-          stack.push(factory.getVariableResolver(instruction.expr).getValue());
+          if (instruction.cache == null) {
+            instruction.cache = factory.getVariableResolver(instruction.expr);
+          }
+          stack.push(((VariableResolver) instruction.cache).getValue());
           break;
         case Operator.GETFIELD:
           try {
@@ -78,7 +88,16 @@ public class Stacklang extends BlockNode {
               throw new CompileException("getfield without class", expr, blockStart);
             }
 
-            stack.push(((Class) stack.pop()).getField(instruction.expr).get(stack.pop()));
+            Field field;
+            if (instruction.cache == null) {
+              instruction.cache = field = ((Class) stack.pop()).getField(instruction.expr);
+            }
+            else {
+              stack.discard();
+              field = (Field) instruction.cache;
+            }
+
+            stack.push(field.get(stack.pop()));
           }
           catch (Exception e) {
             throw new CompileException("field access error", expr, blockStart, e);
@@ -102,7 +121,10 @@ public class Stacklang extends BlockNode {
 
         case Operator.LDTYPE:
           try {
-            stack.push(ParseTools.createClass(instruction.expr, pCtx));
+            if (instruction.cache == null) {
+              instruction.cache = ParseTools.createClass(instruction.expr, pCtx);
+            }
+            stack.push(instruction.cache);
           }
           catch (ClassNotFoundException e) {
             throw new CompileException("error", expr, blockStart, e);
@@ -110,6 +132,7 @@ public class Stacklang extends BlockNode {
           break;
 
         case Operator.INVOKE:
+          Object[] parms;
           ExecutionStack call = new ExecutionStack();
           while (!stack.isEmpty() && !(stack.peek() instanceof Class)) {
             call.push(stack.pop());
@@ -118,13 +141,17 @@ public class Stacklang extends BlockNode {
             throw new CompileException("invoke without class", expr, blockStart);
           }
 
-          Object[] parms = new Object[call.size()];
-
+          parms = new Object[call.size()];
           for (int i = 0; !call.isEmpty(); i++) parms[i] = call.pop();
 
-
           if ("<init>".equals(instruction.expr)) {
-            Constructor c = ParseTools.getBestConstructorCandidate(parms, (Class) stack.pop(), false);
+            Constructor c;
+            if (instruction.cache == null) {
+              instruction.cache = c = ParseTools.getBestConstructorCandidate(parms, (Class) stack.pop(), false);
+            }
+            else {
+              c = (Constructor) instruction.cache;
+            }
 
             try {
               stack.push(c.newInstance(parms));
@@ -134,10 +161,17 @@ public class Stacklang extends BlockNode {
             }
           }
           else {
-            Class cls = (Class) stack.pop();
+            Method m;
+            if (instruction.cache == null) {
+              Class cls = (Class) stack.pop();
 
-            Method m = ParseTools.getBestCandidate(parms, instruction.expr, cls,
-                cls.getDeclaredMethods(), false);
+              instruction.cache = m = ParseTools.getBestCandidate(parms, instruction.expr, cls,
+                  cls.getDeclaredMethods(), false);
+            }
+            else {
+              stack.discard();
+              m = (Method) instruction.cache;
+            }
 
             try {
               stack.push(m.invoke(stack.isEmpty() ? null : stack.pop(), parms));
@@ -148,13 +182,16 @@ public class Stacklang extends BlockNode {
           }
           break;
         case Operator.PUSH:
-          stack.push(MVEL.eval(instruction.expr, ctx, factory));
+          if (instruction.cache == null) {
+            instruction.cache = MVEL.eval(instruction.expr, ctx, factory);
+          }
+          stack.push(instruction.cache);
           break;
         case Operator.POP:
           stack.pop();
           break;
         case Operator.DUP:
-          stack.push(stack.peek());
+          stack.dup();
           break;
         case Operator.LABEL:
           if (jumptable == null) {
@@ -163,11 +200,14 @@ public class Stacklang extends BlockNode {
           jumptable.put(instruction.expr, i1);
           break;
         case Operator.JUMPIF:
-           if (!stack.popBoolean()) continue;
+          if (!stack.popBoolean()) continue;
 
         case Operator.JUMP:
-          if (jumptable != null && jumptable.containsKey(instruction.expr)) {
-            i1 = jumptable.get(instruction.expr);
+          if (instruction.cache != null) {
+            i1 = (Integer) instruction.cache;
+          }
+          else if (jumptable != null && jumptable.containsKey(instruction.expr)) {
+            instruction.cache = i1 = jumptable.get(instruction.expr);
           }
           else {
             for (int i2 = i1 + 1; i2 < instructionList.size(); i2++) {
@@ -196,6 +236,7 @@ public class Stacklang extends BlockNode {
   private static class Instruction {
     int opcode;
     String expr;
+    Object cache;
   }
 
   private static Instruction parseInstruction(String s) {

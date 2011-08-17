@@ -22,32 +22,32 @@ public class StacklangTests extends TestCase {
   }
 
   public void testSimple3() {
-    MVEL.eval("stacklang {" +
-        "push 10;\n" +
+    String str;
+    MVEL.eval(str = "stacklang {" +
+        "push 10000;" +
         "store i;" +
-        "" +
-        "label loop;\n" +
-        "load i;\n" +
-        "push 1;\n" +
+        "label loop;" +
+        "load i;" +
+        "push 1;" +
         "push 1; " +
-        "reduce;\n" +
-        "store i;\n" +
-        "" +
-        "push 0;\n" +
-        "push 18;\n" +
         "reduce;" +
-        "jumpif endloop;\t\n" +
+        "store i;" +
+        "push 0;" +
+        "push 18;" +
+        "reduce;" +
+        "jumpif endloop;" +
+        "ldtype java.lang.System;" +
+        "dup;" +
+        "getfield out;" +
+        "ldtype java.io.PrintStream;" +
+        "load i;" +
+        "invoke println;" +
+        "jump loop;" +
         "" +
-        "ldtype java.lang.System;\n" +
-        "dup;\n" +
-        "getfield out;\n" +
-        "ldtype java.io.PrintStream;\n" +
-        "load i;\n" +
-        "invoke println;\n" +
-        "" +
-        "jump loop;\n" +
-        "" +
-        "label endloop;\n" +
+        "label endloop;" +
         "}", new HashMap());
+
+    System.out.println(str);
   }
+
 }
