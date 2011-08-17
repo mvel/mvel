@@ -63,7 +63,6 @@ public class Stacklang extends BlockNode {
   @Override
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     ExecutionStack stack = (ExecutionStack) ctx;
-    Map<String, Integer> jumptable = null;
 
     for (int i1 = 0, instructionListSize = instructionList.size(); i1 < instructionListSize; i1++) {
       Instruction instruction = instructionList.get(i1);
@@ -194,10 +193,6 @@ public class Stacklang extends BlockNode {
           stack.dup();
           break;
         case Operator.LABEL:
-          if (jumptable == null) {
-            jumptable = new HashMap<String, Integer>();
-          }
-          jumptable.put(instruction.expr, i1);
           break;
         case Operator.JUMPIF:
           if (!stack.popBoolean()) continue;
@@ -206,13 +201,13 @@ public class Stacklang extends BlockNode {
           if (instruction.cache != null) {
             i1 = (Integer) instruction.cache;
           }
-          else if (jumptable != null && jumptable.containsKey(instruction.expr)) {
-            instruction.cache = i1 = jumptable.get(instruction.expr);
-          }
           else {
-            for (int i2 = i1 + 1; i2 < instructionList.size(); i2++) {
-              if (instruction.expr.equals(instructionList.get(i2).expr)) {
-                i1 = i2;
+            for (int i2 = 0; i2 < instructionList.size(); i2++) {
+              Instruction ins = instructionList.get(i2);
+              if (ins.opcode == Operator.LABEL &&
+                  instruction.expr.equals(ins.expr)) {
+                instruction.cache = i1 = i2;
+                break;
               }
             }
           }
