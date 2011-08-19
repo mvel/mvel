@@ -124,10 +124,13 @@ public class CommentParsingTests extends AbstractTest {
     assertEquals("dog",
         test("foo./*Hey!*/name"));
   }
-  
+
   public void testMultiLineCommentInList() {
-      assertEquals(  Arrays.asList( new Integer[] { 10, 20 }),
-                                    test("import " + Foo.class.getName() + ";\n [ 10, 20 /* ... */ ]") );
+    assertEquals(Arrays.asList(new Integer[]{10, 20}),
+        test("import " + Foo.class.getName() + ";\n [ 10, 20 /* ... */ ]"));
+
+//    assertEquals(Arrays.asList(new Integer[]{10, 20}),
+//        test("import " + Foo.class.getName() + ";\n [ 10, 20           ]"));
   }
 
 }

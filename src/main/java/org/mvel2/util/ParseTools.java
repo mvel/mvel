@@ -1322,11 +1322,11 @@ public class ParseTools {
           }
           else if (chars[start + 1] == '*') {
             start += 2;
-            while (start < end) {
+            SkipComment: while (start < end) {
               switch (chars[start]) {
                 case '*':
                   if (start + 1 < end && chars[start + 1] == '/') {
-                    break;
+                    break SkipComment;
                   }
                 case '\r':
                 case '\n':

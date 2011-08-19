@@ -24,7 +24,7 @@ public class StacklangTests extends TestCase {
   public void testSimple3() {
     String str;
     MVEL.eval(str = "stacklang {" +
-        "push 10000;" +
+        "push 10;" +
         "store i;" +
         "label loop;" +
         "load i;" +
@@ -45,7 +45,7 @@ public class StacklangTests extends TestCase {
         "jump loop;" +
         "" +
         "label endloop;" +
-        "}", new HashMap());
+        "}", new HashMap<String, Object>());
 
     System.out.println(str);
   }
