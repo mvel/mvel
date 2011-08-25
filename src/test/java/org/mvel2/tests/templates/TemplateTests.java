@@ -217,6 +217,11 @@ public class TemplateTests extends TestCase {
         assertEquals("Hello John! -- Hello Mary!", test(s));
     }
 
+      public void testInlineDeclarations2() {
+        String s = "@declare{'fudge'}Hello @{name}!@end{}@code{toInclude='fudge'}@includeNamed{toInclude; name='John'} -- @includeNamed{toInclude; name='Mary'}";
+        assertEquals("Hello John! -- Hello Mary!", test(s));
+    }
+
     public void testPluginNode() {
         Map<String, Class<? extends Node>> plugins = new HashMap<String, Class<? extends Node>>();
         plugins.put("testNode", TestPluginNode.class);
@@ -915,6 +920,8 @@ public class TemplateTests extends TestCase {
         assertNotNull("result cannot be null", result);
         assertEquals("result did not return string", String.class, result.getClass());
     }
+
+
 
     public static class Foo244 {
         private List<Foo244> liste = new ArrayList<Foo244>();

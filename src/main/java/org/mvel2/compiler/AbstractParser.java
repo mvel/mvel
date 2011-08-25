@@ -1593,7 +1593,7 @@ public class AbstractParser implements Parser, Serializable {
         if (expr[cursor = nextNonBlank()] != '{') {
           throw new CompileException("expected '{' but found: " + expr[cursor], expr, cursor);
         }
-        int st = cursor;
+        int st;
         cursor = balancedCaptureWithLineAccounting(expr, st = cursor + 1, end, '{', pCtx);
         if (pCtx == null) pCtx = getParserContext();
 
