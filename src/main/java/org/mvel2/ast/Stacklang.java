@@ -31,7 +31,6 @@ public class Stacklang extends BlockNode {
     this.blockOffset = blockOffset;
     this.fields = fields | ASTNode.STACKLANG;
 
-
     String[] instructions = new String(expr, blockStart, blockOffset).split(";");
 
     instructionList = new ArrayList<Instruction>(instructions.length);

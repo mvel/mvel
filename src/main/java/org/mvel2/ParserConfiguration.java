@@ -25,7 +25,9 @@ import org.mvel2.util.MethodStub;
 import org.mvel2.util.PropertyTools;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -81,6 +83,35 @@ public class ParserConfiguration implements Serializable {
   public void addPackageImport(String packageName) {
     if (packageImports == null) packageImports = new LinkedHashSet<String>();
     packageImports.add(packageName);
+    if (!addClassMemberStaticImports(packageName)) packageImports.add(packageName);
+  }
+
+  private boolean addClassMemberStaticImports(String packageName) {
+    try {
+      Class c = Class.forName(packageName);
+      initImports();
+      if (c.isEnum()) {
+        for (Enum e : (EnumSet<?>) EnumSet.allOf(c)) {
+          imports.put(e.name(), e);
+        }
+        return true;
+      }
+      else {
+        for (Field f : c.getDeclaredFields()) {
+          if ((f.getModifiers() & (Modifier.STATIC | Modifier.PUBLIC)) != 0) {
+            imports.put(f.getName(), f.get(null));
+          }
+        }
+
+      }
+    }
+    catch (ClassNotFoundException e) {
+      // do nothing.
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException("error adding static imports for: " + packageName, e);
+    }
+    return false;
   }
 
   public void addAllImports(Map<String, Object> imports) {
@@ -142,8 +173,8 @@ public class ParserConfiguration implements Serializable {
 
   public boolean hasImport(String name) {
     return (imports != null && imports.containsKey(name)) ||
-            AbstractParser.CLASS_LITERALS.containsKey(name) ||
-            checkForDynamicImport(name);
+        AbstractParser.CLASS_LITERALS.containsKey(name) ||
+        checkForDynamicImport(name);
   }
 
   private void initImports() {

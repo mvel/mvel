@@ -3347,9 +3347,10 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testPackageImportEnum() {
-    String str = "new Status( Status.START )";
+    String str = "new Status( START )";
     ParserConfiguration pconf = new ParserConfiguration();
     pconf.addPackageImport("org.mvel2.tests.core.res");
+    pconf.addPackageImport("org.mvel2.tests.core.res.Status");
     ParserContext context = new ParserContext(pconf);
     context.setStrongTyping( true );
     

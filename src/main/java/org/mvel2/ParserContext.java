@@ -770,18 +770,6 @@ public class ParserContext implements Serializable {
     visitedLines.get(sourceName).add(lineNumber);
   }
 
-
-
-//  public void addKnownLine(String sourceName, int lineNumber) {
-//    if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
-//    if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
-//    sourceMap.get(sourceName).add(lineNumber);
-//  }
-
-//  public void addKnownLine(int lineNumber) {
-//    addKnownLine(sourceFile, lineNumber);
-//  }
-
   public LineLabel getLastLineLabel() {
     return lastLineLabel;
   }

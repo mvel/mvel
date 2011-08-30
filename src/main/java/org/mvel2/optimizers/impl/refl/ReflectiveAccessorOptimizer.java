@@ -582,14 +582,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         o = f.get(null);
 
         if (hasNullPropertyHandler()) {
-
           addAccessorNode(new StaticVarAccessorNH((Field) member, getNullMethodHandler()));
           if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
         }
         else {
           addAccessorNode(new StaticVarAccessor((Field) member));
         }
-
       }
       else {
         o = f.get(ctx);
@@ -663,8 +661,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         catch (ClassNotFoundException cnfe) {
           // fall through.
         }
-
-
       }
       else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
         return getMethod(ctx, property);
