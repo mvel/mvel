@@ -3292,6 +3292,51 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testWithInsideBlock() {
+      String str = "Foo f = new Foo(); { with(f) { setBoolTest( true ) } }; f.isBoolTest()";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("this", Bar.class);
+      pctx.addImport( Foo.class );
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      Bar ctx = new Bar();
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx, new HashMap());
+      assertTrue(result);
+  }
+  
+  public void testMethodCallWithSpaces() {
+      String[] str = new String[] {
+                                   "Foo f = new Foo(); f.setBoolTest( true )   ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f . setBoolTest( true ) ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f. setBoolTest( true )  ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f .setBoolTest( true )  ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f.boolTest = true   ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f . boolTest = true ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f. boolTest = true  ; f.isBoolTest()",
+                                   "Foo f = new Foo(); f .boolTest = true  ; f.isBoolTest()"
+      };
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("this", Bar.class);
+      pctx.addImport( Foo.class );
+      List<String> errors = new ArrayList<String>();
+      for( String s : str ) {
+          try {
+            ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(s, pctx);
+              Bar ctx = new Bar();
+              Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx, new HashMap());
+              assertTrue(result);
+        } catch ( Exception e ) {
+            errors.add( "**** Error on expression: "+s+"\n"+e.getMessage() );
+        }
+      }
+      assertTrue( errors.toString(), errors.isEmpty() ); 
+  }
+
   public void testInlineConstructor() {
     String str = "cheese = new Cheese().{ type = $c.type };";
     ParserConfiguration pconf = new ParserConfiguration();
