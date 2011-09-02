@@ -37,11 +37,24 @@ import static java.lang.Thread.currentThread;
  * The resusable parser configuration object.
  */
 public class ParserConfiguration implements Serializable {
+  private static final int MAX_NEGATIVE_CACHE_SIZE;
+
   protected Map<String, Object> imports;
   protected HashSet<String> packageImports;
-  private Set<String> nonValidImports;
   protected Map<String, Interceptor> interceptors;
   protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
+
+  private transient Set<String> nonValidImports;
+
+  static {
+    String negCacheSize = System.getProperty("mvel2.compiler.max_neg_cache_size");
+    if (negCacheSize != null) {
+      MAX_NEGATIVE_CACHE_SIZE = Integer.parseInt(negCacheSize);
+    }
+    else {
+      MAX_NEGATIVE_CACHE_SIZE = 1000;
+    }
+  }
 
   public ParserConfiguration() {
   }
@@ -51,7 +64,8 @@ public class ParserConfiguration implements Serializable {
     this.interceptors = interceptors;
   }
 
-  public ParserConfiguration(Map<String, Object> imports, HashSet<String> packageImports, Map<String, Interceptor> interceptors) {
+  public ParserConfiguration(Map<String, Object> imports, HashSet<String> packageImports,
+                             Map<String, Interceptor> interceptors) {
     addAllImports(imports);
     this.packageImports = packageImports;
     this.interceptors = interceptors;
@@ -91,6 +105,8 @@ public class ParserConfiguration implements Serializable {
       Class c = Class.forName(packageName);
       initImports();
       if (c.isEnum()) {
+
+        //noinspection unchecked
         for (Enum e : (EnumSet<?>) EnumSet.allOf(c)) {
           imports.put(e.name(), e);
         }
@@ -163,11 +179,7 @@ public class ParserConfiguration implements Serializable {
       return true;
     }
 
-    if (nonValidImports == null) {
-      nonValidImports = new HashSet<String>();
-    }
-
-    nonValidImports.add(className);
+    cacheNegativeHitForDynamicImport(className);
     return false;
   }
 
@@ -264,5 +276,21 @@ public class ParserConfiguration implements Serializable {
   public void setImports(HashMap<String, Object> imports) {
     // TODO: this method is here for backward compatibility. Could it be removed/deprecated?
     setAllImports(imports);
+  }
+
+  private void cacheNegativeHitForDynamicImport(String negativeHit) {
+    if (nonValidImports == null) {
+      nonValidImports = new LinkedHashSet<String>();
+    }
+    else if (nonValidImports.size() > 1000) {
+      nonValidImports.iterator().remove();
+    }
+
+    nonValidImports.add(negativeHit);
+  }
+
+  public void flushCaches() {
+    if (nonValidImports != null)
+      nonValidImports.clear();
   }
 }
