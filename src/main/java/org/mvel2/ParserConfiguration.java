@@ -283,7 +283,9 @@ public class ParserConfiguration implements Serializable {
       nonValidImports = new LinkedHashSet<String>();
     }
     else if (nonValidImports.size() > 1000) {
-      nonValidImports.iterator().remove();
+      Iterator<String> i = nonValidImports.iterator();
+      i.next();
+      i.remove();
     }
 
     nonValidImports.add(negativeHit);
