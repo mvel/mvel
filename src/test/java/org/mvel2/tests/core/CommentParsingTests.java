@@ -1,9 +1,11 @@
 package org.mvel2.tests.core;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.KnowledgeHelperFixer;
 
@@ -131,6 +133,23 @@ public class CommentParsingTests extends AbstractTest {
 
 //    assertEquals(Arrays.asList(new Integer[]{10, 20}),
 //        test("import " + Foo.class.getName() + ";\n [ 10, 20           ]"));
+  }
+
+  public void testInExpressionComment() {
+
+    Serializable s1 = MVEL.compileExpression("new String /*XXX*/(\"foo\")",
+
+        ParserContext.create().stronglyTyped());
+
+    MVEL.executeExpression(s1);
+
+
+    Serializable s2 = MVEL.compileExpression("new String/*XXX*/(\"foo\")",
+
+        ParserContext.create().stronglyTyped());
+
+    MVEL.executeExpression(s2);
+
   }
 
 }

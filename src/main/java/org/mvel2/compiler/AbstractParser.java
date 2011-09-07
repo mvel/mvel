@@ -1994,6 +1994,8 @@ public class AbstractParser implements Parser, Serializable {
         case '{':
         case '(':
           return;
+        case '/':
+          if (expr[cursor + 1] == '*') return;
         case '[':
           cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '[', pCtx) + 1;
           continue;
