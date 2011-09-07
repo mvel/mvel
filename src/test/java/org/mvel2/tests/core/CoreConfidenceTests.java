@@ -3390,5 +3390,11 @@ public class CoreConfidenceTests extends AbstractTest {
     assertFalse((Boolean) MVEL.executeExpression(s));
   }
 
+  public void testVarArgsParams() {
+    assertEquals(String.format("%010d", 123),
+      runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
 
+    assertEquals(String.format("%010d", 123),
+      runSingleTest("String.format(\"%010d\", 123)"));
+  }
 }
