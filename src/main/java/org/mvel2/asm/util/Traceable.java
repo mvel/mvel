@@ -1,6 +1,6 @@
 /**
  * ASM: a very small and fast Java bytecode manipulation framework
- * Copyright (c) 2000-2005 INRIA, France Telecom
+ * Copyright (c) 2000-2007 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,20 +33,20 @@ import java.util.Map;
 
 /**
  * An attribute that can print eadable representation of the attribute.
- * <p/>
+ * 
  * Implementation should construct readable output from an attribute data
  * structures for current attribute state. Such representation could be used in
  * unit test assertions.
- *
+ * 
  * @author Eugene Kuleshov
  */
 public interface Traceable {
 
-  /**
-   * Build a human readable representation of the attribute.
-   *
-   * @param buf        A buffer used for printing Java code.
-   * @param labelNames map of label instances to their names.
-   */
-  void trace(StringBuffer buf, Map labelNames);
+    /**
+     * Build a human readable representation of the attribute.
+     * 
+     * @param buf A buffer used for printing Java code.
+     * @param labelNames map of label instances to their names.
+     */
+    void trace(StringBuffer buf, Map labelNames);
 }
