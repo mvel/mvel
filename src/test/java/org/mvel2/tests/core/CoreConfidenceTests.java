@@ -3391,4 +3391,13 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
 
+    public void testComments() {
+        Serializable s1 = MVEL.compileExpression("new String /*XXX*/(\"foo\")",
+                ParserContext.create().stronglyTyped());
+        MVEL.executeExpression(s1);
+
+        Serializable s2 = MVEL.compileExpression("new String/*XXX*/(\"foo\")",
+                ParserContext.create().stronglyTyped());
+        MVEL.executeExpression(s2);
+    }
 }
