@@ -424,6 +424,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.st, e);
     }
     catch (Exception e) {
+      e.printStackTrace();
       throw new CompileException(e.getMessage(), this.expr, st, e);
     }
   }

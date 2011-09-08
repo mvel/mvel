@@ -24,6 +24,7 @@ import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
 import static org.mvel2.Operator.*;

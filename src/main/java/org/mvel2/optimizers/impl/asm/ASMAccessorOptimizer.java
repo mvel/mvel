@@ -309,7 +309,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (scanTo(']'))
           throw new PropertyAccessException("unterminated '['", expr, start);
 
-        String ex = new String(expr, st, cursor - st);
+        String ex = new String(expr, st, cursor - st).trim();
 
         assert debug("CHECKCAST " + ctx.getClass().getName());
         mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
@@ -2007,6 +2007,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                   }
                 }
                 continue;
+              }
+              else {
+                throw new OptimizationNotSupported();
               }
             }
           }
