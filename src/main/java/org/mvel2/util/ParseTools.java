@@ -252,7 +252,8 @@ public class ParseTools {
         if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
 
         if (method.equals(meth.getName())) {
-          if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !meth.isVarArgs()) {
+          boolean isVarArgs = meth.isVarArgs();
+          if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !isVarArgs) {
             continue;
           }
           else if (arguments.length == 0 && parmTypes.length == 0) {
@@ -261,8 +262,14 @@ public class ParseTools {
           }
 
           for (int i = 0; i != arguments.length; i++) {
+            Class actualParamType;
+            if (isVarArgs && i >= parmTypes.length-1)
+              actualParamType = parmTypes[parmTypes.length-1].getComponentType();
+            else
+              actualParamType = parmTypes[i];
+
             if (arguments[i] == null) {
-              if (!parmTypes[i].isPrimitive()) {
+              if (!actualParamType.isPrimitive()) {
                 score += 5;
               }
               else {
@@ -270,29 +277,29 @@ public class ParseTools {
                 break;
               }
             }
-            else if (parmTypes[i] == arguments[i]) {
+            else if (actualParamType == arguments[i]) {
               score += 6;
             }
-            else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+            else if (actualParamType.isPrimitive() && boxPrimitive(actualParamType) == arguments[i]) {
               score += 5;
             }
-            else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+            else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == actualParamType) {
               score += 5;
             }
-            else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+            else if (isNumericallyCoercible(arguments[i], actualParamType)) {
               score += 4;
             }
-            else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))
+            else if (boxPrimitive(actualParamType).isAssignableFrom(boxPrimitive(arguments[i]))
                 && Object.class != arguments[i]) {
-              score += 3 + scoreInterface(parmTypes[i], arguments[i]);
+              score += 3 + scoreInterface(actualParamType, arguments[i]);
             }
-            else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
-              if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
-              else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
+            else if (!requireExact && canConvert(actualParamType, arguments[i])) {
+              if (actualParamType.isArray() && arguments[i].isArray()) score += 1;
+              else if (actualParamType == char.class && arguments[i] == String.class) score += 1;
 
               score += 1;
             }
-            else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
+            else if (actualParamType == Object.class || arguments[i] == NullType.class) {
               score += 1;
             }
             else {
