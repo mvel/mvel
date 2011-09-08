@@ -3436,18 +3436,13 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testVarArgsParams() {
-/*
     assertEquals(String.format("%010d", 123),
       runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
-*/
 
-/*
     assertEquals(String.format("%010d", 123),
       runSingleTest("String.format(\"%010d\", 123)"));
-*/
 
     assertEquals(String.format("%010d --- %010d", 123, 456),
       runSingleTest("String.format(\"%010d --- %010d\", 123, 456)"));
-
   }
 }
