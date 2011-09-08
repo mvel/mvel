@@ -67,15 +67,21 @@ public class ArrayHandler implements ConversionHandler {
 
       return newArray;
     }
-    else {
-      int len = getLength(input);
-      Object target = newInstance(targType, len);
 
-      for (int i = 0; i < len; i++) {
-        set(target, i, convert(get(input, i), targType));
-      }
-
+    if (!input.getClass().isArray()) {
+      // if the input isn't an array converts it in an array with lenght = 1 having has its single item the input itself
+      Object target = newInstance(targType, 1);
+      set(target, 0, input);
       return target;
     }
+
+    int len = getLength(input);
+    Object target = newInstance(targType, len);
+
+    for (int i = 0; i < len; i++) {
+      set(target, i, convert(get(input, i), targType));
+    }
+
+    return target;
   }
 }

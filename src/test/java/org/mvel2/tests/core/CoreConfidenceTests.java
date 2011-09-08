@@ -3441,5 +3441,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     assertEquals(String.format("%010d", 123),
       runSingleTest("String.format(\"%010d\", 123)"));
+
+    assertEquals(String.format("%010d --- %010d", 123, 456),
+      runSingleTest("String.format(\"%010d --- %010d\", 123, 456)"));
   }
 }
