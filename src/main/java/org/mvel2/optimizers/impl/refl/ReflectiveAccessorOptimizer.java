@@ -247,7 +247,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return rootNode;
       }
 
-      String tk = new String(property, 0, length);
+      String tk = new String(property, 0, length).trim();
 
       if (hasSetListeners()) {
         notifySetListeners(ctx, tk, variableFactory, value);
