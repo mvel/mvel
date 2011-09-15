@@ -46,6 +46,7 @@ import static org.mvel2.integration.PropertyHandlerFactory.*;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.Varargs.*;
 
 
 @SuppressWarnings({"unchecked"})
@@ -973,14 +974,14 @@ public class PropertyAccessor {
     }
     else {
       for (int i = 0; i < args.length; i++) {
-        args[i] = convert(args[i], parameterTypes[i]);
+        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
       }
 
       /**
        * Invoke the target method and return the response.
        */
       try {
-        return m.invoke(ctx, args);
+        return m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
       }
       catch (IllegalAccessException e) {
         try {

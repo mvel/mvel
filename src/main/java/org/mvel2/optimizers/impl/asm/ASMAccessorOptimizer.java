@@ -22,9 +22,7 @@ import org.mvel2.asm.ClassWriter;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Opcodes;
-import org.mvel2.ast.Function;
-import org.mvel2.ast.TypeDescriptor;
-import org.mvel2.ast.WithNode;
+import org.mvel2.ast.*;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
 import org.mvel2.integration.PropertyHandler;
@@ -63,6 +61,8 @@ import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.Varargs.*;
+
 
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
@@ -1685,14 +1685,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     Object[] args;
     Class[] argTypes;
     ExecutableStatement[] es;
+    List<char[]> subtokens;
 
     if (tk.length() == 0) {
       args = preConvArgs = ParseTools.EMPTY_OBJ_ARR;
       argTypes = ParseTools.EMPTY_CLS_ARR;
       es = null;
+      subtokens = null;
     }
     else {
-      List<char[]> subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+      subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
       es = new ExecutableStatement[subtokens.size()];
       args = new Object[subtokens.size()];
@@ -1823,23 +1825,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       wrapPrimitive(returnType);
     }
 
-    int inputsOffset = compiledInputs.size();
-
-    if (es != null) {
-      for (ExecutableStatement e : es) {
-        if (e instanceof ExecutableLiteral) {
-          continue;
-        }
-
-        compiledInputs.add(e);
-      }
-    }
-
-    if (first) {
-      assert debug("ALOAD 1 (D) ");
-      mv.visitVarInsn(ALOAD, 1);
-    }
-
     /**
      * If the target object is an instance of java.lang.Class itself then do not
      * adjust the Class scope target.
@@ -1867,6 +1852,46 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       if ((m = getBestCandidate(argTypes, name, cls, Class.class.getMethods(), false)) != null) {
         parameterTypes = m.getParameterTypes();
       }
+    }
+
+    if (es != null && m != null && m.isVarArgs() && (es.length != parameterTypes.length || !(es[es.length-1] instanceof ExecutableAccessor))) {
+      // normalize ExecutableStatement for varargs
+      ExecutableStatement[] varArgEs = new ExecutableStatement[parameterTypes.length];
+      int varArgStart = parameterTypes.length-1;
+      for (int i = 0; i < varArgStart; i++) varArgEs[i] = es[i];
+      StringBuilder sb = new StringBuilder("{");
+      for (int i = varArgStart; i < subtokens.size(); i++) {
+        sb.append(subtokens.get(i));
+        if (i < subtokens.size()-1) sb.append(",");
+      }
+      char[] token = sb.append("}").toString().toCharArray();
+      varArgEs[varArgStart] = ((ExecutableStatement)subCompileExpression(token, pCtx));
+      es = varArgEs;
+
+      if (preConvArgs.length == parameterTypes.length-1) {
+        // empty vararg
+        Object[] preConvArgsForVarArg = new Object[parameterTypes.length];
+        for (int i = 0; i < preConvArgs.length; i++) preConvArgsForVarArg[i] = preConvArgs[i];
+        preConvArgsForVarArg[parameterTypes.length-1] = Array.newInstance(parameterTypes[parameterTypes.length-1].getComponentType(), 0);
+        preConvArgs = preConvArgsForVarArg;
+      }
+    }
+
+    int inputsOffset = compiledInputs.size();
+
+    if (es != null) {
+      for (ExecutableStatement e : es) {
+        if (e instanceof ExecutableLiteral) {
+          continue;
+        }
+
+        compiledInputs.add(e);
+      }
+    }
+
+    if (first) {
+      assert debug("ALOAD 1 (D) ");
+      mv.visitVarInsn(ALOAD, 1);
     }
 
     if (m == null) {
@@ -1903,7 +1928,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             cExpr.computeTypeConversionRule();
           }
           if (!cExpr.isConvertableIngressEgress()) {
-            args[i] = convert(args[i], parameterTypes[i]);
+            args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
           }
         }
       }
@@ -1912,7 +1937,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * Coerce any types if required.
          */
         for (int i = 0; i < args.length; i++) {
-          args[i] = convert(args[i], parameterTypes[i]);
+          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
         }
       }
 
@@ -2096,7 +2121,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         stacksize++;
       }
 
-      Object o = m.invoke(ctx, args);
+      Object o = m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
 
 
       if (hasNullMethodHandler()) {
