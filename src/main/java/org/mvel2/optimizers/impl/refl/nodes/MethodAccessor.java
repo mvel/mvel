@@ -41,10 +41,10 @@ public class MethodAccessor implements AccessorNode {
     if (!coercionNeeded) {
       try {
         if (nextNode != null) {
-          return nextNode.getValue(method.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
+          return nextNode.getValue(method.invoke(ctx, executeAll(elCtx, vars, method)), elCtx, vars);
         }
         else {
-          return method.invoke(ctx, executeAll(elCtx, vars));
+          return method.invoke(ctx, executeAll(elCtx, vars, method));
         }
       }
       catch (IllegalArgumentException e) {
@@ -94,10 +94,10 @@ public class MethodAccessor implements AccessorNode {
       try {
         try {
           if (nextNode != null) {
-            return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
+            return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars, o)), elCtx, vars);
           }
           else {
-            return o.invoke(ctx, executeAll(elCtx, vars));
+            return o.invoke(ctx, executeAll(elCtx, vars, o));
           }
         }
         catch (IllegalArgumentException e) {
@@ -131,13 +131,25 @@ public class MethodAccessor implements AccessorNode {
     }
   }
 
-  private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
+  private Object[] executeAll(Object ctx, VariableResolverFactory vars, Method m) {
     if (length == 0) return GetterAccessor.EMPTY;
 
     Object[] vals = new Object[length];
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length - (m.isVarArgs() ? 1 : 0); i++) {
       vals[i] = parms[i].getValue(ctx, vars);
     }
+
+    if (m.isVarArgs()) {
+      if (parms.length == length) {
+          Object lastParam = parms[length - 1].getValue(ctx, vars);
+          vals[length - 1] = lastParam.getClass().isArray() ? lastParam : new Object[] {lastParam};
+      } else {
+        Object[] vararg = new Object[parms.length - length + 1];
+        for (int i = 0; i < vararg.length; i++) vararg[i] = parms[parms.length - length + i].getValue(ctx, vars);
+        vals[length - 1] = vararg;
+      }
+    }
+
     return vals;
   }
 
@@ -187,7 +199,7 @@ public class MethodAccessor implements AccessorNode {
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     try {
-      return nextNode.setValue(method.invoke(ctx, executeAll(elCtx, variableFactory)), elCtx, variableFactory, value);
+      return nextNode.setValue(method.invoke(ctx, executeAll(elCtx, variableFactory, method)), elCtx, variableFactory, value);
     }
     catch (IllegalArgumentException e) {
       if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {

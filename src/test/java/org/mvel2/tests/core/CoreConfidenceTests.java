@@ -3437,10 +3437,28 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testVarArgsParams() {
-    assertEquals(String.format("%010d", 123),
-        runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
+    assertEquals(String.format("xxx"),
+      runSingleTest("String.format(\"xxx\")"));
 
     assertEquals(String.format("%010d", 123),
       runSingleTest("String.format(\"%010d\", 123)"));
+
+    assertEquals(String.format("%010d", 123),
+      runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
+
+    assertEquals(String.format("%010d", 123),
+      runSingleTest("a = 123; String.format(\"%010d\", a)"));
+
+    assertEquals(String.format("%010d -- %010d", 123, 456),
+      runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", {a, b})"));
+
+    assertEquals(String.format("%010d -- %010d", 123, 456),
+      runSingleTest("a = new Object[2]; a[0] = 123; a[1] = 456; String.format(\"%010d -- %010d\", a)"));
+
+    assertEquals(String.format("%010d -- %010d", 123, 456),
+      runSingleTest("String.format(\"%010d -- %010d\", 123, 456)"));
+
+    assertEquals(String.format("%010d -- %010d", 123, 456),
+      runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
   }
 }
