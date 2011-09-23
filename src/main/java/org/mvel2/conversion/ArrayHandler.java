@@ -29,8 +29,6 @@ import static java.lang.reflect.Array.*;
 import static org.mvel2.DataConversion.convert;
 
 public class ArrayHandler implements ConversionHandler {
-  private final Map<Class, Converter> CNV = new HashMap<Class, Converter>();
-
   private final Class type;
 
   public ArrayHandler(Class type) {

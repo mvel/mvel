@@ -136,7 +136,6 @@ public class CoreConfidenceTests extends AbstractTest {
     HashMap[] maps = (HashMap[]) MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps",
         new HashMap());
 
-    //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
     assertEquals(10,
         maps.length);
   }

@@ -140,7 +140,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
   }
 
   private ASMAccessorOptimizer(ClassWriter cw, MethodVisitor mv,
-                               ArrayList<ExecutableStatement> compiledInputs, String className, StringAppender buildLog, int compileDepth) {
+                               ArrayList<ExecutableStatement> compiledInputs, String className,
+                               StringAppender buildLog, int compileDepth) {
     this.cw = cw;
     this.mv = mv;
     this.compiledInputs = compiledInputs;
@@ -240,8 +241,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     return compileAccessor();
   }
 
-  public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
-                                      VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
+  public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx,
+                                      Object thisRef, VariableResolverFactory factory, boolean rootThisRef,
+                                      Object value, Class ingressType) {
     this.expr = property;
     this.start = this.cursor = start;
     this.end = start + offset;
@@ -2540,7 +2542,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     mv.visitVarInsn(ALOAD, 0);
 
     assert debug("GETFIELD p" + (compiledInputs.size() - 1));
-    mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE + "compiler/ExecutableStatement;");
+    mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1),
+        "L" + NAMESPACE + "compiler/ExecutableStatement;");
 
     assert debug("ALOAD 2");
     mv.visitVarInsn(ALOAD, 2);
@@ -2731,7 +2734,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         assert debug("INVOKEINTERFACE java/util/Map.put");
-        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
+            "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
         assert debug("POP");
         mv.visitInsn(POP);
@@ -2763,7 +2767,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("ANEWARRAY " + getInternalName(getSubComponentType(type)) + " (" + ((Object[]) o).length + ")");
         mv.visitTypeInsn(ANEWARRAY, getInternalName(getSubComponentType(type)));
 
-        Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", pCtx)
+        Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1)
+            + "L" + getBaseComponentType(type).getName() + ";", pCtx)
             : type;
 
 
