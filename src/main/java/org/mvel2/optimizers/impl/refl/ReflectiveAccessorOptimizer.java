@@ -54,6 +54,7 @@ import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.Varargs.*;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
   private AccessorNode rootNode;
@@ -1044,11 +1045,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         for (int i = 0; i < es.length; i++) {
           cExpr = (ExecutableStatement) es[i];
           if (cExpr.getKnownIngressType() == null) {
-            cExpr.setKnownIngressType(parameterTypes[i]);
+            cExpr.setKnownIngressType(paramTypeVarArgsSafe(parameterTypes, i, m));
             cExpr.computeTypeConversionRule();
           }
           if (!cExpr.isConvertableIngressEgress()) {
-            args[i] = convert(args[i], parameterTypes[i]);
+            args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
           }
         }
       }
@@ -1057,10 +1058,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * Coerce any types if required.
          */
         for (int i = 0; i < args.length; i++)
-          args[i] = convert(args[i], parameterTypes[i]);
+          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
       }
 
-      Object o = getWidenedTarget(m).invoke(ctx, args);
+      Object o = getWidenedTarget(m).invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
 
       if (hasNullMethodHandler()) {
         addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
@@ -1076,7 +1077,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       return o;
     }
   }
-
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
     return rootNode.getValue(ctx, elCtx, variableFactory);
