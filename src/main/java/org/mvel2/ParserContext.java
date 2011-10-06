@@ -453,7 +453,10 @@ public class ParserContext implements Serializable {
             if (m.getName().startsWith("get")
                     || (m.getName().startsWith("is")
                     && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
-              scope.add(ReflectionUtil.getPropertyFromAccessor(m.getName()));
+              String propertyName = ReflectionUtil.getPropertyFromAccessor(m.getName());
+              scope.add(propertyName);
+              propertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+              scope.add(propertyName);
             } else {
               scope.add(m.getName());
             }
