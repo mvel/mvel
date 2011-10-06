@@ -3462,4 +3462,32 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.format("%010d -- %010d", 123, 456),
       runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
   }
+
+  public static class Bean1 {
+    private String Field1;
+    private String FIELD2;
+
+    public String getField1() {
+      return Field1;
+    }
+    public void setField1(String Field1) {
+      this.Field1 = Field1;
+    }
+
+    public String getFIELD2() {
+      return FIELD2;
+    }
+    public void setFIELD2(String FIELD2) {
+      this.FIELD2 = FIELD2;
+    }
+  }
+
+  public void testUppercaseField() {
+    String ex = "Field1 == \"foo\" || FIELD2 == \"bar\"";
+    final ParserContext parserContext2 = new ParserContext();
+    parserContext2.setStrictTypeEnforcement( true );
+    parserContext2.setStrongTyping( true );
+    parserContext2.addInput("this", Bean1.class);
+    MVEL.analyze( ex, parserContext2 );
+  }
 }
