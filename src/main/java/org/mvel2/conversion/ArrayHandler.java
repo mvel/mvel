@@ -55,9 +55,6 @@ public class ArrayHandler implements ConversionHandler {
    */
   private static Object handleLooseTypeConversion(Class sourceType, Object input, Class targetType) {
     Class targType = targetType.getComponentType();
-    if (!sourceType.isArray()) {
-      input = new Object[] { input };
-    }
     if (Collection.class.isAssignableFrom(sourceType)) {
       Object newArray = newInstance(targType, ((Collection) input).size());
 

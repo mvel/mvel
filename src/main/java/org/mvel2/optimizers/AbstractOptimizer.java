@@ -18,6 +18,7 @@
 package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
 import org.mvel2.compiler.AbstractParser;
 
 import java.lang.reflect.Method;
@@ -68,6 +69,8 @@ public class AbstractOptimizer extends AbstractParser {
             if (!meth) {
               try {
                 String test = new String(expr, start, (cursor = last) - start);
+                if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
+                    test.endsWith(".class")) test = test.substring(0, test.length() - 6);
 
                 return Class.forName(test, true, pCtx != null ?
                     pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());

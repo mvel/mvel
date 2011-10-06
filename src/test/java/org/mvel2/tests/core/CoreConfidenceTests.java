@@ -3292,7 +3292,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testWithInsideBlock() {
-    String str = "Foo f = new Foo(); { with(f) { setBoolTest( true ) } }; f.isBoolTest()";
+    String str = "Foo f = new Foo(); with(f) { setBoolTest( true ) }; f.isBoolTest()";
 
     ParserConfiguration pconf = new ParserConfiguration();
     ParserContext pctx = new ParserContext(pconf);

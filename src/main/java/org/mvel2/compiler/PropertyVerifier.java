@@ -262,7 +262,8 @@ public class PropertyVerifier extends AbstractOptimizer {
         fqcn = true;
         resolvedExternally = false;
         if (tryStaticMethodRef instanceof Class) {
-          classLiteral = true;
+          classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
+              new String(expr, cursor - start - 6, 6).equals(".class"));
           return (Class) tryStaticMethodRef;
         }
         else if (tryStaticMethodRef instanceof Field) {
@@ -551,7 +552,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
 
       if (pCtx.isStrictTypeEnforcement() && ctx.getTypeParameters().length != 0 && pCtx.getLastTypeParameters() !=
-              null && pCtx.getLastTypeParameters().length == ctx.getTypeParameters().length) {
+          null && pCtx.getLastTypeParameters().length == ctx.getTypeParameters().length) {
 
         TypeVariable[] typeVariables = ctx.getTypeParameters();
         for (int i = 0; i < typeVariables.length; i++) {
