@@ -219,6 +219,8 @@ public class PropertyAccessor {
         else {
           nullHandle = false;
         }
+      } else {
+        if (curr == null && cursor < end) throw new NullPointerException();
       }
 
       first = false;
@@ -254,6 +256,8 @@ public class PropertyAccessor {
         else {
           nullHandle = false;
         }
+      } else {
+        if (curr == null && cursor < end) throw new NullPointerException();
       }
 
       first = false;
@@ -745,6 +749,7 @@ public class PropertyAccessor {
     if (ctx == null) return null;
 
     int _start = ++cursor;
+
     whiteSpaceSkip();
 
     if (cursor == end || scanTo(']'))
@@ -793,6 +798,7 @@ public class PropertyAccessor {
     if (ctx == null) return null;
 
     int _start = ++cursor;
+
     whiteSpaceSkip();
 
     if (cursor == end || scanTo(']'))
