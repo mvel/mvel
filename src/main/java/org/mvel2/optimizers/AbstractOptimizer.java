@@ -68,7 +68,7 @@ public class AbstractOptimizer extends AbstractParser {
             if (!meth) {
               try {
                 String test = new String(expr, start, (cursor = last) - start);
-
+                if (test.endsWith(".class")) test = test.substring(0, test.length() - 6);
                 return Class.forName(test, true, pCtx != null ?
                     pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
               }

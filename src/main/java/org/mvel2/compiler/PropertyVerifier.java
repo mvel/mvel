@@ -262,7 +262,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         fqcn = true;
         resolvedExternally = false;
         if (tryStaticMethodRef instanceof Class) {
-          classLiteral = true;
+          classLiteral = !new String(expr, cursor - start - 6, 6).equals(".class");
           return (Class) tryStaticMethodRef;
         }
         else if (tryStaticMethodRef instanceof Field) {
