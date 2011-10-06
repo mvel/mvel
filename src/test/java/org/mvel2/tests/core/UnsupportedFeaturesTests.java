@@ -20,9 +20,11 @@ public class UnsupportedFeaturesTests extends TestCase {
 
     OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
 
-    assertEquals(String.class, MVEL.eval("String.class"));
+    assertEquals(String.class, MVEL.eval("String.class"));  // this works fine
+    assertEquals(String.class, MVEL.eval("java.lang.String.class")); // this is not working
 
-    assertEquals(String.class, MVEL.analyze("String.class", ParserContext.create()));
+    assertEquals(String.class, MVEL.analyze("String.class", ParserContext.create()));  // this works fine
+    assertEquals(String.class, MVEL.analyze("java.lang.String.class", ParserContext.create()));   // this is not working
 
     MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
   }

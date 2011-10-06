@@ -175,8 +175,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     if (ctx == null) {
-      throw new PropertyAccessException("could not access property: " + new String(property, this.start, length)
-          + "; parent is null: " + new String(expr), expr, this.start);
+      throw new PropertyAccessException("could not access property: " + new String(property, this.start, Math.min(length, property.length)) + "; parent is null: "
+          + new String(expr), expr, this.start);
     }
 
     try {
@@ -353,9 +353,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
           first = false;
           if (curr != null) returnType = curr.getClass();
-          if (nullSafe && cursor < length) {
-            int os = expr[cursor] == '.' ? 1 : 0;
-            addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+          if (cursor < length) {
+            if (nullSafe) {
+              int os = expr[cursor] == '.' ? 1 : 0;
+              addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+            }
             if (curr == null) break;
           }
           staticAccess = false;
@@ -383,9 +385,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
           first = false;
           if (curr != null) returnType = curr.getClass();
-          if (nullSafe && cursor < length) {
-            int os = expr[cursor] == '.' ? 1 : 0;
-            addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+          if (cursor < length) {
+            if (nullSafe) {
+              int os = expr[cursor] == '.' ? 1 : 0;
+              addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+            }
             if (curr == null) break;
           }
           staticAccess = false;

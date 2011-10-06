@@ -380,4 +380,17 @@ public class PropertyAccessTests extends AbstractTest {
     a.map = nestMap;
     assertEquals("bar", MVEL.executeExpression(s, m));
   }
+
+    public void testInfiniteLoop() {
+      A226 a = new A226();
+      Map m = Collections.singletonMap("a", a);
+      String ex = "a.map['foo']";
+
+      try {
+        MVEL.getProperty(ex, m);
+        fail("access to a null field must fail");
+      } catch (Exception e) {
+        // ignore
+      }
+    }
 }
