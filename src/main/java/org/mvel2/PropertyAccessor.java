@@ -1037,7 +1037,7 @@ public class PropertyAccessor {
             if (!meth) {
               try {
                 String test = new String(property, start, (cursor = last) - start);
-
+                if (test.endsWith(".class")) test = test.substring(0, test.length() - 6);
                 return currentThread().getContextClassLoader().loadClass(test);
               }
               catch (ClassNotFoundException e) {
