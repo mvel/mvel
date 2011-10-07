@@ -20,6 +20,18 @@ public class UnsupportedFeaturesTests extends TestCase {
 
     OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
 
+    assertEquals(String.class, MVEL.eval("String"));
+    assertEquals(String.class, MVEL.eval("java.lang.String"));
+    assertEquals(java.util.ArrayList.class, MVEL.eval("java.util.ArrayList"));
+
+    assertEquals(String.class, MVEL.eval("(String)"));
+    assertEquals(String.class, MVEL.eval("(java.lang.String)"));
+    assertEquals(java.util.ArrayList.class, MVEL.eval("(java.util.ArrayList)"));
+
+    assertEquals(String.class, MVEL.eval("(String.class)"));
+    assertEquals(String.class, MVEL.eval("(java.lang.String.class)"));
+    assertEquals(java.util.ArrayList.class, MVEL.eval("(java.util.ArrayList.class)"));
+
     assertEquals(String.class, MVEL.eval("String.class"));
     assertEquals(String.class, MVEL.eval("java.lang.String.class"));
     assertEquals(java.util.ArrayList.class, MVEL.eval("java.util.ArrayList.class"));
