@@ -1031,11 +1031,22 @@ public class AbstractParser implements Parser, Serializable {
                 Class cls;
                 try {
                   if (tDescr.isClass() && (cls = getClassReference(pCtx, tDescr)) != null) {
-                    st = cursor;
-                    captureToEOS();
 
-                    return lastNode = new TypeCast(expr, st, cursor - st,
-                        cls, fields, pCtx);
+                    // lookahead to check if it could be a real cast
+                    boolean isCast = false;
+                    for (int i = cursor; i < expr.length; i++) {
+                      if (expr[i] == ' ' || expr[i] == '\t') continue;
+                      isCast = isIdentifierPart(expr[i]) || expr[i] == '\'' || expr[i] == '"' || expr[i] == '(';
+                      break;
+                    }
+
+                    if (isCast) {
+                        st = cursor;
+                        captureToEOS();
+
+                        return lastNode = new TypeCast(expr, st, cursor - st,
+                            cls, fields, pCtx);
+                    }
                   }
                 }
                 catch (ClassNotFoundException e) {
