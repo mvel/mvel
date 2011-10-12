@@ -31,6 +31,7 @@ import java.util.Map;
 
 import static org.mvel2.Operator.PTABLE;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.util.ASTBinaryTree.buildTree;
 import static org.mvel2.util.ParseTools.__resolveType;
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
@@ -328,33 +329,11 @@ public class CompilerTools {
     return (bn instanceof IntOptimized && bn2.getEgressType() != Integer.class);
   }
 
-
-  public static Class getReturnType(ASTIterator input) {
-    ASTIterator iter = new ASTLinkedList(input.firstNode());
-
+  public static Class getReturnType(ASTIterator input, boolean strongTyping) {
     ASTNode begin = input.firstNode();
-    ASTNode n;
-    while (iter.hasMoreNodes()) {
-      n = iter.nextNode();
-
-      if (n instanceof EndOfStatement) {
-        if (iter.hasMoreNodes()) {
-          begin = iter.nextNode();
-        }
-      }
-      else if (n instanceof OperatorNode) {
-        if (n.isOperator(Operator.ADD)) {
-          if (iter.hasMoreNodes()) {
-            n = iter.nextNode();
-            if (n.getEgressType() == String.class) {
-              begin = n;
-            }
-          }
-        }
-      }
-    }
-
-    return begin == null ? Object.class : begin.getEgressType();
+    if (begin == null) return Object.class;
+    if (input.size() == 1) return begin.getEgressType();
+    return buildTree(input).getReturnType(strongTyping);
   }
 
   /**

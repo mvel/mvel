@@ -3465,6 +3465,7 @@ public class CoreConfidenceTests extends AbstractTest {
   public static class Bean1 {
     private String Field1;
     private String FIELD2;
+    private int intField;
 
     public String getField1() {
       return Field1;
@@ -3479,6 +3480,13 @@ public class CoreConfidenceTests extends AbstractTest {
     public void setFIELD2(String FIELD2) {
       this.FIELD2 = FIELD2;
     }
+
+    public int getIntField() {
+        return intField;
+    }
+    public void setIntField(int intField) {
+        this.intField = intField;
+    }
   }
 
   public void testUppercaseField() {
@@ -3488,5 +3496,38 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext2.setStrongTyping( true );
     parserContext2.addInput("this", Bean1.class);
     MVEL.analyze( ex, parserContext2 );
+  }
+
+  public void testExpressionReturnType() {
+    assertEquals(String.class, expressionReturnType("Field1"));
+    assertEquals(String.class, expressionReturnType("Field1 + FIELD2"));
+    assertEquals(String.class, expressionReturnType("Field1 + 3"));
+    assertEquals(String.class, expressionReturnType("Field1 + 3 + FIELD2"));
+    assertEquals(Integer.class, expressionReturnType("intField"));
+    assertEquals(Integer.class, expressionReturnType("intField = 3"));
+    assertEquals(Boolean.class, expressionReturnType("intField == 3"));
+    assertEquals(Boolean.class, expressionReturnType("intField == 1 || Field1 == \"xxx\""));
+    assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 * 3 || Field1 == \"xxx\""));
+  }
+
+  public void testWrongExpressions() {
+    wrongExpressionMustFail("Field1 == 3");
+    wrongExpressionMustFail("Field1 - 3");
+    wrongExpressionMustFail("intField == 3 || Field1");
+  }
+
+  private void wrongExpressionMustFail(String expr) {
+    try {
+      expressionReturnType(expr);
+      fail("wrong expression '" + expr + "' must fail");
+    } catch (Exception e) { }
+  }
+
+  private Class<?> expressionReturnType(String expr) {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement( true );
+    parserContext.setStrongTyping( true );
+    parserContext.addInput("this", Bean1.class);
+    return MVEL.analyze(expr, parserContext);
   }
 }
