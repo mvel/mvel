@@ -357,8 +357,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (nullSafe) {
               int os = expr[cursor] == '.' ? 1 : 0;
               addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+              if (curr == null) break;
             }
-            if (curr == null) break;
+            if (curr == null) throw new NullPointerException();
           }
           staticAccess = false;
         }
@@ -389,8 +390,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (nullSafe) {
               int os = expr[cursor] == '.' ? 1 : 0;
               addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
+              if (curr == null) break;
             }
-            if (curr == null) break;
+            if (curr == null) throw new NullPointerException();
           }
           staticAccess = false;
         }
