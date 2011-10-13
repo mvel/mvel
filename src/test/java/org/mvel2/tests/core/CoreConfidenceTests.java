@@ -1154,6 +1154,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public class POJO {
     private Set<Date> dates = new HashSet<Date>();
+    private Map<String, Object> map = new HashMap<String,Object>();
 
     public POJO() {
       dates.add(new Date());
@@ -1169,6 +1170,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public String function(long num) {
       return String.valueOf(num);
+    }
+    
+    public String aMethod(long num) {
+      return String.valueOf( num ); 
+    }
+
+    public Map<String, Object> getMap() {
+        return map;
+    }
+
+    public void setMap( Map<String, Object> map ) {
+        this.map = map;
+    }
+    
+    public String getKey() {
+        return "1";
     }
   }
 
@@ -2142,6 +2159,29 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(requiredInputs.contains("aMap"));
     assertTrue(requiredInputs.contains("aKey"));
   }
+
+  public void testMapsWithVariableAsKey2() {
+      String ex = "objectKeyMaptributes[$aPerson] == foo";
+      Foo foo = new Foo();
+      Person person = new Person();
+      person.setObjectKeyMaptributes( new HashMap<Object,Foo>() );
+      person.getObjectKeyMaptributes().put( person, foo );
+      Map<String,Class> inputs = new HashMap<String, Class>();
+      inputs.put( "this", Person.class );
+      inputs.put( "foo", Foo.class );
+      inputs.put( "$aPerson", Person.class );
+      ParserContext ctx = new ParserContext();
+      ctx.setStrongTyping(true);
+      ctx.setInputs( inputs );
+      
+      Serializable expression = MVEL.compileExpression( ex, ctx );
+      Map<String,Object> variables = new HashMap<String, Object>();
+      variables.put( "foo", foo );
+      variables.put( "$aPerson", person );
+
+      Boolean result = (Boolean) MVEL.executeExpression( expression, person, variables );
+      assertTrue( result );
+    }
 
   public static void testProjectionUsingThis() {
     Set records = new HashSet();
@@ -3290,6 +3330,42 @@ public class CoreConfidenceTests extends AbstractTest {
     Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
     assertTrue(result);
   }
+
+  public void testMapAccessWithNestedMethodCall() {
+      // aMethod() is a method on the context object
+      String str = "map[aMethod(1)] == \"one\"";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("this", POJO.class);
+      // it compiles just fine
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      
+      POJO ctx = new POJO();
+      ctx.getMap().put( "1", "one" );
+      // but it blows up when it executes
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+      assertTrue(result);
+    }
+
+  public void testMapAccessWithNestedProperty() {
+      // key is a property on the context object
+      String str = "map[key] == \"one\"";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("this", POJO.class);
+      // it compiles just fine
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      
+      POJO ctx = new POJO();
+      ctx.getMap().put( "1", "one" );
+      // but it blows up when it executes
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+      assertTrue(result);
+    }
 
   public void testWithInsideBlock() {
     String str = "Foo f = new Foo(); with(f) { setBoolTest( true ) }; f.isBoolTest()";
