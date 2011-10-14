@@ -677,6 +677,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return getMethod(ctx, property);
       }
 
+      // if it is not already using this as context try to read the property value from this
+      if (ctx != this.thisRef && this.thisRef != null) {
+        addAccessorNode(new ThisValueAccessor());
+        return getBeanProperty(this.thisRef, property);
+      }
+
       if (ctx == null) {
         throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start);
       }
@@ -973,6 +979,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       }
     }
 
+    return getMethod(ctx, name, args, argTypes, es);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private Object getMethod(Object ctx, String name, Object[] args, Class[] argTypes, ExecutableStatement[] es) throws Exception {
     if (first && variableFactory != null && variableFactory.isResolveable(name)) {
       Object ptr = variableFactory.getVariableResolver(name).getValue();
       if (ptr instanceof Method) {
@@ -1043,6 +1054,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return getLength(ctx);
       }
 
+      // if it is not already using this as context try to access the method this
+      if (ctx != this.thisRef && this.thisRef != null) {
+        addAccessorNode(new ThisValueAccessor());
+        return getMethod(this.thisRef, name, args, argTypes, es);
+      }
+
       for (int i = 0; i < args.length; i++) {
         errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
         if (i < args.length - 1) errorBuild.append(", ");
@@ -1051,43 +1068,42 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "."
           + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", this.expr, this.st);
     }
-    else {
-      if (es != null) {
-        ExecutableStatement cExpr;
-        for (int i = 0; i < es.length; i++) {
-          cExpr = (ExecutableStatement) es[i];
-          if (cExpr.getKnownIngressType() == null) {
-            cExpr.setKnownIngressType(paramTypeVarArgsSafe(parameterTypes, i, m));
-            cExpr.computeTypeConversionRule();
-          }
-          if (!cExpr.isConvertableIngressEgress()) {
-            args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
-          }
+
+    if (es != null) {
+      ExecutableStatement cExpr;
+      for (int i = 0; i < es.length; i++) {
+        cExpr = (ExecutableStatement) es[i];
+        if (cExpr.getKnownIngressType() == null) {
+          cExpr.setKnownIngressType(paramTypeVarArgsSafe(parameterTypes, i, m));
+          cExpr.computeTypeConversionRule();
+        }
+        if (!cExpr.isConvertableIngressEgress()) {
+          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
         }
       }
-      else {
-        /**
-         * Coerce any types if required.
-         */
-        for (int i = 0; i < args.length; i++)
-          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
-      }
-
-      Object o = getWidenedTarget(m).invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
-
-      if (hasNullMethodHandler()) {
-        addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
-        if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
-      }
-      else {
-        addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
-      }
-
-      /**
-       * return the response.
-       */
-      return o;
     }
+    else {
+      /**
+       * Coerce any types if required.
+       */
+      for (int i = 0; i < args.length; i++)
+        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+    }
+
+    Object o = getWidenedTarget(m).invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
+
+    if (hasNullMethodHandler()) {
+      addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
+      if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
+    }
+    else {
+      addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
+    }
+
+    /**
+     * return the response.
+     */
+    return o;
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
