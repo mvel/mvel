@@ -3291,6 +3291,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testFullyQualifiedEnums() {
+    String str = "System.out.println( STATIC_ENUM.FOO ); \n" +
+               "System.out.println( org.mvel2.tests.core.res.MyInterface$STATIC_ENUM.BAR );\n" +
+               "System.out.println( org.mvel2.tests.core.res.MyInterface.MyInnerInterface.INNER_STATIC_ENUM.BAR );\n" +
+               "System.out.println( RoundingMode.UP );\n" +
+               "System.out.println( java.math.RoundingMode.DOWN );";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", MyInterface.class);
+    pctx.addImport( MyInterface.STATIC_ENUM.class );
+    pctx.addImport( java.math.RoundingMode.class );
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+  }
+
   public void testWithInsideBlock() {
     String str = "Foo f = new Foo(); with(f) { setBoolTest( true ) }; f.isBoolTest()";
 
