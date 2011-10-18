@@ -3506,6 +3506,7 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Integer.class, expressionReturnType("intField"));
     assertEquals(Integer.class, expressionReturnType("intField = 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == 3"));
+    assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
     assertEquals(Boolean.class, expressionReturnType("intField == 1 || Field1 == \"xxx\""));
     assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 * 3 || Field1 == \"xxx\""));
   }

@@ -80,7 +80,7 @@ public class ASTBinaryTree {
 
     private boolean areCompatible(Class<?> c1, Class<?> c2) {
         if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
-        if (Number.class.isAssignableFrom(c1) && Number.class.isAssignableFrom(c2)) return true;
+        if (isBoxedNumber(c1) && isBoxedNumber(c2)) return true;
         if (c1.isPrimitive()) return arePrimitiveCompatible(c1, c2);
         if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1);
         return false;
@@ -88,14 +88,18 @@ public class ASTBinaryTree {
 
     private boolean arePrimitiveCompatible(Class<?> primitive, Class<?> boxed) {
         if (primitive == Boolean.TYPE) return boxed == Boolean.class;
-        if (primitive == Integer.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Long.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Double.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Float.TYPE) return Number.class.isAssignableFrom(boxed);
+        if (primitive == Integer.TYPE) return isBoxedNumber(boxed);
+        if (primitive == Long.TYPE) return isBoxedNumber(boxed);
+        if (primitive == Double.TYPE) return isBoxedNumber(boxed);
+        if (primitive == Float.TYPE) return isBoxedNumber(boxed);
         if (primitive == Character.TYPE) return boxed == Character.class;
         if (primitive == Byte.TYPE) return boxed == Byte.class;
         if (primitive == Short.TYPE) return boxed == Short.class;
         return false;
+    }
+
+    private boolean isBoxedNumber(Class<?> c) {
+      return Number.class.isAssignableFrom(c) || c == String.class;
     }
 
     private int comparePrecedence(ASTNode node1, ASTNode node2) {
