@@ -338,7 +338,13 @@ public class PropertyVerifier extends AbstractOptimizer {
         ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
       }
       else if (Collection.class.isAssignableFrom(ctx)) {
-        ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[0] : Object.class);
+        if (pCtx.getLastTypeParameters().length == 0 ) {
+          ctx = Object.class;
+        } else {
+          Type type = pCtx.getLastTypeParameters()[0];
+          if (type instanceof Class) ctx = (Class)type;
+          else ctx = (Class)((ParameterizedType)type).getRawType();
+        }
       }
       else if (ctx.isArray()) {
         ctx = getBaseComponentType(ctx);
