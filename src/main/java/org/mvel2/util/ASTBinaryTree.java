@@ -80,22 +80,26 @@ public class ASTBinaryTree {
 
     private boolean areCompatible(Class<?> c1, Class<?> c2) {
         if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
-        if (Number.class.isAssignableFrom(c1) && Number.class.isAssignableFrom(c2)) return true;
-        if (c1.isPrimitive()) return arePrimitiveCompatible(c1, c2);
-        if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1);
+        if (isBoxedNumber(c1, false) && isBoxedNumber(c2, true)) return true;
+        if (c1.isPrimitive()) return arePrimitiveCompatible(c1, c2, true);
+        if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1, false);
         return false;
     }
 
-    private boolean arePrimitiveCompatible(Class<?> primitive, Class<?> boxed) {
+    private boolean arePrimitiveCompatible(Class<?> primitive, Class<?> boxed, boolean leftFirst) {
         if (primitive == Boolean.TYPE) return boxed == Boolean.class;
-        if (primitive == Integer.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Long.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Double.TYPE) return Number.class.isAssignableFrom(boxed);
-        if (primitive == Float.TYPE) return Number.class.isAssignableFrom(boxed);
+        if (primitive == Integer.TYPE) return isBoxedNumber(boxed, leftFirst);
+        if (primitive == Long.TYPE) return isBoxedNumber(boxed, leftFirst);
+        if (primitive == Double.TYPE) return isBoxedNumber(boxed, leftFirst);
+        if (primitive == Float.TYPE) return isBoxedNumber(boxed, leftFirst);
         if (primitive == Character.TYPE) return boxed == Character.class;
         if (primitive == Byte.TYPE) return boxed == Byte.class;
         if (primitive == Short.TYPE) return boxed == Short.class;
         return false;
+    }
+
+    private boolean isBoxedNumber(Class<?> c, boolean allowString) {
+      return Number.class.isAssignableFrom(c) || (allowString && c == String.class);
     }
 
     private int comparePrecedence(ASTNode node1, ASTNode node2) {
