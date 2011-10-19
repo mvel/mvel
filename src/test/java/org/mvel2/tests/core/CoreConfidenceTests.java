@@ -3377,6 +3377,22 @@ public class CoreConfidenceTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
   }
 
+  public void testGenericsMap() throws Exception {
+    try {
+      String str = "triangle.deliveries[0].containsKey( \"x\" )";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "triangle", Triangle.class );
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    } catch ( Exception e ) {
+      // it should not raise CCE
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
   public void testWithInsideBlock() {
     String str = "Foo f = new Foo(); with(f) { setBoolTest( true ) }; f.isBoolTest()";
 
