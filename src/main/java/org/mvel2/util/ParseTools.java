@@ -868,20 +868,17 @@ public class ParseTools {
 
 
   public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory) {
-    VariableResolverFactory v = factory;
-    while (v != null) {
-      if (v instanceof ClassImportResolverFactory) {
-        return (ClassImportResolverFactory) v;
-      }
-      v = v.getNextFactory();
-    }
-
     if (factory == null) {
       throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
     }
-    else {
-      return appendFactory(factory, new ClassImportResolverFactory());
+
+    for (VariableResolverFactory v = factory; v != null; v = v.getNextFactory()) {
+      if (v instanceof ClassImportResolverFactory) {
+        return (ClassImportResolverFactory) v;
+      }
     }
+
+    return appendFactory(factory, new ClassImportResolverFactory());
   }
 
   public static Class findClass(VariableResolverFactory factory, String name, ParserContext ctx) throws ClassNotFoundException {
