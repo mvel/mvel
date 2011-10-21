@@ -140,6 +140,21 @@ public class CoreConfidenceTests extends AbstractTest {
         maps.length);
   }
 
+  public static class MyPerson {
+      private String name;
+      public MyPerson(String name) { this.name = name; }
+      public String getName() { return name; }
+  }
+
+  public void testUnusedPackageImport() {
+    String expression =
+            "import java.util.*; " +
+            "name == \"Mario\" ";
+    Serializable compiledExpression = MVEL.compileExpression(expression);
+    boolean result = (Boolean)MVEL.executeExpression(compiledExpression, new MyPerson("Mario"));
+    assertTrue(result);
+  }
+
   public void testStaticImport() {
     assertEquals(2.0,
         test("import_static java.lang.Math.sqrt; sqrt(4)"));

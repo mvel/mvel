@@ -21,6 +21,7 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
@@ -75,14 +76,14 @@ public class ImportNode extends ASTNode {
         factory.createVariable(importClass.getSimpleName(), importClass);
         return importClass;
       }
-      else {
-        return findClassImportResolverFactory(factory).addClass(importClass);
-      }
+      return findClassImportResolverFactory(factory).addClass(importClass);
     }
-    else {
+
+    // if the factory is an ImmutableDefaultFactory it means this import is unused so we can skip it safely
+    if (!(factory instanceof ImmutableDefaultFactory)) {
       findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
-      return null;
     }
+    return null;
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
