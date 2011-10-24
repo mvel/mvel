@@ -3377,6 +3377,16 @@ public class CoreConfidenceTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
   }
 
+  public void testArrays() {
+      String str = "Object[] x = new Object[3]; x[0] = \"a\"; x[1] = \"b\"; x[2] = \"c\"; System.out.println(x);";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      MVEL.executeExpression( stmt );
+    }
+
   public void testGenericsMap() throws Exception {
     try {
       String str = "triangle.deliveries[0].containsKey( \"x\" )";
