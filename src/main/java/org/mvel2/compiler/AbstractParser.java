@@ -1041,11 +1041,11 @@ public class AbstractParser implements Parser, Serializable {
                     }
 
                     if (isCast) {
-                        st = cursor;
-                        captureToEOS();
+                      st = cursor;
+                      captureToEOS();
 
-                        return lastNode = new TypeCast(expr, st, cursor - st,
-                            cls, fields, pCtx);
+                      return lastNode = new TypeCast(expr, st, cursor - st,
+                          cls, fields, pCtx);
                     }
                   }
                 }
@@ -1333,10 +1333,16 @@ public class AbstractParser implements Parser, Serializable {
     }
 
     if (pCtx != null && pCtx.hasImports() && isArrayType(expr, st, end)) {
-      if (pCtx.hasImport(tmp = new String(expr, st, cursor - st - 2))) {
+      if (pCtx.hasImport(new String(expr, st, cursor - st - 2))) {
         lastWasIdentifier = true;
-        Class<?> arrayClass = java.lang.reflect.Array.newInstance((Class<?>)pCtx.getStaticOrClassImport(tmp), 0).getClass();
-        return lastNode = new LiteralNode(arrayClass);
+        TypeDescriptor typeDescriptor = new TypeDescriptor(expr, st, cursor - st, fields);
+
+        try {
+          return lastNode = new LiteralNode(typeDescriptor.getClassReference(pCtx));
+        }
+        catch (ClassNotFoundException e) {
+          throw new CompileException("could not resolve class: " + typeDescriptor.getClassName(), expr, st);
+        }
       }
     }
 

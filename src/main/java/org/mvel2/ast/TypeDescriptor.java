@@ -132,7 +132,15 @@ public class TypeDescriptor implements Serializable {
   public void setEndRange(int endRange) {
     this.endRange = endRange;
   }
-
+  
+  public Class<?> getClassReference() throws ClassNotFoundException {
+    return getClassReference(null, this);
+  }
+  
+  public Class<?> getClassReference(ParserContext ctx) throws ClassNotFoundException {
+    return getClassReference(ctx,this);
+  }
+  
   public static Class getClassReference(Class baseType,
                                         TypeDescriptor tDescr,
                                         VariableResolverFactory factory, ParserContext ctx) throws ClassNotFoundException {
