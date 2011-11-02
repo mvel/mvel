@@ -1332,6 +1332,14 @@ public class AbstractParser implements Parser, Serializable {
       }
     }
 
+    if (pCtx != null && pCtx.hasImports() && isArrayType(expr, st, end)) {
+      if (pCtx.hasImport(tmp = new String(expr, st, cursor - st - 2))) {
+        lastWasIdentifier = true;
+        Class<?> arrayClass = java.lang.reflect.Array.newInstance((Class<?>)pCtx.getStaticOrClassImport(tmp), 0).getClass();
+        return lastNode = new LiteralNode(arrayClass);
+      }
+    }
+
     lastWasIdentifier = true;
 
     return lastNode = new ASTNode(expr, trimRight(st), trimLeft(end) - st, fields);

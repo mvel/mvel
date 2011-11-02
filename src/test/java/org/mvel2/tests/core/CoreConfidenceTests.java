@@ -3376,6 +3376,15 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testArrays() {
+    String str = "Object[] a = new Object[3]; a[0] = \"a\"; a[1] = \"b\"; a[2] = \"c\"; System.out.println(java.util.Arrays.toString(a));";
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    MVEL.executeExpression( stmt, new HashMap() );
+  }
+
   public void testFullyQualifiedEnums() {
     String str = "System.out.println( STATIC_ENUM.FOO ); \n" +
                "System.out.println( org.mvel2.tests.core.res.MyInterface$STATIC_ENUM.BAR );\n" +

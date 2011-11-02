@@ -2040,12 +2040,14 @@ public class ParseTools {
   }
 
   public static boolean isPropertyOnly(char[] array, int start, int end) {
-    end = start + (end - start);
     for (int i = start; i < end; i++) {
       if (!isIdentifierPart(array[i])) return false;
     }
-
     return true;
+  }
+
+  public static boolean isArrayType(char[] array, int start, int end) {
+    return end > start + 2 && isPropertyOnly(array, start, end-2) && array[end-2] == '[' && array[end-1] == ']';
   }
 
   public static void checkNameSafety(String name) {
