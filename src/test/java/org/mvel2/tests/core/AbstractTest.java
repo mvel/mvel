@@ -109,22 +109,24 @@ public abstract class AbstractTest extends TestCase {
   protected Object test(final String ex) {
     Thread[] threads;
 
-
+    int threadCount;
     if (Boolean.getBoolean("mvel.tests.quick")) {
-      threads = new Thread[1];
+      threadCount = 1;
     }
     else if (getProperty("mvel.tests.threadcount") != null) {
-      threads = new Thread[parseInt(getProperty("mvel.tests.threadcount"))];
+      threadCount = parseInt(getProperty("mvel.tests.threadcount"));
     }
     else {
-      threads = new Thread[5];
+      threadCount = 5;
     }
+    threads = new Thread[threadCount];
 
     final Collection<Object> results = Collections.synchronizedCollection(new LinkedList<Object>());
+    final Collection<Throwable> exceptions = Collections.synchronizedCollection(new LinkedList<Throwable>());
     long time = currentTimeMillis();
 
     for (int i = 0; i < threads.length; i++) {
-      threads[i] = new Thread(new TestRunner(results, ex));
+      threads[i] = new Thread(new TestRunner(results, exceptions, ex));
     }
 
     if (!silentTests) {
@@ -176,6 +178,16 @@ public abstract class AbstractTest extends TestCase {
     }
 
     Object last = null;
+    if (!exceptions.isEmpty()) {
+        Throwable firstException = exceptions.iterator().next();
+        String message = firstException.getMessage().replaceAll("\n", " ");
+        if (message.length() > 80) {
+            message = message.substring(0, 80 - 3) + "...";
+        }
+        throw new RuntimeException(exceptions.size() + " out of " + threadCount
+                + " threads terminated due to exception: " + message,
+                firstException);
+    }
     if (!results.isEmpty()) {
       last = results.iterator().next();
       if (last != null) {
@@ -219,12 +231,14 @@ public abstract class AbstractTest extends TestCase {
   }
 
   protected static class TestRunner implements Runnable {
-    private Collection results;
-    private String expression;
+    private final Collection<Object> results;
+    private final Collection<Throwable> exceptions;
+    private final String expression;
 
-    public TestRunner(Collection results, String expression) {
+    public TestRunner(Collection<Object> results, Collection<Throwable> exceptions, String expression) {
       this.results = results;
-      this.expression = expression;
+        this.exceptions = exceptions;
+        this.expression = expression;
     }
 
     public void run() {
@@ -233,9 +247,9 @@ public abstract class AbstractTest extends TestCase {
         results.add(result);
       }
       catch (Throwable e) {
+        exceptions.add(e);
         System.out.println("thread terminating due to exception");
         e.printStackTrace();
-        return;
       }
     }
   }
