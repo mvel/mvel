@@ -2882,6 +2882,16 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
+  public void testBigDecimalOutput() {
+      String str = "import java.math.BigDecimal; BigDecimal test = new BigDecimal(\"50000\"); System.out.println(test / new BigDecimal(\"1.13\"));";
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.setStrictTypeEnforcement(true);
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+      MVEL.executeExpression( stmt, new HashMap() );
+  }
+
   public void testConstructor() {
     String ex = " TestHelper.method(new Person('bob', 30), new Person('mark', 40, 999, 55, 10));\n";
     ParserContext ctx = new ParserContext();
