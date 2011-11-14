@@ -270,7 +270,7 @@ public class ParseTools {
 
             if (arguments[i] == null) {
               if (!actualParamType.isPrimitive()) {
-                score += 5;
+                score += 6;
               }
               else {
                 score = 0;
@@ -278,12 +278,15 @@ public class ParseTools {
               }
             }
             else if (actualParamType == arguments[i]) {
-              score += 6;
+              score += 7;
             }
             else if (actualParamType.isPrimitive() && boxPrimitive(actualParamType) == arguments[i]) {
-              score += 5;
+              score += 6;
             }
             else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == actualParamType) {
+              score += 6;
+            }
+            else if (actualParamType.isAssignableFrom(arguments[i])) {
               score += 5;
             }
             else if (isNumericallyCoercible(arguments[i], actualParamType)) {
