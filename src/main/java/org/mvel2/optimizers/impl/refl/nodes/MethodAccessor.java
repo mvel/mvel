@@ -220,6 +220,10 @@ public class MethodAccessor implements AccessorNode {
   public Class getKnownEgressType() {
     return method.getReturnType();
   }
+
+  public Class[] getParameterTypes() {
+      return parameterTypes;
+  }
 }
 
 

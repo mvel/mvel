@@ -42,4 +42,12 @@ public class Contains extends ASTNode {
   public Class getEgressType() {
     return Boolean.class;
   }
+
+  public ASTNode getFirstStatement() {
+    return stmt;
+  }
+
+  public ASTNode getSecondStatement() {
+    return stmt2;
+  }
 }

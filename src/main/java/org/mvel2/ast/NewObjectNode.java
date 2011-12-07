@@ -330,4 +330,8 @@ public class NewObjectNode extends ASTNode {
   public TypeDescriptor getTypeDescr() {
     return typeDescr;
   }
+
+  public Accessor getNewObjectOptimizer() {
+    return newObjectOptimizer;
+  }
 }

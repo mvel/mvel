@@ -117,4 +117,8 @@ public class DynamicGetAccessor implements DynamicAccessor {
   public Class getKnownEgressType() {
     return _safeAccessor.getKnownEgressType();
   }
+
+  public Accessor getAccessor() {
+    return _accessor;
+  }
 }

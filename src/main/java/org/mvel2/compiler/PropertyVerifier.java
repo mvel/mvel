@@ -562,7 +562,8 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         TypeVariable[] typeVariables = ctx.getTypeParameters();
         for (int i = 0; i < typeVariables.length; i++) {
-          typeArgs.put(typeVariables[i].getName(), (Class) pCtx.getLastTypeParameters()[i]);
+          Type typeArg = pCtx.getLastTypeParameters()[i];
+          typeArgs.put(typeVariables[i].getName(), typeArg instanceof Class ? (Class) pCtx.getLastTypeParameters()[i] : Object.class);
         }
       }
 

@@ -63,4 +63,7 @@ public class Negation extends ASTNode {
     return Boolean.class;
   }
 
+  public ExecutableStatement getStatement() {
+    return stmt;
+  }
 }

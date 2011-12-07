@@ -96,4 +96,16 @@ public class ConstructorAccessor extends BaseAccessor {
   public Class getKnownEgressType() {
     return constructor.getClass();
   }
+
+  public Constructor getConstructor() {
+    return constructor;
+  }
+
+  public ExecutableStatement[] getParameters() {
+    return parms;
+  }
+
+  public Class[] getParameterTypes() {
+    return parmTypes;
+  }
 }

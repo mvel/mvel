@@ -83,4 +83,12 @@ public class RegExMatch extends ASTNode {
   public Class getEgressType() {
     return Boolean.class;
   }
+
+  public Pattern getPattern() {
+    return p;
+  }
+
+  public ExecutableStatement getStatement() {
+    return stmt;
+  }
 }
