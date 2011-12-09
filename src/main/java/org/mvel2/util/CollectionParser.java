@@ -244,7 +244,7 @@ public class CollectionParser {
     }
     else {
       Class r = ((ExecutableStatement) subCompileExpression(property, start, offset, pCtx)).getKnownEgressType();
-      if (!colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
+      if (r != null && !colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
         throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName(), property, cursor);
       }
     }

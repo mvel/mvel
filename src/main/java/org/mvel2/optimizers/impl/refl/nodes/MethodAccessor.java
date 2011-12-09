@@ -22,6 +22,7 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 
 import static org.mvel2.DataConversion.convert;
@@ -66,14 +67,14 @@ public class MethodAccessor implements AccessorNode {
     else {
       try {
         if (nextNode != null) {
-          return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+          return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars, method.isVarArgs())), elCtx, vars);
         }
         else {
-          return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
+          return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars, method.isVarArgs()));
         }
       }
       catch (IllegalArgumentException e) {
-        Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
+        Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars, false);
         Method newMeth;
         if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), ctx.getClass(),
             ctx.getClass().getMethods(), false))) != null) {
@@ -114,10 +115,10 @@ public class MethodAccessor implements AccessorNode {
     else {
       try {
         if (nextNode != null) {
-          return nextNode.getValue(o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars)), elCtx, vars);
+          return nextNode.getValue(o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars, o.isVarArgs())), elCtx, vars);
         }
         else {
-          return o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars));
+          return o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars, o.isVarArgs()));
         }
       }
       catch (IllegalAccessException e) {
@@ -153,11 +154,19 @@ public class MethodAccessor implements AccessorNode {
     return vals;
   }
 
-  private Object[] executeAndCoerce(Class[] target, Object elCtx, VariableResolverFactory vars) {
+  private Object[] executeAndCoerce(Class[] target, Object elCtx, VariableResolverFactory vars, boolean isVarargs) {
     Object[] values = new Object[length];
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length && !(isVarargs && i >= length-1); i++) {
       //noinspection unchecked
       values[i] = convert(parms[i].getValue(elCtx, vars), target[i]);
+    }
+    if (isVarargs) {
+        Class<?> componentType = target[length-1].getComponentType();
+        Object vararg = Array.newInstance(componentType, parms.length - length + 1);
+        for (int i = length-1; i < parms.length; i++) {
+            Array.set(vararg, i - length + 1, convert(parms[i].getValue(elCtx, vars), componentType));
+        }
+        values[length-1] = vararg;
     }
     return values;
   }

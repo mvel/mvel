@@ -3598,6 +3598,67 @@ public class CoreConfidenceTests extends AbstractTest {
       runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
   }
 
+  public static class A {
+    public int invoke(String s1, String s2, B... bs) {
+      return bs.length;
+    }
+    public static int invokeSum(int start, B... bs) {
+      for (B b : bs) start += b.getValue();
+      return start;
+    }
+  }
+
+  public static class B {
+    private int value;
+    public B() { }
+    public B(int value) { this.value = value; }
+    public int getValue() { return value; }
+    public boolean equals(Object other) { return other != null && other instanceof B && value == ((B)other).value; };
+  }
+
+  public void testTypedVarArgsParams() {
+    String imports = "import org.mvel2.tests.core.CoreConfidenceTests.A;\nimport org.mvel2.tests.core.CoreConfidenceTests.B;\n";
+
+    String invoke0 = imports + "new A().invoke(\"s1\", \"s2\")";
+    int result = (Integer)compileAndExecuteWithStrongTyping(invoke0);
+    assertEquals(0, result);
+    assertEquals(0, runSingleTest(invoke0));
+
+    String invokeSum0 = imports + "A.invokeSum(3)";
+    result = (Integer)compileAndExecuteWithStrongTyping(invokeSum0);
+    assertEquals(3, result);
+    assertEquals(3, runSingleTest(invokeSum0));
+
+    String invoke3 = imports + "new A().invoke(\"s1\", \"s2\", new B(), new B(), new B())";
+    result = (Integer)compileAndExecuteWithStrongTyping(invoke3);
+    assertEquals(3, result);
+    assertEquals(3, runSingleTest(invoke3));
+
+    String invokeSum2 = imports + "A.invokeSum(3, new B(4), new B(5))";
+    result = (Integer)compileAndExecuteWithStrongTyping(invokeSum2);
+    assertEquals(12, result);
+    assertEquals(12, runSingleTest(invokeSum2));
+  }
+
+  private <T> T compileAndExecuteWithStrongTyping(String expression) {
+    ParserContext context = new ParserContext();
+    context.setStrongTyping(true);
+    context.setStrictTypeEnforcement(true);
+    Serializable compiled = MVEL.compileExpression(expression, context);
+    return (T)MVEL.executeExpression(compiled, new HashMap());
+  }
+
+  public void testArrayCreation() {
+    assertTrue(Arrays.deepEquals(new Object[0], (Object[])compileAndExecuteWithStrongTyping("{}")));
+    assertTrue(Arrays.deepEquals(new String[0], (String[])compileAndExecuteWithStrongTyping("new String[] {}")));
+    assertTrue(Arrays.deepEquals(new String[] { "xyz" }, (String[])compileAndExecuteWithStrongTyping("new String[] { \"xyz\" }")));
+    assertTrue(Arrays.deepEquals(new String[] { "xyz" }, (String[])compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\") }")));
+    assertTrue(Arrays.deepEquals(new String[] { "xyz", "abc" }, (String[])compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\"), new String(\"abc\") }")));
+    assertTrue(Arrays.deepEquals(new B[0], (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { }")));
+    assertTrue(Arrays.deepEquals(new B[] { new B(5) }, (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { new B(5) }")));
+    assertTrue(Arrays.deepEquals(new B[] { new B(), new B(), new B()}, (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] {new B(),new B(),new B()}")));
+  }
+
   public static class Bean1 {
     private String Field1;
     private String FIELD2;

@@ -1861,12 +1861,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       ExecutableStatement[] varArgEs = new ExecutableStatement[parameterTypes.length];
       int varArgStart = parameterTypes.length-1;
       for (int i = 0; i < varArgStart; i++) varArgEs[i] = es[i];
-      StringBuilder sb = new StringBuilder("{");
+
+      String varargsTypeName = parameterTypes[parameterTypes.length-1].getComponentType().getName();
+      StringBuilder sb = new StringBuilder("new ").append(varargsTypeName).append("[] {");
       for (int i = varArgStart; i < subtokens.size(); i++) {
         sb.append(subtokens.get(i));
         if (i < subtokens.size()-1) sb.append(",");
       }
-      char[] token = sb.append("}").toString().toCharArray();
+      String varArgExpr = sb.append("}").toString();
+
+      char[] token = varArgExpr.toCharArray();
       varArgEs[varArgStart] = ((ExecutableStatement)subCompileExpression(token, pCtx));
       es = varArgEs;
 
@@ -1929,7 +1933,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             cExpr.setKnownIngressType(parameterTypes[i]);
             cExpr.computeTypeConversionRule();
           }
-          if (!cExpr.isConvertableIngressEgress()) {
+          if (!cExpr.isConvertableIngressEgress() && i < args.length) {
             args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
           }
         }
