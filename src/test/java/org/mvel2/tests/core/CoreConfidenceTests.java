@@ -3572,6 +3572,46 @@ public class CoreConfidenceTests extends AbstractTest {
     assertFalse((Boolean) MVEL.executeExpression(s));
   }
 
+  public void testPrimitiveArray() {
+    Map vars = new HashMap();
+    vars.put("array", new boolean[] { true, false });
+    String expression = "a = true; array contains a";
+    Serializable compiled = MVEL.compileExpression(expression);
+    boolean result = (Boolean)MVEL.executeExpression(compiled, vars);
+    assertEquals(true, result);
+
+    vars = new HashMap();
+    vars.put("array", new int[] { 1, 3, 4 });
+    expression = "a = 2; array contains a";
+    compiled = MVEL.compileExpression(expression);
+    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    assertEquals(false, result);
+
+    expression = "a = 3; array contains a";
+    compiled = MVEL.compileExpression(expression);
+    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    assertEquals(true, result);
+
+    expression = "a = false; array contains a";
+    compiled = MVEL.compileExpression(expression);
+    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    assertEquals(false, result);
+  }
+
+  public void testPrimitiveArrayWithStrongTyping() {
+    String expression = "a = true; new boolean[] { true, false } contains a";
+    boolean result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    assertEquals(true, result);
+
+    expression = "a = 2; new int[] { 1, 3 } contains a";
+    result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    assertEquals(false, result);
+
+    expression = "a = true; array = new boolean[] { true, false }; array contains a";
+    result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    assertEquals(true, result);
+  }
+
   public void testVarArgsParams() {
     assertEquals(String.format("xxx"),
       runSingleTest("String.format(\"xxx\")"));
@@ -3641,11 +3681,15 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
+    return compileAndExecuteWithStrongTyping(expression, new HashMap());
+  }
+
+  private <T> T compileAndExecuteWithStrongTyping(String expression, Map vars) {
     ParserContext context = new ParserContext();
     context.setStrongTyping(true);
     context.setStrictTypeEnforcement(true);
     Serializable compiled = MVEL.compileExpression(expression, context);
-    return (T)MVEL.executeExpression(compiled, new HashMap());
+    return (T)MVEL.executeExpression(compiled, vars);
   }
 
   public void testArrayCreation() {

@@ -708,13 +708,84 @@ public class ParseTools {
     else if (compareTo instanceof Map)
       return ((Map) compareTo).containsKey(compareTest);
     else if (compareTo.getClass().isArray()) {
+      if (compareTo.getClass().getComponentType().isPrimitive())
+        return containsCheckOnPrimitveArray(compareTo, compareTest);
       for (Object o : ((Object[]) compareTo)) {
         if (compareTest == null && o == null)
           return true;
-        else if ((Boolean) MathProcessor.doOperations(o, Operator.EQUAL, compareTest))
+        if ((Boolean) MathProcessor.doOperations(o, Operator.EQUAL, compareTest))
           return true;
       }
     }
+    return false;
+  }
+
+  private static boolean containsCheckOnPrimitveArray(Object primitiveArray, Object compareTest) {
+    Class<?> primitiveType = primitiveArray.getClass().getComponentType();
+    if (primitiveType == boolean.class)
+      return compareTest instanceof Boolean ? containsCheckOnBooleanArray((boolean[])primitiveArray, (Boolean)compareTest) : false;
+    if (primitiveType == int.class)
+      return compareTest instanceof Integer ? containsCheckOnIntArray((int[])primitiveArray, (Integer)compareTest) : false;
+    if (primitiveType == long.class)
+      return compareTest instanceof Long ? containsCheckOnLongArray((long[])primitiveArray, (Long)compareTest) : false;
+    if (primitiveType == double.class)
+      return compareTest instanceof Double ? containsCheckOnDoubleArray((double[])primitiveArray, (Double)compareTest) : false;
+    if (primitiveType == float.class)
+      return compareTest instanceof Float ? containsCheckOnFloatArray((float[])primitiveArray, (Float)compareTest) : false;
+    if (primitiveType == char.class)
+      return compareTest instanceof Character ? containsCheckOnCharArray((char[])primitiveArray, (Character)compareTest) : false;
+    if (primitiveType == short.class)
+      return compareTest instanceof Short ? containsCheckOnShortArray((short[])primitiveArray, (Short)compareTest) : false;
+    if (primitiveType == byte.class)
+      return compareTest instanceof Byte ? containsCheckOnByteArray((byte[])primitiveArray, (Byte)compareTest) : false;
+    return false;
+  }
+
+  private static boolean containsCheckOnBooleanArray(boolean[] array, Boolean compareTest) {
+    boolean test = compareTest.booleanValue();
+    for (boolean b : array) if (b == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnIntArray(int[] array, Integer compareTest) {
+    int test = compareTest.intValue();
+    for (int i : array) if (i == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnLongArray(long[] array, Long compareTest) {
+    long test = compareTest.longValue();
+    for (long l : array) if (l == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnDoubleArray(double[] array, Double compareTest) {
+    double test = compareTest.doubleValue();
+    for (double d : array) if (d == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnFloatArray(float[] array, Float compareTest) {
+    float test = compareTest.floatValue();
+    for (float f : array) if (f == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnCharArray(char[] array, Character compareTest) {
+    char test = compareTest.charValue();
+    for (char c : array) if (c == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnShortArray(short[] array, Short compareTest) {
+    short test = compareTest.shortValue();
+    for (short s : array) if (s == test) return true;
+    return false;
+  }
+
+  private static boolean containsCheckOnByteArray(byte[] array, Byte compareTest) {
+    byte test = compareTest.byteValue();
+    for (byte b : array) if (b == test) return true;
     return false;
   }
 
