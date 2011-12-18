@@ -211,7 +211,8 @@ public class PropertyVerifier extends AbstractOptimizer {
         return ((Field) member).getType();
       }
     }
-    else if (member != null) {
+
+    if (member != null) {
       Method method = (Method) member;
 
       if (pCtx.isStrictTypeEnforcement()) {
@@ -236,10 +237,13 @@ public class PropertyVerifier extends AbstractOptimizer {
       Class rt = method.getReturnType();
       return rt.isPrimitive() ? boxPrimitive(rt) : rt;
     }
-    else if (pCtx != null && pCtx.hasImport(property)) {
-      return pCtx.getImport(property);
+
+    if (pCtx != null && pCtx.hasImport(property)) {
+      Class<?> importedClass = pCtx.getImport(property);
+      if (importedClass != null) return pCtx.getImport(property);
     }
-    else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
+
+    if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
         && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
         || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
       Type parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
@@ -252,64 +256,65 @@ public class PropertyVerifier extends AbstractOptimizer {
         return (Class) parm;
       }
     }
-    else if (pCtx != null && "length".equals(property) && ctx.isArray()) {
+
+    if (pCtx != null && "length".equals(property) && ctx.isArray()) {
       return Integer.class;
     }
-    else {
-      Object tryStaticMethodRef = tryStaticAccess();
 
-      if (tryStaticMethodRef != null) {
-        fqcn = true;
-        resolvedExternally = false;
-        if (tryStaticMethodRef instanceof Class) {
-          classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
-              new String(expr, cursor - start - 6, 6).equals(".class"));
-          return (Class) tryStaticMethodRef;
-        }
-        else if (tryStaticMethodRef instanceof Field) {
-          try {
-            return ((Field) tryStaticMethodRef).get(null).getClass();
-          }
-          catch (Exception e) {
-            throw new CompileException("in verifier: ", expr, start, e);
-          }
-        }
-        else {
-          try {
-            return ((Method) tryStaticMethodRef).getReturnType();
-          }
-          catch (Exception e) {
-            throw new CompileException("in verifier: ", expr, start, e);
-          }
-        }
+    Object tryStaticMethodRef = tryStaticAccess();
+
+    if (tryStaticMethodRef != null) {
+      fqcn = true;
+      resolvedExternally = false;
+      if (tryStaticMethodRef instanceof Class) {
+        classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
+            new String(expr, cursor - start - 6, 6).equals(".class"));
+        return (Class) tryStaticMethodRef;
       }
-      else if (ctx != null && ctx.getClass() == Class.class) {
-        for (Method m : ctx.getMethods()) {
-          if (property.equals(m.getName())) {
-            return m.getReturnType();
-          }
-        }
+      else if (tryStaticMethodRef instanceof Field) {
         try {
-          return findClass(variableFactory, ctx.getName() + "$" + property, null);
+          return ((Field) tryStaticMethodRef).get(null).getClass();
         }
-        catch (ClassNotFoundException cnfe) {
-          // fall through.
-        }
-      }
-
-      if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
-        Class cls = getMethod(ctx, property);
-        if (cls != Object.class) {
-          return cls;
+        catch (Exception e) {
+          throw new CompileException("in verifier: ", expr, start, e);
         }
       }
-
-      if (pCtx.isStrictTypeEnforcement()) {
-        throw new CompileException("unqualified type in strict mode for: " + property, expr, tkStart);
+      else {
+        try {
+          return ((Method) tryStaticMethodRef).getReturnType();
+        }
+        catch (Exception e) {
+          throw new CompileException("in verifier: ", expr, start, e);
+        }
       }
-
-      return Object.class;
     }
+
+    if (ctx != null && ctx.getClass() == Class.class) {
+      for (Method m : ctx.getMethods()) {
+        if (property.equals(m.getName())) {
+          return m.getReturnType();
+        }
+      }
+      try {
+        return findClass(variableFactory, ctx.getName() + "$" + property, null);
+      }
+      catch (ClassNotFoundException cnfe) {
+        // fall through.
+      }
+    }
+
+    if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+      Class cls = getMethod(ctx, property);
+      if (cls != Object.class) {
+        return cls;
+      }
+    }
+
+    if (pCtx.isStrictTypeEnforcement()) {
+      throw new CompileException("unqualified type in strict mode for: " + property, expr, tkStart);
+    }
+
+    return Object.class;
   }
 
   /**
