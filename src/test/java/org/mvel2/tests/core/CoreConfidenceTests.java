@@ -2292,6 +2292,17 @@ public class CoreConfidenceTests extends AbstractTest {
         executeExpression(MVEL.compileExpression("!(true)")));
   }
 
+  public void testMultipleNegations() {
+      assertEquals(true,
+              executeExpression(MVEL.compileExpression("!false")));
+      assertEquals(false,
+              executeExpression(MVEL.compileExpression("!!false")));
+      assertEquals(true,
+              executeExpression(MVEL.compileExpression("!!!false")));
+      assertEquals(false,
+              executeExpression(MVEL.compileExpression("!!!!false")));
+  }
+
   public void testJIRA154() {
     Map m = createTestMap();
     m.put("returnTrue",

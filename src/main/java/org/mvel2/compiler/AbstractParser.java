@@ -1172,6 +1172,11 @@ public class AbstractParser implements Parser, Serializable {
                 captureToEOT();
                 return lastNode = new Negation(expr, st, cursor - st, fields, pCtx);
               }
+              else if (expr[cursor] == '!') {
+                  // just ignore a double negation
+                  ++cursor;
+                  return nextToken();
+              }
               else if (expr[cursor] != '=')
                 throw new CompileException("unexpected operator '!'", expr, st, null);
               else {
