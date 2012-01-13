@@ -248,9 +248,9 @@ public class WithNode extends BlockNode implements NestedStatement {
     return compiledBlock;
   }
 
-//  public ParmValuePair[] getWithExpressions() {
-//    return withExpressions;
-//  }
+  public ParmValuePair[] getWithExpressions() {
+    return withExpressions;
+  }
 
   public static final class ParmValuePair implements Serializable {
     private Serializable setExpression;
