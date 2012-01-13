@@ -3783,4 +3783,11 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.addInput("this", Bean1.class);
     return MVEL.analyze(expr, parserContext);
   }
+
+  public void testExponentialNotation() {
+    assertEquals(110.0, runSingleTest("10 + 1.0E+2"));
+    assertEquals(90.0, runSingleTest("1.0E+2 - 10"));
+    assertEquals(10.01, runSingleTest("10 + 1.0E-2"));
+  }
+
 }

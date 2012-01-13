@@ -1920,7 +1920,7 @@ public class ParseTools {
           return offset - 2 > 0;
 
         }
-        else if (i != start && (i + 1) < offset && (c == 'E' || c == 'e')) {
+        else if (i != start && (i + 1) < end && (c == 'E' || c == 'e')) {
           if (val[++i] == '-' || val[i] == '+') i++;
         }
         else {
