@@ -205,7 +205,7 @@ public strictfp class MathProcessor {
 
   private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
     if (operation < 20) {
-      if (type1 > 49 && type1 == type2) {
+      if ((type1 > 49 || operation == EQUAL || operation == NEQUAL) && type1 == type2) {
         return doOperationsSameType(type1, val1, operation, val2);
       }
       else if ((type1 > 99 && (type2 > 99))
