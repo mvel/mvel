@@ -3790,4 +3790,20 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(10.01, runSingleTest("10 + 1.0E-2"));
   }
 
+  public void testShiftOperator() {
+    String expression = "1 << 65536L";
+    Serializable compiled = MVEL.compileExpression(expression, context);
+    Object result = MVEL.executeExpression(compiled, new HashMap());
+    assertEquals(1 << 65536L, result);
+
+    expression = "one << shift";
+    Map map = new HashMap() {{
+      put("one", 1);
+      put("shift", 65536L);
+    }};
+    compiled = MVEL.compileExpression(expression, context);
+    result = MVEL.executeExpression(compiled, map);
+    assertEquals(1 << 65536L, result);
+    System.out.println(result);
+  }
 }

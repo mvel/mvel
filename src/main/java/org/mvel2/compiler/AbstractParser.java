@@ -2613,44 +2613,17 @@ public class AbstractParser implements Parser, Serializable {
           stk.push(containsCheck(stk.peek2(), stk.pop2()));
           break;
 
-        case BW_AND:
-          stk.push(asInt(stk.peek2()) & asInt(stk.pop2()));
-          break;
-
-        case BW_OR:
-          stk.push(asInt(stk.peek2()) | asInt(stk.pop2()));
-          break;
-
-        case BW_XOR:
-          stk.push(asInt(stk.peek2()) ^ asInt(stk.pop2()));
-          break;
-
-        case BW_SHIFT_LEFT:
-          stk.push(asInt(stk.peek2()) << asInt(stk.pop2()));
-          break;
-
-        case BW_USHIFT_LEFT:
-          int iv2 = asInt(stk.peek2());
-          if (iv2 < 0) iv2 *= -1;
-          stk.push(iv2 << asInt(stk.pop2()));
-          break;
-
-        case BW_SHIFT_RIGHT:
-          stk.push(asInt(stk.peek2()) >> asInt(stk.pop2()));
-          break;
-
-        case BW_USHIFT_RIGHT:
-          stk.push(asInt(stk.peek2()) >>> asInt(stk.pop2()));
-          break;
-
         case SOUNDEX:
           stk.push(soundex(java.lang.String.valueOf(stk.pop()))
-              .equals(soundex(java.lang.String.valueOf(stk.pop()))));
+                  .equals(soundex(java.lang.String.valueOf(stk.pop()))));
           break;
 
         case SIMILARITY:
           stk.push(similarity(java.lang.String.valueOf(stk.pop()), java.lang.String.valueOf(stk.pop())));
           break;
+
+        default:
+          reduceNumeric(operator);
       }
     }
     catch (ClassCastException e) {
@@ -2661,6 +2634,160 @@ public class AbstractParser implements Parser, Serializable {
     }
     catch (Exception e) {
       throw new CompileException("failed to subEval expression", expr, st, e);
+    }
+  }
+
+  private void reduceNumeric(int operator) {
+    Object op1 = stk.peek2();
+    Object op2 = stk.pop2();
+    if (op1 instanceof Integer) {
+      if (op2 instanceof Integer) {
+        reduce((Integer) op1, operator, (Integer) op2);
+      } else {
+        reduce((Integer) op1, operator, (Long) op2);
+      }
+    } else {
+      if (op2 instanceof Integer) {
+         reduce((Long) op1, operator, (Integer) op2);
+      } else {
+        reduce((Long) op1, operator, (Long) op2);
+      }
+    }
+  }
+
+  private void reduce(int op1, int operator, int op2) {
+    switch (operator) {
+      case BW_AND:
+        stk.push(op1 & op2);
+         break;
+
+      case BW_OR:
+        stk.push(op1 | op2);
+        break;
+
+      case BW_XOR:
+        stk.push(op1 ^ op2);
+        break;
+
+      case BW_SHIFT_LEFT:
+        stk.push(op1 << op2);
+        break;
+
+      case BW_USHIFT_LEFT:
+        int iv2 = op1;
+        if (iv2 < 0) iv2 *= -1;
+        stk.push(iv2 << op2);
+        break;
+
+      case BW_SHIFT_RIGHT:
+        stk.push(op1 >> op2);
+        break;
+
+      case BW_USHIFT_RIGHT:
+        stk.push(op1 >>> op2);
+        break;
+    }
+  }
+
+  private void reduce(int op1, int operator, long op2) {
+    switch (operator) {
+        case BW_AND:
+            stk.push(op1 & op2);
+            break;
+
+        case BW_OR:
+            stk.push(op1 | op2);
+            break;
+
+        case BW_XOR:
+            stk.push(op1 ^ op2);
+            break;
+
+        case BW_SHIFT_LEFT:
+            stk.push(op1 << op2);
+            break;
+
+        case BW_USHIFT_LEFT:
+            int iv2 = op1;
+            if (iv2 < 0) iv2 *= -1;
+            stk.push(iv2 << op2);
+            break;
+
+        case BW_SHIFT_RIGHT:
+            stk.push(op1 >> op2);
+            break;
+
+        case BW_USHIFT_RIGHT:
+            stk.push(op1 >>> op2);
+            break;
+    }
+  }
+
+  private void reduce(long op1, int operator, int op2) {
+    switch (operator) {
+        case BW_AND:
+            stk.push(op1 & op2);
+            break;
+
+        case BW_OR:
+            stk.push(op1 | op2);
+            break;
+
+        case BW_XOR:
+            stk.push(op1 ^ op2);
+            break;
+
+        case BW_SHIFT_LEFT:
+            stk.push(op1 << op2);
+            break;
+
+        case BW_USHIFT_LEFT:
+            long iv2 = op1;
+            if (iv2 < 0) iv2 *= -1;
+            stk.push(iv2 << op2);
+            break;
+
+        case BW_SHIFT_RIGHT:
+            stk.push(op1 >> op2);
+            break;
+
+        case BW_USHIFT_RIGHT:
+            stk.push(op1 >>> op2);
+            break;
+    }
+  }
+
+  private void reduce(long op1, int operator, long op2) {
+    switch (operator) {
+        case BW_AND:
+            stk.push(op1 & op2);
+            break;
+
+        case BW_OR:
+            stk.push(op1 | op2);
+            break;
+
+        case BW_XOR:
+            stk.push(op1 ^ op2);
+            break;
+
+        case BW_SHIFT_LEFT:
+            stk.push(op1 << op2);
+            break;
+
+        case BW_USHIFT_LEFT:
+            long iv2 = op1;
+            if (iv2 < 0) iv2 *= -1;
+            stk.push(iv2 << op2);
+            break;
+
+        case BW_SHIFT_RIGHT:
+            stk.push(op1 >> op2);
+            break;
+
+        case BW_USHIFT_RIGHT:
+            stk.push(op1 >>> op2);
+            break;
     }
   }
 

@@ -205,7 +205,8 @@ public strictfp class MathProcessor {
 
   private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
     if (operation < 20) {
-      if ((type1 > 49 || operation == EQUAL || operation == NEQUAL) && type1 == type2) {
+      if (((type1 > 49 || operation == EQUAL || operation == NEQUAL) && type1 == type2) ||
+              (isIntegerType(type1) && isIntegerType(type2) && operation >= BW_AND && operation <= BW_NOT)) {
         return doOperationsSameType(type1, val1, operation, val2);
       }
       else if ((type1 > 99 && (type2 > 99))
@@ -231,6 +232,10 @@ public strictfp class MathProcessor {
       }
     }
     return doOperationNonNumeric(type1, val1, operation, val2);
+  }
+
+  private static boolean isIntegerType(int type) {
+    return type == DataTypes.INTEGER || type == DataTypes.W_INTEGER || type == DataTypes.LONG || type == DataTypes.W_LONG;
   }
 
   private static Object doOperationNonNumeric(int type1, final Object val1, final int operation, final Object val2) {
@@ -393,16 +398,22 @@ public strictfp class MathProcessor {
           case NEQUAL:
             return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
           case BW_AND:
+            if (val2 instanceof Long) return (Integer) val1 & (Long) val2;
             return (Integer) val1 & (Integer) val2;
           case BW_OR:
+            if (val2 instanceof Long) return (Integer) val1 | (Long) val2;
             return (Integer) val1 | (Integer) val2;
           case BW_SHIFT_LEFT:
+            if (val2 instanceof Long) return (Integer) val1 << (Long) val2;
             return (Integer) val1 << (Integer) val2;
           case BW_SHIFT_RIGHT:
+            if (val2 instanceof Long) return (Integer) val1 >> (Long) val2;
             return (Integer) val1 >> (Integer) val2;
           case BW_USHIFT_RIGHT:
+            if (val2 instanceof Long) return (Integer) val1 >>> (Long) val2;
             return (Integer) val1 >>> (Integer) val2;
           case BW_XOR:
+            if (val2 instanceof Long) return (Integer) val1 ^ (Long) val2;
             return (Integer) val1 ^ (Integer) val2;
         }
 
@@ -479,18 +490,24 @@ public strictfp class MathProcessor {
           case NEQUAL:
             return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
           case BW_AND:
+            if (val2 instanceof Integer) return (Long) val1 & (Integer) val2;
             return (Long) val1 & (Long) val2;
           case BW_OR:
+            if (val2 instanceof Integer) return (Long) val1 | (Integer) val2;
             return (Long) val1 | (Long) val2;
           case BW_SHIFT_LEFT:
+            if (val2 instanceof Integer) return (Long) val1 << (Integer) val2;
             return (Long) val1 << (Long) val2;
           case BW_USHIFT_LEFT:
             throw new UnsupportedOperationException("unsigned left-shift not supported");
           case BW_SHIFT_RIGHT:
+            if (val2 instanceof Integer) return (Long) val1 >> (Integer) val2;
             return (Long) val1 >> (Long) val2;
           case BW_USHIFT_RIGHT:
+            if (val2 instanceof Integer) return (Long) val1 >>> (Integer) val2;
             return (Long) val1 >>> (Long) val2;
           case BW_XOR:
+            if (val2 instanceof Integer) return (Long) val1 ^ (Integer) val2;
             return (Long) val1 ^ (Long) val2;
         }
 
