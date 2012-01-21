@@ -1186,9 +1186,9 @@ public class CoreConfidenceTests extends AbstractTest {
     public String function(long num) {
       return String.valueOf(num);
     }
-    
+
     public String aMethod(long num) {
-      return String.valueOf( num ); 
+      return String.valueOf( num );
     }
 
     public Map<String, Object> getMap() {
@@ -1198,7 +1198,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void setMap( Map<String, Object> map ) {
         this.map = map;
     }
-    
+
     public String getKey() {
         return "1";
     }
@@ -2188,7 +2188,7 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.setStrongTyping(true);
     ctx.setInputs( inputs );
-      
+
     Serializable expression = MVEL.compileExpression( ex, ctx );
     Map<String,Object> variables = new HashMap<String, Object>();
     variables.put( "foo", foo );
@@ -3805,5 +3805,48 @@ public class CoreConfidenceTests extends AbstractTest {
     result = MVEL.executeExpression(compiled, map);
     assertEquals(1 << 65536L, result);
     System.out.println(result);
+  }
+
+  public void testMultipleArgumentsInFunction() {
+    String expression = "def cond(x, y) {\n" +
+        "\tif (x ~= \"fet.*\") {\n" +
+        "\t\tif ((x.endsWith(('sock')))) {\n" +
+        " \t\t\treturn 1;\n" +
+        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
+        " \t\t\treturn [1: ((y > 12) ? 1 : 2), 2: (12 + 1)];\n" +
+        "\t\t} ;\n" +
+        "\t}\n" +
+        "(null).print();\n" +   // THIS LINE SHOULD NEVER EXECUTE BUT IT DOES, INCORRECT!
+        "\n" +
+        "}\n" +
+        "\n" +
+        "cond('fetlock', 12)";
+
+    String expression2 = "def cond(x, y) {\n" +
+        "\tif (x ~= \"fet.*\") {\n" +
+        "\t\tif ((x.endsWith(('sock')))) {\n" +
+        " \t\t\treturn 1;\n" +
+        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
+        " \t\t\treturn 2;\n" +   // REPLACED WITH A SIMPLE INTEGER
+        "\t\t} ;\n" +
+        "\t}\n" +
+        "(null).print();\n" +   // THIS LINE NEVER EXECUTES, CORRECT!
+        "\n" +
+        "}\n" +
+        "\n" +
+        "cond('fetlock', 12)";
+
+    Exception thrown = null;
+    try {
+      // WRONG
+      MVEL.executeExpression(MVEL.compileExpression(expression, context), new HashMap());
+    } catch (Exception e) {
+      thrown = e;
+    }
+
+    // CORRECT!
+    MVEL.executeExpression(MVEL.compileExpression(expression2, context), new HashMap());
+
+    assertNull("Return statement not being honored!", thrown);
   }
 }
