@@ -46,6 +46,7 @@ import static org.mvel2.integration.PropertyHandlerFactory.*;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
 import static org.mvel2.util.Varargs.*;
 
 
@@ -65,6 +66,7 @@ public class PropertyAccessor {
   private Object thisReference;
   private Object ctx;
   private Object curr;
+  private Class currType = null;
 
   private boolean first = true;
   private boolean nullHandle = false;
@@ -641,6 +643,7 @@ public class PropertyAccessor {
         }
       }
       else if (member != null) {
+        currType = toNonPrimitiveType(((Field) member).getType());
         return ((Field) member).get(ctx);
       }
       else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullHandle)) {
@@ -746,6 +749,7 @@ public class PropertyAccessor {
       ctx = getBeanProperty(ctx, prop);
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     int _start = ++cursor;
@@ -795,6 +799,7 @@ public class PropertyAccessor {
       ctx = getBeanProperty(ctx, prop);
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     int _start = ++cursor;
@@ -914,7 +919,8 @@ public class PropertyAccessor {
      * If the target object is an instance of java.lang.Class itself then do not
      * adjust the Class scope target.
      */
-    Class cls = (ctx instanceof Class ? (Class) ctx : ctx.getClass());
+    Class cls = currType != null ? currType : ((ctx instanceof Class ? (Class) ctx : ctx.getClass()));
+    currType = null;
 
     if (cls == Proto.ProtoInstance.class) {
       return ((Proto.ProtoInstance) ctx).get(name).call(null, thisReference, variableFactory, args);
@@ -960,6 +966,15 @@ public class PropertyAccessor {
       }
     }
 
+    // If we didn't find anything and the declared class is different from the actual one try also with the actual one
+    if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
+      cls = ctx.getClass();
+      if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+        addMethodCache(cls, createSignature(name, tk), m);
+        parameterTypes = m.getParameterTypes();
+      }
+    }
+
     if (m == null) {
       StringAppender errorBuild = new StringAppender();
       for (int i = 0; i < args.length; i++) {
@@ -986,6 +1001,7 @@ public class PropertyAccessor {
       /**
        * Invoke the target method and return the response.
        */
+      currType = toNonPrimitiveType(m.getReturnType());
       try {
         return m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
       }

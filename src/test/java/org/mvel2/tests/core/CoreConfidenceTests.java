@@ -24,6 +24,8 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -3805,5 +3807,42 @@ public class CoreConfidenceTests extends AbstractTest {
     result = MVEL.executeExpression(compiled, map);
     assertEquals(1 << 65536L, result);
     System.out.println(result);
+  }
+
+  public void testSystemOutOnPrivateClass() {
+    PrintStream originalSystemOut = System.out;
+    System.setOut(new MyPrivatePrintStream(System.out));
+    String expression = "System.out.println(\"Hello World\");";
+    runSingleTest(expression);
+    System.setOut(originalSystemOut);
+  }
+
+  private static class MyPrivatePrintStream extends PrintStream {
+    public MyPrivatePrintStream(OutputStream os) {
+      super(os);
+    }
+    public void println(String s) {
+      super.println(s);
+    }
+  }
+
+  public void testSystemOutWithActualInstanceMethod() {
+    PrintStream originalSystemOut = System.out;
+    System.setOut(new MyPublicPrintStream(System.out));
+    String expression = "System.out.myPrintln(\"Hello World\");";
+    runSingleTest(expression);
+    System.setOut(originalSystemOut);
+  }
+
+  public static class MyPublicPrintStream extends PrintStream {
+    public MyPublicPrintStream(OutputStream os) {
+      super(os);
+    }
+    public void println(String s) {
+      super.println(s);
+    }
+    public void myPrintln(String s) {
+      super.println(s);
+    }
   }
 }

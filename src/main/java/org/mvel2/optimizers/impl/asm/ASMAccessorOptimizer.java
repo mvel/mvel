@@ -61,6 +61,7 @@ import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
 import static org.mvel2.util.Varargs.*;
 
 
@@ -1097,6 +1098,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         writeOutNullHandler(member, 0);
       }
 
+      currType = toNonPrimitiveType(returnType);
       return o;
     }
     else if (member != null) {
@@ -1158,6 +1160,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         writeOutNullHandler(member, 0);
       }
 
+      currType = toNonPrimitiveType(returnType);
       return o;
     }
     else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe)) {
@@ -1333,6 +1336,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       first = false;
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
@@ -1489,6 +1493,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       first = false;
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
@@ -1856,6 +1861,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       }
     }
 
+    // If we didn't find anything and the declared class is different from the actual one try also with the actual one
+    if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
+      cls = ctx.getClass();
+      if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
+        parameterTypes = m.getParameterTypes();
+      }
+    }
+
     if (es != null && m != null && m.isVarArgs() && (es.length != parameterTypes.length || !(es[es.length-1] instanceof ExecutableAccessor))) {
       // normalize ExecutableStatement for varargs
       ExecutableStatement[] varArgEs = new ExecutableStatement[parameterTypes.length];
@@ -2135,6 +2148,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
       }
 
+      currType = toNonPrimitiveType(m.getReturnType());
       return o;
 
     }

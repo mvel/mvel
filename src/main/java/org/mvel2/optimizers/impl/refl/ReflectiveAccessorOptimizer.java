@@ -54,6 +54,7 @@ import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
 import static org.mvel2.util.Varargs.*;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
@@ -448,6 +449,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
   }
 
   private Object getWithProperty(Object ctx) {
+    currType = null;
     String root = start == cursor ? null : new String(expr, start, cursor - 1).trim();
 
     int st = cursor + 1;
@@ -584,6 +586,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         throw e;
       }
+      currType = toNonPrimitiveType(((Method) member).getReturnType());
       return o;
     }
     else if (member != null) {
@@ -610,6 +613,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
           addAccessorNode(new FieldAccessor((Field) member));
         }
       }
+      currType = toNonPrimitiveType(f.getType());
       return o;
     }
     else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe)) {
@@ -706,6 +710,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       ctx = getBeanProperty(ctx, prop);
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     int start = ++cursor;
@@ -808,6 +813,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       ctx = getBeanPropertyAO(ctx, prop);
     }
 
+    currType = null;
     if (ctx == null) return null;
 
     int _start = ++cursor;
@@ -1020,7 +1026,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     boolean classTarget = false;
     Class<?> cls = currType != null ? currType : ((classTarget = ctx instanceof Class) ? (Class<?>) ctx : ctx.getClass());
-
     currType = null;
 
     Method m;
@@ -1029,11 +1034,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     /**
      * If we have not cached the method then we need to go ahead and try to resolve it.
      */
+
     /**
      * Try to find an instance method from the class target.
      */
-
-
     if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
       parameterTypes = m.getParameterTypes();
     }
@@ -1043,6 +1047,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
        * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
        */
       if ((m = getBestCandidate(argTypes, name, cls, Class.class.getMethods(), false)) != null) {
+        parameterTypes = m.getParameterTypes();
+      }
+    }
+
+    // If we didn't find anything and the declared class is different from the actual one try also with the actual one
+    if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
+      cls = ctx.getClass();
+      if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
         parameterTypes = m.getParameterTypes();
       }
     }
@@ -1090,7 +1102,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
     }
 
-    Object o = getWidenedTarget(m).invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
+    Method method = getWidenedTarget(m);
+    Object o = method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
 
     if (hasNullMethodHandler()) {
       addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
@@ -1103,6 +1116,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     /**
      * return the response.
      */
+    currType = toNonPrimitiveType(method.getReturnType());
     return o;
   }
 
