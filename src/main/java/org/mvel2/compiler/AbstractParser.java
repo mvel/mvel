@@ -889,8 +889,8 @@ public class AbstractParser implements Parser, Serializable {
                 captureToEOT();
                 return new Sign(expr, st, cursor - st, fields, pCtx);
               }
-              else if ((cursor != start && !isWhitespace(expr[cursor - 1]) && (
-                  !(lastNode != null && (lastNode instanceof BooleanNode || lastNode.isOperator()))))
+              else if ((cursor != start &&
+                  (lastNode != null && !(lastNode instanceof BooleanNode || lastNode.isOperator())))
                   || !isDigit(lookAhead())) {
 
                 return createOperator(expr, st, cursor++ + 1);

@@ -3845,4 +3845,18 @@ public class CoreConfidenceTests extends AbstractTest {
       super.println(s);
     }
   }
+
+  public void testMinusOperatorWithoutSpace() {
+    String str = "length == $c.length -1";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    Column col1 = new Column("x", 0);
+    Column col2 = new Column("x", 0);
+    Map<String, Object> vars = new HashMap<String, Object> ();
+    vars.put( "$c", col2 );
+    Boolean result = (Boolean) MVEL.executeExpression(stmt, col1, vars);
+    assertFalse(result);
+  }
 }
