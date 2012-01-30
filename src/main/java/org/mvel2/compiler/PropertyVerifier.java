@@ -352,7 +352,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
       else if (ctx.isArray()) {
-        ctx = getBaseComponentType(ctx);
+        ctx = ctx.getComponentType();
       }
       else if (pCtx.isStrongTyping()) {
         throw new CompileException("unknown collection type: " + ctx + "; property=" + property, expr, start);

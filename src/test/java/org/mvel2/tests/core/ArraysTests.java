@@ -1,15 +1,18 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Cheese;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.mvel2.MVEL.*;
 import static org.mvel2.MVEL.compileSetExpression;
@@ -151,4 +154,58 @@ public class ArraysTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
   }
 
+  public void testMultiDimensionalArrayType() {
+    String str = "$c.cheeses[0][0] = new Cheese('brie', 15)";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.addImport(Cheese.class);
+
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput( "$c", Column.class );
+    pctx.setStrongTyping(true);
+
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    Map<String,Object> vars = new HashMap<String, Object>();
+    Column c = new Column("x", 1);
+    c.setCheeses( new Cheese[5][5] );
+    vars.put( "$c", c );
+    MVEL.executeExpression(stmt, null, vars);
+    assertEquals( new Cheese("brie", 15), c.getCheeses()[0][0]);
+  }
+
+  public class Column {
+    private String name;
+    private int length;
+
+    private Cheese[][] cheeses;
+
+    public Cheese[][] getCheeses() {
+      return cheeses;
+    }
+
+    public void setCheeses(Cheese[][] cheeses) {
+      this.cheeses = cheeses;
+    }
+
+    public Column(String name, int length) {
+      this.name = name;
+      this.length = length;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public int getLength() {
+      return length;
+    }
+
+    public void setLength(int length) {
+      this.length = length;
+    }
+  }
 }
