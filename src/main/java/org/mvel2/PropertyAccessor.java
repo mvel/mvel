@@ -73,7 +73,7 @@ public class PropertyAccessor {
 
   private VariableResolverFactory variableFactory;
 
-//  private static final int DONE = -1;
+  //  private static final int DONE = -1;
   private static final int NORM = 0;
   private static final int METH = 1;
   private static final int COL = 2;
@@ -221,8 +221,6 @@ public class PropertyAccessor {
         else {
           nullHandle = false;
         }
-      } else {
-        if (curr == null && cursor < end) throw new NullPointerException();
       }
 
       first = false;
@@ -258,7 +256,8 @@ public class PropertyAccessor {
         else {
           nullHandle = false;
         }
-      } else {
+      }
+      else {
         if (curr == null && cursor < end) throw new NullPointerException();
       }
 
@@ -431,6 +430,11 @@ public class PropertyAccessor {
               return WITH;
           }
 
+        }
+      case '?':
+        if (cursor == start) {
+          cursor = ++st;
+          nullHandle = true;
         }
     }
 
@@ -748,10 +752,12 @@ public class PropertyAccessor {
   private Object getCollectionProperty(Object ctx, String prop) throws Exception {
     if (prop.length() != 0) {
       ctx = getBeanProperty(ctx, prop);
+      if (ctx == null) {
+        throw new NullPointerException("null pointer on indexed access for: " + prop);
+      }
     }
 
     currType = null;
-    if (ctx == null) return null;
 
     int _start = ++cursor;
 
@@ -761,6 +767,7 @@ public class PropertyAccessor {
       throw new PropertyAccessException("unterminated '['", property, cursor);
 
     prop = new String(property, _start, cursor++ - _start);
+
 
     if (ctx instanceof Map) {
       return ((Map) ctx).get(eval(prop, ctx, variableFactory));

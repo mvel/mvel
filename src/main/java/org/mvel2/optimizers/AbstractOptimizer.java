@@ -217,6 +217,11 @@ public class AbstractOptimizer extends AbstractParser {
           throw new CompileException("unexpected end of statement", expr, start);
         }
         break;
+      case '?':
+        if (start == cursor) {
+          cursor++;
+          nullSafe = true;
+        }
     }
 
     //noinspection StatementWithEmptyBody
