@@ -73,7 +73,7 @@ public class PropertyAccessor {
 
   private VariableResolverFactory variableFactory;
 
-  private static final int DONE = -1;
+//  private static final int DONE = -1;
   private static final int NORM = 0;
   private static final int METH = 1;
   private static final int COL = 2;
@@ -356,7 +356,7 @@ public class PropertyAccessor {
 
       Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
       if (member == null) {
-        addWriteCache(curr.getClass(), tk.hashCode(),
+        addWriteCache(curr.getClass(), tk != null ? tk.hashCode() : -1,
             (member = value != null ? getFieldOrWriteAccessor(curr.getClass(), tk, value.getClass()) : getFieldOrWriteAccessor(curr.getClass(), tk)));
       }
 
@@ -539,6 +539,7 @@ public class PropertyAccessor {
     WeakReference<Class[]> pt = METHOD_PARMTYPES_CACHE.get(member);
     Class[] ret;
     if (pt == null || (ret = pt.get()) == null) {
+      //noinspection UnusedAssignment
       METHOD_PARMTYPES_CACHE.put(member, pt = new WeakReference<Class[]>(ret = member.getParameterTypes()));
     }
     return ret;
@@ -788,8 +789,7 @@ public class PropertyAccessor {
         return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
       }
       catch (Exception e) {
-        throw new PropertyAccessException("illegal use of []: unknown type: "
-            + (ctx == null ? null : ctx.getClass().getName()), property, st, e);
+        throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx.getClass().getName()), property, st, e);
       }
     }
   }
@@ -854,8 +854,7 @@ public class PropertyAccessor {
         return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, end - start, 0));
       }
       catch (Exception e) {
-        throw new PropertyAccessException("illegal use of []: unknown type: "
-            + (ctx == null ? null : ctx.getClass().getName()), property, st);
+        throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx.getClass().getName()), property, st);
       }
     }
   }
@@ -867,7 +866,6 @@ public class PropertyAccessor {
    * @param ctx  -
    * @param name -
    * @return -
-   * @throws Exception -
    */
   @SuppressWarnings({"unchecked"})
   private Object getMethod(Object ctx, String name) {
@@ -1028,9 +1026,9 @@ public class PropertyAccessor {
     return name.hashCode() + args.hashCode();
   }
 
-  public int getCursorPosition() {
-    return cursor;
-  }
+//  public int getCursorPosition() {
+//    return cursor;
+//  }
 
 
   /**
