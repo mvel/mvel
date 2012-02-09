@@ -52,6 +52,14 @@ public class Union extends ASTNode {
     }
   }
 
+  public ASTNode getMain() {
+    return main;
+  }
+
+  public Accessor getAccessor() {
+      return accessor;
+  }
+
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return PropertyAccessor.get(
         expr, start, offset,
