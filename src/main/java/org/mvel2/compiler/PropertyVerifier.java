@@ -368,9 +368,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     int start = cursor;
 
-    if (cursor == length)
-      throw new PropertyAccessException("unterminated '['", expr, this.start);
-
     if (scanTo(']')) {
       addFatalError("unterminated [ in token");
     }
