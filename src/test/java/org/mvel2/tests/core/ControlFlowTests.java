@@ -422,32 +422,38 @@ public class ControlFlowTests extends AbstractTest {
         "\n" +
         "cond('fetlock', 12)";
 
-//    String expression2 = "def cond(x, y) {\n" +
-//        "\tif (x ~= \"fet.*\") {\n" +
-//        "\t\tif ((x.endsWith(('sock')))) {\n" +
-//        " \t\t\treturn 1;\n" +
-//        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
-//        " \t\t\treturn 2;\n" +   // REPLACED WITH A SIMPLE INTEGER
-//        "\t\t} ;\n" +
-//        "\t}\n" +
-//        "(null).print();\n" +   // THIS LINE NEVER EXECUTES, CORRECT!
-//        "\n" +
-//        "}\n" +
-//        "\n" +
-//        "cond('fetlock', 12)";
 
     Exception thrown = null;
     try {
-      // WRONG
       MVEL.executeExpression(MVEL.compileExpression(expression), new HashMap());
     }
     catch (Exception e) {
       thrown = e;
     }
 
-    // CORRECT!
-//    MVEL.executeExpression(MVEL.compileExpression(expression2), new HashMap());
-
     assertNull("Return statement not being honored!", thrown);
   }
+  
+  public void testDhanji1() {
+    String expression = "def insert(i, ls) {\n" +
+        "  if (ls == empty) {\n" +
+        "    return [];\n" +
+        "  }\n" +
+        "  if (ls is java.util.List) {\n" +
+        "    x = ls[0];\n" +
+        "    xs = ls.size() == 1 ? [] : ls.subList(1, ls.size());\n" +
+        "    return (((i <= x) ? ([i, x] + xs) : insert(i, xs)));\n" +
+        "  }\n" +
+        "}\n" +
+        "\n" +
+        "insert(2, [1, 3, 4])";
+   
+    Object o = MVEL.eval(expression, new HashMap<String, Object>());
+
+    System.out.println(o);
+  }
+  
+//  public void testDhanji2() {
+//    System.out.println(MVEL.eval("x = 1; y = 2; [x,y] + [3,4]", new HashMap<String, Object>()));
+//  }
 }

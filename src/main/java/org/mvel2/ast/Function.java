@@ -130,31 +130,32 @@ public class Function extends ASTNode implements Safe {
   }
 
   public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
-    if (parms != null && parms.length != 0) {
-      // detect tail recursion
-      if (factory instanceof FunctionVariableResolverFactory
-          && ((FunctionVariableResolverFactory) factory).getIndexedVariableResolvers().length == parms.length) {
-        FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
-        if (fvrf.getFunction().equals(this)) {
-          VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
-          fvrf.updateParameters(parms);
-          try {
-            return compiledBlock.getValue(ctx, thisValue, fvrf);
-          }
-          finally {
-            fvrf.setIndexedVariableResolvers(swapVR);
+      if (parms != null && parms.length != 0) {
+        // detect tail recursion
+        if (factory instanceof FunctionVariableResolverFactory
+            && ((FunctionVariableResolverFactory) factory).getIndexedVariableResolvers().length == parms.length) {
+          FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
+          if (fvrf.getFunction().equals(this)) {
+            VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
+            fvrf.updateParameters(parms);
+            try {
+              return compiledBlock.getValue(ctx, thisValue, fvrf);
+            }
+            finally {
+              fvrf.setIndexedVariableResolvers(swapVR);
+            }
           }
         }
+        return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms).setNoTilt(true));
       }
-      return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
-    }
-    else if (cMode) {
-      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
-    }
-    else {
-      return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory,
-              parameters).setNoTilt(true));
-    }
+      else if (cMode) {
+        return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
+      }
+      else {
+        return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory,
+            parameters).setNoTilt(true));
+      }
+
   }
 
   public String getName() {
