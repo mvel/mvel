@@ -1188,9 +1188,9 @@ public class CoreConfidenceTests extends AbstractTest {
     public String function(long num) {
       return String.valueOf(num);
     }
-    
+
     public String aMethod(long num) {
-      return String.valueOf( num ); 
+      return String.valueOf( num );
     }
 
     public Map<String, Object> getMap() {
@@ -1200,7 +1200,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void setMap( Map<String, Object> map ) {
         this.map = map;
     }
-    
+
     public String getKey() {
         return "1";
     }
@@ -2190,7 +2190,7 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.setStrongTyping(true);
     ctx.setInputs( inputs );
-      
+
     Serializable expression = MVEL.compileExpression( ex, ctx );
     Map<String,Object> variables = new HashMap<String, Object>();
     variables.put( "foo", foo );
