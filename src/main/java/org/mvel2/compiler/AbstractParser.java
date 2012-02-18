@@ -497,7 +497,7 @@ public class AbstractParser implements Parser, Serializable {
                 continue;
 
               case '?':
-                if (lookToLast() == '.') {
+                if (lookToLast() == '.' || cursor == start) {
                   union = true;
                   cursor++;
                   continue;
@@ -889,8 +889,8 @@ public class AbstractParser implements Parser, Serializable {
                 captureToEOT();
                 return new Sign(expr, st, cursor - st, fields, pCtx);
               }
-              else if ((cursor != start && !isWhitespace(expr[cursor - 1]) && (
-                  !(lastNode != null && (lastNode instanceof BooleanNode || lastNode.isOperator()))))
+              else if ((cursor != start &&
+                  (lastNode != null && !(lastNode instanceof BooleanNode || lastNode.isOperator())))
                   || !isDigit(lookAhead())) {
 
                 return createOperator(expr, st, cursor++ + 1);
@@ -931,9 +931,15 @@ public class AbstractParser implements Parser, Serializable {
               lastWasIdentifier = false;
               return lastNode = new EndOfStatement();
 
+            case '?':
+              if (cursor == start) {
+                cursor++;
+                continue;
+              }
+
+
             case '#':
             case '/':
-            case '?':
             case ':':
             case '^':
             case '%': {
@@ -1173,9 +1179,9 @@ public class AbstractParser implements Parser, Serializable {
                 return lastNode = new Negation(expr, st, cursor - st, fields, pCtx);
               }
               else if (expr[cursor] == '!') {
-                  // just ignore a double negation
-                  ++cursor;
-                  return nextToken();
+                // just ignore a double negation
+                ++cursor;
+                return nextToken();
               }
               else if (expr[cursor] != '=')
                 throw new CompileException("unexpected operator '!'", expr, st, null);
@@ -2060,6 +2066,8 @@ public class AbstractParser implements Parser, Serializable {
           end = length = (this.expr = expression.toCharArray()).length;
 
           // trim any whitespace.
+          while (start < length && isWhitespace(expr[start])) start++;
+          
           while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
 
           char[] e = new char[length];
@@ -2083,6 +2091,7 @@ public class AbstractParser implements Parser, Serializable {
    */
   protected void setExpression(char[] expression) {
     end = length = (this.expr = expression).length;
+    while (start < length && isWhitespace(expr[start])) start++;
     while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
   }
 
@@ -2615,7 +2624,7 @@ public class AbstractParser implements Parser, Serializable {
 
         case SOUNDEX:
           stk.push(soundex(java.lang.String.valueOf(stk.pop()))
-                  .equals(soundex(java.lang.String.valueOf(stk.pop()))));
+              .equals(soundex(java.lang.String.valueOf(stk.pop()))));
           break;
 
         case SIMILARITY:
@@ -2643,13 +2652,16 @@ public class AbstractParser implements Parser, Serializable {
     if (op1 instanceof Integer) {
       if (op2 instanceof Integer) {
         reduce((Integer) op1, operator, (Integer) op2);
-      } else {
+      }
+      else {
         reduce((Integer) op1, operator, (Long) op2);
       }
-    } else {
+    }
+    else {
       if (op2 instanceof Integer) {
-         reduce((Long) op1, operator, (Integer) op2);
-      } else {
+        reduce((Long) op1, operator, (Integer) op2);
+      }
+      else {
         reduce((Long) op1, operator, (Long) op2);
       }
     }
@@ -2659,7 +2671,7 @@ public class AbstractParser implements Parser, Serializable {
     switch (operator) {
       case BW_AND:
         stk.push(op1 & op2);
-         break;
+        break;
 
       case BW_OR:
         stk.push(op1 | op2);
@@ -2691,103 +2703,103 @@ public class AbstractParser implements Parser, Serializable {
 
   private void reduce(int op1, int operator, long op2) {
     switch (operator) {
-        case BW_AND:
-            stk.push(op1 & op2);
-            break;
+      case BW_AND:
+        stk.push(op1 & op2);
+        break;
 
-        case BW_OR:
-            stk.push(op1 | op2);
-            break;
+      case BW_OR:
+        stk.push(op1 | op2);
+        break;
 
-        case BW_XOR:
-            stk.push(op1 ^ op2);
-            break;
+      case BW_XOR:
+        stk.push(op1 ^ op2);
+        break;
 
-        case BW_SHIFT_LEFT:
-            stk.push(op1 << op2);
-            break;
+      case BW_SHIFT_LEFT:
+        stk.push(op1 << op2);
+        break;
 
-        case BW_USHIFT_LEFT:
-            int iv2 = op1;
-            if (iv2 < 0) iv2 *= -1;
-            stk.push(iv2 << op2);
-            break;
+      case BW_USHIFT_LEFT:
+        int iv2 = op1;
+        if (iv2 < 0) iv2 *= -1;
+        stk.push(iv2 << op2);
+        break;
 
-        case BW_SHIFT_RIGHT:
-            stk.push(op1 >> op2);
-            break;
+      case BW_SHIFT_RIGHT:
+        stk.push(op1 >> op2);
+        break;
 
-        case BW_USHIFT_RIGHT:
-            stk.push(op1 >>> op2);
-            break;
+      case BW_USHIFT_RIGHT:
+        stk.push(op1 >>> op2);
+        break;
     }
   }
 
   private void reduce(long op1, int operator, int op2) {
     switch (operator) {
-        case BW_AND:
-            stk.push(op1 & op2);
-            break;
+      case BW_AND:
+        stk.push(op1 & op2);
+        break;
 
-        case BW_OR:
-            stk.push(op1 | op2);
-            break;
+      case BW_OR:
+        stk.push(op1 | op2);
+        break;
 
-        case BW_XOR:
-            stk.push(op1 ^ op2);
-            break;
+      case BW_XOR:
+        stk.push(op1 ^ op2);
+        break;
 
-        case BW_SHIFT_LEFT:
-            stk.push(op1 << op2);
-            break;
+      case BW_SHIFT_LEFT:
+        stk.push(op1 << op2);
+        break;
 
-        case BW_USHIFT_LEFT:
-            long iv2 = op1;
-            if (iv2 < 0) iv2 *= -1;
-            stk.push(iv2 << op2);
-            break;
+      case BW_USHIFT_LEFT:
+        long iv2 = op1;
+        if (iv2 < 0) iv2 *= -1;
+        stk.push(iv2 << op2);
+        break;
 
-        case BW_SHIFT_RIGHT:
-            stk.push(op1 >> op2);
-            break;
+      case BW_SHIFT_RIGHT:
+        stk.push(op1 >> op2);
+        break;
 
-        case BW_USHIFT_RIGHT:
-            stk.push(op1 >>> op2);
-            break;
+      case BW_USHIFT_RIGHT:
+        stk.push(op1 >>> op2);
+        break;
     }
   }
 
   private void reduce(long op1, int operator, long op2) {
     switch (operator) {
-        case BW_AND:
-            stk.push(op1 & op2);
-            break;
+      case BW_AND:
+        stk.push(op1 & op2);
+        break;
 
-        case BW_OR:
-            stk.push(op1 | op2);
-            break;
+      case BW_OR:
+        stk.push(op1 | op2);
+        break;
 
-        case BW_XOR:
-            stk.push(op1 ^ op2);
-            break;
+      case BW_XOR:
+        stk.push(op1 ^ op2);
+        break;
 
-        case BW_SHIFT_LEFT:
-            stk.push(op1 << op2);
-            break;
+      case BW_SHIFT_LEFT:
+        stk.push(op1 << op2);
+        break;
 
-        case BW_USHIFT_LEFT:
-            long iv2 = op1;
-            if (iv2 < 0) iv2 *= -1;
-            stk.push(iv2 << op2);
-            break;
+      case BW_USHIFT_LEFT:
+        long iv2 = op1;
+        if (iv2 < 0) iv2 *= -1;
+        stk.push(iv2 << op2);
+        break;
 
-        case BW_SHIFT_RIGHT:
-            stk.push(op1 >> op2);
-            break;
+      case BW_SHIFT_RIGHT:
+        stk.push(op1 >> op2);
+        break;
 
-        case BW_USHIFT_RIGHT:
-            stk.push(op1 >>> op2);
-            break;
+      case BW_USHIFT_RIGHT:
+        stk.push(op1 >>> op2);
+        break;
     }
   }
 

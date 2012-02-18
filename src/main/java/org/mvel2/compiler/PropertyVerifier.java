@@ -352,7 +352,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
       else if (ctx.isArray()) {
-        ctx = getBaseComponentType(ctx);
+        ctx = ctx.getComponentType();
       }
       else if (pCtx.isStrongTyping()) {
         throw new CompileException("unknown collection type: " + ctx + "; property=" + property, expr, start);
@@ -367,9 +367,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     skipWhitespace();
 
     int start = cursor;
-
-    if (cursor == length)
-      throw new PropertyAccessException("unterminated '['", expr, this.start);
 
     if (scanTo(']')) {
       addFatalError("unterminated [ in token");

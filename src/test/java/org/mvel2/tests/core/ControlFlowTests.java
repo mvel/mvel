@@ -224,29 +224,29 @@ public class ControlFlowTests extends AbstractTest {
     elements.add(new TargetClass());
     Map variableMap = new HashMap();
     variableMap.put("elements",
-            elements);
+        elements);
     eval("results = new java.util.ArrayList(); foreach (element : elements) { " +
-            "if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
-            variableMap);
+        "if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
+        variableMap);
   }
 
   public void testStaticallyTypedItemInForEach() {
     assertEquals("1234",
-            test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 })" +
-                    " { sbuf.append(i); }; sbuf.toString()"));
+        test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 })" +
+            " { sbuf.append(i); }; sbuf.toString()"));
   }
 
   public void testJIRA115() {
     String exp = "results = new java.util.ArrayList(); foreach (element : elements) { " +
-            "if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
+        "if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
     Map map = new HashMap();
     map.put("elements",
-            new int[]{1, 32769, 32767});
+        new int[]{1, 32769, 32767});
     ArrayList result = (ArrayList) MVEL.eval(exp,
-            map);
+        map);
 
     assertEquals(3,
-            result.size());
+        result.size());
   }
 
   public void testStringWithTernaryIf() {
@@ -259,7 +259,7 @@ public class ControlFlowTests extends AbstractTest {
     Object val2;
     try {
       val = executeExpression(compileExpression(expression),
-              JIRA124_CTX);
+          JIRA124_CTX);
     }
     catch (Exception e) {
       System.out.println("FailedCompiled[" + i + "]:" + expression);
@@ -268,7 +268,7 @@ public class ControlFlowTests extends AbstractTest {
 
     try {
       val2 = MVEL.eval(expression,
-              JIRA124_CTX);
+          JIRA124_CTX);
     }
     catch (Exception e) {
       System.out.println("FailedEval[" + i + "]:" + expression);
@@ -277,56 +277,56 @@ public class ControlFlowTests extends AbstractTest {
 
     if (((val == null || val2 == null) && val != val2) || (val != null && !val.equals(val2))) {
       throw new AssertionError("results do not match (" + String.valueOf(val)
-              + " != " + String.valueOf(val2) + ")");
+          + " != " + String.valueOf(val2) + ")");
     }
 
     return val;
   }
 
   private static Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue",
-          true);
+      true);
 
   public void testJIRA124() throws Exception {
     assertEquals("A",
-            testTernary(1,
-                    "testValue == true ? 'A' :  'B' + 'C'"));
+        testTernary(1,
+            "testValue == true ? 'A' :  'B' + 'C'"));
     assertEquals("AB",
-            testTernary(2,
-                    "testValue ? 'A' +  'B' : 'C'"));
+        testTernary(2,
+            "testValue ? 'A' +  'B' : 'C'"));
     assertEquals("A",
-            testTernary(3,
-                    "(testValue ? 'A' :  'B' + 'C')"));
+        testTernary(3,
+            "(testValue ? 'A' :  'B' + 'C')"));
     assertEquals("AB",
-            testTernary(4,
-                    "(testValue ? 'A' +  'B' : 'C')"));
+        testTernary(4,
+            "(testValue ? 'A' +  'B' : 'C')"));
     assertEquals("A",
-            testTernary(5,
-                    "(testValue ? 'A' :  ('B' + 'C'))"));
+        testTernary(5,
+            "(testValue ? 'A' :  ('B' + 'C'))"));
     assertEquals("AB",
-            testTernary(6,
-                    "(testValue ? ('A' + 'B') : 'C')"));
+        testTernary(6,
+            "(testValue ? ('A' + 'B') : 'C')"));
 
     JIRA124_CTX = Collections.singletonMap("testValue",
-            false);
+        false);
 
     assertEquals("BC",
-            testTernary(1,
-                    "testValue ? 'A' :  'B' + 'C'"));
+        testTernary(1,
+            "testValue ? 'A' :  'B' + 'C'"));
     assertEquals("C",
-            testTernary(2,
-                    "testValue ? 'A' +  'B' : 'C'"));
+        testTernary(2,
+            "testValue ? 'A' +  'B' : 'C'"));
     assertEquals("BC",
-            testTernary(3,
-                    "(testValue ? 'A' :  'B' + 'C')"));
+        testTernary(3,
+            "(testValue ? 'A' :  'B' + 'C')"));
     assertEquals("C",
-            testTernary(4,
-                    "(testValue ? 'A' +  'B' : 'C')"));
+        testTernary(4,
+            "(testValue ? 'A' +  'B' : 'C')"));
     assertEquals("BC",
-            testTernary(5,
-                    "(testValue ? 'A' :  ('B' + 'C'))"));
+        testTernary(5,
+            "(testValue ? 'A' :  ('B' + 'C'))"));
     assertEquals("C",
-            testTernary(6,
-                    "(testValue ? ('A' + 'B') : 'C')"));
+        testTernary(6,
+            "(testValue ? ('A' + 'B') : 'C')"));
   }
 
   /**
@@ -336,50 +336,50 @@ public class ControlFlowTests extends AbstractTest {
   public void testCalculateAge() {
     Calendar c1 = Calendar.getInstance();
     c1.set(1999,
-            0,
-            10); // 1999 jan 20
+        0,
+        10); // 1999 jan 20
     Map objectMap = new HashMap(1);
     Map propertyMap = new HashMap(1);
     propertyMap.put("GEBDAT",
-            c1.getTime());
+        c1.getTime());
     objectMap.put("EV_VI_ANT1",
-            propertyMap);
+        propertyMap);
     assertEquals("N",
-            testCompiledSimple(
-                    "new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'",
-                    null,
-                    objectMap));
+        testCompiledSimple(
+            "new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'",
+            null,
+            objectMap));
   }
 
   public void testSubEvaluation() {
     HashMap<String, Object> map = new HashMap<String, Object>();
     map.put("EV_BER_BER_NR",
-            "12345");
+        "12345");
     map.put("EV_BER_BER_PRIV",
-            Boolean.FALSE);
+        Boolean.FALSE);
 
     assertEquals("12345",
-            testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
-                    null,
-                    map));
+        testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
+            null,
+            map));
 
     map.put("EV_BER_BER_PRIV",
-            Boolean.TRUE);
+        Boolean.TRUE);
     assertEquals("12345/PRIVAT",
-            testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
-                    null,
-                    map));
+        testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
+            null,
+            map));
   }
 
 
   public void testCompactIfElse() {
     assertEquals("foo",
-            test("if (false) 'bar'; else 'foo';"));
+        test("if (false) 'bar'; else 'foo';"));
   }
 
   public void testForInitializerScope() {
     String ex = "for (int i = 0; i < 10; i++) { 'fop'; }\n" +
-            "for (int i = 0; i < 10; i++) { 'foo'; }";
+        "for (int i = 0; i < 10; i++) { 'foo'; }";
 
     Serializable s = MVEL.compileExpression(ex);
 
@@ -389,10 +389,10 @@ public class ControlFlowTests extends AbstractTest {
 
   public void testForEachTerminateFlow() {
     String ex = "for(int i=0;i<5;i++) {\n" +
-            "System.out.println(\"LOOP\" + i);\n" +
-            "return true;\n" +
-            "}\n" +
-            "System.out.println(\"END\");";
+        "System.out.println(\"LOOP\" + i);\n" +
+        "return true;\n" +
+        "}\n" +
+        "System.out.println(\"END\");";
 
     Serializable s = MVEL.compileExpression(ex);
 
@@ -402,9 +402,58 @@ public class ControlFlowTests extends AbstractTest {
   public final void testFunctionCall() {
 
     MVEL.eval(
-            "def test() { for(i = 0; i < 3; i++) { System.out.println('...') } } \n" +
-                    "test()",
-            new HashMap<String, Object>());
+        "def test() { for(i = 0; i < 3; i++) { System.out.println('...') } } \n" +
+            "test()",
+        new HashMap<String, Object>());
   }
 
+  public void testMultipleArgumentsInFunction() {
+    String expression = "def cond(x, y) {\n" +
+        "\tif (x ~= \"fet.*\") {\n" +
+        "\t\tif ((x.endsWith(('sock')))) {\n" +
+        " \t\t\treturn 1;\n" +
+        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
+        " \t\t\treturn [1: ((y > 12) ? 1 : 2), 2: (12 + 1)];\n" +
+        "\t\t} ;\n" +
+        "\t}\n" +
+        "(null).print();\n" +   // THIS LINE SHOULD NEVER EXECUTE BUT IT DOES, INCORRECT!
+        "\n" +
+        "}\n" +
+        "\n" +
+        "cond('fetlock', 12)";
+
+
+    Exception thrown = null;
+    try {
+      MVEL.executeExpression(MVEL.compileExpression(expression), new HashMap());
+    }
+    catch (Exception e) {
+      thrown = e;
+    }
+
+    assertNull("Return statement not being honored!", thrown);
+  }
+  
+  public void testDhanji1() {
+    String expression = "def insert(i, ls) {\n" +
+        "  if (ls == empty) {\n" +
+        "    return [];\n" +
+        "  }\n" +
+        "  if (ls is java.util.List) {\n" +
+        "    x = ls[0];\n" +
+        "    xs = ls.size() == 1 ? [] : ls.subList(1, ls.size());\n" +
+        "    return (((i <= x) ? ([i, x] + xs) : insert(i, xs)));\n" +
+        "  }\n" +
+        "}\n" +
+        "\n" +
+        "insert(2, [1, 3, 4])";
+   
+    Object o = MVEL.eval(expression, new HashMap<String, Object>());
+
+    System.out.println(o);
+  }
+  
+//  public void testDhanji2() {
+//    System.out.println(MVEL.eval("x = 1; y = 2; [x,y] + [3,4]", new HashMap<String, Object>()));
+//  }
 }

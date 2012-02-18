@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.integration.impl.StackDemarcResolverFactory;
 import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
@@ -80,7 +81,9 @@ public class ImportNode extends ASTNode {
     }
 
     // if the factory is an ImmutableDefaultFactory it means this import is unused so we can skip it safely
-    if (!(factory instanceof ImmutableDefaultFactory)) {
+    if (!(factory instanceof ImmutableDefaultFactory)
+        && !(factory instanceof StackDemarcResolverFactory
+        && ((StackDemarcResolverFactory) factory).getDelegate() instanceof ImmutableDefaultFactory)) {
       findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
     }
     return null;

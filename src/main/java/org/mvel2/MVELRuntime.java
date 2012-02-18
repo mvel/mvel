@@ -38,7 +38,6 @@ public class MVELRuntime {
   // public static final ImmutableDefaultFactory IMMUTABLE_DEFAULT_FACTORY = new ImmutableDefaultFactory();
   private static ThreadLocal<DebuggerContext> debuggerContext;
 
-
   /**
    * Main interpreter.
    *
@@ -54,7 +53,6 @@ public class MVELRuntime {
 
     Object v1, v2;
     ExecutionStack stk = new ExecutionStack();
-    variableFactory.setTiltFlag(false);
 
     ASTNode tk = expression.getFirstNode();
     Integer operator;

@@ -170,4 +170,17 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
   public void setIndexOffset(int offset) {
     this.indexOffset = offset;
   }
+
+
+  private boolean noTilt = false;
+
+  public VariableResolverFactory setNoTilt(boolean noTilt) {
+    this.noTilt = noTilt;
+    return this;
+  }
+
+  @Override
+  public void setTiltFlag(boolean tiltFlag) {
+    if (!noTilt) super.setTiltFlag(tiltFlag);
+  }
 }

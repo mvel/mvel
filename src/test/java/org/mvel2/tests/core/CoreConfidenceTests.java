@@ -24,6 +24,8 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -3807,46 +3809,54 @@ public class CoreConfidenceTests extends AbstractTest {
     System.out.println(result);
   }
 
-  public void testMultipleArgumentsInFunction() {
-    String expression = "def cond(x, y) {\n" +
-        "\tif (x ~= \"fet.*\") {\n" +
-        "\t\tif ((x.endsWith(('sock')))) {\n" +
-        " \t\t\treturn 1;\n" +
-        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
-        " \t\t\treturn [1: ((y > 12) ? 1 : 2), 2: (12 + 1)];\n" +
-        "\t\t} ;\n" +
-        "\t}\n" +
-        "(null).print();\n" +   // THIS LINE SHOULD NEVER EXECUTE BUT IT DOES, INCORRECT!
-        "\n" +
-        "}\n" +
-        "\n" +
-        "cond('fetlock', 12)";
+  public void testSystemOutOnPrivateClass() {
+    PrintStream originalSystemOut = System.out;
+    System.setOut(new MyPrivatePrintStream(System.out));
+    String expression = "System.out.println(\"Hello World\");";
+    runSingleTest(expression);
+    System.setOut(originalSystemOut);
+  }
 
-    String expression2 = "def cond(x, y) {\n" +
-        "\tif (x ~= \"fet.*\") {\n" +
-        "\t\tif ((x.endsWith(('sock')))) {\n" +
-        " \t\t\treturn 1;\n" +
-        "\t\t}  else if ((x.endsWith(('lock')))) {\n" +
-        " \t\t\treturn 2;\n" +   // REPLACED WITH A SIMPLE INTEGER
-        "\t\t} ;\n" +
-        "\t}\n" +
-        "(null).print();\n" +   // THIS LINE NEVER EXECUTES, CORRECT!
-        "\n" +
-        "}\n" +
-        "\n" +
-        "cond('fetlock', 12)";
-
-    Exception thrown = null;
-    try {
-      // WRONG
-      MVEL.executeExpression(MVEL.compileExpression(expression, context), new HashMap());
-    } catch (Exception e) {
-      thrown = e;
+  private static class MyPrivatePrintStream extends PrintStream {
+    public MyPrivatePrintStream(OutputStream os) {
+      super(os);
     }
+    public void println(String s) {
+      super.println(s);
+    }
+  }
 
-    // CORRECT!
-    MVEL.executeExpression(MVEL.compileExpression(expression2, context), new HashMap());
+  public void testSystemOutWithActualInstanceMethod() {
+    PrintStream originalSystemOut = System.out;
+    System.setOut(new MyPublicPrintStream(System.out));
+    String expression = "System.out.myPrintln(\"Hello World\");";
+    runSingleTest(expression);
+    System.setOut(originalSystemOut);
+  }
 
-    assertNull("Return statement not being honored!", thrown);
+  public static class MyPublicPrintStream extends PrintStream {
+    public MyPublicPrintStream(OutputStream os) {
+      super(os);
+    }
+    public void println(String s) {
+      super.println(s);
+    }
+    public void myPrintln(String s) {
+      super.println(s);
+    }
+  }
+
+  public void testMinusOperatorWithoutSpace() {
+    String str = "length == $c.length -1";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    Column col1 = new Column("x", 0);
+    Column col2 = new Column("x", 0);
+    Map<String, Object> vars = new HashMap<String, Object> ();
+    vars.put( "$c", col2 );
+    Boolean result = (Boolean) MVEL.executeExpression(stmt, col1, vars);
+    assertFalse(result);
   }
 }
