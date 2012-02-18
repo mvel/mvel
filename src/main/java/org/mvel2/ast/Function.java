@@ -27,6 +27,8 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.FunctionVariableResolverFactory;
+import org.mvel2.integration.impl.StackDemarcResolverFactory;
+import org.mvel2.integration.impl.StackResetResolverFactory;
 
 import java.util.Map;
 
@@ -146,14 +148,14 @@ public class Function extends ASTNode implements Safe {
             }
           }
         }
-        return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms).setNoTilt(true));
+        return compiledBlock.getValue(thisValue, new StackDemarcResolverFactory(new FunctionVariableResolverFactory(this, factory, parameters, parms)));
       }
       else if (cMode) {
-        return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
+        return compiledBlock.getValue(thisValue, new StackDemarcResolverFactory(new DefaultLocalVariableResolverFactory(factory, parameters)));
       }
       else {
-        return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory,
-            parameters).setNoTilt(true));
+        return compiledBlock.getValue(thisValue, new StackDemarcResolverFactory(new DefaultLocalVariableResolverFactory(factory,
+            parameters)));
       }
 
   }

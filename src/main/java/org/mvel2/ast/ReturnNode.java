@@ -21,6 +21,8 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.StackDemarcResolverFactory;
+import org.mvel2.integration.impl.StackResetResolverFactory;
 
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.util.ParseTools.subCompileExpression;
@@ -47,12 +49,12 @@ public class ReturnNode extends ASTNode {
 
     factory.setTiltFlag(true);
 
-    return accessor.getValue(ctx, thisValue, factory);
+    return accessor.getValue(ctx, thisValue, new StackDemarcResolverFactory(factory));
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     factory.setTiltFlag(true);
-    return eval(expr, start, offset, ctx, factory);
+    return eval(expr, start, offset, ctx, new StackDemarcResolverFactory(factory));
   }
 
   @Override

@@ -3859,4 +3859,5 @@ public class CoreConfidenceTests extends AbstractTest {
     Boolean result = (Boolean) MVEL.executeExpression(stmt, col1, vars);
     assertFalse(result);
   }
+
 }

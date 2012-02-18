@@ -422,7 +422,6 @@ public class ControlFlowTests extends AbstractTest {
         "\n" +
         "cond('fetlock', 12)";
 
-
     Exception thrown = null;
     try {
       MVEL.executeExpression(MVEL.compileExpression(expression), new HashMap());

@@ -8,11 +8,11 @@ import java.util.Set;
 /**
  * @author Mike Brock
  */
-public class StackDemarcResolverFactory implements VariableResolverFactory {
+public class StackResetResolverFactory implements VariableResolverFactory {
   private VariableResolverFactory delegate;
-  private boolean tilt = false;
-  
-  public StackDemarcResolverFactory(VariableResolverFactory delegate) {
+
+  public StackResetResolverFactory(VariableResolverFactory delegate) {
+    delegate.setTiltFlag(false);
     this.delegate = delegate;
   }
 
@@ -73,11 +73,13 @@ public class StackDemarcResolverFactory implements VariableResolverFactory {
   }
 
   public boolean tiltFlag() {
-    return tilt;
+    return delegate.tiltFlag();
   }
 
   public void setTiltFlag(boolean tilt) {
-    this.tilt = tilt;
+    if (!delegate.tiltFlag()) {
+      delegate.setTiltFlag(tilt);
+    }
   }
 
   public VariableResolverFactory getDelegate() {

@@ -23,7 +23,7 @@ import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.integration.impl.StackDemarcResolverFactory;
+import org.mvel2.integration.impl.StackResetResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ASTLinkedList;
@@ -123,7 +123,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
       return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
     }
     else {
-      return execute(false, this, staticContext, new StackDemarcResolverFactory(factory));
+      return execute(false, this, staticContext, new StackResetResolverFactory(factory));
  //     return execute(false, this, staticContext, factory);
 
     }
@@ -134,7 +134,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
       return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
     }
     else {
-      return execute(false, this, staticContext, new StackDemarcResolverFactory(factory));
+      return execute(false, this, staticContext, new StackResetResolverFactory(factory));
  //     return execute(false, this, staticContext,factory);
 
     }
