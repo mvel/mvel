@@ -143,17 +143,23 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public static class MyPerson {
-      private String name;
-      public MyPerson(String name) { this.name = name; }
-      public String getName() { return name; }
+    private String name;
+
+    public MyPerson(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
   }
 
   public void testUnusedPackageImport() {
     String expression =
-            "import java.util.*; " +
+        "import java.util.*; " +
             "name == \"Mario\" ";
     Serializable compiledExpression = MVEL.compileExpression(expression);
-    boolean result = (Boolean)MVEL.executeExpression(compiledExpression, new MyPerson("Mario"));
+    boolean result = (Boolean) MVEL.executeExpression(compiledExpression, new MyPerson("Mario"));
     assertTrue(result);
   }
 
@@ -1171,7 +1177,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public class POJO {
     private Set<Date> dates = new HashSet<Date>();
-    private Map<String, Object> map = new HashMap<String,Object>();
+    private Map<String, Object> map = new HashMap<String, Object>();
 
     public POJO() {
       dates.add(new Date());
@@ -1188,21 +1194,21 @@ public class CoreConfidenceTests extends AbstractTest {
     public String function(long num) {
       return String.valueOf(num);
     }
-    
+
     public String aMethod(long num) {
-      return String.valueOf( num ); 
+      return String.valueOf(num);
     }
 
     public Map<String, Object> getMap() {
-        return map;
+      return map;
     }
 
-    public void setMap( Map<String, Object> map ) {
-        this.map = map;
+    public void setMap(Map<String, Object> map) {
+      this.map = map;
     }
-    
+
     public String getKey() {
-        return "1";
+      return "1";
     }
   }
 
@@ -2181,23 +2187,23 @@ public class CoreConfidenceTests extends AbstractTest {
     String ex = "objectKeyMaptributes[$aPerson] == foo";
     Foo foo = new Foo();
     Person person = new Person();
-    person.setObjectKeyMaptributes( new HashMap<Object,Foo>() );
-    person.getObjectKeyMaptributes().put( person, foo );
-    Map<String,Class> inputs = new HashMap<String, Class>();
-    inputs.put( "this", Person.class );
-    inputs.put( "foo", Foo.class );
-    inputs.put( "$aPerson", Person.class );
+    person.setObjectKeyMaptributes(new HashMap<Object, Foo>());
+    person.getObjectKeyMaptributes().put(person, foo);
+    Map<String, Class> inputs = new HashMap<String, Class>();
+    inputs.put("this", Person.class);
+    inputs.put("foo", Foo.class);
+    inputs.put("$aPerson", Person.class);
     ParserContext ctx = new ParserContext();
     ctx.setStrongTyping(true);
-    ctx.setInputs( inputs );
-      
-    Serializable expression = MVEL.compileExpression( ex, ctx );
-    Map<String,Object> variables = new HashMap<String, Object>();
-    variables.put( "foo", foo );
-    variables.put( "$aPerson", person );
+    ctx.setInputs(inputs);
 
-    Boolean result = (Boolean) MVEL.executeExpression( expression, person, variables );
-    assertTrue( result );
+    Serializable expression = MVEL.compileExpression(ex, ctx);
+    Map<String, Object> variables = new HashMap<String, Object>();
+    variables.put("foo", foo);
+    variables.put("$aPerson", person);
+
+    Boolean result = (Boolean) MVEL.executeExpression(expression, person, variables);
+    assertTrue(result);
   }
 
   public static void testProjectionUsingThis() {
@@ -2295,14 +2301,14 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testMultipleNegations() {
-      assertEquals(true,
-              executeExpression(MVEL.compileExpression("!false")));
-      assertEquals(false,
-              executeExpression(MVEL.compileExpression("!!false")));
-      assertEquals(true,
-              executeExpression(MVEL.compileExpression("!!!false")));
-      assertEquals(false,
-              executeExpression(MVEL.compileExpression("!!!!false")));
+    assertEquals(true,
+        executeExpression(MVEL.compileExpression("!false")));
+    assertEquals(false,
+        executeExpression(MVEL.compileExpression("!!false")));
+    assertEquals(true,
+        executeExpression(MVEL.compileExpression("!!!false")));
+    assertEquals(false,
+        executeExpression(MVEL.compileExpression("!!!!false")));
   }
 
   public void testJIRA154() {
@@ -2896,13 +2902,13 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testBigDecimalOutput() {
-      String str = "import java.math.BigDecimal; BigDecimal test = new BigDecimal(\"50000\"); System.out.println(test / new BigDecimal(\"1.13\"));";
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.setStrictTypeEnforcement(true);
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-      MVEL.executeExpression( stmt, new HashMap() );
+    String str = "import java.math.BigDecimal; BigDecimal test = new BigDecimal(\"50000\"); System.out.println(test / new BigDecimal(\"1.13\"));";
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.setStrictTypeEnforcement(true);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    MVEL.executeExpression(stmt, new HashMap());
   }
 
   public void testConstructor() {
@@ -3379,7 +3385,7 @@ public class CoreConfidenceTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
 
     POJO ctx = new POJO();
-    ctx.getMap().put( "1", "one" );
+    ctx.getMap().put("1", "one");
     Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
     assertTrue(result);
   }
@@ -3394,7 +3400,7 @@ public class CoreConfidenceTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
 
     POJO ctx = new POJO();
-    ctx.getMap().put( "1", "one" );
+    ctx.getMap().put("1", "one");
     Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
     assertTrue(result);
   }
@@ -3405,22 +3411,22 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext pctx = new ParserContext(pconf);
     pctx.setStrongTyping(true);
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-    MVEL.executeExpression( stmt, new HashMap() );
+    MVEL.executeExpression(stmt, new HashMap());
   }
 
   public void testFullyQualifiedEnums() {
     String str = "System.out.println( STATIC_ENUM.FOO ); \n" +
-               "System.out.println( org.mvel2.tests.core.res.MyInterface$STATIC_ENUM.BAR );\n" +
-               "System.out.println( org.mvel2.tests.core.res.MyInterface.MyInnerInterface.INNER_STATIC_ENUM.BAR );\n" +
-               "System.out.println( RoundingMode.UP );\n" +
-               "System.out.println( java.math.RoundingMode.DOWN );";
+        "System.out.println( org.mvel2.tests.core.res.MyInterface$STATIC_ENUM.BAR );\n" +
+        "System.out.println( org.mvel2.tests.core.res.MyInterface.MyInnerInterface.INNER_STATIC_ENUM.BAR );\n" +
+        "System.out.println( RoundingMode.UP );\n" +
+        "System.out.println( java.math.RoundingMode.DOWN );";
 
     ParserConfiguration pconf = new ParserConfiguration();
     ParserContext pctx = new ParserContext(pconf);
     pctx.setStrongTyping(true);
     pctx.addInput("this", MyInterface.class);
-    pctx.addImport( MyInterface.STATIC_ENUM.class );
-    pctx.addImport( java.math.RoundingMode.class );
+    pctx.addImport(MyInterface.STATIC_ENUM.class);
+    pctx.addImport(java.math.RoundingMode.class);
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
   }
 
@@ -3431,9 +3437,10 @@ public class CoreConfidenceTests extends AbstractTest {
       ParserConfiguration pconf = new ParserConfiguration();
       ParserContext pctx = new ParserContext(pconf);
       pctx.setStrongTyping(true);
-      pctx.addInput( "triangle", Triangle.class );
+      pctx.addInput("triangle", Triangle.class);
       ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-    } catch ( Exception e ) {
+    }
+    catch (Exception e) {
       // it should not raise CCE
       e.printStackTrace();
       throw e;
@@ -3587,74 +3594,75 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testPrimitiveArray() {
     Map vars = new HashMap();
-    vars.put("array", new boolean[] { true, false });
+    vars.put("array", new boolean[]{true, false});
     String expression = "a = true; array contains a";
     Serializable compiled = MVEL.compileExpression(expression);
-    boolean result = (Boolean)MVEL.executeExpression(compiled, vars);
+    boolean result = (Boolean) MVEL.executeExpression(compiled, vars);
     assertEquals(true, result);
 
     vars = new HashMap();
-    vars.put("array", new int[] { 1, 3, 4 });
+    vars.put("array", new int[]{1, 3, 4});
     expression = "a = 2; array contains a";
     compiled = MVEL.compileExpression(expression);
-    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    result = (Boolean) MVEL.executeExpression(compiled, vars);
     assertEquals(false, result);
 
     expression = "a = 3; array contains a";
     compiled = MVEL.compileExpression(expression);
-    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    result = (Boolean) MVEL.executeExpression(compiled, vars);
     assertEquals(true, result);
 
     expression = "a = false; array contains a";
     compiled = MVEL.compileExpression(expression);
-    result = (Boolean)MVEL.executeExpression(compiled, vars);
+    result = (Boolean) MVEL.executeExpression(compiled, vars);
     assertEquals(false, result);
   }
 
   public void testPrimitiveArrayWithStrongTyping() {
     String expression = "a = true; new boolean[] { true, false } contains a";
-    boolean result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    boolean result = (Boolean) compileAndExecuteWithStrongTyping(expression);
     assertEquals(true, result);
 
     expression = "a = 2; new int[] { 1, 3 } contains a";
-    result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    result = (Boolean) compileAndExecuteWithStrongTyping(expression);
     assertEquals(false, result);
 
     expression = "a = true; array = new boolean[] { true, false }; array contains a";
-    result = (Boolean)compileAndExecuteWithStrongTyping(expression);
+    result = (Boolean) compileAndExecuteWithStrongTyping(expression);
     assertEquals(true, result);
   }
 
   public void testVarArgsParams() {
     assertEquals(String.format("xxx"),
-      runSingleTest("String.format(\"xxx\")"));
+        runSingleTest("String.format(\"xxx\")"));
 
     assertEquals(String.format("%010d", 123),
-      runSingleTest("String.format(\"%010d\", 123)"));
+        runSingleTest("String.format(\"%010d\", 123)"));
 
     assertEquals(String.format("%010d", 123),
-      runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
+        runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
 
     assertEquals(String.format("%010d", 123),
-      runSingleTest("a = 123; String.format(\"%010d\", a)"));
+        runSingleTest("a = 123; String.format(\"%010d\", a)"));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-      runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", {a, b})"));
+        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", {a, b})"));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-      runSingleTest("a = new Object[2]; a[0] = 123; a[1] = 456; String.format(\"%010d -- %010d\", a)"));
+        runSingleTest("a = new Object[2]; a[0] = 123; a[1] = 456; String.format(\"%010d -- %010d\", a)"));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-      runSingleTest("String.format(\"%010d -- %010d\", 123, 456)"));
+        runSingleTest("String.format(\"%010d -- %010d\", 123, 456)"));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-      runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
+        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
   }
 
   public static class A {
     public int invoke(String s1, String s2, B... bs) {
       return bs.length;
     }
+
     public static int invokeSum(int start, B... bs) {
       for (B b : bs) start += b.getValue();
       return start;
@@ -3663,32 +3671,45 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public static class B {
     private int value;
-    public B() { }
-    public B(int value) { this.value = value; }
-    public int getValue() { return value; }
-    public boolean equals(Object other) { return other != null && other instanceof B && value == ((B)other).value; };
+
+    public B() {
+    }
+
+    public B(int value) {
+      this.value = value;
+    }
+
+    public int getValue() {
+      return value;
+    }
+
+    public boolean equals(Object other) {
+      return other != null && other instanceof B && value == ((B) other).value;
+    }
+
+    ;
   }
 
   public void testTypedVarArgsParams() {
     String imports = "import org.mvel2.tests.core.CoreConfidenceTests.A;\nimport org.mvel2.tests.core.CoreConfidenceTests.B;\n";
 
     String invoke0 = imports + "new A().invoke(\"s1\", \"s2\")";
-    int result = (Integer)compileAndExecuteWithStrongTyping(invoke0);
+    int result = (Integer) compileAndExecuteWithStrongTyping(invoke0);
     assertEquals(0, result);
     assertEquals(0, runSingleTest(invoke0));
 
     String invokeSum0 = imports + "A.invokeSum(3)";
-    result = (Integer)compileAndExecuteWithStrongTyping(invokeSum0);
+    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum0);
     assertEquals(3, result);
     assertEquals(3, runSingleTest(invokeSum0));
 
     String invoke3 = imports + "new A().invoke(\"s1\", \"s2\", new B(), new B(), new B())";
-    result = (Integer)compileAndExecuteWithStrongTyping(invoke3);
+    result = (Integer) compileAndExecuteWithStrongTyping(invoke3);
     assertEquals(3, result);
     assertEquals(3, runSingleTest(invoke3));
 
     String invokeSum2 = imports + "A.invokeSum(3, new B(4), new B(5))";
-    result = (Integer)compileAndExecuteWithStrongTyping(invokeSum2);
+    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum2);
     assertEquals(12, result);
     assertEquals(12, runSingleTest(invokeSum2));
   }
@@ -3702,18 +3723,18 @@ public class CoreConfidenceTests extends AbstractTest {
     context.setStrongTyping(true);
     context.setStrictTypeEnforcement(true);
     Serializable compiled = MVEL.compileExpression(expression, context);
-    return (T)MVEL.executeExpression(compiled, vars);
+    return (T) MVEL.executeExpression(compiled, vars);
   }
 
   public void testArrayCreation() {
-    assertTrue(Arrays.deepEquals(new Object[0], (Object[])compileAndExecuteWithStrongTyping("{}")));
-    assertTrue(Arrays.deepEquals(new String[0], (String[])compileAndExecuteWithStrongTyping("new String[] {}")));
-    assertTrue(Arrays.deepEquals(new String[] { "xyz" }, (String[])compileAndExecuteWithStrongTyping("new String[] { \"xyz\" }")));
-    assertTrue(Arrays.deepEquals(new String[] { "xyz" }, (String[])compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\") }")));
-    assertTrue(Arrays.deepEquals(new String[] { "xyz", "abc" }, (String[])compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\"), new String(\"abc\") }")));
-    assertTrue(Arrays.deepEquals(new B[0], (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { }")));
-    assertTrue(Arrays.deepEquals(new B[] { new B(5) }, (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { new B(5) }")));
-    assertTrue(Arrays.deepEquals(new B[] { new B(), new B(), new B()}, (B[])compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] {new B(),new B(),new B()}")));
+    assertTrue(Arrays.deepEquals(new Object[0], (Object[]) compileAndExecuteWithStrongTyping("{}")));
+    assertTrue(Arrays.deepEquals(new String[0], (String[]) compileAndExecuteWithStrongTyping("new String[] {}")));
+    assertTrue(Arrays.deepEquals(new String[]{"xyz"}, (String[]) compileAndExecuteWithStrongTyping("new String[] { \"xyz\" }")));
+    assertTrue(Arrays.deepEquals(new String[]{"xyz"}, (String[]) compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\") }")));
+    assertTrue(Arrays.deepEquals(new String[]{"xyz", "abc"}, (String[]) compileAndExecuteWithStrongTyping("new String[] { new String(\"xyz\"), new String(\"abc\") }")));
+    assertTrue(Arrays.deepEquals(new B[0], (B[]) compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { }")));
+    assertTrue(Arrays.deepEquals(new B[]{new B(5)}, (B[]) compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] { new B(5) }")));
+    assertTrue(Arrays.deepEquals(new B[]{new B(), new B(), new B()}, (B[]) compileAndExecuteWithStrongTyping("import org.mvel2.tests.core.CoreConfidenceTests.B;\nnew B[] {new B(),new B(),new B()}")));
   }
 
   public static class Bean1 {
@@ -3724,6 +3745,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public String getField1() {
       return Field1;
     }
+
     public void setField1(String Field1) {
       this.Field1 = Field1;
     }
@@ -3731,25 +3753,27 @@ public class CoreConfidenceTests extends AbstractTest {
     public String getFIELD2() {
       return FIELD2;
     }
+
     public void setFIELD2(String FIELD2) {
       this.FIELD2 = FIELD2;
     }
 
     public int getIntField() {
-        return intField;
+      return intField;
     }
+
     public void setIntField(int intField) {
-        this.intField = intField;
+      this.intField = intField;
     }
   }
 
   public void testUppercaseField() {
     String ex = "Field1 == \"foo\" || FIELD2 == \"bar\"";
     final ParserContext parserContext2 = new ParserContext();
-    parserContext2.setStrictTypeEnforcement( true );
-    parserContext2.setStrongTyping( true );
+    parserContext2.setStrictTypeEnforcement(true);
+    parserContext2.setStrongTyping(true);
     parserContext2.addInput("this", Bean1.class);
-    MVEL.analyze( ex, parserContext2 );
+    MVEL.analyze(ex, parserContext2);
   }
 
   public void testExpressionReturnType() {
@@ -3775,13 +3799,15 @@ public class CoreConfidenceTests extends AbstractTest {
     try {
       expressionReturnType(expr);
       fail("wrong expression '" + expr + "' must fail");
-    } catch (Exception e) { }
+    }
+    catch (Exception e) {
+    }
   }
 
   private Class<?> expressionReturnType(String expr) {
     final ParserContext parserContext = new ParserContext();
-    parserContext.setStrictTypeEnforcement( true );
-    parserContext.setStrongTyping( true );
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
     parserContext.addInput("this", Bean1.class);
     return MVEL.analyze(expr, parserContext);
   }
@@ -3821,6 +3847,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public MyPrivatePrintStream(OutputStream os) {
       super(os);
     }
+
     public void println(String s) {
       super.println(s);
     }
@@ -3838,9 +3865,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public MyPublicPrintStream(OutputStream os) {
       super(os);
     }
+
     public void println(String s) {
       super.println(s);
     }
+
     public void myPrintln(String s) {
       super.println(s);
     }
@@ -3854,10 +3883,21 @@ public class CoreConfidenceTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
     Column col1 = new Column("x", 0);
     Column col2 = new Column("x", 0);
-    Map<String, Object> vars = new HashMap<String, Object> ();
-    vars.put( "$c", col2 );
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("$c", col2);
     Boolean result = (Boolean) MVEL.executeExpression(stmt, col1, vars);
     assertFalse(result);
+  }
+
+  public void testDhanji2() {
+    String ex =
+        "name = null;\n" +
+        "$_1 = ?name.?toLowerCase();\n";
+
+    
+    Serializable s = MVEL.compileExpression(ex);
+
+    MVEL.executeExpression(s, new HashMap());
   }
 
 }

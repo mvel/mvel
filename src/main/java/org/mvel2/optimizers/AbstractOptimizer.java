@@ -219,6 +219,7 @@ public class AbstractOptimizer extends AbstractParser {
         break;
       case '?':
         if (start == cursor) {
+          tkStart++;
           cursor++;
           nullSafe = true;
         }

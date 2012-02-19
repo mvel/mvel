@@ -432,7 +432,7 @@ public class ControlFlowTests extends AbstractTest {
 
     assertNull("Return statement not being honored!", thrown);
   }
-  
+
   public void testDhanji1() {
     String expression = "def insert(i, ls) {\n" +
         "  if (ls == empty) {\n" +
@@ -446,13 +446,21 @@ public class ControlFlowTests extends AbstractTest {
         "}\n" +
         "\n" +
         "insert(2, [1, 3, 4])";
-   
+
     Object o = MVEL.eval(expression, new HashMap<String, Object>());
 
     System.out.println(o);
   }
-  
+
 //  public void testDhanji2() {
 //    System.out.println(MVEL.eval("x = 1; y = 2; [x,y] + [3,4]", new HashMap<String, Object>()));
 //  }
+
+
+  private static int fibonacci(int n) {
+    if (n < 2)
+      return 1;
+    else
+      return fibonacci(n - 2) + fibonacci(n - 1);
+  }
 }
