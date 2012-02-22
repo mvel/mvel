@@ -3900,4 +3900,13 @@ public class CoreConfidenceTests extends AbstractTest {
     MVEL.executeExpression(s, new HashMap());
   }
 
+    public void testPrimitiveNumberCoercion() {
+        final ParserContext parserContext = new ParserContext();
+        parserContext.setStrictTypeEnforcement(true);
+        parserContext.setStrongTyping(true);
+        parserContext.addInput("a", int.class);
+        parserContext.addInput("b", double.class);
+        Class<?> clazz = MVEL.analyze("a > b", parserContext);
+        assertEquals(Boolean.class, clazz);
+    }
 }

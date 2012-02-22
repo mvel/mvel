@@ -81,7 +81,7 @@ public class ASTBinaryTree {
     private boolean areCompatible(Class<?> c1, Class<?> c2) {
         if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
         if (isBoxedNumber(c1, false) && isBoxedNumber(c2, true)) return true;
-        if (c1.isPrimitive()) return arePrimitiveCompatible(c1, c2, true);
+        if (c1.isPrimitive()) return c2.isPrimitive() || arePrimitiveCompatible(c1, c2, true);
         if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1, false);
         return false;
     }
