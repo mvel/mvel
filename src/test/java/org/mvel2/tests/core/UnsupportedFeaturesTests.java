@@ -36,9 +36,10 @@ public class UnsupportedFeaturesTests extends TestCase {
     assertEquals(String.class, MVEL.eval("java.lang.String.class"));
     assertEquals(java.util.ArrayList.class, MVEL.eval("java.util.ArrayList.class"));
 
-    assertEquals(String.class, MVEL.analyze("String.class", ParserContext.create()));
-    assertEquals(String.class, MVEL.analyze("java.lang.String.class", ParserContext.create()));
-    assertEquals(java.util.ArrayList.class, MVEL.analyze("java.util.ArrayList.class", ParserContext.create()));
+    assertEquals(Class.class, MVEL.analyze("String", ParserContext.create()));
+    assertEquals(Class.class, MVEL.analyze("String.class", ParserContext.create()));
+    assertEquals(Class.class, MVEL.analyze("java.lang.String.class", ParserContext.create()));
+    assertEquals(Class.class, MVEL.analyze("java.util.ArrayList.class", ParserContext.create()));
 
     MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
   }
