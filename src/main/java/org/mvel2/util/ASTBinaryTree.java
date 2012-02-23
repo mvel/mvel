@@ -47,16 +47,19 @@ public class ASTBinaryTree {
             case MULT:
             case DIV:
             case TERNARY_ELSE:
-                if (strongTyping && !CompatibilityStrategy.areCompatible(leftType, rightType))
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
                 return leftType;
             case EQUAL:
             case NEQUAL:
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
+                    throw new RuntimeException("Comparison operation requires compatible types. Found " + leftType + " and " + rightType);
+                return Boolean.class;
             case LTHAN:
             case LETHAN:
             case GTHAN:
             case GETHAN:
-                if (strongTyping && !CompatibilityStrategy.areCompatible(leftType, rightType))
+                if (strongTyping && !CompatibilityStrategy.areComparisonCompatible(leftType, rightType))
                     throw new RuntimeException("Comparison operation requires compatible types. Found " + leftType + " and " + rightType);
                 return Boolean.class;
             case AND:

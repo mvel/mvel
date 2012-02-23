@@ -5,13 +5,18 @@ public class CompatibilityStrategy {
     private CompatibilityStrategy() { }
 
     public interface CompatibilityEvaluator {
-        boolean areCompatible(Class<?> c1, Class<?> c2);
+        boolean areEqualityCompatible(Class<?> c1, Class<?> c2);
+        boolean areComparisonCompatible(Class<?> c1, Class<?> c2);
     }
 
     public static CompatibilityEvaluator compatibilityEvaluator = new DefaultCompatibilityEvaluator();
 
-    public static boolean areCompatible(Class<?> c1, Class<?> c2) {
-        return compatibilityEvaluator.areCompatible(c1, c2);
+    public static boolean areEqualityCompatible(Class<?> c1, Class<?> c2) {
+        return compatibilityEvaluator.areEqualityCompatible(c1, c2);
+    }
+
+    public static boolean areComparisonCompatible(Class<?> c1, Class<?> c2) {
+        return compatibilityEvaluator.areComparisonCompatible(c1, c2);
     }
 
     public static void setCompatibilityEvaluator(CompatibilityEvaluator compatibilityEvaluator) {
@@ -20,12 +25,16 @@ public class CompatibilityStrategy {
 
     public static class DefaultCompatibilityEvaluator implements CompatibilityEvaluator {
 
-        public boolean areCompatible(Class<?> c1, Class<?> c2) {
+        public boolean areEqualityCompatible(Class<?> c1, Class<?> c2) {
             if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
             if (isBoxedNumber(c1, false) && isBoxedNumber(c2, true)) return true;
             if (c1.isPrimitive()) return c2.isPrimitive() || arePrimitiveCompatible(c1, c2, true);
             if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1, false);
             return false;
+        }
+
+        public boolean areComparisonCompatible(Class<?> c1, Class<?> c2) {
+            return areEqualityCompatible(c1, c2);
         }
 
         private boolean arePrimitiveCompatible(Class<?> primitive, Class<?> boxed, boolean leftFirst) {
