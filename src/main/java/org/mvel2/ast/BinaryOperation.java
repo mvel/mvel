@@ -80,7 +80,7 @@ public class BinaryOperation extends BooleanNode {
       default:
         if (!ctx.isStrongTyping()) break;
 
-        if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
+        if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
           if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
           } else if (!right.getEgressType().equals(Object.class)
