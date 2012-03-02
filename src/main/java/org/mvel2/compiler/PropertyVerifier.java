@@ -234,8 +234,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
 
-      Class rt = method.getReturnType();
-      return rt.isPrimitive() ? boxPrimitive(rt) : rt;
+      return method.getReturnType();
     }
 
     if (pCtx != null && pCtx.hasImport(property)) {

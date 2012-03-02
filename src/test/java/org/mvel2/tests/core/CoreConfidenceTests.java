@@ -3781,7 +3781,7 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.class, expressionReturnType("Field1 + FIELD2"));
     assertEquals(String.class, expressionReturnType("Field1 + 3"));
     assertEquals(String.class, expressionReturnType("Field1 + 3 + FIELD2"));
-    assertEquals(Integer.class, expressionReturnType("intField"));
+    assertEquals(int.class, expressionReturnType("intField"));
     assertEquals(Integer.class, expressionReturnType("intField = 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
@@ -3920,6 +3920,30 @@ public class CoreConfidenceTests extends AbstractTest {
       MVEL.compileExpression("a == String", parserContext);
     } finally {
       MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
+    }
+  }
+
+  public void testMethodReturningPrimitiveTypeAnalysis() {
+    String str = "value";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput("this", MyObj.class);
+    pctx.setStrongTyping(true);
+
+    Class< ? > returnType = MVEL.analyze( str, pctx );
+    assertEquals( long.class, returnType);
+  }
+
+  public static class MyObj {
+    public long valueField;
+
+    public MyObj(long value) {
+        this.valueField = value;
+    }
+
+    public long getValue() {
+      return valueField;
     }
   }
 }
