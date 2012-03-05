@@ -3945,5 +3945,19 @@ public class CoreConfidenceTests extends AbstractTest {
     public long getValue() {
       return valueField;
     }
+
+    public static String doSomething(MyObj s1, String s2) {
+      return s1 + s2;
+    }
+  }
+
+  public void testStaticMethodsInvocationWithNullArg() {
+    String str = "org.mvel2.tests.core.CoreConfidenceTests$MyObj.doSomething(null, \"abc\")";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+
+    assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression( str, pctx )));
   }
 }

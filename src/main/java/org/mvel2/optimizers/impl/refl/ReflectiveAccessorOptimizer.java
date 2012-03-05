@@ -22,6 +22,7 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.AccessorNode;
+import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.PropertyVerifier;
 import org.mvel2.integration.GlobalListenerFactory;
@@ -969,6 +970,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       if (pCtx.isStrictTypeEnforcement()) {
         for (int i = 0; i < args.length; i++) {
           argTypes[i] = es[i].getKnownEgressType();
+          if (es[i] instanceof ExecutableLiteral && ((ExecutableLiteral)es[i]).getLiteral() == null) {
+            argTypes[i] = NullType.class;
+          }
         }
       }
       else {
