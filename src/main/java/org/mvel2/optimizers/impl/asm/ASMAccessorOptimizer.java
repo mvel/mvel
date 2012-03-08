@@ -1947,7 +1947,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             cExpr.computeTypeConversionRule();
           }
           if (!cExpr.isConvertableIngressEgress() && i < args.length) {
-            args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+            args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
           }
         }
       }
@@ -1956,7 +1956,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * Coerce any types if required.
          */
         for (int i = 0; i < args.length; i++) {
-          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
         }
       }
 
@@ -2140,7 +2140,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         stacksize++;
       }
 
-      Object o = m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
+      Object o = m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs()));
 
 
       if (hasNullMethodHandler()) {

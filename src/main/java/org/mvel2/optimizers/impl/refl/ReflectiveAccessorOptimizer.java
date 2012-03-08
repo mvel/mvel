@@ -74,9 +74,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
   private static final Class[] EMPTYCLS = new Class[0];
 
   private boolean first = true;
-  private boolean literal = false;
 
-  private static final Map<Integer, Accessor> REFLECTIVE_ACCESSOR_CACHE =
+    private static final Map<Integer, Accessor> REFLECTIVE_ACCESSOR_CACHE =
       new WeakHashMap<Integer, Accessor>();
 
   private Class ingressType;
@@ -1090,11 +1089,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       for (int i = 0; i < es.length; i++) {
         cExpr = (ExecutableStatement) es[i];
         if (cExpr.getKnownIngressType() == null) {
-          cExpr.setKnownIngressType(paramTypeVarArgsSafe(parameterTypes, i, m));
+          cExpr.setKnownIngressType(paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
           cExpr.computeTypeConversionRule();
         }
         if (!cExpr.isConvertableIngressEgress()) {
-          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+          args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
         }
       }
     }
@@ -1103,11 +1102,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
        * Coerce any types if required.
        */
       for (int i = 0; i < args.length; i++)
-        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
     }
 
     Method method = getWidenedTarget(m);
-    Object o = method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
+    Object o = method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs()));
 
     if (hasNullMethodHandler()) {
       addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
@@ -1286,8 +1285,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       }
       for (int i = 0; i < parms.length; i++) {
         //noinspection unchecked
-        parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
+        parms[i] = convert(parms[i], paramTypeVarArgsSafe(cns.getParameterTypes(), i, cns.isVarArgs()));
       }
+      parms = normalizeArgsForVarArgs(cns.getParameterTypes(), parms, cns.isVarArgs());
 
       AccessorNode ca = new ConstructorAccessor(cns, cStmts);
 
@@ -1334,7 +1334,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
   }
 
   public boolean isLiteralOnly() {
-    return literal;
+      return false;
   }
 
   private Object propHandler(String property, Object ctx, Class handler) {

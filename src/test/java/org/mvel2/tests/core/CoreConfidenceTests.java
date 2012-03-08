@@ -3686,8 +3686,28 @@ public class CoreConfidenceTests extends AbstractTest {
     public boolean equals(Object other) {
       return other != null && other instanceof B && value == ((B) other).value;
     }
+  }
 
-    ;
+  public static class MySet {
+    private Set<String> set = new HashSet<String>();
+
+    public MySet( String... strings ){
+      add( strings );
+    }
+
+    public void add( String... strings ){
+      for( String s: strings ){
+        set.add( s );
+      }
+    }
+
+    public boolean contains( String s ){
+      return set.contains( s );
+    }
+
+    public String toString(){
+      return set.toString();
+    }
   }
 
   public void testTypedVarArgsParams() {
@@ -3712,6 +3732,14 @@ public class CoreConfidenceTests extends AbstractTest {
     result = (Integer) compileAndExecuteWithStrongTyping(invokeSum2);
     assertEquals(12, result);
     assertEquals(12, runSingleTest(invokeSum2));
+  }
+
+  public void testTypedVarArgsConstructor() {
+    String imports = "import org.mvel2.tests.core.CoreConfidenceTests.MySet;\n";
+    String constructor = imports + "new MySet(\"s1\", \"s2\")";
+    MySet result = (MySet) compileAndExecuteWithStrongTyping(constructor);
+    assertTrue(result.contains("s1"));
+    assertTrue(result.contains("s2"));
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
