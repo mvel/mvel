@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -3949,6 +3950,26 @@ public class CoreConfidenceTests extends AbstractTest {
     } finally {
       MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
     }
+  }
+
+  public void testBigIntegerWithZeroValue() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", BigInteger.class);
+    Serializable expression = MVEL.compileExpression("a == 0I", parserContext);
+    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigInteger("0")); }});
+    assertTrue(result);
+  }
+
+  public void testBigDecimalWithZeroValue() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", BigDecimal.class);
+    Serializable expression = MVEL.compileExpression("a == 0B", parserContext);
+    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("0.0")); }});
+    assertTrue(result);
   }
 
   public void testMethodReturningPrimitiveTypeAnalysis() {

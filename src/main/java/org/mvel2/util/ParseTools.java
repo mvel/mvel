@@ -1679,14 +1679,14 @@ public class ParseTools {
 
   public static Object handleNumericConversion(final char[] val, int start, int offset) {
     if (offset != 1 && val[start] == '0' && val[start + 1] != '.') {
-      if (!isDigit(val[offset - 1])) {
-        switch (val[offset - 1]) {
+      if (!isDigit(val[start + offset - 1])) {
+        switch (val[start + offset - 1]) {
           case 'L':
           case 'l':
             return Long.decode(new String(val, start, offset - 1));
           case 'I':
             return BigInteger.valueOf(Long.decode(new String(val, start, offset - 1)));
-          case 'D':
+          case 'B':
             return BigDecimal.valueOf(Long.decode(new String(val, start, offset - 1)));
         }
       }
