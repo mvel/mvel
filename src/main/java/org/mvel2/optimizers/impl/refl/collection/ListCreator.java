@@ -29,12 +29,12 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class ListCreator implements Accessor {
-  public Accessor[] values;
+  private Accessor[] values;
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-    Object[] template = new Object[values.length];
-    for (int i = 0; i < values.length; i++) {
-      template[i] = values[i].getValue(ctx, elCtx, variableFactory);
+    Object[] template = new Object[getValues().length];
+    for (int i = 0; i < getValues().length; i++) {
+      template[i] = getValues()[i].getValue(ctx, elCtx, variableFactory);
     }
     return new ArrayList<Object>(Arrays.asList(template));
   }
@@ -49,5 +49,9 @@ public class ListCreator implements Accessor {
 
   public Class getKnownEgressType() {
     return List.class;
+  }
+
+  public Accessor[] getValues() {
+    return values;
   }
 }
