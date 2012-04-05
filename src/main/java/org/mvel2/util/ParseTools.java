@@ -256,14 +256,22 @@ public class ParseTools {
             continue;
           }
           else if (arguments.length == 0 && parmTypes.length == 0) {
-            bestCandidate = meth;
-            break;
+            if (bestCandidate == null || bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
+              bestCandidate = meth;
+            }
+            continue;
           }
 
           int score = getMethodScore(arguments, requireExact, parmTypes, isVarArgs);
-          if (score != 0 && score > bestScore) {
-            bestCandidate = meth;
-            bestScore = score;
+          if (score != 0) {
+            if (score > bestScore) {
+              bestCandidate = meth;
+              bestScore = score;
+            } else if (score == bestScore) {
+              if (bestCandidate == null || (bestCandidate.getReturnType() != meth.getReturnType() && bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()))) {
+                bestCandidate = meth;
+              }
+            }
           }
         }
       }

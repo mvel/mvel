@@ -4009,4 +4009,32 @@ public class CoreConfidenceTests extends AbstractTest {
 
     assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression( str, pctx )));
   }
+
+  public interface InterfaceA {
+    InterfaceB getB();
+  }
+
+  public interface InterfaceB { }
+
+  public static class ImplementationA implements InterfaceA {
+    public ImplementationB getB() {
+      return new ImplementationB();
+    }
+    public void setB(InterfaceB b) { }
+  }
+
+  public static class ImplementationB implements InterfaceB {
+    public int getValue() {
+      return 42;
+    }
+  }
+
+  public void testCovariance() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", ImplementationA.class);
+    assertEquals(int.class, MVEL.analyze("b.value", parserContext));
+    assertEquals(42, MVEL.executeExpression(MVEL.compileExpression( "b.value", parserContext ), new ImplementationA()));
+  }
 }
