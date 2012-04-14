@@ -995,4 +995,38 @@ public class ArithmeticTests extends AbstractTest {
       Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
       assertTrue(result);
     }  
+  
+  public void testMathCeil() {
+      String str = "Math.ceil( x/3 ) == 2";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      pconf.addImport( "Math", Math.class );
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "x", int.class );
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      vars.put( "x", 4 );
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+      assertTrue(result);
+    }   
+  
+  public void testMathCeilWithDoubleCaste() {
+      String str = "Math.ceil( (double) x/3 ) == 2";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      pconf.addImport( "Math", Math.class );
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "x", Integer.class );
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      vars.put( "x", 4 );
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+      assertTrue(result);
+    }     
 }
