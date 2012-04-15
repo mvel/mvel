@@ -1051,7 +1051,9 @@ public class AbstractParser implements Parser, Serializable {
 
                     if (isCast) {
                       st = cursor;
-                      captureToEOS();
+
+                      captureToEOT();
+                   //   captureToEOS();
 
                       return lastNode = new TypeCast(expr, st, cursor - st,
                           cls, fields, pCtx);
@@ -1893,6 +1895,10 @@ public class AbstractParser implements Parser, Serializable {
           }
           break;
 
+        case '*':
+        case '/':
+        case '+':
+        case '%':
         case ',':
         case '=':
         case '&':

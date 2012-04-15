@@ -977,56 +977,55 @@ public class ArithmeticTests extends AbstractTest {
       assertEquals(expected, ((Boolean) MVEL.executeExpression(stmt, null, vars)).booleanValue());
     }
   }
-  
+
   public void testIntsWithDivision() {
-      String str = "0 == x - (y/2)";
+    String str = "0 == x - (y/2)";
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput( "x", int.class );
-      pctx.addInput( "y", int.class );
-      
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("x", int.class);
+    pctx.addInput("y", int.class);
 
-      Map vars = new HashMap();
-      vars.put( "x", 50 );
-      vars.put( "y", 100 );
-      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
-      assertTrue(result);
-    }  
-  
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    Map vars = new HashMap();
+    vars.put("x", 50);
+    vars.put("y", 100);
+    Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+    assertTrue(result);
+  }
+
   public void testMathCeil() {
-      String str = "Math.ceil( x/3 ) == 2";
+    String str = "Math.ceil( x/3 ) == 2";
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      pconf.addImport( "Math", Math.class );
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput( "x", int.class );
-      
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.addImport("Math", Math.class);
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("x", int.class);
 
-      Map vars = new HashMap();
-      vars.put( "x", 4 );
-      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
-      assertTrue(result);
-    }   
-  
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    Map vars = new HashMap();
+    vars.put("x", 4);
+    Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+    assertTrue(result);
+  }
+
   public void testMathCeilWithDoubleCaste() {
-      String str = "Math.ceil( (double) x/3 ) == 2";
+    String str = "Math.ceil( (double) x / 3 )";
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      pconf.addImport( "Math", Math.class );
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput( "x", Integer.class );
-      
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    ParserConfiguration pconf = new ParserConfiguration();
+    pconf.addImport("Math", Math.class);
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("x", Integer.class);
 
-      Map vars = new HashMap();
-      vars.put( "x", 4 );
-      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
-      assertTrue(result);
-    }     
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    Map vars = new HashMap();
+    vars.put("x", 4);
+    assertEquals(Math.ceil((double) 4 / 3), MVEL.executeExpression(stmt, vars));
+  }
 }

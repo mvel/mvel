@@ -57,6 +57,4 @@ public class VariableSpaceCompiler {
 
     return new SimpleVariableSpaceModel(allVars);
   }
-
-
 }

@@ -407,11 +407,12 @@ public class CompilerTools {
       case Operator.MULT:
       case Operator.POWER:
       case Operator.MOD:
-      case Operator.DIV:
         if (left == Object.class || right == Object.class)
           return Object.class;
         else
           return __resolveType(boxPrimitive(left)) < __resolveType(boxPrimitive(right)) ? right : left;
+      case Operator.DIV:
+        return Double.class;
 
       case Operator.BW_AND:
       case Operator.BW_OR:
