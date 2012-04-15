@@ -3744,7 +3744,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
-    return compileAndExecuteWithStrongTyping(expression, new HashMap());
+    return (T) compileAndExecuteWithStrongTyping(expression, new HashMap());
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression, Map vars) {
