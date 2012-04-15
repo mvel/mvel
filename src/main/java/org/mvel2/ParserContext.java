@@ -983,6 +983,8 @@ public class ParserContext implements Serializable {
   }
 
   public String[] getIndexedVarNames() {
+    if (indexedInputs == null) return new String[0];
+    
     String[] s = new String[indexedInputs.size()];
     indexedInputs.toArray(s);
     return s;
