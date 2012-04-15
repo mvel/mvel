@@ -47,16 +47,19 @@ public class ASTBinaryTree {
             case MULT:
             case DIV:
             case TERNARY_ELSE:
-                if (strongTyping && !areCompatible(leftType, rightType))
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
                 return leftType;
             case EQUAL:
             case NEQUAL:
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
+                    throw new RuntimeException("Comparison operation requires compatible types. Found " + leftType + " and " + rightType);
+                return Boolean.class;
             case LTHAN:
             case LETHAN:
             case GTHAN:
             case GETHAN:
-                if (strongTyping && !areCompatible(leftType, rightType))
+                if (strongTyping && !CompatibilityStrategy.areComparisonCompatible(leftType, rightType))
                     throw new RuntimeException("Comparison operation requires compatible types. Found " + leftType + " and " + rightType);
                 return Boolean.class;
             case AND:
@@ -76,30 +79,6 @@ public class ASTBinaryTree {
         // TODO: should throw new RuntimeException("Unknown operator");
         // it doesn't because I am afraid I am not covering all the OperatorNode types
         return root.getEgressType();
-    }
-
-    private boolean areCompatible(Class<?> c1, Class<?> c2) {
-        if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
-        if (isBoxedNumber(c1, false) && isBoxedNumber(c2, true)) return true;
-        if (c1.isPrimitive()) return arePrimitiveCompatible(c1, c2, true);
-        if (c2.isPrimitive()) return arePrimitiveCompatible(c2, c1, false);
-        return false;
-    }
-
-    private boolean arePrimitiveCompatible(Class<?> primitive, Class<?> boxed, boolean leftFirst) {
-        if (primitive == Boolean.TYPE) return boxed == Boolean.class;
-        if (primitive == Integer.TYPE) return isBoxedNumber(boxed, leftFirst);
-        if (primitive == Long.TYPE) return isBoxedNumber(boxed, leftFirst);
-        if (primitive == Double.TYPE) return isBoxedNumber(boxed, leftFirst);
-        if (primitive == Float.TYPE) return isBoxedNumber(boxed, leftFirst);
-        if (primitive == Character.TYPE) return boxed == Character.class;
-        if (primitive == Byte.TYPE) return boxed == Byte.class;
-        if (primitive == Short.TYPE) return boxed == Short.class;
-        return false;
-    }
-
-    private boolean isBoxedNumber(Class<?> c, boolean allowString) {
-      return Number.class.isAssignableFrom(c) || (allowString && c == String.class);
     }
 
     private int comparePrecedence(ASTNode node1, ASTNode node2) {

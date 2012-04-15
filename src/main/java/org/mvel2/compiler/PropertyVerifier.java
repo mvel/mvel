@@ -182,9 +182,9 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
-    if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && ctx != null) {
+    if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS) {
       if ("class".equals(property)) {
-        return (Class<?>) ctx;
+        return Class.class;
       }
     }
 
@@ -234,8 +234,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
 
-      Class rt = method.getReturnType();
-      return rt.isPrimitive() ? boxPrimitive(rt) : rt;
+      return method.getReturnType();
     }
 
     if (pCtx != null && pCtx.hasImport(property)) {
@@ -268,8 +267,8 @@ public class PropertyVerifier extends AbstractOptimizer {
       resolvedExternally = false;
       if (tryStaticMethodRef instanceof Class) {
         classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
-            new String(expr, cursor - start - 6, 6).equals(".class"));
-        return (Class) tryStaticMethodRef;
+            new String(expr, end - 6, 6).equals(".class"));
+        return MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS ? Class.class : (Class) tryStaticMethodRef;
       }
       else if (tryStaticMethodRef instanceof Field) {
         try {

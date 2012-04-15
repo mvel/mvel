@@ -93,13 +93,16 @@ public class PropertyTools {
     String isGet = ReflectionUtil.getIsGetter(property);
     property = ReflectionUtil.getGetter(property);
 
+    Method candidate = null;
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-          && (property.equals(meth.getName()) || isGet.equals(meth.getName()) || simple.equals(meth.getName()))) {
-        return meth;
+          && (property.equals(meth.getName()) || (isGet.equals(meth.getName()) && meth.getReturnType() == boolean.class) || simple.equals(meth.getName()))) {
+        if (candidate == null || candidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
+          candidate = meth;
+        }
       }
     }
-    return null;
+    return candidate;
   }
 
   public static Class getReturnType(Class clazz, String property, ParserContext ctx) {

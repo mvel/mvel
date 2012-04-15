@@ -40,4 +40,12 @@ public class Soundslike extends ASTNode {
   public Class getEgressType() {
     return Boolean.class;
   }
+    
+  public ASTNode getStatement() {
+    return stmt;
+  }
+
+  public ASTNode getSoundslike() {
+    return soundslike;
+  }
 }

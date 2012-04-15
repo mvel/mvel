@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -3686,8 +3687,28 @@ public class CoreConfidenceTests extends AbstractTest {
     public boolean equals(Object other) {
       return other != null && other instanceof B && value == ((B) other).value;
     }
+  }
 
-    ;
+  public static class MySet {
+    private Set<String> set = new HashSet<String>();
+
+    public MySet( String... strings ){
+      add( strings );
+    }
+
+    public void add( String... strings ){
+      for( String s: strings ){
+        set.add( s );
+      }
+    }
+
+    public boolean contains( String s ){
+      return set.contains( s );
+    }
+
+    public String toString(){
+      return set.toString();
+    }
   }
 
   public void testTypedVarArgsParams() {
@@ -3714,8 +3735,16 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(12, runSingleTest(invokeSum2));
   }
 
+  public void testTypedVarArgsConstructor() {
+    String imports = "import org.mvel2.tests.core.CoreConfidenceTests.MySet;\n";
+    String constructor = imports + "new MySet(\"s1\", \"s2\")";
+    MySet result = (MySet) compileAndExecuteWithStrongTyping(constructor);
+    assertTrue(result.contains("s1"));
+    assertTrue(result.contains("s2"));
+  }
+
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
-    return compileAndExecuteWithStrongTyping(expression, new HashMap());
+    return (T) compileAndExecuteWithStrongTyping(expression, new HashMap());
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression, Map vars) {
@@ -3781,7 +3810,7 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.class, expressionReturnType("Field1 + FIELD2"));
     assertEquals(String.class, expressionReturnType("Field1 + 3"));
     assertEquals(String.class, expressionReturnType("Field1 + 3 + FIELD2"));
-    assertEquals(Integer.class, expressionReturnType("intField"));
+    assertEquals(int.class, expressionReturnType("intField"));
     assertEquals(Integer.class, expressionReturnType("intField = 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
@@ -3900,4 +3929,112 @@ public class CoreConfidenceTests extends AbstractTest {
     MVEL.executeExpression(s, new HashMap());
   }
 
+  public void testPrimitiveNumberCoercion() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", int.class);
+    parserContext.addInput("b", double.class);
+    Class<?> clazz = MVEL.analyze("a > b", parserContext);
+    assertEquals(Boolean.class, clazz);
+  }
+
+  public void testClassLiteral() {
+    try {
+      MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
+      final ParserContext parserContext = new ParserContext();
+      parserContext.setStrictTypeEnforcement(true);
+      parserContext.setStrongTyping(true);
+      parserContext.addInput("a", Class.class);
+      MVEL.compileExpression("a == String", parserContext);
+    } finally {
+      MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
+    }
+  }
+
+  public void testBigIntegerWithZeroValue() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", BigInteger.class);
+    Serializable expression = MVEL.compileExpression("a == 0I", parserContext);
+    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigInteger("0")); }});
+    assertTrue(result);
+  }
+
+  public void testBigDecimalWithZeroValue() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", BigDecimal.class);
+    Serializable expression = MVEL.compileExpression("a == 0B", parserContext);
+    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("0.0")); }});
+    assertTrue(result);
+  }
+
+  public void testMethodReturningPrimitiveTypeAnalysis() {
+    String str = "value";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.addInput("this", MyObj.class);
+    pctx.setStrongTyping(true);
+
+    Class< ? > returnType = MVEL.analyze( str, pctx );
+    assertEquals( long.class, returnType);
+  }
+
+  public static class MyObj {
+    public long valueField;
+
+    public MyObj(long value) {
+        this.valueField = value;
+    }
+
+    public long getValue() {
+      return valueField;
+    }
+
+    public static String doSomething(MyObj s1, String s2) {
+      return s1 + s2;
+    }
+  }
+
+  public void testStaticMethodsInvocationWithNullArg() {
+    String str = "org.mvel2.tests.core.CoreConfidenceTests$MyObj.doSomething(null, \"abc\")";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+
+    assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression( str, pctx )));
+  }
+
+  public interface InterfaceA {
+    InterfaceB getB();
+  }
+
+  public interface InterfaceB { }
+
+  public static class ImplementationA implements InterfaceA {
+    public ImplementationB getB() {
+      return new ImplementationB();
+    }
+    public void setB(InterfaceB b) { }
+  }
+
+  public static class ImplementationB implements InterfaceB {
+    public int getValue() {
+      return 42;
+    }
+  }
+
+  public void testCovariance() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", ImplementationA.class);
+    assertEquals(int.class, MVEL.analyze("b.value", parserContext));
+    assertEquals(42, MVEL.executeExpression(MVEL.compileExpression( "b.value", parserContext ), new ImplementationA()));
+  }
 }

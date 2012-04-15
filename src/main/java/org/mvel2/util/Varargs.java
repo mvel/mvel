@@ -4,8 +4,8 @@ import java.lang.reflect.*;
 
 public class Varargs {
 
-    public static Object[] normalizeArgsForVarArgs(Class<?>[] parameterTypes, Method m, Object[] args) {
-        if (!m.isVarArgs()) return args;
+    public static Object[] normalizeArgsForVarArgs(Class<?>[] parameterTypes, Object[] args, boolean isVarArgs) {
+        if (!isVarArgs) return args;
         if (parameterTypes.length == args.length && args[args.length-1].getClass().isArray()) return args;
 
         int varargLength = args.length - parameterTypes.length + 1;
@@ -18,8 +18,8 @@ public class Varargs {
         return normalizedArgs;
     }
 
-    public static Class<?> paramTypeVarArgsSafe(Class<?>[] parameterTypes, int i, Method m) {
-      if (!m.isVarArgs()) return parameterTypes[i];
+    public static Class<?> paramTypeVarArgsSafe(Class<?>[] parameterTypes, int i, boolean isVarArgs) {
+      if (!isVarArgs) return parameterTypes[i];
       if (i < parameterTypes.length-1) return parameterTypes[i];
       return parameterTypes[parameterTypes.length-1].getComponentType();
     }

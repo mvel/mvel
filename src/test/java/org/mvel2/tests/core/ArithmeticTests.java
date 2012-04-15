@@ -11,6 +11,7 @@ import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.core.CoreConfidenceTests.POJO;
 import org.mvel2.util.Make;
 
 import java.io.Serializable;
@@ -976,4 +977,56 @@ public class ArithmeticTests extends AbstractTest {
       assertEquals(expected, ((Boolean) MVEL.executeExpression(stmt, null, vars)).booleanValue());
     }
   }
+  
+  public void testIntsWithDivision() {
+      String str = "0 == x - (y/2)";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "x", int.class );
+      pctx.addInput( "y", int.class );
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      vars.put( "x", 50 );
+      vars.put( "y", 100 );
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+      assertTrue(result);
+    }  
+  
+  public void testMathCeil() {
+      String str = "Math.ceil( x/3 ) == 2";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      pconf.addImport( "Math", Math.class );
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "x", int.class );
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      vars.put( "x", 4 );
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+      assertTrue(result);
+    }   
+  
+  public void testMathCeilWithDoubleCaste() {
+      String str = "Math.ceil( (double) x/3 ) == 2";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      pconf.addImport( "Math", Math.class );
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput( "x", Integer.class );
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      vars.put( "x", 4 );
+      Boolean result = (Boolean) MVEL.executeExpression(stmt, vars);
+      assertTrue(result);
+    }     
 }

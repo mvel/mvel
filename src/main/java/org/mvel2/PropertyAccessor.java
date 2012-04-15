@@ -1000,7 +1000,7 @@ public class PropertyAccessor {
     }
     else {
       for (int i = 0; i < args.length; i++) {
-        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m));
+        args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
       }
 
       /**
@@ -1008,7 +1008,7 @@ public class PropertyAccessor {
        */
       currType = toNonPrimitiveType(m.getReturnType());
       try {
-        return m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, m, args));
+        return m.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs()));
       }
       catch (IllegalAccessException e) {
         try {
