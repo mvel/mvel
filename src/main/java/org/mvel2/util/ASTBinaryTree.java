@@ -46,6 +46,8 @@ public class ASTBinaryTree {
             case SUB:
             case MULT:
             case DIV:
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
+                    throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
                 return Double.class;
             case TERNARY_ELSE:
                 if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
