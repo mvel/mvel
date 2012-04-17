@@ -44,6 +44,7 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ReflectionUtil.toPrimitiveArrayType;
 
 /**
  * @author Christopher Brock
@@ -87,8 +88,9 @@ public class NewObjectNode extends ASTNode {
         rewriteClassReferenceToFQCN(fields);
         if (typeDescr.isArray()) {
           try {
-            egressType = findClass(null,
-                    repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
+            egressType = egressType.isPrimitive() ?
+                    toPrimitiveArrayType(egressType) :
+                    findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
           }
           catch (Exception e) {
             e.printStackTrace();

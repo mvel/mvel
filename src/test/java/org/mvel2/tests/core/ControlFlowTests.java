@@ -193,17 +193,17 @@ public class ControlFlowTests extends AbstractTest {
   }
 
   public void testForLoopWithVar() {
-      String str = "int height = 100; int j; for (i = 0; i < height; i++) {j++ }; return j;";
+    String str = "int height = 100; int j = 0; for (i = 0; i < height; i++) {j++ }; return j;";
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
 
-      Map vars = new HashMap();
-      assertEquals( new Integer(100), MVEL.executeExpression(stmt, vars) );
-    }  
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    Map vars = new HashMap();
+    assertEquals( new Integer(100), MVEL.executeExpression(stmt, vars) );
+  }
 
   public void testEmptyLoopSemantics() {
     Serializable s = MVEL.compileExpression("for (i = 0; i < 100000000000; i++) { }");

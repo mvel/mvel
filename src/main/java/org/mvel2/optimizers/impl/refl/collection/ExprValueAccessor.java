@@ -28,6 +28,7 @@ import org.mvel2.util.ParseTools;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.util.ParseTools.getSubComponentType;
+import static org.mvel2.util.ReflectionUtil.isAssignableFrom;
 
 /**
  * @author Christopher Brock
@@ -41,7 +42,7 @@ public class ExprValueAccessor implements Accessor {
     //if (expectedType.isArray()) {
     Class tt = getSubComponentType(expectedType);
     Class et = stmt.getKnownEgressType();
-    if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
+    if (stmt.getKnownEgressType() != null && !isAssignableFrom(tt, et)) {
       if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
         try {
           stmt = new ExecutableLiteral(convert(stmt.getValue(ctx, factory), tt));

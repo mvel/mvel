@@ -1014,25 +1014,26 @@ public class ArithmeticTests extends AbstractTest {
   }
   
   public void testStaticMathCeil() {      
-      int x = 4;
-      int m = (int) java.lang.Math.ceil( x/3 ); // demonstrating it's perfectly valid java
-      
-      String str = "int m = (int) java.lang.Math.ceil( x/3 );return m";
+    int x = 4;
+    int m = (int) java.lang.Math.ceil( x/3 ); // demonstrating it's perfectly valid java
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput("x", int.class);
+    String str = "int m = (int) java.lang.Math.ceil( x/3 ); return m;";
 
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("x", int.class);
 
-      Map vars = new HashMap();
-      vars.put("x", 4);
-      assertEquals(new Integer( 2 ), MVEL.executeExpression(stmt, vars));
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    Map vars = new HashMap();
+    vars.put("x", 4);
+    assertEquals(new Integer( 2 ), MVEL.executeExpression(stmt, vars));
   }  
 
   public void testStaticMathCeilWithJavaClassStyleLiterals() {            
-      MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;   
+    MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
+    try {
       String str = "java.lang.Math.ceil( x/3 )";
 
       ParserConfiguration pconf = new ParserConfiguration();
@@ -1045,6 +1046,9 @@ public class ArithmeticTests extends AbstractTest {
       Map vars = new HashMap();
       vars.put("x", 4);
       assertEquals(Math.ceil((double) 4 / 3), MVEL.executeExpression(stmt, vars));
+    } finally {
+      MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
+    }
   }
   
   public void testMathCeilWithDoubleCast() {

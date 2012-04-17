@@ -55,13 +55,13 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testArrayDefinitionWithCoercion() {
-    Double[] d = (Double[]) MVEL.executeExpression(MVEL.compileExpression("new double[] { 1,2,3,4 }"));
+    double[] d = (double[]) MVEL.executeExpression(MVEL.compileExpression("new double[] { 1,2,3,4 }"));
     assertEquals(2d,
         d[1]);
   }
 
   public void testArrayDefinitionWithCoercion2() {
-    Float[] d = (Float[]) test("new float[] { 1,2,3,4 }");
+    float[] d = (float[]) test("new float[] { 1,2,3,4 }");
     assertEquals(2f,
         d[1]);
   }

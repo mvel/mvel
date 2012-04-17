@@ -57,7 +57,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
       Class x = pCtx.getVarOrInputType(name);
-      if (x != null && !x.isAssignableFrom(egressType)) {
+      if (x != null && x != Object.class && !x.isAssignableFrom(egressType)) {
         throw new RuntimeException("statically-typed variable already defined in scope: " + name);
       }
       pCtx.addVariable(name, egressType, false);

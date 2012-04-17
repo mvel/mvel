@@ -26,6 +26,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+import static org.mvel2.util.ReflectionUtil.isAssignableFrom;
+import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
+
 /**
  * The DataConversion factory is where all of MVEL's type converters are registered with the runtime.
  *
@@ -70,8 +73,8 @@ public class DataConversion {
 
     CONVERTERS.put(Object.class, new ObjectCH());
 
-    CONVERTERS.put(char[].class, ch = new CharArrayCH());
-    CONVERTERS.put(Character[].class, ch);
+    CONVERTERS.put(Character[].class, ch = new CharArrayCH());
+    CONVERTERS.put(char[].class, new CompositeCH(ch, new ArrayHandler(char[].class)));
 
     CONVERTERS.put(String[].class, new StringArrayCH());
 
@@ -83,7 +86,6 @@ public class DataConversion {
     CONVERTERS.put(float[].class, new ArrayHandler(float[].class));
     CONVERTERS.put(short[].class, new ArrayHandler(short[].class));
     CONVERTERS.put(boolean[].class, new ArrayHandler(boolean[].class));
-    CONVERTERS.put(char[].class, new ArrayHandler(char[].class));
     CONVERTERS.put(byte[].class, new ArrayHandler(byte[].class));
 
     CONVERTERS.put(BigDecimal.class, new BigDecimalCH());
@@ -101,9 +103,9 @@ public class DataConversion {
   }
 
   public static boolean canConvert(Class toType, Class convertFrom) {
-    if (toType.isAssignableFrom(convertFrom)) return true;
+    if (isAssignableFrom(toType, convertFrom)) return true;
     if (CONVERTERS.containsKey(toType)) {
-      return CONVERTERS.get(toType).canConvertFrom(convertFrom);
+      return CONVERTERS.get(toType).canConvertFrom(toNonPrimitiveType(convertFrom));
     }
     else if (toType.isArray() && canConvert(toType.getComponentType(), convertFrom)) {
       return true;

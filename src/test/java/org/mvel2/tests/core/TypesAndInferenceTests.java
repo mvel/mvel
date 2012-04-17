@@ -234,7 +234,7 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertEquals(3,
             ctx.getVariables().entrySet().size());
     for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
-      assertEquals(Integer.class,
+      assertEquals(int.class,
               entry.getValue());
     }
 
@@ -1203,13 +1203,10 @@ public class TypesAndInferenceTests extends AbstractTest {
 
   public void testStaticTyping2() {
     String exp = "int x = 5; int y = 2; new int[] { x, y }";
-    Integer[] res = (Integer[]) MVEL.eval(exp,
-            new HashMap());
+    int[] res = (int[]) MVEL.eval(exp, new HashMap());
 
-    assertEquals(5,
-            res[0].intValue());
-    assertEquals(2,
-            res[1].intValue());
+    assertEquals(5, res[0]);
+    assertEquals(2, res[1]);
   }
 
   public void testMVEL190a() {

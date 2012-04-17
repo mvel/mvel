@@ -391,9 +391,8 @@ public class ExpressionCompiler extends AbstractParser {
             pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);
           }
 
-          if (!propVerifier.isMethodCall() && !returnType.isEnum() && !pCtx.isOptimizerNotified() && pCtx
-                  .isStrongTyping()
-              && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
+          if (!propVerifier.isMethodCall() && !returnType.isEnum() && !pCtx.isOptimizerNotified() &&
+                  pCtx.isStrongTyping() && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
             throw new CompileException("no such identifier: " + tk.getAbsoluteName(), expr, tk.getStart());
           }
         }

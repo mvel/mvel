@@ -186,6 +186,7 @@ public class ParserContext implements Serializable {
 
     ctx.sourceLineLookups = sourceLineLookups;
     ctx.lastLineLabel = lastLineLabel;
+    ctx.variableVisibility = variableVisibility;
 
     ctx.globalFunctions = globalFunctions;
     ctx.lastTypeParameters = lastTypeParameters;

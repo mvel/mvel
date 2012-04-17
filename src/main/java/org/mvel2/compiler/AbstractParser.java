@@ -119,28 +119,28 @@ public class AbstractParser implements Parser, Serializable {
       CLASS_LITERALS.put("CharSequence", CharSequence.class);
 
       CLASS_LITERALS.put("Integer", Integer.class);
-      CLASS_LITERALS.put("int", Integer.class);
+      CLASS_LITERALS.put("int", int.class);
 
       CLASS_LITERALS.put("Long", Long.class);
-      CLASS_LITERALS.put("long", Long.class);
+      CLASS_LITERALS.put("long", long.class);
 
       CLASS_LITERALS.put("Boolean", Boolean.class);
-      CLASS_LITERALS.put("boolean", Boolean.class);
+      CLASS_LITERALS.put("boolean", boolean.class);
 
       CLASS_LITERALS.put("Short", Short.class);
-      CLASS_LITERALS.put("short", Short.class);
+      CLASS_LITERALS.put("short", short.class);
 
       CLASS_LITERALS.put("Character", Character.class);
-      CLASS_LITERALS.put("char", Character.class);
+      CLASS_LITERALS.put("char", char.class);
 
       CLASS_LITERALS.put("Double", Double.class);
-      CLASS_LITERALS.put("double", Double.class);
+      CLASS_LITERALS.put("double", double.class);
 
       CLASS_LITERALS.put("Float", Float.class);
-      CLASS_LITERALS.put("float", Float.class);
+      CLASS_LITERALS.put("float", float.class);
 
       CLASS_LITERALS.put("Byte", Byte.class);
-      CLASS_LITERALS.put("byte", Byte.class);
+      CLASS_LITERALS.put("byte", byte.class);
 
       CLASS_LITERALS.put("Math", Math.class);
       CLASS_LITERALS.put("Void", Void.class);

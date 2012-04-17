@@ -61,6 +61,7 @@ import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.ReflectionUtil.toNonPrimitiveArray;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
 import static org.mvel2.util.Varargs.*;
 
@@ -2928,7 +2929,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     this.end = start + offset;
     this.length = offset;
 
-
+    type = toNonPrimitiveArray(type);
     this.returnType = type;
 
     this.compiledInputs = new ArrayList<ExecutableStatement>();

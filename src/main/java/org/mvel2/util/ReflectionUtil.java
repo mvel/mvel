@@ -151,4 +151,48 @@ public class ReflectionUtil {
     if (c == char.class) return Character.class;
     return Boolean.class;
   }
+
+  public static Class<?> toNonPrimitiveArray(Class<?> c) {
+    if (!c.isArray() || !c.getComponentType().isPrimitive()) return c;
+    if (c == int[].class) return Integer[].class;
+    if (c == long[].class) return Long[].class;
+    if (c == double[].class) return Double[].class;
+    if (c == float[].class) return Float[].class;
+    if (c == short[].class) return Short[].class;
+    if (c == byte[].class) return Byte[].class;
+    if (c == char[].class) return Character[].class;
+    return Boolean[].class;
+  }
+
+  public static Class<?> toPrimitiveArrayType(Class<?> c) {
+    if (!c.isPrimitive()) throw new RuntimeException(c + " is not a primitive type");
+    if (c == int.class) return int[].class;
+    if (c == long.class) return long[].class;
+    if (c == double.class) return double[].class;
+    if (c == float.class) return float[].class;
+    if (c == short.class) return short[].class;
+    if (c == byte.class) return byte[].class;
+    if (c == char.class) return char[].class;
+    return boolean[].class;
+  }
+
+  public static boolean isAssignableFrom(Class<?> from, Class<?> to) {
+    return from.isAssignableFrom(to) || areBoxingCompatible(from, to);
+  }
+
+  private static boolean areBoxingCompatible(Class<?> c1, Class<?> c2) {
+    return c1.isPrimitive() ? isPrimitiveOf(c2, c1) : (c2.isPrimitive() ? isPrimitiveOf(c1, c2) : false);
+  }
+
+  private static boolean isPrimitiveOf(Class<?> boxed, Class<?> primitive) {
+    if (primitive == int.class) return boxed == Integer.class;
+    if (primitive == long.class) return boxed == Long.class;
+    if (primitive == double.class) return boxed == Double.class;
+    if (primitive == float.class) return boxed == Float.class;
+    if (primitive == short.class) return boxed == Short.class;
+    if (primitive == byte.class) return boxed == Byte.class;
+    if (primitive == char.class) return boxed == Character.class;
+    if (primitive == boolean.class) return boxed == Boolean.class;
+    return false;
+  }
 }

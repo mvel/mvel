@@ -27,6 +27,7 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.ReflectionUtil.isAssignableFrom;
 
 public class TypeCast extends ASTNode {
   private ExecutableStatement statement;
@@ -56,7 +57,7 @@ public class TypeCast extends ASTNode {
   }
 
   private boolean canCast(Class from, Class to) {
-    return from.isAssignableFrom(to) || (from.isInterface() && interfaceAssignable(from, to));
+    return isAssignableFrom(from, to) || (from.isInterface() && interfaceAssignable(from, to));
   }
 
   private boolean interfaceAssignable(Class from, Class to) {

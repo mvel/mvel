@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ReflectionUtil.isAssignableFrom;
 
 /**
  * This is the inline collection sub-parser.  It produces a skeleton model of the collection which is in turn translated
@@ -244,7 +245,7 @@ public class CollectionParser {
     }
     else {
       Class r = ((ExecutableStatement) subCompileExpression(property, start, offset, pCtx)).getKnownEgressType();
-      if (r != null && !colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
+      if (r != null && !isAssignableFrom(colType, r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
         throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName(), property, cursor);
       }
     }

@@ -268,7 +268,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       if (tryStaticMethodRef instanceof Class) {
         classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
             new String(expr, end - 6, 6).equals(".class"));
-        return MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS ? Class.class : (Class) tryStaticMethodRef;
+          return classLiteral ? (Class) tryStaticMethodRef : Class.class;
       }
       else if (tryStaticMethodRef instanceof Field) {
         try {
