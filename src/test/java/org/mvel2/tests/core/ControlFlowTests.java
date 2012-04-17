@@ -1,7 +1,9 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
 
@@ -190,6 +192,18 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("dogdogdog", r);
   }
 
+  public void testForLoopWithVar() {
+      String str = "int height = 100; int j; for (i = 0; i < height; i++) {j++ }; return j;";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      Map vars = new HashMap();
+      assertEquals( new Integer(100), MVEL.executeExpression(stmt, vars) );
+    }  
 
   public void testEmptyLoopSemantics() {
     Serializable s = MVEL.compileExpression("for (i = 0; i < 100000000000; i++) { }");
