@@ -2183,12 +2183,29 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
   }
 
+  private ContextClassLoader getContextClassLoader() {
+    ParserConfiguration conf = pCtx == null ? null : pCtx.getParserConfiguration();
+    return conf == null ? null : new ContextClassLoader(conf.getClassLoader());
+  }
+
+  private static class ContextClassLoader extends ClassLoader {
+    ContextClassLoader(ClassLoader classLoader) {
+      super(classLoader);
+    }
+
+    Class<?> defineClass(String name, byte[] b) {
+      return defineClass(name, b, 0, b.length);
+    }
+  }
+
   private java.lang.Class loadClass(String className, byte[] b) throws Exception {
     /**
      * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
      */
-
-    return classLoader.defineClassX(className, b, 0, b.length);
+    ContextClassLoader contextClassLoader = getContextClassLoader();
+    return contextClassLoader == null ?
+            classLoader.defineClassX(className, b, 0, b.length) :
+            contextClassLoader.defineClass(className, b);
   }
 
   private boolean debug(String instruction) {
