@@ -612,6 +612,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(p1,
         p2);
   }
+  
+  public void testDynamicImportsWithNullConstructorParamWithStrongType() {
+      ParserContext ctx = new ParserContext();
+      ctx.setStrongTyping( true );
+      ctx.addPackageImport("org.mvel2.tests.core.res");
+
+      ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
+
+      Cheesery p1 = new Cheesery("bobbo",
+          null);
+      Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+          new DefaultLocalVariableResolverFactory());
+
+      assertEquals(p1,
+          p2);
+    }  
 
   public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
     ParserContext ctx = new ParserContext();
