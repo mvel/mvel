@@ -19,6 +19,7 @@ package org.mvel2.ast;
 
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.NullType;
 
 /**
  * @author Christopher Brock
@@ -34,7 +35,7 @@ public class LiteralNode extends ASTNode {
       if ((this.egressType = literal.getClass()) == BlankLiteral.class) this.egressType = Object.class;
     }
     else {
-      this.egressType = Object.class;
+      this.egressType = NullType.class;
     }
   }
 

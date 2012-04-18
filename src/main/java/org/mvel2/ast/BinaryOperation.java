@@ -23,6 +23,7 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ScriptRuntimeException;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 
 import static org.mvel2.DataConversion.canConvert;
@@ -83,7 +84,7 @@ public class BinaryOperation extends BooleanNode {
         if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
           if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
-          } else if (!right.getEgressType().equals(Object.class)
+          } else if (!right.getEgressType().equals(NullType.class)
                   && !(Number.class.isAssignableFrom(right.getEgressType())
                   && Number.class.isAssignableFrom(left.getEgressType()))
                   && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
