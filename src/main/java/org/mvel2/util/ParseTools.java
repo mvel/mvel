@@ -392,32 +392,33 @@ public class ParseTools {
   }
 
   public static Method getWidenedTarget(Method method) {
-    Class cls = method.getDeclaringClass();
+    return getWidenedTarget(method.getDeclaringClass(), method);
+  }
+
+  public static Method getWidenedTarget(Class cls, Method method) {
     Method m = method, best = method;
     Class[] args = method.getParameterTypes();
     String name = method.getName();
     Class rt = m.getReturnType();
 
-    do {
-      if (cls.getInterfaces().length != 0) {
-        for (Class iface : cls.getInterfaces()) {
-          if ((m = getExactMatch(name, args, rt, iface)) != null) {
-            if ((best = m).getDeclaringClass().getSuperclass() != null) {
-              cls = m.getDeclaringClass();
-            }
-          }
+    Class currentCls = cls;
+    while (currentCls != null) {
+      for (Class iface : currentCls.getInterfaces()) {
+        if ((m = getExactMatch(name, args, rt, iface)) != null) {
+          best = m;
         }
       }
-      if (cls != method.getDeclaringClass()) {
-        if ((m = getExactMatch(name, args, rt, cls)) != null) {
-          if ((best = m).getDeclaringClass().getSuperclass() != null) {
-            cls = m.getDeclaringClass();
-          }
-        }
+      currentCls = currentCls.getSuperclass();
+    }
+
+    if (best != method) return best;
+
+    currentCls = cls;
+    for (currentCls = cls; currentCls != null; currentCls = currentCls.getSuperclass()) {
+      if ((m = getExactMatch(name, args, rt, currentCls)) != null) {
+        best = m;
       }
     }
-    while ((cls = cls.getSuperclass()) != null);
-
     return best;
   }
 

@@ -1105,15 +1105,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         args[i] = convert(args[i], paramTypeVarArgsSafe(parameterTypes, i, m.isVarArgs()));
     }
 
-    Method method = getWidenedTarget(m);
+    Method method = getWidenedTarget(cls, m);
     Object o = method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs()));
 
     if (hasNullMethodHandler()) {
-      addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
+      addAccessorNode(new MethodAccessorNH(method, (ExecutableStatement[]) es, getNullMethodHandler()));
       if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
     }
     else {
-      addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
+      addAccessorNode(new MethodAccessor(method, (ExecutableStatement[]) es));
     }
 
     /**
