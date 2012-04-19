@@ -26,6 +26,7 @@ public class CompatibilityStrategy {
     public static class DefaultCompatibilityEvaluator implements CompatibilityEvaluator {
 
         public boolean areEqualityCompatible(Class<?> c1, Class<?> c2) {
+            if (c1 == NullType.class || c2 == NullType.class) return true;
             if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1)) return true;
             if (isBoxedNumber(c1, false) && isBoxedNumber(c2, true)) return true;
             if (c1.isPrimitive()) return c2.isPrimitive() || arePrimitiveCompatible(c1, c2, true);
