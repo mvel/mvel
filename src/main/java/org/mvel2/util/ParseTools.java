@@ -498,7 +498,9 @@ public class ParseTools {
 
 
   public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
-    ClassLoader classLoader = currentThread().getContextClassLoader();
+      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
+                                                 :  Thread.currentThread().getContextClassLoader();
+    
     Map<String, WeakReference<Class>> cache = CLASS_RESOLVER_CACHE.get(classLoader);
 
     if (cache == null) {
@@ -514,8 +516,7 @@ public class ParseTools {
     }
     else {
       try {
-        cls = pCtx == null ? Class.forName(className, true, Thread.currentThread().getContextClassLoader()) :
-            Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
+        cls = Class.forName(className, true, classLoader);
       }
       catch (ClassNotFoundException e) {
         /**
@@ -912,7 +913,7 @@ public class ParseTools {
   }
 
 
-  public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory) {
+  public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory, ParserContext pCtx) {
     if (factory == null) {
       throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
     }
@@ -923,7 +924,7 @@ public class ParseTools {
       }
     }
 
-    return appendFactory(factory, new ClassImportResolverFactory());
+    return appendFactory(factory, new ClassImportResolverFactory(null, null, false));
   }
 
   public static Class findClass(VariableResolverFactory factory, String name, ParserContext ctx) throws ClassNotFoundException {

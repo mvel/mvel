@@ -20,6 +20,7 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.StackResetResolverFactory;
@@ -34,13 +35,15 @@ public class ImportNode extends ASTNode {
   private Class importClass;
   private boolean packageImport;
   private int _offset;
-
+  ParserContext pCtx;
+  
   private static final char[] WC_TEST = new char[]{'.', '*'};
 
-  public ImportNode(char[] expr, int start, int offset) {
+  public ImportNode(char[] expr, int start, int offset, ParserContext pCtx) {
     this.expr = expr;
     this.start = start;
     this.offset = offset;
+    this.pCtx = pCtx;
 
     if (ParseTools.endsWith(expr, start, offset, WC_TEST)) {
       packageImport = true;
@@ -52,16 +55,18 @@ public class ImportNode extends ASTNode {
     else {
       String clsName = new String(expr, start, offset);
 
+      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
+                                                 :  Thread.currentThread().getContextClassLoader();
+      
       try {
-        this.importClass = Class.forName(clsName, true,
-            Thread.currentThread().getContextClassLoader());
+        this.importClass = Class.forName(clsName, true, classLoader );
       }
       catch (ClassNotFoundException e) {
         int idx;
         clsName = (clsName.substring(0, idx = clsName.lastIndexOf('.')) + "$" + clsName.substring(idx + 1)).trim();
 
         try {
-          this.importClass = Class.forName(clsName, true, Thread.currentThread().getContextClassLoader());
+          this.importClass = Class.forName(clsName, true, classLoader );
         }
         catch (ClassNotFoundException e2) {
           throw new CompileException("class not found: " + new String(expr), expr, start);
@@ -77,14 +82,14 @@ public class ImportNode extends ASTNode {
         factory.createVariable(importClass.getSimpleName(), importClass);
         return importClass;
       }
-      return findClassImportResolverFactory(factory).addClass(importClass);
+      return findClassImportResolverFactory(factory, pCtx).addClass(importClass);
     }
 
     // if the factory is an ImmutableDefaultFactory it means this import is unused so we can skip it safely
     if (!(factory instanceof ImmutableDefaultFactory)
         && !(factory instanceof StackResetResolverFactory
         && ((StackResetResolverFactory) factory).getDelegate() instanceof ImmutableDefaultFactory)) {
-      findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
+      findClassImportResolverFactory(factory, pCtx).addPackageImport(new String(expr, start, _offset - start));
     }
     return null;
   }

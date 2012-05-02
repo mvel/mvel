@@ -238,7 +238,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testCheeseConstructor() {
     MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
-    ClassImportResolverFactory classes = new ClassImportResolverFactory();
+    ClassImportResolverFactory classes = new ClassImportResolverFactory(null, null, false);
     classes.addClass(Cheese.class);
 
     ResolverTools.appendFactory(mvf,
@@ -3392,7 +3392,7 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
-  public void testMapAccessWithNestedMethodCall() {
+  public void testMapAccessWithNestedMethodCall() {      
     String str = "map[aMethod(1)] == \"one\"";
 
     ParserConfiguration pconf = new ParserConfiguration();

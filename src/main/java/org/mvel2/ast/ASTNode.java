@@ -250,57 +250,6 @@ public class ASTNode implements Cloneable, Serializable {
     this.fields |= LITERAL;
   }
 
-  protected Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
-    try {
-      /**
-       * Try to resolve this *smartly* as a static class reference.
-       *
-       * This starts at the end of the token and starts to step backwards to figure out whether
-       * or not this may be a static class reference.  We search for method calls simply by
-       * inspecting for ()'s.  The first union area we come to where no brackets are present is our
-       * test-point for a class reference.  If we find a class, we pass the reference to the
-       * property accessor along  with trailing methods (if any).
-       *
-       */
-      boolean meth = false;
-      int depth = 0;
-
-      int end;
-      int last = end = start + offset;
-      for (int i = last - 1; i > start; i--) {
-        switch (expr[i]) {
-          case '.':
-            if (depth == 0 && !meth) {
-              try {
-                Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader());
-
-                return get(new String(expr, last, end - last),
-                    Class.forName(new String(expr, start, last), true, currentThread().getContextClassLoader()), factory, thisRef);
-              }
-              catch (ClassNotFoundException e) {
-                return get(new String(expr, i + 1, end - i - 1),
-                    Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader()), factory, thisRef);
-              }
-            }
-            meth = false;
-            last = i;
-            break;
-          case ')':
-            depth++;
-            break;
-          case '(':
-            if (--depth == 0) meth = true;
-            break;
-        }
-      }
-    }
-    catch (Exception cnfe) {
-      // do nothing.
-    }
-
-    return null;
-  }
-
   @SuppressWarnings({"SuspiciousMethodCalls"})
   protected void setName(char[] name) {
     if (isNumber(name, start, offset)) {

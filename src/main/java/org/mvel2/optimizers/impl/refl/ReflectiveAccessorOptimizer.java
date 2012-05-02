@@ -1249,7 +1249,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
   }
 
   @SuppressWarnings({"WeakerAccess"})
-  public AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
+  private AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
       InstantiationException, IllegalAccessException, InvocationTargetException,
       ClassNotFoundException, NoSuchMethodException {
 
@@ -1308,8 +1308,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       return ca;
     }
     else {
-      Constructor<?> cns = Class.forName(new String(expression), true, Thread.currentThread().getContextClassLoader())
-          .getConstructor(EMPTYCLS);
+        ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
+                                                   :  Thread.currentThread().getContextClassLoader();
+        
+      Constructor<?> cns = Class.forName(new String(expression), true, classLoader ).getConstructor(EMPTYCLS);
 
       AccessorNode ca = new ConstructorAccessor(cns, null);
 

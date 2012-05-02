@@ -42,7 +42,7 @@ public class ParserConfiguration implements Serializable {
   protected Map<String, Object> imports;
   protected HashSet<String> packageImports;
   protected Map<String, Interceptor> interceptors;
-  protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
+  protected transient ClassLoader classLoader;
 
   private transient Set<String> nonValidImports;
 
@@ -156,7 +156,7 @@ public class ParserConfiguration implements Serializable {
     Class cls = null;
     for (String pkg : packageImports) {
       try {
-        cls = Class.forName(pkg + "." + className, true, classLoader);
+        cls = Class.forName(pkg + "." + className, true, getClassLoader());
         found++;
       }
       catch (ClassNotFoundException e) {

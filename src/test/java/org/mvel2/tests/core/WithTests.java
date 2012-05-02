@@ -192,7 +192,7 @@ public class WithTests extends AbstractTest {
   public void testSataticClassImportViaFactoryAndWithModification() {
     OptimizerFactory.setDefaultOptimizer("ASM");
     MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
-    ClassImportResolverFactory classes = new ClassImportResolverFactory();
+    ClassImportResolverFactory classes = new ClassImportResolverFactory(null, null, false);
     classes.addClass(Person.class);
 
     ResolverTools.appendFactory(mvf,
