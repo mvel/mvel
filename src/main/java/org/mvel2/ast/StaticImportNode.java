@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
@@ -35,15 +36,19 @@ public class StaticImportNode extends ASTNode {
   private String methodName;
   private transient Method method;
 
-  public StaticImportNode(char[] expr, int start, int offset) {
+  public StaticImportNode(char[] expr, int start, int offset, ParserContext pCtx) {
     try {
       this.expr = expr;
       this.start = start;
       this.offset = offset;
 
       int mark;
+      
+      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
+                                                 :  Thread.currentThread().getContextClassLoader();
+      
       declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
-          true, currentThread().getContextClassLoader());
+          true, classLoader );
 
       methodName = new String(expr, ++mark, offset - (mark - start));
 

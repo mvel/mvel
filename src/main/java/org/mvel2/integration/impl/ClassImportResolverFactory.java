@@ -27,23 +27,22 @@ import java.util.*;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
   private Set<String> packageImports;
-  private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+  private ClassLoader classLoader;
   private Map<String, Object> imports;
   private Map<String, Object> dynImports;
+  
+  public ClassImportResolverFactory(ParserConfiguration pCfg, VariableResolverFactory nextFactory, boolean compiled) {
+      if ( pCfg != null ) {
+        if (!compiled) {
+          packageImports = pCfg.getPackageImports();
+        }
+        classLoader =  pCfg.getClassLoader();
+        imports = Collections.unmodifiableMap(pCfg.getImports());        
+      } else {
+         classLoader =  Thread.currentThread().getContextClassLoader();
+      }
 
-  public ClassImportResolverFactory() {
-    super();
-  }
-
-  public ClassImportResolverFactory(ParserConfiguration ctx, VariableResolverFactory nextFactory, boolean compiled) {
-    if (!compiled) {
-      packageImports = ctx.getPackageImports();
-    }
-
-    classLoader = ctx.getClassLoader();
-    this.nextFactory = nextFactory;
-
-    imports = Collections.unmodifiableMap(ctx.getImports());
+    this.nextFactory = nextFactory;    
   }
 
   public VariableResolver createVariable(String name, Object value) {

@@ -54,6 +54,7 @@ public class NewObjectNode extends ASTNode {
   private transient Accessor newObjectOptimizer;
   private TypeDescriptor typeDescr;
   private char[] name;
+  private ParserContext pCtx;
 
   public NewObjectNode(TypeDescriptor typeDescr, int fields, ParserContext pCtx) {
     this.typeDescr = typeDescr;
@@ -61,6 +62,7 @@ public class NewObjectNode extends ASTNode {
     this.expr = typeDescr.getExpr();
     this.start = typeDescr.getStart();
     this.offset = typeDescr.getOffset();
+    this.pCtx = pCtx;
 
     if (offset < expr.length) {
       this.name = subArray(expr, start, start + offset);
@@ -74,7 +76,7 @@ public class NewObjectNode extends ASTNode {
         egressType = pCtx.getImport(typeDescr.getClassName());
       } else {
         try {
-          egressType = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader());
+          egressType = Class.forName(typeDescr.getClassName(), true, pCtx.getParserConfiguration().getClassLoader() );
         }
         catch (ClassNotFoundException e) {
           if (pCtx != null && pCtx.isStrongTyping())
@@ -203,9 +205,12 @@ public class NewObjectNode extends ASTNode {
 
       try {
         AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-
-        ParserContext pCtx = new ParserContext();
-        pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+        
+        ParserContext pCtx = this.pCtx;
+        if ( pCtx == null ) {
+            pCtx = new ParserContext();
+            pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));            
+        }
 
         newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, 0, name.length, ctx, thisValue, factory);
 
@@ -272,7 +277,7 @@ public class NewObjectNode extends ASTNode {
             return cns.newInstance(parms);
           }
         } else {
-          Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader())
+          Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, pCtx.getParserConfiguration().getClassLoader() )
                   .getConstructor(EMPTYCLS);
 
           if (cnsRes.length > 1) {

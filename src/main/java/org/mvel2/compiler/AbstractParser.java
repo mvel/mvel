@@ -409,7 +409,7 @@ public class AbstractParser implements Parser, Serializable {
               case IMPORT:
                 st = cursor = trimRight(cursor);
                 captureToEOS();
-                ImportNode importNode = new ImportNode(expr, st, cursor - st);
+                ImportNode importNode = new ImportNode(expr, st, cursor - st, pCtx);
 
                 if (pCtx == null) pCtx = getParserContext();
 
@@ -424,7 +424,7 @@ public class AbstractParser implements Parser, Serializable {
               case IMPORT_STATIC:
                 st = cursor = trimRight(cursor);
                 captureToEOS();
-                StaticImportNode staticImportNode = new StaticImportNode(expr, st, trimLeft(cursor) - st);
+                StaticImportNode staticImportNode = new StaticImportNode(expr, st, trimLeft(cursor) - st, pCtx);
                 if (pCtx == null) pCtx = getParserContext();
                 pCtx.addImport(staticImportNode.getMethod().getName(), staticImportNode.getMethod());
                 return lastNode = staticImportNode;
