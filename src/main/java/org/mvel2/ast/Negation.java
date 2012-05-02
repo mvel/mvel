@@ -31,6 +31,7 @@ public class Negation extends ASTNode {
   private ExecutableStatement stmt;
 
   public Negation(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

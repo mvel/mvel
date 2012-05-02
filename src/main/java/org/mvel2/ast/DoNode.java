@@ -36,6 +36,7 @@ public class DoNode extends BlockNode {
   protected ExecutableStatement condition;
 
   public DoNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

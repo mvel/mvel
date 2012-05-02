@@ -2184,8 +2184,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
   }
 
   private ContextClassLoader getContextClassLoader() {
-    ParserConfiguration conf = pCtx == null ? null : pCtx.getParserConfiguration();
-    return conf == null ? null : new ContextClassLoader(conf.getClassLoader());
+    return pCtx == null ? null : new ContextClassLoader(pCtx.getClassLoader());
   }
 
   private static class ContextClassLoader extends ClassLoader {

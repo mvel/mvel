@@ -44,6 +44,7 @@ public class ForNode extends BlockNode {
   protected boolean indexAlloc = false;
 
   public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+    super(pCtx);
 
     boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
         this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);

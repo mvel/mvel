@@ -33,6 +33,7 @@ public class IndexedOperativeAssign extends ASTNode {
   private final int operation;
 
   public IndexedOperativeAssign(char[] expr, int start, int offset, int operation, int register, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.operation = operation;
     this.expr = expr;
     this.start = start;

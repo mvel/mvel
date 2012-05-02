@@ -32,6 +32,7 @@ public class PreFixIncNode extends ASTNode {
   private String name;
 
   public PreFixIncNode(String name, ParserContext pCtx) {
+    super(pCtx);
     this.name = name;
     if (pCtx != null) {
       this.egressType = pCtx.getVarOrInputType(name);

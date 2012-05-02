@@ -36,6 +36,7 @@ public class DoUntilNode extends BlockNode {
   protected ExecutableStatement condition;
 
   public DoUntilNode(char[] expr, int start, int offset, int blockStart, int blockOffset, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

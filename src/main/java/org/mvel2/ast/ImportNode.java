@@ -40,6 +40,7 @@ public class ImportNode extends ASTNode {
   private static final char[] WC_TEST = new char[]{'.', '*'};
 
   public ImportNode(char[] expr, int start, int offset, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;
@@ -55,8 +56,7 @@ public class ImportNode extends ASTNode {
     else {
       String clsName = new String(expr, start, offset);
 
-      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
-                                                 :  Thread.currentThread().getContextClassLoader();
+      ClassLoader classLoader = getClassLoader();
       
       try {
         this.importClass = Class.forName(clsName, true, classLoader );

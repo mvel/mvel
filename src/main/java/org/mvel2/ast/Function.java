@@ -45,8 +45,8 @@ public class Function extends ASTNode implements Safe {
   protected int parmNum;
   protected boolean cMode = false;
 
-  public Function(String name, char[] expr, int start, int offset, int blockStart, int blockOffset,
-                  int fields, ParserContext pCtx) {
+  public Function(String name, char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+    super(pCtx);
     if ((this.name = name) == null || name.length() == 0) {
       this.name = null;
     }

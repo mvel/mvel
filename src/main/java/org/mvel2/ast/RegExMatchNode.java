@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static java.lang.String.valueOf;
@@ -28,7 +29,8 @@ public class RegExMatchNode extends ASTNode {
   private ASTNode node;
   private ASTNode patternNode;
 
-  public RegExMatchNode(ASTNode matchNode, ASTNode patternNode) {
+  public RegExMatchNode(ASTNode matchNode, ASTNode patternNode, ParserContext pCtx) {
+    super(pCtx);
     this.node = matchNode;
     this.patternNode = patternNode;
   }

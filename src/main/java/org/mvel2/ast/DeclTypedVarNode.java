@@ -32,6 +32,7 @@ public class DeclTypedVarNode extends ASTNode implements Assignment {
   private String name;
 
   public DeclTypedVarNode(String name, char[] expr, int start, int offset, Class type, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = type;
     checkNameSafety(this.name = name);
     this.expr = expr;

@@ -17,6 +17,7 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -32,7 +33,8 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 public class LiteralDeepPropertyNode extends ASTNode {
   private Object literal;
 
-  public LiteralDeepPropertyNode(char[] expr, int start, int offset, int fields, Object literal) {
+  public LiteralDeepPropertyNode(char[] expr, int start, int offset, int fields, Object literal, ParserContext pCtx) {
+    super(pCtx);
     this.fields = fields;
     this.expr = expr;
     this.start = start;
@@ -59,6 +61,6 @@ public class LiteralDeepPropertyNode extends ASTNode {
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    return get(expr, start, offset, literal, factory, thisValue);
+    return get(expr, start, offset, literal, factory, thisValue, pCtx);
   }
 }

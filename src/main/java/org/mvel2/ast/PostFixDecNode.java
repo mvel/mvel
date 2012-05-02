@@ -31,6 +31,7 @@ public class PostFixDecNode extends ASTNode {
   private String name;
 
   public PostFixDecNode(String name, ParserContext pCtx) {
+    super(pCtx);
     this.name = name;
     if (pCtx != null) {
       this.egressType = pCtx.getVarOrInputType(name);

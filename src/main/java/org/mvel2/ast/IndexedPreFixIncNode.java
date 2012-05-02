@@ -32,6 +32,7 @@ public class IndexedPreFixIncNode extends ASTNode {
   private int register;
 
   public IndexedPreFixIncNode(int register, ParserContext pCtx) {
+    super(pCtx);
     this.register = register;
     this.egressType = pCtx.getVarOrInputType(pCtx.getIndexedVarNames()[register]);
   }

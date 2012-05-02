@@ -1,6 +1,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 
@@ -10,7 +11,8 @@ public class Strsim extends ASTNode {
   private ASTNode stmt;
   private ASTNode soundslike;
 
-  public Strsim(ASTNode stmt, ASTNode clsStmt) {
+  public Strsim(ASTNode stmt, ASTNode clsStmt, ParserContext pCtx) {
+    super(pCtx);
     this.stmt = stmt;
     this.soundslike = clsStmt;
     CompilerTools.expectType(clsStmt, String.class, true);

@@ -38,6 +38,7 @@ public class Fold extends ASTNode {
   private ExecutableStatement constraintEx;
 
   public Fold(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

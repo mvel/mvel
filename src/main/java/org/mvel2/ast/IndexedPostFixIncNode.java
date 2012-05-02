@@ -32,6 +32,7 @@ public class IndexedPostFixIncNode extends ASTNode {
   private int register;
 
   public IndexedPostFixIncNode(int register, ParserContext pCtx) {
+    super(pCtx);
     this.register = register;
     this.egressType = pCtx.getVarOrInputType(pCtx.getIndexedVarNames()[register]);
   }

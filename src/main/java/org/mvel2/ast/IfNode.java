@@ -43,6 +43,7 @@ public class IfNode extends BlockNode implements NestedStatement {
   protected boolean idxAlloc = false;
 
   public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+    super(pCtx);
     if ((this.expr = expr) == null || offset == 0) {
       throw new CompileException("statement expected", expr, start);
     }

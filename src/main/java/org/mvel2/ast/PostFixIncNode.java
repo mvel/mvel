@@ -31,6 +31,7 @@ public class PostFixIncNode extends ASTNode {
   private String name;
 
   public PostFixIncNode(String name, ParserContext pCtx) {
+    super(pCtx);
     this.name = name;
     if (pCtx != null) {
       this.egressType = pCtx.getVarOrInputType(name);

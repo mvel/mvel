@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -27,7 +28,8 @@ import org.mvel2.integration.VariableResolverFactory;
 public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
   private int register;
 
-  public IndexedDeclTypedVarNode(int register, int start, int offset, Class type) {
+  public IndexedDeclTypedVarNode(int register, int start, int offset, Class type, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = type;
     this.start = start;
     this.offset = offset;

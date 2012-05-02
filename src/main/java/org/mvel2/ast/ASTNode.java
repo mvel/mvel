@@ -100,6 +100,8 @@ public class ASTNode implements Cloneable, Serializable {
   protected int cursorPosition;
   public ASTNode nextASTNode;
 
+  protected ParserContext pCtx;
+
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     if (accessor != null) {
       try {
@@ -162,7 +164,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     if (accessor == null) {
-      return get(expr, start, offset, ctx, factory, thisValue);
+      return get(expr, start, offset, ctx, factory, thisValue, pCtx);
     }
 
     if (retVal == null) {
@@ -182,7 +184,7 @@ public class ASTNode implements Cloneable, Serializable {
       return literal;
     }
     else {
-      return get(expr, start, offset, ctx, factory, thisValue);
+      return get(expr, start, offset, ctx, factory, thisValue, pCtx);
     }
   }
 
@@ -406,10 +408,12 @@ public class ASTNode implements Cloneable, Serializable {
     return expr;
   }
 
-  protected ASTNode() {
+  protected ASTNode(ParserContext pCtx) {
+    this.pCtx = pCtx;
   }
 
-  public ASTNode(char[] expr, int start, int offset, int fields) {
+  public ASTNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    this(pCtx);
     this.fields = fields;
     this.expr = expr;
     this.start = start;
@@ -421,6 +425,10 @@ public class ASTNode implements Cloneable, Serializable {
   public String toString() {
     return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" :
         (PCTX_STORED & fields) != 0 ? nameCache : new String(expr, start, offset);
+  }
+
+  protected ClassLoader getClassLoader() {
+    return pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
   }
 }
 

@@ -24,8 +24,8 @@ public class Stacklang extends BlockNode {
   List<Instruction> instructionList;
   ParserContext pCtx;
 
-  public Stacklang(char[] expr, int blockStart, int blockOffset, int fields,
-                   ParserContext pCtx) {
+  public Stacklang(char[] expr, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.blockStart = blockStart;
     this.blockOffset = blockOffset;

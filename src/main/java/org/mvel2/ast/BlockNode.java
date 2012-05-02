@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 
 /**
@@ -29,7 +30,8 @@ public class BlockNode extends ASTNode {
 
   protected ExecutableStatement compiledBlock;
 
-  public BlockNode() {
+  public BlockNode(ParserContext pCtx) {
+    super(pCtx);
   }
 
   public ExecutableStatement getCompiledBlock() {

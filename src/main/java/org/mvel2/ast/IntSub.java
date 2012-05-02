@@ -1,12 +1,13 @@
 package org.mvel2.ast;
 
 import org.mvel2.Operator;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 
 public class IntSub extends BinaryOperation implements IntOptimized {
-  public IntSub(ASTNode left, ASTNode right) {
-    super(Operator.SUB);
+  public IntSub(ASTNode left, ASTNode right, ParserContext pCtx) {
+    super(Operator.SUB, pCtx);
     this.left = left;
     this.right = right;
   }

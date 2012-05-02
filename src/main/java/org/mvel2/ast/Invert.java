@@ -31,6 +31,7 @@ public class Invert extends ASTNode {
   private ExecutableStatement stmt;
 
   public Invert(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

@@ -34,6 +34,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
   private ExecutableStatement statement;
 
   public TypedVarNode(char[] expr, int start, int offset, int fields, Class type, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = type;
     this.fields = fields;
 

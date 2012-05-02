@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
@@ -26,7 +27,8 @@ import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 public class OperatorNode extends ASTNode {
   private Integer operator;
 
-  public OperatorNode(Integer operator, char[] expr, int start) {
+  public OperatorNode(Integer operator, char[] expr, int start, ParserContext pCtx) {
+    super(pCtx);
     assert operator != null;
     this.expr = expr;
     this.literal = this.operator = operator;

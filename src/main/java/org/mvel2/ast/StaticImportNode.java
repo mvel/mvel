@@ -37,6 +37,7 @@ public class StaticImportNode extends ASTNode {
   private transient Method method;
 
   public StaticImportNode(char[] expr, int start, int offset, ParserContext pCtx) {
+    super(pCtx);
     try {
       this.expr = expr;
       this.start = start;
@@ -44,8 +45,7 @@ public class StaticImportNode extends ASTNode {
 
       int mark;
       
-      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
-                                                 :  Thread.currentThread().getContextClassLoader();
+      ClassLoader classLoader = getClassLoader();
       
       declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
           true, classLoader );

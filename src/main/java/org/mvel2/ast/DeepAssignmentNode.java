@@ -41,6 +41,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
   private ExecutableStatement statement;
 
   public DeepAssignmentNode(char[] expr, int start, int offset, int fields, int operation, String name, ParserContext pCtx) {
+    super(pCtx);
     this.fields |= DEEP_PROPERTY | fields;
 
     this.expr = expr;
@@ -93,7 +94,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    set(ctx, factory, property, ctx = eval(expr, this.start, this.offset, ctx, factory));
+    set(ctx, factory, property, ctx = eval(expr, this.start, this.offset, ctx, factory), pCtx);
     return ctx;
   }
 

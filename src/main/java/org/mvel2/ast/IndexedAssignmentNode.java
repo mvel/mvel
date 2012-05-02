@@ -47,6 +47,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
   public IndexedAssignmentNode(char[] expr, int start, int offset, int fields, int operation,
                                String name, int register, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

@@ -498,8 +498,7 @@ public class ParseTools {
 
 
   public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
-      ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
-                                                 :  Thread.currentThread().getContextClassLoader();
+    ClassLoader classLoader = pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
     
     Map<String, WeakReference<Class>> cache = CLASS_RESOLVER_CACHE.get(classLoader);
 
@@ -507,9 +506,8 @@ public class ParseTools {
       CLASS_RESOLVER_CACHE.put(classLoader, cache = new WeakHashMap<String, WeakReference<Class>>(10));
     }
 
-
     WeakReference<Class> ref;
-    Class cls;
+    Class cls = null;
 
     if ((ref = cache.get(className)) != null && (cls = ref.get()) != null) {
       return cls;
@@ -522,7 +520,11 @@ public class ParseTools {
         /**
          * Now try the system classloader.
          */
-        cls = forName(className, true, Thread.currentThread().getContextClassLoader());
+        if (classLoader != Thread.currentThread().getContextClassLoader()) {
+          cls = forName(className, true, Thread.currentThread().getContextClassLoader());
+        } else {
+          throw e;
+        }
       }
 
       cache.put(className, new WeakReference<Class>(cls));
@@ -927,7 +929,7 @@ public class ParseTools {
     return appendFactory(factory, new ClassImportResolverFactory(null, null, false));
   }
 
-  public static Class findClass(VariableResolverFactory factory, String name, ParserContext ctx) throws ClassNotFoundException {
+  public static Class findClass(VariableResolverFactory factory, String name, ParserContext pCtx) throws ClassNotFoundException {
     try {
       if (LITERALS.containsKey(name)) {
         return (Class) LITERALS.get(name);
@@ -935,11 +937,11 @@ public class ParseTools {
       else if (factory != null && factory.isResolveable(name)) {
         return (Class) factory.getVariableResolver(name).getValue();
       }
-      else if (ctx != null && ctx.hasImport(name)) {
-        return ctx.getImport(name);
+      else if (pCtx != null && pCtx.hasImport(name)) {
+        return pCtx.getImport(name);
       }
       else {
-        return createClass(name, ctx);
+        return createClass(name, pCtx);
       }
     }
     catch (ClassNotFoundException e) {

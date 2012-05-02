@@ -31,6 +31,7 @@ public class DeclProtoVarNode extends ASTNode implements Assignment {
   private String name;
 
   public DeclProtoVarNode(String name, Proto type, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = Proto.ProtoInstance.class;
     checkNameSafety(this.name = name);
 

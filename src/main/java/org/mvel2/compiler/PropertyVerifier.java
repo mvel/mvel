@@ -295,7 +295,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
       }
       try {
-        return findClass(variableFactory, ctx.getName() + "$" + property, null);
+        return findClass(variableFactory, ctx.getName() + "$" + property, pCtx);
       }
       catch (ClassNotFoundException cnfe) {
         // fall through.

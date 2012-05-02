@@ -17,12 +17,15 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.CompilerTools.expectType;
 
 public class Or extends BooleanNode {
-  public Or(ASTNode left, ASTNode right, boolean strongTyping) {
+
+  public Or(ASTNode left, ASTNode right, boolean strongTyping, ParserContext pCtx) {
+    super(pCtx);
     expectType(this.left = left, Boolean.class, strongTyping);
     expectType(this.right = right, Boolean.class, strongTyping);
   }

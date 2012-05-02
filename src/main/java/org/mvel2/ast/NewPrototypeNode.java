@@ -1,11 +1,13 @@
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class NewPrototypeNode extends ASTNode {
   private String protoName;
 
-  public NewPrototypeNode(TypeDescriptor t) {
+  public NewPrototypeNode(TypeDescriptor t, ParserContext pCtx) {
+    super(pCtx);
     this.protoName = t.getClassName();
   }
 

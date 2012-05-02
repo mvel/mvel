@@ -182,7 +182,7 @@ public class ExpressionCompiler extends AbstractParser {
                */
               while ((tkOp2 = nextTokenSkipSymbols()) != null) {
                 if (isBooleanOperator(tkOp2.getOperator())) {
-                  astBuild.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
+                  astBuild.addTokenNode(new LiteralNode(stk.pop(), pCtx), verify(pCtx, tkOp2));
                   break;
                 }
                 else if ((tkLA2 = nextTokenSkipSymbols()) != null) {
@@ -203,10 +203,10 @@ public class ExpressionCompiler extends AbstractParser {
                      * leave the rest to be determined at runtime.
                      */
                     if (!stk.isEmpty()) {
-                      astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
+                      astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx));
                     }
 
-                    astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator(), expr, st), verify(pCtx, tkLA2));
+                    astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator(), expr, st, pCtx), verify(pCtx, tkLA2));
                     break;
                   }
 
@@ -219,14 +219,14 @@ public class ExpressionCompiler extends AbstractParser {
                      * There are more tokens, but we can't reduce anymore.  So
                      * we create a reduced token for what we've got.
                      */
-                    astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
+                    astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx));
                   }
                   else {
                     /**
                      * We have reduced additional tokens, but we can't reduce
                      * anymore.
                      */
-                    astBuild.addTokenNode(new LiteralNode(getStackValueResult()), tkOp2);
+                    astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx), tkOp2);
 
                     if (tkLA2 != null) astBuild.addTokenNode(verify(pCtx, tkLA2));
                   }
@@ -241,7 +241,7 @@ public class ExpressionCompiler extends AbstractParser {
                * now.
                */
               if (!stk.isEmpty())
-                astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
+                astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx));
 
               continue;
             }
@@ -324,7 +324,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         stk.xswap_op();
 
-        astBuild.addTokenNode(new LiteralNode(stk.pop()));
+        astBuild.addTokenNode(new LiteralNode(stk.pop(), pCtx));
         astBuild.addTokenNode(
             (OperatorNode) splitAccumulator.pop(),
             verify(pCtx, (ASTNode) splitAccumulator.pop())
@@ -336,10 +336,10 @@ public class ExpressionCompiler extends AbstractParser {
          * to the output payload as they are.
          */
 
-        LiteralNode rightValue = new LiteralNode(stk.pop());
-        OperatorNode operator = new OperatorNode((Integer) stk.pop(), expr, st);
+        LiteralNode rightValue = new LiteralNode(stk.pop(), pCtx);
+        OperatorNode operator = new OperatorNode((Integer) stk.pop(), expr, st, pCtx);
 
-        astBuild.addTokenNode(new LiteralNode(stk.pop()), operator);
+        astBuild.addTokenNode(new LiteralNode(stk.pop(), pCtx), operator);
         astBuild.addTokenNode(rightValue, (OperatorNode) splitAccumulator.pop());
         astBuild.addTokenNode(verify(pCtx, (ASTNode) splitAccumulator.pop()));
     }
@@ -362,7 +362,7 @@ public class ExpressionCompiler extends AbstractParser {
        * Convert literal values from the default ASTNode to the more-efficient LiteralNode.
        */
       if ((fields & COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
-        return new LiteralNode(tk.getLiteralValue());
+        return new LiteralNode(tk.getLiteralValue(), pCtx);
       }
       else {
         return tk;
@@ -385,7 +385,7 @@ public class ExpressionCompiler extends AbstractParser {
           }
 
           if (propVerifier.isClassLiteral()) {
-            return new LiteralNode(returnType);
+            return new LiteralNode(returnType, pCtx);
           }
           if (propVerifier.isInput()) {
             pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);

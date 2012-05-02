@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -28,7 +29,8 @@ public class InterceptorWrapper extends ASTNode {
   private Interceptor interceptor;
   private ASTNode node;
 
-  public InterceptorWrapper(Interceptor interceptor, ASTNode node) {
+  public InterceptorWrapper(Interceptor interceptor, ASTNode node, ParserContext pCtx) {
+    super(pCtx);
     this.interceptor = interceptor;
     this.node = node;
   }

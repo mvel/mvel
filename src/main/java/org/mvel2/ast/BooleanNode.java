@@ -1,8 +1,14 @@
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
+
 public abstract class BooleanNode extends ASTNode {
   protected ASTNode left;
   protected ASTNode right;
+
+  protected BooleanNode(ParserContext pCtx) {
+    super(pCtx);
+  }
 
   public ASTNode getLeft() {
     return this.left;

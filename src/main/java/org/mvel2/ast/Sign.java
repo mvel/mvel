@@ -18,6 +18,7 @@ public class Sign extends ASTNode {
   private ExecutableStatement stmt;
 
   public Sign(char[] expr, int start, int end, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start + 1;
     this.offset = end - 1;

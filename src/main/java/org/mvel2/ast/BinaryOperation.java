@@ -39,23 +39,13 @@ public class BinaryOperation extends BooleanNode {
   private int lType = -1;
   private int rType = -1;
 
-  public BinaryOperation(int operation) {
+  public BinaryOperation(int operation, ParserContext ctx) {
+    super(ctx);
     this.operation = operation;
-  }
-
-  public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-    this.operation = operation;
-    if ((this.left = left) == null) {
-      throw new RuntimeException("not a statement");
-    }
-    if ((this.right = right) == null) {
-      throw new RuntimeException("not a statement");
-    }
-
-    egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
   }
 
   public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
+    super(ctx);
     this.operation = operation;
     if ((this.left = left) == null) {
       throw new ScriptRuntimeException("not a statement");
@@ -83,7 +73,7 @@ public class BinaryOperation extends BooleanNode {
 
         if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
           if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
-            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
+            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()), pCtx);
           } else if (!right.getEgressType().equals(NullType.class)
                   && !(Number.class.isAssignableFrom(right.getEgressType())
                   && Number.class.isAssignableFrom(left.getEgressType()))

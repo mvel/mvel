@@ -1,6 +1,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
@@ -23,7 +24,8 @@ public class Proto extends ASTNode {
   private int cursorStart;
   private int cursorEnd;
 
-  public Proto(String name) {
+  public Proto(String name, ParserContext pCtx) {
+    super(pCtx);
     this.name = name;
     this.receivers = new SimpleIndexHashMapWrapper<String, Receiver>();
   }

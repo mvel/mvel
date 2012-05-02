@@ -103,7 +103,7 @@ public class FunctionParser {
       /**
        * Add an EndOfStatement to the split accumulator in the parser.
        */
-      splitAccumulator.add(new EndOfStatement());
+      splitAccumulator.add(new EndOfStatement(pCtx));
     }
 
     /**

@@ -46,6 +46,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
 
   public AssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;
@@ -123,7 +124,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     checkNameSafety(varName);
 
     if (col) {
-      PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory));
+      PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory), pCtx);
     }
     else {
       return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();

@@ -31,6 +31,7 @@ public class PreFixDecNode extends ASTNode {
   private String name;
 
   public PreFixDecNode(String name, ParserContext pCtx) {
+    super(pCtx);
     this.name = name;
     if (pCtx != null) {
       this.egressType = pCtx.getVarOrInputType(name);

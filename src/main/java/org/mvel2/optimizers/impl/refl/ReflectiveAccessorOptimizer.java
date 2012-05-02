@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import static java.lang.Integer.parseInt;
+import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.getLength;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
@@ -400,11 +401,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       }
 
       val = curr;
-
-      if (pCtx.isStrictTypeEnforcement()) {
-        this.returnType = new PropertyVerifier(this.expr, start, length, pCtx).analyze();
-      }
-
       return rootNode;
     }
     catch (InvocationTargetException e) {
@@ -1308,11 +1304,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       return ca;
     }
     else {
-        ClassLoader classLoader = ( pCtx != null ) ? pCtx.getParserConfiguration().getClassLoader() 
-                                                   :  Thread.currentThread().getContextClassLoader();
-        
+      ClassLoader classLoader = pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
       Constructor<?> cns = Class.forName(new String(expression), true, classLoader ).getConstructor(EMPTYCLS);
-
       AccessorNode ca = new ConstructorAccessor(cns, null);
 
       if (cnsRes.length > 1) {

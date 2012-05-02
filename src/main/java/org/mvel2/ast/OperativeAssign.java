@@ -34,6 +34,7 @@ public class OperativeAssign extends ASTNode {
   private int knownInType = -1;
 
   public OperativeAssign(String variableName, char[] expr, int start, int offset, int operation, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.varName = variableName;
     this.operation = operation;
     this.expr = expr;

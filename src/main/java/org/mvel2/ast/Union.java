@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
@@ -30,8 +31,8 @@ public class Union extends ASTNode {
   private ASTNode main;
   private transient Accessor accessor;
 
-  public Union(char[] expr, int start, int offset, int fields, ASTNode main) {
-    super(expr, start, offset, fields);
+  public Union(char[] expr, int start, int offset, int fields, ASTNode main, ParserContext pCtx) {
+    super(expr, start, offset, fields, pCtx);
     this.main = main;
   }
 
@@ -63,7 +64,7 @@ public class Union extends ASTNode {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return PropertyAccessor.get(
         expr, start, offset,
-        main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
+        main.getReducedValue(ctx, thisValue, factory), factory, thisValue, pCtx);
   }
 
   public Class getLeftEgressType() {

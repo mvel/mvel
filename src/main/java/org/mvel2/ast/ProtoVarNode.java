@@ -33,12 +33,8 @@ public class ProtoVarNode extends ASTNode implements Assignment {
 
   private ExecutableStatement statement;
 
-  public ProtoVarNode(String name, Proto type) {
-    this.name = name;
-    this.egressType = Proto.ProtoInstance.class;
-  }
-
   public ProtoVarNode(char[] expr, int start, int offset, int fields, Proto type, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = Proto.ProtoInstance.class;
     this.expr = expr;
     this.start = start;

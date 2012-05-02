@@ -34,6 +34,7 @@ public class TypeCast extends ASTNode {
   private boolean widen;
 
   public TypeCast(char[] expr, int start, int offset, Class cast, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.egressType = cast;
     this.expr = expr;
     this.start = start;

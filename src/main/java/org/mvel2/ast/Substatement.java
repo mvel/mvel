@@ -29,6 +29,7 @@ public class Substatement extends ASTNode {
   private ExecutableStatement statement;
 
   public Substatement(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

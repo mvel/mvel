@@ -44,7 +44,7 @@ public class InlineCollectionNode extends ASTNode {
   int trailingOffset;
 
   public InlineCollectionNode(char[] expr, int start, int end, int fields, ParserContext pctx) {
-    super(expr, start, end, fields | INLINE_COLLECTION);
+    super(expr, start, end, fields | INLINE_COLLECTION, pctx);
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
       parseGraph(true, null, pctx);
@@ -60,7 +60,7 @@ public class InlineCollectionNode extends ASTNode {
   }
 
   public InlineCollectionNode(char[] expr, int start, int end, int fields, Class type, ParserContext pctx) {
-    super(expr, start, end, fields | INLINE_COLLECTION);
+    super(expr, start, end, fields | INLINE_COLLECTION, pctx);
 
     this.egressType = type;
 

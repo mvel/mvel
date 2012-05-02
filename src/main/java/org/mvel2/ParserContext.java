@@ -967,6 +967,10 @@ public class ParserContext implements Serializable {
     return parserConfiguration;
   }
 
+  public ClassLoader getClassLoader() {
+    return parserConfiguration.getClassLoader();
+  }
+
   public Type[] getLastTypeParameters() {
     return lastTypeParameters;
   }

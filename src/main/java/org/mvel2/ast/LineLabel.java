@@ -17,6 +17,7 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 /**
@@ -26,12 +27,8 @@ public class LineLabel extends ASTNode {
   private String sourceFile;
   private int lineNumber;
 
-  public LineLabel(int lineNumber) {
-    this.lineNumber = lineNumber;
-    this.fields = -1;
-  }
-
-  public LineLabel(String sourceFile, int lineNumber) {
+  public LineLabel(String sourceFile, int lineNumber, ParserContext pCtx) {
+    super(pCtx);
     this.lineNumber = lineNumber;
     this.sourceFile = sourceFile;
     this.fields = -1;

@@ -72,6 +72,7 @@ public class PropertyAccessor {
   private boolean nullHandle = false;
 
   private VariableResolverFactory variableFactory;
+  private ParserContext pCtx;
 
   //  private static final int DONE = -1;
   private static final int NORM = 0;
@@ -93,35 +94,21 @@ public class PropertyAccessor {
     METHOD_PARMTYPES_CACHE = new WeakHashMap<Member, WeakReference<Class[]>>(10);
   }
 
-
-  public PropertyAccessor(char[] property, Object ctx) {
-    this.property = property;
-    this.length = end = property.length;
+  public PropertyAccessor(String property, Object ctx) {
+    this.length = end = (this.property = property.toCharArray()).length;
     this.ctx = ctx;
+    this.variableFactory = new ImmutableDefaultFactory();
   }
 
-  public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
+  public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference, ParserContext pCtx) {
     this.length = end = (this.property = property).length;
     this.ctx = ctx;
     this.variableFactory = resolver;
     this.thisReference = thisReference;
+    this.pCtx = pCtx;
   }
 
-  public PropertyAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory resolver, Object thisReference) {
-    this.length = end = (this.property = property).length;
-    this.ctx = ctx;
-    this.thisReference = thisRef;
-    this.variableFactory = resolver;
-    this.thisReference = thisReference;
-  }
-
-  public PropertyAccessor(VariableResolverFactory resolver, Object thisReference) {
-    this.variableFactory = resolver;
-    this.thisReference = thisReference;
-  }
-
-
-  public PropertyAccessor(char[] property, int start, int offset, Object ctx, VariableResolverFactory resolver, Object thisReference) {
+  public PropertyAccessor(char[] property, int start, int offset, Object ctx, VariableResolverFactory resolver, Object thisReference, ParserContext pCtx) {
     this.property = property;
     this.cursor = this.st = this.start = start;
     this.length = offset;
@@ -129,40 +116,27 @@ public class PropertyAccessor {
     this.ctx = ctx;
     this.variableFactory = resolver;
     this.thisReference = thisReference;
-  }
-
-  public PropertyAccessor(String property, Object ctx) {
-    this.length = end = (this.property = property.toCharArray()).length;
-    this.ctx = ctx;
-    this.variableFactory = new ImmutableDefaultFactory();
+    this.pCtx = pCtx;
   }
 
   public static Object get(String property, Object ctx) {
     return new PropertyAccessor(property, ctx).get();
   }
 
-  public static Object get(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
-    return new PropertyAccessor(property, ctx, resolver, thisReference).get();
+  public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver, Object thisReferece, ParserContext pCtx) {
+    return new PropertyAccessor(property, offset, end, ctx, resolver, thisReferece, pCtx).get();
   }
 
-  public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
-    return new PropertyAccessor(property, offset, end, ctx, resolver, null).get();
-  }
-
-  public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver, Object thisReferece) {
-    return new PropertyAccessor(property, offset, end, ctx, resolver, thisReferece).get();
-  }
-
-  public static Object get(String property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
-    return new PropertyAccessor(property.toCharArray(), ctx, resolver, thisReference).get();
+  public static Object get(String property, Object ctx, VariableResolverFactory resolver, Object thisReference, ParserContext pCtx) {
+    return new PropertyAccessor(property.toCharArray(), ctx, resolver, thisReference, pCtx).get();
   }
 
   public static void set(Object ctx, String property, Object value) {
     new PropertyAccessor(property, ctx).set(value);
   }
 
-  public static void set(Object ctx, VariableResolverFactory resolver, String property, Object value) {
-    new PropertyAccessor(property.toCharArray(), ctx, resolver, null).set(value);
+  public static void set(Object ctx, VariableResolverFactory resolver, String property, Object value, ParserContext pCtx) {
+    new PropertyAccessor(property.toCharArray(), ctx, resolver, null, pCtx).set(value);
   }
 
   private Object get() {
@@ -672,7 +646,7 @@ public class PropertyAccessor {
         }
 
         try {
-          return findClass(variableFactory, c.getName() + "$" + property, null);
+          return findClass(variableFactory, c.getName() + "$" + property, pCtx);
         }
         catch (ClassNotFoundException cnfe) {
           // fall through.
@@ -1038,6 +1012,10 @@ public class PropertyAccessor {
 //  }
 
 
+  private ClassLoader getClassLoader() {
+      return pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
+  }
+
   /**
    * Try static access of the property, and return an instance of the Field, Method of Class if successful.
    *
@@ -1068,10 +1046,10 @@ public class PropertyAccessor {
                 if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
                     test.endsWith(".class")) test = test.substring(0, test.length() - 6);
 
-                return currentThread().getContextClassLoader().loadClass(test);
+                return getClassLoader().loadClass(test);
               }
               catch (ClassNotFoundException e) {
-                Class cls = currentThread().getContextClassLoader().loadClass(new String(property, start, i - start));
+                Class cls = getClassLoader().loadClass(new String(property, start, i - start));
                 String name = new String(property, i + 1, end - i - 1);
                 try {
                   return cls.getField(name);

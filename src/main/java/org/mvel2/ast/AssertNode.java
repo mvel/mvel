@@ -34,6 +34,7 @@ public class AssertNode extends ASTNode {
   public ExecutableStatement fail;
 
   public AssertNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+    super(pCtx);
     this.expr = expr;
     this.start = start;
     this.offset = offset;

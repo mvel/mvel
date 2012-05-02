@@ -48,7 +48,7 @@ public class ProtoParser {
   }
 
   public Proto parse() {
-    Proto proto = new Proto(protoName);
+    Proto proto = new Proto(protoName, pCtx);
 
     Mainloop:
     while (cursor < endOffset) {
@@ -165,7 +165,7 @@ public class ProtoParser {
       /**
        * Add an EndOfStatement to the split accumulator in the parser.
        */
-      splitAccumulator.add(new EndOfStatement());
+      splitAccumulator.add(new EndOfStatement(pCtx));
     }
 
     return proto;

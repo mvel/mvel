@@ -18,12 +18,14 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
 public class IsDef extends ASTNode {
-  public IsDef(char[] expr, int start, int offset) {
+  public IsDef(char[] expr, int start, int offset, ParserContext pCtx) {
+    super(pCtx);
     this.nameCache = new String(this.expr = expr, this.start = start, this.offset = offset);
   }
 

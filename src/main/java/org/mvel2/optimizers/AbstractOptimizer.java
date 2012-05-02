@@ -67,9 +67,7 @@ public class AbstractOptimizer extends AbstractParser {
         switch (expr[i]) {
           case '.':
             if (!meth) {
-              ClassLoader classLoader = pCtx != null ?
-                      pCtx.getParserConfiguration().getClassLoader() :
-                      currentThread().getContextClassLoader();
+              ClassLoader classLoader = pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
               try {
                 String test = new String(expr, start, (cursor = last) - start);
                 if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && test.endsWith(".class"))
