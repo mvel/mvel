@@ -4053,4 +4053,14 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(int.class, MVEL.analyze("b.value", parserContext));
     assertEquals(42, MVEL.executeExpression(MVEL.compileExpression( "b.value", parserContext ), new ImplementationA()));
   }
+
+  public void testDivisionType() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", BigDecimal.class);
+    Serializable expression = MVEL.compileExpression("(a / 3).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)", parserContext);
+    Object result = MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("3.0")); }});
+    System.out.println(result);
+  }
 }

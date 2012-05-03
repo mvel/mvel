@@ -663,26 +663,26 @@ public strictfp class MathProcessor {
       return 0d;
     switch (type) {
       case BIG_DECIMAL:
-        return ((BigDecimal) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.BIG_INTEGER:
-        return ((BigInteger) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.INTEGER:
       case DataTypes.W_INTEGER:
-        return ((Integer) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.LONG:
       case DataTypes.W_LONG:
-        return ((Long) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.STRING:
         return Double.parseDouble((String) in);
       case DataTypes.FLOAT:
       case DataTypes.W_FLOAT:
-        return ((Float) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.DOUBLE:
       case DataTypes.W_DOUBLE:
         return (Double) in;
       case DataTypes.SHORT:
       case DataTypes.W_SHORT:
-        return ((Short) in).doubleValue();
+        return ((Number) in).doubleValue();
       case DataTypes.CHAR:
       case DataTypes.W_CHAR:
         return Double.parseDouble(String.valueOf((Character) in));
