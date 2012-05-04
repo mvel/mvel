@@ -664,7 +664,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     mv = cw.visitMethod(ACC_PUBLIC, "getKnownEgressType", "()Ljava/lang/Class;", null, null);
     mv.visitCode();
-    mv.visitLdcInsn(org.mvel2.asm.Type.getType(returnType != null ? returnType : Object.class));
+    visitConstantClass(returnType);
     mv.visitInsn(ARETURN);
 
     mv.visitMaxs(1, 1);
@@ -695,6 +695,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     cw.visitEnd();
 
+  }
+
+  private void visitConstantClass(Class<?> clazz) {
+    if (clazz == null) clazz = Object.class;
+    if (clazz.isPrimitive()) {
+        mv.visitFieldInsn(GETSTATIC, toNonPrimitiveType(clazz).getName().replace(".", "/"), "TYPE", "Ljava/lang/Class;");
+    } else {
+        mv.visitLdcInsn(org.mvel2.asm.Type.getType(clazz));
+    }
   }
 
   private Accessor _initializeAccessor() throws Exception {
