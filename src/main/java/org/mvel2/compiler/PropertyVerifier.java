@@ -302,7 +302,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
     }
 
-    if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+    if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
       Class cls = getMethod(ctx, property);
       if (cls != Object.class) {
         return cls;

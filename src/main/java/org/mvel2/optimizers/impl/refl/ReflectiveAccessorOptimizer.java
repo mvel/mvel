@@ -645,7 +645,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         Class c = (Class) ctx;
         for (Method m : c.getMethods()) {
           if (property.equals(m.getName())) {
-            if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+            if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
               o = m.invoke(null, EMPTY_OBJ_ARR);
               if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(m, new ExecutableStatement[0], getNullMethodHandler()));
@@ -673,7 +673,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
           // fall through.
         }
       }
-      else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+      else if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
         return getMethod(ctx, property);
       }
 

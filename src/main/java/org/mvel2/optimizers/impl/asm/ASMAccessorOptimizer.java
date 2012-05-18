@@ -1250,7 +1250,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Class c = (Class) ctx;
         for (Method m : c.getMethods()) {
           if (property.equals(m.getName())) {
-            if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+            if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
               assert debug("POP");
               mv.visitInsn(POP);
               assert debug("INVOKESTATIC " + m.getName());
@@ -1279,7 +1279,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
       }
-      else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+      else if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
         return getMethod(ctx, property);
       }
 
