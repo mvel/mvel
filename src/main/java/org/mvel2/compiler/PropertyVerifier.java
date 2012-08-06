@@ -291,7 +291,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     if (ctx != null && ctx.getClass() == Class.class) {
       for (Method m : ctx.getMethods()) {
         if (property.equals(m.getName())) {
-          return m.getReturnType();
+          return getGenericReturnType(m);
         }
       }
       try {
@@ -314,6 +314,25 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     return Object.class;
+  }
+
+  private Class<?> getGenericReturnType(Method m) {
+    Type parametricReturnType = m.getGenericReturnType();
+    String returnTypeArg = parametricReturnType.toString();
+
+    //push return type parameters onto parser context, only if this is a parametric type
+    if (parametricReturnType instanceof ParameterizedType) {
+        pCtx.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+    }
+
+    if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
+        /**
+         * If the paramTypes Map contains the known type, return that type.
+         */
+        return (Class) paramTypes.get(returnTypeArg);
+    }
+
+    return m.getReturnType();
   }
 
   /**

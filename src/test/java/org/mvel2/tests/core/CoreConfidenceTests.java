@@ -3810,6 +3810,26 @@ public class CoreConfidenceTests extends AbstractTest {
     public void setIntField(int intField) {
       this.intField = intField;
     }
+
+    public Option<String> getField1Option() {
+      return new Option(Field1);
+    }
+  }
+
+  public static class Option<T> {
+    private final T t;
+
+    public Option(T t) {
+      this.t = t;
+    }
+
+    public boolean isDefined() {
+      return t != null;
+    }
+
+    public T get() {
+      return t;
+    }
   }
 
   public void testUppercaseField() {
@@ -3832,6 +3852,10 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
     assertEquals(Boolean.class, expressionReturnType("intField == 1 || Field1 == \"xxx\""));
     assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 * 3 || Field1 == \"xxx\""));
+  }
+
+  public void testExpressionReturnTypeWithGenerics() {
+    assertEquals(String.class, expressionReturnType("Field1Option.get"));
   }
 
   public void testWrongExpressions() {
