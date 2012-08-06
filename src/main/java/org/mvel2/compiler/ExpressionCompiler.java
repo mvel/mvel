@@ -284,7 +284,7 @@ public class ExpressionCompiler extends AbstractParser {
       }
 
       if (!verifyOnly) {
-        return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
+        return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx.getParserConfiguration(), literalOnly == 1);
       }
       else {
         try {

@@ -1,6 +1,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.ParserContext;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 
@@ -35,5 +36,13 @@ public class Instance extends ASTNode {
 
   public Class getEgressType() {
     return Boolean.class;
+  }
+
+  public ASTNode getStatement() {
+    return stmt;
+  }
+
+  public ASTNode getClassStatement() {
+    return clsStmt;
   }
 }

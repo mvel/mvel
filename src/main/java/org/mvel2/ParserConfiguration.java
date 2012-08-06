@@ -46,6 +46,8 @@ public class ParserConfiguration implements Serializable {
 
   private transient Set<String> nonValidImports;
 
+  private boolean allowBootstrapBypass = true;
+
   static {
     String negCacheSize = System.getProperty("mvel2.compiler.max_neg_cache_size");
     if (negCacheSize != null) {
@@ -294,5 +296,13 @@ public class ParserConfiguration implements Serializable {
   public void flushCaches() {
     if (nonValidImports != null)
       nonValidImports.clear();
+  }
+
+  public boolean isAllowBootstrapBypass() {
+    return allowBootstrapBypass;
+  }
+
+  public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
+    this.allowBootstrapBypass = allowBootstrapBypass;
   }
 }

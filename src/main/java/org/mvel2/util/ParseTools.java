@@ -2149,7 +2149,7 @@ public class ParseTools {
      * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
      */
     if (!compiled.isImportInjectionRequired() &&
-        compiled.getParserContext().isAllowBootstrapBypass() && compiled.isSingleNode()) {
+        compiled.getParserConfiguration().isAllowBootstrapBypass() && compiled.isSingleNode()) {
 
       return _optimizeTree(compiled);
     }
