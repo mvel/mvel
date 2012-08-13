@@ -675,6 +675,7 @@ public class ParserContext implements Serializable {
   public void popVariableScope() {
     if (variableVisibility != null && !variableVisibility.isEmpty()) {
       variableVisibility.remove(variableVisibility.size() - 1);
+      setLastTypeParameters(null);
     }
   }
 
