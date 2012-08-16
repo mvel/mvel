@@ -4087,4 +4087,20 @@ public class CoreConfidenceTests extends AbstractTest {
     Object result = MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("3.0")); }});
     System.out.println(result);
   }
+
+  public void testUntypedClone() {
+    String expression = "obj.clone();";
+    ParserContext context = new ParserContext();
+    context.setStrongTyping(false);
+    context.setStrictTypeEnforcement(false);
+    MVEL.analyze(expression, context);
+
+    try {
+      context.addInput("obj", Object.class);
+      context.setStrongTyping(true);
+      context.setStrictTypeEnforcement(true);
+      MVEL.analyze(expression, context);
+      fail("Must fail with strong typing");
+    } catch (CompileException e) { }
+  }
 }

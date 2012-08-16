@@ -613,7 +613,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
     }
 
-    if (!Modifier.isPublic(m.getModifiers())) {
+    if (!Modifier.isPublic(m.getModifiers()) && pCtx.isStrictTypeEnforcement()) {
       StringAppender errorBuild = new StringAppender();
       for (int i = 0; i < args.length; i++) {
         errorBuild.append(args[i] != null ? args[i].getName() : null);
