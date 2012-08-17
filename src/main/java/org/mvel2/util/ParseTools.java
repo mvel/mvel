@@ -697,21 +697,21 @@ public class ParseTools {
   private static boolean containsCheckOnPrimitveArray(Object primitiveArray, Object compareTest) {
     Class<?> primitiveType = primitiveArray.getClass().getComponentType();
     if (primitiveType == boolean.class)
-      return compareTest instanceof Boolean ? containsCheckOnBooleanArray((boolean[])primitiveArray, (Boolean)compareTest) : false;
+      return compareTest instanceof Boolean && containsCheckOnBooleanArray((boolean[]) primitiveArray, (Boolean) compareTest);
     if (primitiveType == int.class)
-      return compareTest instanceof Integer ? containsCheckOnIntArray((int[])primitiveArray, (Integer)compareTest) : false;
+      return compareTest instanceof Integer && containsCheckOnIntArray((int[])primitiveArray, (Integer)compareTest);
     if (primitiveType == long.class)
-      return compareTest instanceof Long ? containsCheckOnLongArray((long[])primitiveArray, (Long)compareTest) : false;
+      return compareTest instanceof Long && containsCheckOnLongArray((long[])primitiveArray, (Long)compareTest);
     if (primitiveType == double.class)
-      return compareTest instanceof Double ? containsCheckOnDoubleArray((double[])primitiveArray, (Double)compareTest) : false;
+      return compareTest instanceof Double && containsCheckOnDoubleArray((double[]) primitiveArray, (Double) compareTest);
     if (primitiveType == float.class)
-      return compareTest instanceof Float ? containsCheckOnFloatArray((float[])primitiveArray, (Float)compareTest) : false;
+      return compareTest instanceof Float && containsCheckOnFloatArray((float[])primitiveArray, (Float)compareTest);
     if (primitiveType == char.class)
-      return compareTest instanceof Character ? containsCheckOnCharArray((char[])primitiveArray, (Character)compareTest) : false;
+      return compareTest instanceof Character && containsCheckOnCharArray((char[])primitiveArray, (Character)compareTest);
     if (primitiveType == short.class)
-      return compareTest instanceof Short ? containsCheckOnShortArray((short[])primitiveArray, (Short)compareTest) : false;
+      return compareTest instanceof Short && containsCheckOnShortArray((short[])primitiveArray, (Short)compareTest);
     if (primitiveType == byte.class)
-      return compareTest instanceof Byte ? containsCheckOnByteArray((byte[])primitiveArray, (Byte)compareTest) : false;
+      return compareTest instanceof Byte && containsCheckOnByteArray((byte[]) primitiveArray, (Byte) compareTest);
     return false;
   }
 
@@ -765,9 +765,10 @@ public class ParseTools {
 
   public static int createClassSignatureHash(Class declaring, Class[] sig) {
     int hash = 0;
-    for (Class cls : sig) {
-      if (cls != null)
-        hash += cls.hashCode();
+    for (int i = 0; i < sig.length; i++) {
+      if (sig[i] != null) {
+        hash += ( sig[i].hashCode() * ( i * 2 + 3 ) );
+      }
     }
 
     return hash + sig.length + declaring.hashCode();
@@ -1626,9 +1627,7 @@ public class ParseTools {
                 }
 
                 String rewrittenExpr = new String(
-                    createShortFormOperativeAssignment(
-                        new StringBuilder(nestParm).append(".").append(parm).toString(),
-                        block, _st, _end - _st, oper));
+                    createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper));
 
                 MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
               }
@@ -1669,9 +1668,7 @@ public class ParseTools {
               throw new CompileException("operative assignment not possible here", block, start);
             }
 
-            String rewrittenExpr = new String(createShortFormOperativeAssignment(
-                new StringBuilder(nestParm).append(".").append(parm).toString(),
-                block, _st, _end - _st, oper));
+            String rewrittenExpr = new String(createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper));
 
             MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
           }

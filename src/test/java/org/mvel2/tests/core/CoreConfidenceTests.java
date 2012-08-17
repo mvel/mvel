@@ -4103,4 +4103,28 @@ public class CoreConfidenceTests extends AbstractTest {
       fail("Must fail with strong typing");
     } catch (CompileException e) { }
   }
+
+  public void testOverloading() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", Overloaded.class);
+    Overloaded overloaded = new Overloaded();
+
+    assertEquals(15, MVEL.executeExpression(MVEL.compileExpression( "method(5, 9, \"x\")", parserContext ), overloaded));
+    assertEquals(-3, MVEL.executeExpression(MVEL.compileExpression( "method(5, \"x\", 9)", parserContext ), overloaded));
+    assertEquals(-13, MVEL.executeExpression(MVEL.compileExpression( "method(\"x\", 5, 9)", parserContext ), overloaded));
+  }
+
+  public static class Overloaded {
+    public int method(int i, int j, String s) {
+      return i + j + s.length();
+    }
+    public int method(int i, String s, int j) {
+      return i + s.length() - j;
+    }
+    public int method(String s, int i, int j) {
+      return s.length() - i - j;
+    }
+  }
 }
