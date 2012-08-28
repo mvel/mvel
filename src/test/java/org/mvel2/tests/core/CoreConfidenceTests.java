@@ -4127,4 +4127,24 @@ public class CoreConfidenceTests extends AbstractTest {
       return s.length() - i - j;
     }
   }
+
+  public void testBoolean() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", BooleanWrapper.class);
+    BooleanWrapper booleanWrapper = new BooleanWrapper(true);
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression( "value", parserContext ), booleanWrapper));
+  }
+
+  public static class BooleanWrapper {
+    private final Boolean value;
+    public BooleanWrapper(Boolean value) {
+      this.value = value;
+    }
+    public Boolean isValue() {
+      return value;
+    }
+  }
 }
