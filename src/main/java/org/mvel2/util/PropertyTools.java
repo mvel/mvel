@@ -95,9 +95,8 @@ public class PropertyTools {
 
     Method candidate = null;
     for (Method meth : clazz.getMethods()) {
-      if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0 && (property.equals(meth.getName()) ||
-          (isGet.equals(meth.getName()) && ( meth.getReturnType() == boolean.class || meth.getReturnType() == Boolean.class ) ) ||
-          simple.equals(meth.getName()))) {
+      if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
+          && (property.equals(meth.getName()) || (isGet.equals(meth.getName()) && meth.getReturnType() == boolean.class) || simple.equals(meth.getName()))) {
         if (candidate == null || candidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
           candidate = meth;
         }
