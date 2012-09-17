@@ -3851,7 +3851,13 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Boolean.class, expressionReturnType("intField == 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
     assertEquals(Boolean.class, expressionReturnType("intField == 1 || Field1 == \"xxx\""));
-    assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 * 3 || Field1 == \"xxx\""));
+    assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 || Field1 == \"xxx\""));
+  }
+
+  public void testConstantOnLeftExpression() {
+    assertEquals(Boolean.class, expressionReturnType("3 == intField"));
+    assertEquals(Boolean.class, expressionReturnType("\"xxx\" == Field1"));
+    assertEquals(Boolean.class, expressionReturnType("null == Field1"));
   }
 
   public void testExpressionReturnTypeWithGenerics() {
@@ -3878,6 +3884,7 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrictTypeEnforcement(true);
     parserContext.setStrongTyping(true);
     parserContext.addInput("this", Bean1.class);
+    MVEL.compileExpression(expr, parserContext);
     return MVEL.analyze(expr, parserContext);
   }
 

@@ -2449,7 +2449,7 @@ public class AbstractParser implements Parser, Serializable {
         while (true) {
           // look ahead again
           if ((tk = nextToken()) != null && (operator2 = tk.getOperator()) != -1
-              && operator2 != 37 && PTABLE[operator2] > PTABLE[operator]) {
+              && operator2 != END_OF_STMT && PTABLE[operator2] > PTABLE[operator]) {
             // if we have back to back operations on the stack, we don't xswap
 
             if (dStack.isReduceable()) {
@@ -2463,7 +2463,7 @@ public class AbstractParser implements Parser, Serializable {
 
             continue;
           }
-          else if (tk != null && operator2 != -1 && operator2 != 37) {
+          else if (tk != null && operator2 != -1 && operator2 != END_OF_STMT) {
             if (PTABLE[operator2] == PTABLE[operator]) {
               if (!dStack.isEmpty()) dreduce();
               else {
