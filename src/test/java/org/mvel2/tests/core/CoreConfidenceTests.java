@@ -3817,7 +3817,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public static class Option<T> {
-    private final T t;
+    public final T t;
 
     public Option(T t) {
       this.t = t;
@@ -3862,6 +3862,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testExpressionReturnTypeWithGenerics() {
     assertEquals(String.class, expressionReturnType("Field1Option.get"));
+    assertEquals(String.class, expressionReturnType("Field1Option.t"));
   }
 
   public void testWrongExpressions() {
