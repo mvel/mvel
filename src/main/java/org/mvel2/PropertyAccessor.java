@@ -157,6 +157,8 @@ public class PropertyAccessor {
       throw new PropertyAccessException("could not access property", property, cursor, e);
     }
     catch (IndexOutOfBoundsException e) {
+      if (cursor >= length) cursor = length -1;
+
       throw new PropertyAccessException("array or collections index out of bounds in property: "
           + new String(property, cursor, length), property, cursor, e);
     }

@@ -1077,56 +1077,6 @@ public class ParseTools {
       }
     }
     return code;
-
-
-//        if (Integer.class == cls)
-//            return DataTypes.W_INTEGER;
-//        if (Double.class == cls)
-//            return DataTypes.W_DOUBLE;
-//        if (Boolean.class == cls)
-//            return DataTypes.W_BOOLEAN;
-//        if (String.class == cls)
-//            return DataTypes.STRING;
-//        if (Long.class == cls)
-//            return DataTypes.W_LONG;
-//
-//        if (Short.class == cls)
-//            return DataTypes.W_SHORT;
-//        if (Float.class == cls)
-//            return DataTypes.W_FLOAT;
-//
-//        if (Byte.class == cls)
-//            return DataTypes.W_BYTE;
-//        if (Character.class == cls)
-//            return DataTypes.W_CHAR;
-//
-//        if (BigDecimal.class == cls)
-//            return DataTypes.BIG_DECIMAL;
-//
-//        if (BigInteger.class == cls)
-//            return DataTypes.BIG_INTEGER;
-//
-//        if (int.class == cls)
-//            return INTEGER;
-//        if (short.class == cls)
-//            return DataTypes.SHORT;
-//        if (float.class == cls)
-//            return DataTypes.FLOAT;
-//        if (double.class == cls)
-//            return DOUBLE;
-//        if (long.class == cls)
-//            return LONG;
-//        if (boolean.class == cls)
-//            return DataTypes.BOOLEAN;
-//        if (byte.class == cls)
-//            return DataTypes.BYTE;
-//        if (char.class == cls)
-//            return DataTypes.CHAR;
-//
-//        if (BlankLiteral.class == cls)
-//            return DataTypes.EMPTY;
-
-    //    return DataTypes.OBJECT;
   }
 
   public static boolean isNumericallyCoercible(Class target, Class parm) {

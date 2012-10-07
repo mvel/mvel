@@ -80,7 +80,11 @@ public class Fuzzer {
       }
 
       if (run % 25000 == 0 && run != 0) {
-        rate = run / (time = (currentTimeMillis() - start) / 1000);
+        long l = time = (currentTimeMillis() - start) / 1000;
+        if (l == 0) {
+          l = 1;
+        }
+        rate = run / l;
         System.out.println("Run: " + df.format(run) + " times; "
             + df.format(time) + "secs; " + df.format(rate) + " avg. per second.");
       }
