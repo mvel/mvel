@@ -4,7 +4,10 @@ import org.mvel2.MVEL;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.util.Make;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -47,6 +50,64 @@ public class ProjectionsTests extends AbstractTest {
     Iterator iter = col.iterator();
     assertEquals("ZERO", iter.next());
     assertEquals("ZEN", iter.next());
+  }
+  
+  public void testNestedProjection() {
+    Map vars = createTestVars();
+    assertEquals(
+        Arrays.asList("George", "Michael", "Laura"), 
+        MVEL.eval("familyMembers = (name in (familyMembers in users));", vars));
+  }
+
+  public void testConcatProjection() {
+    Map vars = createTestVars();
+    assertEquals(
+        Arrays.asList("George", "Michael", "Laura"), 
+        MVEL.eval(
+            "def concat(lists) {res = []; foreach (list : lists) {res += list} res;} " +
+            "familyMembers = (name in concat((familyMembers in users)));", vars));
+  }
+  
+  private Map createTestVars() {
+    Collection users = new ArrayList();
+    User user1 = new User("John");
+    user1.getFamilyMembers().add(new User("George"));
+    User user2 = new User("Bob");
+    User user3 = new User("Cindy");
+    user3.getFamilyMembers().add(new User("Michael"));
+    user3.getFamilyMembers().add(new User("Laura"));
+    users.add(user1);
+    users.add(user2);
+    users.add(user3);
+    
+    Map vars = new HashMap();
+    vars.put("users", users);
+    return vars;
+  }
+
+  public static final class User {
+    private String name;
+    private Collection familyMembers = new ArrayList();
+    
+    public User(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public Collection getFamilyMembers() {
+      return familyMembers;
+    }
+
+    public void setFamilyMembers(Collection familyMembers) {
+      this.familyMembers = familyMembers;
+    }
   }
 
 }
