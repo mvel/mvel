@@ -52,6 +52,10 @@ public class ProjectionsTests extends AbstractTest {
     assertEquals("ZEN", iter.next());
   }
   
+  public void testProjectionSupport6() {
+    assertEquals(true, test("( name in things ) contains 'Bob'"));
+  }
+  
   public void testNestedProjection() {
     Map vars = createTestVars();
     assertEquals(
