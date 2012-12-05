@@ -19,9 +19,14 @@
 package org.mvel2.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import static java.lang.System.arraycopy;
 
+/**
+ *
+ * @author Mike Brock
+ */
 public class StringAppender implements CharSequence {
   private static final int DEFAULT_SIZE = 15;
 
@@ -35,34 +40,35 @@ public class StringAppender implements CharSequence {
     str = new char[capacity = DEFAULT_SIZE];
   }
 
-  public StringAppender(int capacity) {
+  public StringAppender(final int capacity) {
     str = new char[this.capacity = capacity];
   }
 
-  public StringAppender(int capacity, String encoding) {
+  public StringAppender(final int capacity, final String encoding) {
     str = new char[this.capacity = capacity];
     this.encoding = encoding;
   }
 
-  public StringAppender(char c) {
+  public StringAppender(final char c) {
     (str = new char[this.capacity = DEFAULT_SIZE])[0] = c;
   }
 
-  public StringAppender(char[] s) {
+  public StringAppender(final char[] s) {
     capacity = size = (str = s).length;
   }
 
-  public StringAppender(CharSequence s) {
+  public StringAppender(final CharSequence s) {
     str = new char[this.capacity = size = s.length()];
     for (int i = 0; i < str.length; i++)
       str[i] = s.charAt(i);
+
   }
 
-  public StringAppender(String s) {
+  public StringAppender(final String s) {
     capacity = size = (str = s.toCharArray()).length;
   }
 
-  public StringAppender append(char[] chars) {
+  public StringAppender append(final char[] chars) {
     if (chars.length > (capacity - size)) grow(chars.length);
     for (int i = 0; i < chars.length; size++) {
       str[size] = chars[i++];
@@ -70,7 +76,7 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(byte[] chars) {
+  public StringAppender append(final byte[] chars) {
     if (chars.length > (capacity - size)) grow(chars.length);
     for (int i = 0; i < chars.length; size++) {
       str[size] = (char) chars[i++];
@@ -78,7 +84,7 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(char[] chars, int start, int length) {
+  public StringAppender append(final char[] chars, final int start, final int length) {
     if (length > (capacity - size)) grow(length);
     int x = start + length;
     for (int i = start; i < x; i++) {
@@ -87,7 +93,7 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(byte[] chars, int start, int length) {
+  public StringAppender append(final byte[] chars, final int start, final int length) {
     if (length > (capacity - size)) grow(length);
     int x = start + length;
     for (int i = start; i < x; i++) {
@@ -96,11 +102,11 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(Object o) {
+  public StringAppender append(final Object o) {
     return append(String.valueOf(o));
   }
 
-  public StringAppender append(CharSequence s) {
+  public StringAppender append(final CharSequence s) {
     if (s.length() > (capacity - size)) grow(s.length());
     for (int i = 0; i < s.length(); size++) {
       str[size] = s.charAt(i++);
@@ -108,10 +114,10 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(String s) {
+  public StringAppender append(final String s) {
     if (s == null) return this;
 
-    int len = s.length();
+    final int len = s.length();
     if (len > (capacity - size)) {
       grow(len);
     }
@@ -122,17 +128,17 @@ public class StringAppender implements CharSequence {
     return this;
   }
 
-  public StringAppender append(char c) {
+  public StringAppender append(final char c) {
     if (size >= capacity) grow(size);
     str[size++] = c;
     return this;
   }
 
-  public StringAppender append(byte b) {
+  public StringAppender append(final byte b) {
     if (btr == null)
       btr = new byte[capacity = DEFAULT_SIZE];
     if (size >= capacity)
-      growByte(1);
+      growByte(size * 2);
     btr[size++] = b;
     return this;
   }
@@ -142,20 +148,20 @@ public class StringAppender implements CharSequence {
     return size;
   }
 
-  private void grow(int s) {
+  private void grow(final int s) {
     if (capacity == 0) capacity = DEFAULT_SIZE;
     final char[] newArray = new char[capacity += s * 2];
     arraycopy(str, 0, newArray, 0, size);
     str = newArray;
   }
 
-  private void growByte(int s) {
+  private void growByte(final int s) {
     final byte[] newByteArray = new byte[capacity += s];
     arraycopy(btr, 0, newByteArray, 0, size);
     btr = newByteArray;
   }
 
-  public char[] getChars(int start, int count) {
+  public char[] getChars(final int start, final int count) {
     char[] chars = new char[count];
     arraycopy(str, start, chars, 0, count);
     return chars;
@@ -174,7 +180,7 @@ public class StringAppender implements CharSequence {
       }
       return s.toCharArray();
     }
-    char[] chars = new char[size];
+    final char[] chars = new char[size];
     arraycopy(str, 0, chars, 0, size);
     return chars;
   }
