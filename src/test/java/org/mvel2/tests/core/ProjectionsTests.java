@@ -55,13 +55,13 @@ public class ProjectionsTests extends AbstractTest {
   public void testProjectionSupport6() {
     assertEquals(true, test("( name in things ) contains 'Bob'"));
   }
-  
-  public void testNestedProjection() {
-    Map vars = createTestVars();
-    assertEquals(
-        Arrays.asList("George", "Michael", "Laura"), 
-        MVEL.eval("familyMembers = (name in (familyMembers in users));", vars));
-  }
+//
+//  public void testNestedProjection() {
+//    Map vars = createTestVars();
+//    assertEquals(
+//        Arrays.asList("George", "Michael", "Laura"),
+//        MVEL.eval("familyMembers = (name in (familyMembers in users));", vars));
+//  }
 
   public void testConcatProjection() {
     Map vars = createTestVars();
