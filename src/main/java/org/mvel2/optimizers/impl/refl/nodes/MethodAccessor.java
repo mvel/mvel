@@ -146,7 +146,7 @@ public class MethodAccessor implements AccessorNode {
           vals[length - 1] = lastParam.getClass().isArray() ? lastParam : new Object[] {lastParam};
       } else {
         Object[] vararg = new Object[parms.length - length + 1];
-        for (int i = 0; i < vararg.length; i++) vararg[i] = parms[parms.length - length + i].getValue(ctx, vars);
+        for (int i = 0; i < vararg.length; i++) vararg[i] = parms[length - 1 + i].getValue(ctx, vars);
         vals[length - 1] = vararg;
       }
     }
@@ -192,9 +192,7 @@ public class MethodAccessor implements AccessorNode {
   }
 
   public MethodAccessor(Method method, ExecutableStatement[] parms) {
-    this.method = method;
-    this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
-
+    setMethod(method);
     this.parms = parms;
   }
 
