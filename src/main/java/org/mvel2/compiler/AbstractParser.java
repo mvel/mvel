@@ -469,6 +469,11 @@ public class AbstractParser implements Parser, Serializable {
                 }
 
                 return (ASTNode) splitAccumulator.pop();
+
+              case CONTAINS:
+                lastWasIdentifier = false;
+                return lastNode = new OperatorNode(Operator.CONTAINS, expr, st, pCtx);
+
             }
           }
 

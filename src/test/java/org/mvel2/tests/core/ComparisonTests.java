@@ -185,6 +185,9 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("bwahbwah = 'mikebrock'; testVar10 = 'mike'; bwahbwah contains testVar10"));
   }
 
+  public void testContains7() {
+     assertEquals(true, test("sentence contains ('fox')"));
+   }
 
   public void testSoundex() {
     assertTrue((Boolean) test("'foobar' soundslike 'fubar'"));
