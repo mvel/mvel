@@ -4136,6 +4136,12 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
+  public void testPippo() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    assertEquals(String.class, MVEL.analyze("new String(\"b)ar\")", parserContext));
+  }
+
   public void testReturnTypeExtendingGeneric() {
     final ParserContext parserContext = new ParserContext();
     parserContext.setStrongTyping(true);
