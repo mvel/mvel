@@ -228,7 +228,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         recordParametricReturnedType(method.getGenericReturnType());
       }
 
-      return method.getReturnType();
+      return getReturnType(ctx, method);
     }
 
     if (pCtx != null && pCtx.hasImport(property)) {
@@ -308,6 +308,42 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     return Object.class;
+  }
+
+  private Class getReturnType(Class context, Method m) {
+    Class declaringClass = m.getDeclaringClass();
+    if (context == declaringClass) {
+      return m.getReturnType();
+    }
+    Type returnType = m.getGenericReturnType();
+    if (returnType instanceof TypeVariable) {
+      String typeName = ((TypeVariable)returnType).getName();
+      Type superType = context.getGenericSuperclass();
+      Class superClass = context.getSuperclass();
+      while (superClass != null && superClass != declaringClass) {
+        superType = superClass.getGenericSuperclass();
+        superClass = superClass.getSuperclass();
+      }
+      if (superClass == null) {
+        return m.getReturnType();
+      }
+      if (superType instanceof ParameterizedType) {
+        TypeVariable[] typeParams = superClass.getTypeParameters();
+        int typePos = -1;
+        for (int i = 0; i < typeParams.length; i++) {
+          if (typeParams[i].getName().equals(typeName)) {
+            typePos = i;
+            break;
+          }
+        }
+        if (typePos < 0) {
+          return m.getReturnType();
+        }
+        Type actualType = ((ParameterizedType)superType).getActualTypeArguments()[typePos];
+        return actualType instanceof Class ? (Class)actualType : m.getReturnType();
+      }
+    }
+    return m.getReturnType();
   }
 
   private void recordParametricReturnedType(Type parametricReturnType) {
@@ -639,7 +675,7 @@ public class PropertyVerifier extends AbstractOptimizer {
           + " (scope: " + scope + "; required: public", this.tkStart);
     }
 
-    return m.getReturnType();
+    return getReturnType(ctx, m);
   }
 
   private Class getWithProperty(Class ctx) {
