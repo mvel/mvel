@@ -82,7 +82,9 @@ public class BinaryOperation extends BooleanNode {
                   || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
 
             throw new CompileException("incompatible types in statement: " + right.getEgressType()
-                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
+                    + " (compared from: " + left.getEgressType() + ")",
+                    left.getExpr() != null ? left.getExpr() : right.getExpr(),
+                    left.getExpr() != null ? left.getStart() : right.getStart());
           }
         }
     }
