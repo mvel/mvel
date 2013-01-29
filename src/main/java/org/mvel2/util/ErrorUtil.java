@@ -9,6 +9,11 @@ import org.mvel2.ErrorDetail;
 public class ErrorUtil {
   public static CompileException rewriteIfNeeded(CompileException caught, char[] outer, int outerCursor) {
     if (outer != caught.getExpr()) {
+      if (caught.getExpr().length <= caught.getCursor()) {
+        caught.setCursor(caught.getExpr().length - 1);
+      }
+
+      try {
       String innerExpr = new String(caught.getExpr()).substring(caught.getCursor());
       caught.setExpr(outer);
 
@@ -18,6 +23,10 @@ public class ErrorUtil {
           .indexOf(innerExpr);
 
       caught.setCursor(newCursor);
+      }
+      catch (Throwable t) {
+        t.printStackTrace();
+      }
     }
     return caught;
   }

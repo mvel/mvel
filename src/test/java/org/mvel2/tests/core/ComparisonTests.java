@@ -116,6 +116,38 @@ public class ComparisonTests extends AbstractTest {
   public void testBlank2() {
     assertEquals(true, test("BWAH == empty"));
   }
+  
+  public void testBlank3() {
+    assertEquals(true, _test("[] == empty"));
+  }
+//
+//  public void testBlank4() {
+//    assertEquals(true, _test("empty  == []"));
+//  }
+
+  public void testBlank5() {
+    assertEquals(true, _test("['a'] != empty"));
+  }
+
+  public void testBlank6() {
+    assertEquals(true, _test("empty != ['a']"));
+  }
+  
+  public void testBlank7() {
+    assertEquals(false, _test("[] != empty"));
+  }
+
+//  public void testBlank8() {
+//    assertEquals(false, _test("empty  != []"));
+//  }
+
+  public void testBlank9() {
+    assertEquals(false, _test("['a'] == empty"));
+  }
+
+  public void testBlank10() {
+    assertEquals(false, _test("empty == ['a']"));
+  }
 
   public void testInstanceCheck1() {
     assertEquals(true, test("c is java.lang.String"));
@@ -153,6 +185,9 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("bwahbwah = 'mikebrock'; testVar10 = 'mike'; bwahbwah contains testVar10"));
   }
 
+  public void testContains7() {
+     assertEquals(true, test("sentence contains ('fox')"));
+   }
 
   public void testSoundex() {
     assertTrue((Boolean) test("'foobar' soundslike 'fubar'"));

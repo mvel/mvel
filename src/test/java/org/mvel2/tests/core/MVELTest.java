@@ -2,6 +2,7 @@ package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
 import org.mvel2.MVEL;
+import org.mvel2.util.StringAppender;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,4 +31,5 @@ public class MVELTest extends TestCase {
     obj = MVEL.evalFile(file);
     assertEquals("?????", obj);
   }
+
 }

@@ -96,7 +96,7 @@ public class DebuggerContext {
   public int checkBreak(LineLabel label, VariableResolverFactory factory, CompiledExpression expression) {
     if (debuggerState == Debugger.STEP || hasBreakpoint(label)) {
       if (debugger == null) throw new RuntimeException("no debugger registered to handle breakpoint");
-      return debuggerState = debugger.onBreak(new Frame(label, factory, expression.getParserContext()));
+      return debuggerState = debugger.onBreak(new Frame(label, factory));
 
     }
     return 0;

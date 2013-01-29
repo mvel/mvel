@@ -83,7 +83,6 @@ public class ParserContext implements Serializable {
   private boolean blockSymbols = false;
   private boolean executableCodeReached = false;
   private boolean indexAllocation = false;
-  private boolean allowBootstrapBypass = true;
   protected boolean variablesEscape = false;
 
   public ParserContext() {
@@ -676,6 +675,7 @@ public class ParserContext implements Serializable {
   public void popVariableScope() {
     if (variableVisibility != null && !variableVisibility.isEmpty()) {
       variableVisibility.remove(variableVisibility.size() - 1);
+      setLastTypeParameters(null);
     }
   }
 
@@ -980,11 +980,11 @@ public class ParserContext implements Serializable {
   }
 
   public boolean isAllowBootstrapBypass() {
-    return allowBootstrapBypass;
+    return parserConfiguration.isAllowBootstrapBypass();
   }
 
   public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
-    this.allowBootstrapBypass = allowBootstrapBypass;
+    parserConfiguration.setAllowBootstrapBypass(allowBootstrapBypass);
   }
 
   public String[] getIndexedVarNames() {

@@ -34,7 +34,7 @@ public class DynamicFieldAccessor implements AccessorNode {
   }
 
   public DynamicFieldAccessor(Field field) {
-    this.field = field;
+    setField(field);
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {

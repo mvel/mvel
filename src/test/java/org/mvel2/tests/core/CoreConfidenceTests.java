@@ -3810,6 +3810,26 @@ public class CoreConfidenceTests extends AbstractTest {
     public void setIntField(int intField) {
       this.intField = intField;
     }
+
+    public Option<String> getField1Option() {
+      return new Option(Field1);
+    }
+  }
+
+  public static class Option<T> {
+    public final T t;
+
+    public Option(T t) {
+      this.t = t;
+    }
+
+    public boolean isDefined() {
+      return t != null;
+    }
+
+    public T get() {
+      return t;
+    }
   }
 
   public void testUppercaseField() {
@@ -3831,7 +3851,18 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Boolean.class, expressionReturnType("intField == 3"));
     assertEquals(Boolean.class, expressionReturnType("intField == \"3\""));
     assertEquals(Boolean.class, expressionReturnType("intField == 1 || Field1 == \"xxx\""));
-    assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 * 3 || Field1 == \"xxx\""));
+    assertEquals(Boolean.class, expressionReturnType("FIELD2 == \"yyy\" && intField == 1 + 2 || Field1 == \"xxx\""));
+  }
+
+  public void testConstantOnLeftExpression() {
+    assertEquals(Boolean.class, expressionReturnType("3 == intField"));
+    assertEquals(Boolean.class, expressionReturnType("\"xxx\" == Field1"));
+    assertEquals(Boolean.class, expressionReturnType("null == Field1"));
+  }
+
+  public void testExpressionReturnTypeWithGenerics() {
+    assertEquals(String.class, expressionReturnType("Field1Option.get"));
+    assertEquals(String.class, expressionReturnType("Field1Option.t"));
   }
 
   public void testWrongExpressions() {
@@ -3854,6 +3885,7 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrictTypeEnforcement(true);
     parserContext.setStrongTyping(true);
     parserContext.addInput("this", Bean1.class);
+    MVEL.compileExpression(expr, parserContext);
     return MVEL.analyze(expr, parserContext);
   }
 
@@ -4062,5 +4094,68 @@ public class CoreConfidenceTests extends AbstractTest {
     Serializable expression = MVEL.compileExpression("(a / 3).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)", parserContext);
     Object result = MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("3.0")); }});
     System.out.println(result);
+  }
+
+  public void testUntypedClone() {
+    String expression = "obj.clone();";
+    ParserContext context = new ParserContext();
+    context.setStrongTyping(false);
+    context.setStrictTypeEnforcement(false);
+    MVEL.analyze(expression, context);
+
+    try {
+      context.addInput("obj", Object.class);
+      context.setStrongTyping(true);
+      context.setStrictTypeEnforcement(true);
+      MVEL.analyze(expression, context);
+      fail("Must fail with strong typing");
+    } catch (CompileException e) { }
+  }
+
+  public void testOverloading() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", Overloaded.class);
+    Overloaded overloaded = new Overloaded();
+
+    assertEquals(15, MVEL.executeExpression(MVEL.compileExpression( "method(5, 9, \"x\")", parserContext ), overloaded));
+    assertEquals(-3, MVEL.executeExpression(MVEL.compileExpression( "method(5, \"x\", 9)", parserContext ), overloaded));
+    assertEquals(-13, MVEL.executeExpression(MVEL.compileExpression( "method(\"x\", 5, 9)", parserContext ), overloaded));
+  }
+
+  public static class Overloaded {
+    public int method(int i, int j, String s) {
+      return i + j + s.length();
+    }
+    public int method(int i, String s, int j) {
+      return i + s.length() - j;
+    }
+    public int method(String s, int i, int j) {
+      return s.length() - i - j;
+    }
+  }
+
+  public void testPippo() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    assertEquals(String.class, MVEL.analyze("new String(\"b)ar\")", parserContext));
+  }
+
+  public void testReturnTypeExtendingGeneric() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", StringConcrete.class);
+    assertEquals(String.class, MVEL.analyze("foo.concat(\"bar\")", parserContext));
+    assertEquals(String.class, MVEL.analyze("getFoo().concat(\"bar\")", parserContext));
+  }
+
+  public static abstract class AbstractBase<T> {
+    protected T foo;
+    public T getFoo() { return foo; }
+  }
+
+  public static class StringConcrete extends AbstractBase<String> {
+    public StringConcrete() { this.foo = new String(); }
   }
 }

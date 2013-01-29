@@ -1057,7 +1057,7 @@ public class MVEL {
 
   public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
     if (expression.isImportInjectionRequired()) {
-      return execute(true, expression, ctx, new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), vars, false));
+      return execute(true, expression, ctx, new ClassImportResolverFactory(expression.getParserConfiguration(), vars, false));
     }
     else {
       return execute(true, expression, ctx, vars);

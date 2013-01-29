@@ -7,9 +7,11 @@ import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CompilerTools;
+import org.mvel2.util.MVELClassLoader;
 
 import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
@@ -185,5 +187,17 @@ public class FunctionsTest extends AbstractTest {
             "&& x__0 == 'boob';"));
   }
 
+
+  public void testFunctionReuse() {
+    VariableResolverFactory functionFactory = new MapVariableResolverFactory();
+    MVEL.eval("def foo() { \"foo\"; }; def bar() { \"bar\" };", functionFactory);
+
+    VariableResolverFactory myVarFactory = new MapVariableResolverFactory();
+    myVarFactory.setNextFactory(functionFactory);
+
+    Serializable s = MVEL.compileExpression("foo() + bar();");
+
+    assertEquals("foobar", MVEL.executeExpression(s, myVarFactory));
+  }
 
 }

@@ -130,7 +130,9 @@ public class ForNode extends BlockNode {
       }
 
       this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
-
+      if (pCtx != null) {
+        pCtx.setInputs(spCtx.getInputs());
+      }
     }
     catch (NegativeArraySizeException e) {
       throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);

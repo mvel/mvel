@@ -89,4 +89,8 @@ public class TypeCast extends ASTNode {
       throw new ClassCastException(inst.getClass().getName() + " cannot be cast to: " + type.getClass().getName());
     }
   }
+
+  public ExecutableStatement getStatement() {
+    return statement;
+  }
 }

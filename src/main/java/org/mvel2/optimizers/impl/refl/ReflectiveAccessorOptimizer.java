@@ -522,7 +522,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       cls = ctx.getClass();
     }
     else {
-      cls = null;
+      cls = currType;
     }
 
     if (hasPropertyHandler(cls)) {
@@ -541,7 +541,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     if (member instanceof Method) {
       try {
-        o = ((Method) member).invoke(ctx, EMPTYARG);
+        o = ctx != null ? ((Method) member).invoke(ctx, EMPTYARG) : null;
 
         if (hasNullPropertyHandler()) {
           addAccessorNode(new GetterAccessorNH((Method) member, getNullPropertyHandler()));
@@ -600,7 +600,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
       }
       else {
-        o = f.get(ctx);
+        o = ctx != null ? f.get(ctx) : null;
         if (hasNullPropertyHandler()) {
           addAccessorNode(new FieldAccessorNH((Field) member, getNullMethodHandler()));
           if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
@@ -1018,10 +1018,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       first = false;
     }
 
-    if (ctx == null) {
+    if (ctx == null && currType == null) {
       throw new PropertyAccessException("null pointer or function not found: " + name, this.expr, this.start);
     }
-
 
     boolean classTarget = false;
     Class<?> cls = currType != null ? currType : ((classTarget = ctx instanceof Class) ? (Class<?>) ctx : ctx.getClass());
@@ -1051,7 +1050,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     // If we didn't find anything and the declared class is different from the actual one try also with the actual one
-    if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
+    if (m == null && ctx != null && cls != ctx.getClass() && !(ctx instanceof Class)) {
       cls = ctx.getClass();
       if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
         parameterTypes = m.getParameterTypes();
@@ -1102,7 +1101,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     Method method = getWidenedTarget(cls, m);
-    Object o = method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs()));
+    Object o = ctx != null ? method.invoke(ctx, normalizeArgsForVarArgs(parameterTypes, args, m.isVarArgs())) : null;
 
     if (hasNullMethodHandler()) {
       addAccessorNode(new MethodAccessorNH(method, (ExecutableStatement[]) es, getNullMethodHandler()));

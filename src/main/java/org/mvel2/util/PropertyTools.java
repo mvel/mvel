@@ -69,7 +69,8 @@ public class PropertyTools {
 
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
-          (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
+          (property.equals(meth.getName()) || simple.equals(meth.getName()))
+          && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
         return meth;
       }
     }
@@ -96,7 +97,8 @@ public class PropertyTools {
     Method candidate = null;
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-          && (property.equals(meth.getName()) || (isGet.equals(meth.getName()) && meth.getReturnType() == boolean.class) || simple.equals(meth.getName()))) {
+          && (property.equals(meth.getName()) || (isGet.equals(meth.getName()) && meth.getReturnType() == boolean.class)
+          || simple.equals(meth.getName()))) {
         if (candidate == null || candidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
           candidate = meth;
         }

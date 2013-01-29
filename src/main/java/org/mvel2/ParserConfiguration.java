@@ -48,6 +48,8 @@ public class ParserConfiguration implements Serializable {
   
   private boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
 
+  private boolean allowBootstrapBypass = true;
+
   static {
     String negCacheSize = System.getProperty("mvel2.compiler.max_neg_cache_size");
     if (negCacheSize != null) {
@@ -298,11 +300,19 @@ public class ParserConfiguration implements Serializable {
       nonValidImports.clear();
   }
 
-public boolean isAllowNakedMethCall() {
-	return allowNakedMethCall;
-}
+  public boolean isAllowNakedMethCall() {
+    return allowNakedMethCall;
+  }
 
-public void setAllowNakedMethCall(boolean allowNakedMethCall) {
-	this.allowNakedMethCall = allowNakedMethCall;
-}
+  public void setAllowNakedMethCall(boolean allowNakedMethCall) {
+    this.allowNakedMethCall = allowNakedMethCall;
+  }
+
+  public boolean isAllowBootstrapBypass() {
+    return allowBootstrapBypass;
+  }
+
+  public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
+    this.allowBootstrapBypass = allowBootstrapBypass;
+  }
 }

@@ -19,8 +19,9 @@ public class Soundslike extends ASTNode {
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    return soundex(String.valueOf(soundslike.getReducedValueAccelerated(ctx, thisValue, factory)))
-        .equals(soundex((String) stmt.getReducedValueAccelerated(ctx, thisValue, factory)));
+    String str1 = String.valueOf(soundslike.getReducedValueAccelerated(ctx, thisValue, factory));
+    String str2 = (String) stmt.getReducedValueAccelerated(ctx, thisValue, factory);
+    return str1 == null ? str2 == null : ( str2 == null ? false : soundex(str1).equals(soundex(str2)) );
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

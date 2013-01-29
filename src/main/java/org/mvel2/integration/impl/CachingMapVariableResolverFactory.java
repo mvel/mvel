@@ -37,15 +37,6 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
     this.variables = variables;
   }
 
-  public CachingMapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
-    this.variables = variables;
-    this.nextFactory = nextFactory;
-  }
-
-  public CachingMapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
-    this.variables = variables;
-  }
-
   public VariableResolver createVariable(String name, Object value) {
     VariableResolver vr;
 

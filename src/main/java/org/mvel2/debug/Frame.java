@@ -25,12 +25,10 @@ import org.mvel2.integration.VariableResolverFactory;
 public class Frame {
   private LineLabel label;
   private VariableResolverFactory factory;
-  private ParserContext parserContext;
 
-  public Frame(LineLabel label, VariableResolverFactory factory, ParserContext pCtx) {
+  public Frame(LineLabel label, VariableResolverFactory factory) {
     this.label = label;
     this.factory = factory;
-    this.parserContext = pCtx;
   }
 
   public String getSourceName() {
@@ -47,13 +45,5 @@ public class Frame {
 
   public void setFactory(VariableResolverFactory factory) {
     this.factory = factory;
-  }
-
-  public ParserContext getParserContext() {
-    return parserContext;
-  }
-
-  public void setParserContext(ParserContext parserContext) {
-    this.parserContext = parserContext;
   }
 }
