@@ -101,7 +101,9 @@ public class OptimizerFactory {
       //noinspection unchecked
       AccessorOptimizer ao = accessorCompilers.get(defaultOptimizer = name);
       ao.init();
-      setThreadAccessorOptimizer(ao.getClass());
+      //clear optimizer so next call to getThreadAccessorOptimizer uses the default again, don't set thread optimizer
+      //or else static initializers setting the default will unintentionally set up ThreadLocals
+      threadOptimizer.set(null);
     }
     catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
