@@ -24,6 +24,7 @@ import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
@@ -163,6 +164,9 @@ public class MVELRuntime {
       else {
         throw e;
       }
+    }
+    finally {
+      OptimizerFactory.clearThreadAccessorOptimizer();
     }
   }
 
