@@ -3703,8 +3703,8 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.format("hello,world,"),
                    runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(\"hello\",\"world\")"));
 
-      //assertEquals(String.format(""),
-      //             runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process()"));
+      assertEquals(String.format(""),
+                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process()"));
       //assertEquals(String.format(""),
       //             runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(null)"));
 

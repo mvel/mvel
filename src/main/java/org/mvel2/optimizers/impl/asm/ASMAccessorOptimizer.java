@@ -17,30 +17,6 @@
  */
 package org.mvel2.optimizers.impl.asm;
 
-import org.mvel2.*;
-import org.mvel2.asm.ClassWriter;
-import org.mvel2.asm.Label;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Opcodes;
-import org.mvel2.ast.*;
-import org.mvel2.compiler.*;
-import org.mvel2.integration.GlobalListenerFactory;
-import org.mvel2.integration.PropertyHandler;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.optimizers.AbstractOptimizer;
-import org.mvel2.optimizers.AccessorOptimizer;
-import org.mvel2.optimizers.OptimizationNotSupported;
-import org.mvel2.optimizers.impl.refl.nodes.Union;
-import org.mvel2.util.*;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import static java.lang.String.valueOf;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
@@ -52,18 +28,91 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
 import static org.mvel2.asm.Opcodes.*;
-import static org.mvel2.asm.Type.*;
+import static org.mvel2.asm.Type.getConstructorDescriptor;
+import static org.mvel2.asm.Type.getDescriptor;
+import static org.mvel2.asm.Type.getInternalName;
+import static org.mvel2.asm.Type.getMethodDescriptor;
+import static org.mvel2.asm.Type.getType;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
-import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.EMPTY_OBJ_ARR;
+import static org.mvel2.util.ParseTools.balancedCapture;
+import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.captureContructorAndResidual;
+import static org.mvel2.util.ParseTools.determineActualTargetMethod;
+import static org.mvel2.util.ParseTools.findClass;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
+import static org.mvel2.util.ParseTools.getSubComponentType;
+import static org.mvel2.util.ParseTools.getWidenedTarget;
+import static org.mvel2.util.ParseTools.isPrimitiveWrapper;
+import static org.mvel2.util.ParseTools.parseMethodOrConstructor;
+import static org.mvel2.util.ParseTools.parseParameterList;
+import static org.mvel2.util.ParseTools.repeatChar;
+import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.ParseTools.subset;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveArray;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
-import static org.mvel2.util.Varargs.*;
+import static org.mvel2.util.Varargs.normalizeArgsForVarArgs;
+import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.mvel2.CompileException;
+import org.mvel2.DataConversion;
+import org.mvel2.MVEL;
+import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
+import org.mvel2.asm.ClassWriter;
+import org.mvel2.asm.Label;
+import org.mvel2.asm.MethodVisitor;
+import org.mvel2.asm.Opcodes;
+import org.mvel2.ast.Function;
+import org.mvel2.ast.TypeDescriptor;
+import org.mvel2.ast.WithNode;
+import org.mvel2.compiler.Accessor;
+import org.mvel2.compiler.AccessorNode;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableLiteral;
+import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.PropertyVerifier;
+import org.mvel2.integration.GlobalListenerFactory;
+import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.AbstractOptimizer;
+import org.mvel2.optimizers.AccessorOptimizer;
+import org.mvel2.optimizers.OptimizationNotSupported;
+import org.mvel2.optimizers.impl.refl.nodes.Union;
+import org.mvel2.util.JITClassLoader;
+import org.mvel2.util.MVELClassLoader;
+import org.mvel2.util.MethodStub;
+import org.mvel2.util.ParseTools;
+import org.mvel2.util.PropertyTools;
+import org.mvel2.util.StringAppender;
 
 
 /**
@@ -2002,7 +2051,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
           mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
         }
 
-        for (int i = 0; i < es.length; i++) {
+          Class<?> aClass = m.getParameterTypes()[m.getParameterTypes().length - 1];
+          if(m.isVarArgs()){
+              if(es == null || es.length == (m.getParameterTypes().length - 1) ){
+                  ExecutableStatement[] executableStatements = new ExecutableStatement[m.getParameterTypes().length];
+                  if(es != null){
+                      System.arraycopy(es,0,executableStatements,0,es.length);
+                  }
+                  executableStatements[executableStatements.length -1 ]= new ExecutableLiteral(Array.newInstance(aClass,0));
+                  es = executableStatements;
+              }
+          }
+
+        for (int i = 0; es != null && i < es.length; i++) {
           if (es[i] instanceof ExecutableLiteral) {
             ExecutableLiteral literal = (ExecutableLiteral) es[i];
 
