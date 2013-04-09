@@ -1935,13 +1935,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       for (int i = 0; i < varArgStart; i++) varArgEs[i] = es[i];
 
       String varargsTypeName = parameterTypes[parameterTypes.length-1].getComponentType().getName();
-      StringBuilder sb = new StringBuilder("new ").append(varargsTypeName).append("[] {");
-      for (int i = varArgStart; i < subtokens.size(); i++) {
-        sb.append(subtokens.get(i));
-        if (i < subtokens.size()-1) sb.append(",");
+      String varArgExpr;
+      if("null".equals(tk)){ //if null is the token no need for wrapping
+            varArgExpr = tk;
+      } else{
+         StringBuilder sb = new StringBuilder("new ").append(varargsTypeName).append("[] {");
+         for (int i = varArgStart; i < subtokens.size(); i++) {
+           sb.append(subtokens.get(i));
+           if (i < subtokens.size()-1) sb.append(",");
+         }
+        varArgExpr = sb.append("}").toString();
       }
-      String varArgExpr = sb.append("}").toString();
-
       char[] token = varArgExpr.toCharArray();
       varArgEs[varArgStart] = ((ExecutableStatement)subCompileExpression(token, pCtx));
       es = varArgEs;
@@ -2950,7 +2954,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
   private Class writeLiteralOrSubexpression(Object stmt, Class desiredTarget, Class knownIngressType) {
     if (stmt instanceof ExecutableLiteral) {
-      Class type = ((ExecutableLiteral) stmt).getLiteral().getClass();
+        Object literalValue = ((ExecutableLiteral) stmt).getLiteral();
+
+        Class type = literalValue == null ? desiredTarget : literalValue.getClass();
 
       assert debug("*** type:" + type + ";desired:" + desiredTarget);
 
@@ -2966,10 +2972,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
           throw new CompileException("was expecting type: " + desiredTarget.getName()
               + "; but found type: " + type.getName(), expr, st);
         }
-        writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
+        writeOutLiteralWrapped(convert(literalValue, desiredTarget));
       }
       else {
-        writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
+        writeOutLiteralWrapped(literalValue);
       }
 
       return type;
