@@ -18,19 +18,23 @@
 
 package org.mvel2.util;
 
-import static java.lang.Class.forName;
-import static java.lang.Double.parseDouble;
-import static java.lang.String.valueOf;
-import static java.lang.System.arraycopy;
-import static java.lang.Thread.currentThread;
-import static java.nio.ByteBuffer.allocateDirect;
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataTypes.DOUBLE;
-import static org.mvel2.DataTypes.INTEGER;
-import static org.mvel2.DataTypes.LONG;
-import static org.mvel2.MVEL.getDebuggingOutputFileName;
-import static org.mvel2.compiler.AbstractParser.LITERALS;
-import static org.mvel2.integration.ResolverTools.appendFactory;
+import org.mvel2.CompileException;
+import org.mvel2.DataTypes;
+import org.mvel2.MVEL;
+import org.mvel2.Operator;
+import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.BlankLiteral;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableAccessorSafe;
+import org.mvel2.compiler.ExecutableLiteral;
+import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.math.MathProcessor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,23 +61,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.mvel2.CompileException;
-import org.mvel2.DataTypes;
-import org.mvel2.MVEL;
-import org.mvel2.Operator;
-import org.mvel2.OptimizationFailure;
-import org.mvel2.ParserContext;
-import org.mvel2.ast.ASTNode;
-import org.mvel2.compiler.AbstractParser;
-import org.mvel2.compiler.BlankLiteral;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExecutableAccessor;
-import org.mvel2.compiler.ExecutableAccessorSafe;
-import org.mvel2.compiler.ExecutableLiteral;
-import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.math.MathProcessor;
+import static java.lang.Class.forName;
+import static java.lang.Double.parseDouble;
+import static java.lang.String.valueOf;
+import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
+import static java.nio.ByteBuffer.allocateDirect;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataTypes.*;
+import static org.mvel2.MVEL.getDebuggingOutputFileName;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.integration.ResolverTools.appendFactory;
 
 
 @SuppressWarnings({"ManualArrayCopy"})

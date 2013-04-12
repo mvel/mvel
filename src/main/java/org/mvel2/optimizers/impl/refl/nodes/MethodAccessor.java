@@ -18,16 +18,16 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.util.ParseTools.getBestCandidate;
-import static org.mvel2.util.ParseTools.getWidenedTarget;
+import org.mvel2.compiler.AccessorNode;
+import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.integration.VariableResolverFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 
-import org.mvel2.compiler.AccessorNode;
-import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ParseTools.getWidenedTarget;
 
 public class MethodAccessor implements AccessorNode {
   private AccessorNode nextNode;
