@@ -3650,6 +3650,19 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testVarArgsParams() {
+
+    assertEquals(String.format("null"),
+                   runSingleTest("import org.mvel2.tests.core.res.AStatic; a = null; AStatic.process(a)"));
+    assertEquals(String.format("hello,world,"),
+                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(\"hello\",\"world\")"));
+
+      assertEquals(String.format(""),
+                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process()"));
+      assertEquals(String.format("null"),
+                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(null)"));
+
+
+
     assertEquals(String.format("xxx"),
         runSingleTest("String.format(\"xxx\")"));
 

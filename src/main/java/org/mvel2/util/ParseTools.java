@@ -383,6 +383,9 @@ public class ParseTools {
         break;
       }
     }
+    if(score == 0 && varArgs && parmTypes.length - 1 == arguments.length){
+      score += 3;
+    }
     return score;
   }
 
