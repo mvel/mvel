@@ -4150,16 +4150,27 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
-  public static int getANum() {
-    try {
-      return 1;
-    }
-    finally {
-      return 2;
-    }
+
+  public void testPippo() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    assertEquals(String.class, MVEL.analyze("new String(\"b)ar\")", parserContext));
   }
 
-  public static void main(String[] args) {
-    System.out.println(getANum());
+  public void testReturnTypeExtendingGeneric() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", StringConcrete.class);
+    assertEquals(String.class, MVEL.analyze("foo.concat(\"bar\")", parserContext));
+    assertEquals(String.class, MVEL.analyze("getFoo().concat(\"bar\")", parserContext));
+  }
+
+  public static abstract class AbstractBase<T> {
+    protected T foo;
+    public T getFoo() { return foo; }
+  }
+
+  public static class StringConcrete extends AbstractBase<String> {
+    public StringConcrete() { this.foo = new String(); }
   }
 }

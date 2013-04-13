@@ -92,4 +92,8 @@ public class RegExMatch extends ASTNode {
   public ExecutableStatement getStatement() {
     return stmt;
   }
+
+  public ExecutableStatement getPatternStatement() {
+    return patternStmt;
+  }
 }

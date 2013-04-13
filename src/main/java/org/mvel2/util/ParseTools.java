@@ -18,14 +18,31 @@
 
 package org.mvel2.util;
 
-import org.mvel2.*;
+import org.mvel2.CompileException;
+import org.mvel2.DataTypes;
+import org.mvel2.MVEL;
+import org.mvel2.Operator;
+import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
 import org.mvel2.ast.ASTNode;
-import org.mvel2.compiler.*;
+import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.BlankLiteral;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableAccessorSafe;
+import org.mvel2.compiler.ExecutableLiteral;
+import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -35,7 +52,14 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
@@ -48,7 +72,6 @@ import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.integration.ResolverTools.appendFactory;
-import static org.mvel2.integration.ResolverTools.insertFactory;
 
 
 @SuppressWarnings({"ManualArrayCopy"})
@@ -550,14 +573,20 @@ public class ParseTools {
   public static String[] captureContructorAndResidual(char[] cs, int start, int offset) {
     int depth = 0;
     int end = start + offset;
+    boolean inQuotes = false;
     for (int i = start; i < end; i++) {
       switch (cs[i]) {
+        case '"':
+          inQuotes = !inQuotes;
+          break;
         case '(':
           depth++;
-          continue;
+          break;
         case ')':
-          if (1 == depth--) {
-            return new String[]{createStringTrimmed(cs, start, ++i - start), createStringTrimmed(cs, i, end - i)};
+          if (!inQuotes) {
+            if (1 == depth--) {
+              return new String[]{createStringTrimmed(cs, start, ++i - start), createStringTrimmed(cs, i, end - i)};
+            }
           }
       }
     }

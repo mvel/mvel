@@ -23,6 +23,7 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ScriptRuntimeException;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.CompatibilityStrategy;
 import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 
@@ -74,15 +75,14 @@ public class BinaryOperation extends BooleanNode {
         if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
           if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()), pCtx);
-          } else if (!left.getEgressType().equals(NullType.class)
-                  && !right.getEgressType().equals(NullType.class)
-                  && !(Number.class.isAssignableFrom(right.getEgressType())
-                  && Number.class.isAssignableFrom(left.getEgressType()))
-                  && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
-                  || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
+          } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
+                  (( operation == Operator.EQUAL || operation == Operator.NEQUAL) &&
+                     CompatibilityStrategy.areEqualityCompatible(left.getEgressType(), right.getEgressType()))) ) {
 
             throw new CompileException("incompatible types in statement: " + right.getEgressType()
-                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
+                    + " (compared from: " + left.getEgressType() + ")",
+                    left.getExpr() != null ? left.getExpr() : right.getExpr(),
+                    left.getExpr() != null ? left.getStart() : right.getStart());
           }
         }
     }
@@ -103,6 +103,12 @@ public class BinaryOperation extends BooleanNode {
 
   }
 
+  private boolean areCompatible(Class<?> leftClass, Class<?> rightClass) {
+    return leftClass.equals(NullType.class) || rightClass.equals(NullType.class) ||
+           ( Number.class.isAssignableFrom(rightClass) && Number.class.isAssignableFrom(leftClass) ) ||
+           ( (rightClass.isPrimitive() || leftClass.isPrimitive()) &&
+             canConvert(boxPrimitive(leftClass), boxPrimitive(rightClass)) );
+  }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), operation, rType,

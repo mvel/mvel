@@ -121,4 +121,8 @@ public class DynamicGetAccessor implements DynamicAccessor {
   public Accessor getAccessor() {
     return _accessor;
   }
+
+  public Accessor getSafeAccessor() {
+    return _safeAccessor;
+  }
 }
