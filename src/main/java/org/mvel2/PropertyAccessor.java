@@ -640,7 +640,7 @@ public class PropertyAccessor {
         Class c = (Class) ctx;
         for (Method m : c.getMethods()) {
           if (property.equals(m.getName())) {
-            if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+            if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
               return m.invoke(ctx, EMPTY_OBJ_ARR);
             }
             return m;
@@ -667,7 +667,7 @@ public class PropertyAccessor {
         return ((Field) tryStatic).get(null);
       }
     }
-    else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+    else if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
       return getMethod(ctx, property);
     }
 

@@ -45,6 +45,8 @@ public class ParserConfiguration implements Serializable {
   protected transient ClassLoader classLoader;
 
   private transient Set<String> nonValidImports;
+  
+  private boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
 
   private boolean allowBootstrapBypass = true;
 
@@ -296,6 +298,14 @@ public class ParserConfiguration implements Serializable {
   public void flushCaches() {
     if (nonValidImports != null)
       nonValidImports.clear();
+  }
+
+  public boolean isAllowNakedMethCall() {
+    return allowNakedMethCall;
+  }
+
+  public void setAllowNakedMethCall(boolean allowNakedMethCall) {
+    this.allowNakedMethCall = allowNakedMethCall;
   }
 
   public boolean isAllowBootstrapBypass() {
