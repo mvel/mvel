@@ -6,7 +6,8 @@ public class Varargs {
 
     public static Object[] normalizeArgsForVarArgs(Class<?>[] parameterTypes, Object[] args, boolean isVarArgs) {
         if (!isVarArgs) return args;
-        if (parameterTypes.length == args.length && args[args.length-1].getClass().isArray()) return args;
+        Object lastArgument = args.length > 0 ? args[args.length - 1] : Array.newInstance(parameterTypes[parameterTypes.length-1].getComponentType(), 0);
+        if (parameterTypes.length == args.length && (lastArgument == null || lastArgument.getClass().isArray())) return args;
 
         int varargLength = args.length - parameterTypes.length + 1;
         Object vararg = Array.newInstance(parameterTypes[parameterTypes.length-1].getComponentType(), varargLength);
