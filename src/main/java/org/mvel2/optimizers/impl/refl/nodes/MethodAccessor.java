@@ -141,9 +141,12 @@ public class MethodAccessor implements AccessorNode {
     }
 
     if (m.isVarArgs()) {
-      if (parms.length == length) {
+     if(parms == null){
+        vals[length -1] = new Object[0];
+     }
+     else if (parms.length == length) {
           Object lastParam = parms[length - 1].getValue(ctx, vars);
-          vals[length - 1] = lastParam.getClass().isArray() ? lastParam : new Object[] {lastParam};
+          vals[length - 1] = lastParam == null || lastParam.getClass().isArray() ? lastParam : new Object[] {lastParam};
       } else {
         Object[] vararg = new Object[parms.length - length + 1];
         for (int i = 0; i < vararg.length; i++) vararg[i] = parms[length - 1 + i].getValue(ctx, vars);
@@ -162,9 +165,15 @@ public class MethodAccessor implements AccessorNode {
     }
     if (isVarargs) {
         Class<?> componentType = target[length-1].getComponentType();
-        Object vararg = Array.newInstance(componentType, parms.length - length + 1);
-        for (int i = length-1; i < parms.length; i++) {
+        Object vararg;
+        if(parms == null){
+            vararg = Array.newInstance(componentType, 0);
+        }else{
+
+            vararg = Array.newInstance(componentType, parms.length - length + 1);
+            for (int i = length-1; i < parms.length; i++) {
             Array.set(vararg, i - length + 1, convert(parms[i].getValue(elCtx, vars), componentType));
+        }
         }
         values[length-1] = vararg;
     }
