@@ -612,22 +612,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(p1,
         p2);
   }
-  
+
   public void testDynamicImportsWithNullConstructorParamWithStrongType() {
-      ParserContext ctx = new ParserContext();
-      ctx.setStrongTyping( true );
-      ctx.addPackageImport("org.mvel2.tests.core.res");
+    ParserContext ctx = new ParserContext();
+    ctx.setStrongTyping(true);
+    ctx.addPackageImport("org.mvel2.tests.core.res");
 
-      ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
 
-      Cheesery p1 = new Cheesery("bobbo",
-          null);
-      Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
-          new DefaultLocalVariableResolverFactory());
+    Cheesery p1 = new Cheesery("bobbo",
+        null);
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+        new DefaultLocalVariableResolverFactory());
 
-      assertEquals(p1,
-          p2);
-    }  
+    assertEquals(p1,
+        p2);
+  }
 
   public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
     ParserContext ctx = new ParserContext();
@@ -3392,7 +3392,7 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
-  public void testMapAccessWithNestedMethodCall() {      
+  public void testMapAccessWithNestedMethodCall() {
     String str = "map[aMethod(1)] == \"one\"";
 
     ParserConfiguration pconf = new ParserConfiguration();
@@ -3708,21 +3708,21 @@ public class CoreConfidenceTests extends AbstractTest {
   public static class MySet {
     private Set<String> set = new HashSet<String>();
 
-    public MySet( String... strings ){
-      add( strings );
+    public MySet(String... strings) {
+      add(strings);
     }
 
-    public void add( String... strings ){
-      for( String s: strings ){
-        set.add( s );
+    public void add(String... strings) {
+      for (String s : strings) {
+        set.add(s);
       }
     }
 
-    public boolean contains( String s ){
-      return set.contains( s );
+    public boolean contains(String s) {
+      return set.contains(s);
     }
 
-    public String toString(){
+    public String toString() {
       return set.toString();
     }
   }
@@ -3969,9 +3969,9 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testDhanji2() {
     String ex =
         "name = null;\n" +
-        "$_1 = ?name.?toLowerCase();\n";
+            "$_1 = ?name.?toLowerCase();\n";
 
-    
+
     Serializable s = MVEL.compileExpression(ex);
 
     MVEL.executeExpression(s, new HashMap());
@@ -3995,7 +3995,8 @@ public class CoreConfidenceTests extends AbstractTest {
       parserContext.setStrongTyping(true);
       parserContext.addInput("a", Class.class);
       MVEL.compileExpression("a == String", parserContext);
-    } finally {
+    }
+    finally {
       MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = false;
     }
   }
@@ -4006,7 +4007,9 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("a", BigInteger.class);
     Serializable expression = MVEL.compileExpression("a == 0I", parserContext);
-    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigInteger("0")); }});
+    boolean result = (Boolean) MVEL.executeExpression(expression, new HashMap() {{
+      put("a", new BigInteger("0"));
+    }});
     assertTrue(result);
   }
 
@@ -4016,7 +4019,9 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("a", BigDecimal.class);
     Serializable expression = MVEL.compileExpression("a == 0B", parserContext);
-    boolean result = (Boolean)MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("0.0")); }});
+    boolean result = (Boolean) MVEL.executeExpression(expression, new HashMap() {{
+      put("a", new BigDecimal("0.0"));
+    }});
     assertTrue(result);
   }
 
@@ -4028,15 +4033,15 @@ public class CoreConfidenceTests extends AbstractTest {
     pctx.addInput("this", MyObj.class);
     pctx.setStrongTyping(true);
 
-    Class< ? > returnType = MVEL.analyze( str, pctx );
-    assertEquals( long.class, returnType);
+    Class<?> returnType = MVEL.analyze(str, pctx);
+    assertEquals(long.class, returnType);
   }
 
   public static class MyObj {
     public long valueField;
 
     public MyObj(long value) {
-        this.valueField = value;
+      this.valueField = value;
     }
 
     public long getValue() {
@@ -4055,20 +4060,23 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext pctx = new ParserContext(pconf);
     pctx.setStrongTyping(true);
 
-    assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression( str, pctx )));
+    assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression(str, pctx)));
   }
 
   public interface InterfaceA {
     InterfaceB getB();
   }
 
-  public interface InterfaceB { }
+  public interface InterfaceB {
+  }
 
   public static class ImplementationA implements InterfaceA {
     public ImplementationB getB() {
       return new ImplementationB();
     }
-    public void setB(InterfaceB b) { }
+
+    public void setB(InterfaceB b) {
+    }
   }
 
   public static class ImplementationB implements InterfaceB {
@@ -4083,7 +4091,7 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("this", ImplementationA.class);
     assertEquals(int.class, MVEL.analyze("b.value", parserContext));
-    assertEquals(42, MVEL.executeExpression(MVEL.compileExpression( "b.value", parserContext ), new ImplementationA()));
+    assertEquals(42, MVEL.executeExpression(MVEL.compileExpression("b.value", parserContext), new ImplementationA()));
   }
 
   public void testDivisionType() {
@@ -4092,7 +4100,9 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("a", BigDecimal.class);
     Serializable expression = MVEL.compileExpression("(a / 3).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)", parserContext);
-    Object result = MVEL.executeExpression(expression, new HashMap() {{ put("a", new BigDecimal("3.0")); }});
+    Object result = MVEL.executeExpression(expression, new HashMap() {{
+      put("a", new BigDecimal("3.0"));
+    }});
     System.out.println(result);
   }
 
@@ -4109,7 +4119,9 @@ public class CoreConfidenceTests extends AbstractTest {
       context.setStrictTypeEnforcement(true);
       MVEL.analyze(expression, context);
       fail("Must fail with strong typing");
-    } catch (CompileException e) { }
+    }
+    catch (CompileException e) {
+    }
   }
 
   public void testOverloading() {
@@ -4119,20 +4131,35 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.addInput("this", Overloaded.class);
     Overloaded overloaded = new Overloaded();
 
-    assertEquals(15, MVEL.executeExpression(MVEL.compileExpression( "method(5, 9, \"x\")", parserContext ), overloaded));
-    assertEquals(-3, MVEL.executeExpression(MVEL.compileExpression( "method(5, \"x\", 9)", parserContext ), overloaded));
-    assertEquals(-13, MVEL.executeExpression(MVEL.compileExpression( "method(\"x\", 5, 9)", parserContext ), overloaded));
+    assertEquals(15, MVEL.executeExpression(MVEL.compileExpression("method(5, 9, \"x\")", parserContext), overloaded));
+    assertEquals(-3, MVEL.executeExpression(MVEL.compileExpression("method(5, \"x\", 9)", parserContext), overloaded));
+    assertEquals(-13, MVEL.executeExpression(MVEL.compileExpression("method(\"x\", 5, 9)", parserContext), overloaded));
   }
 
   public static class Overloaded {
     public int method(int i, int j, String s) {
       return i + j + s.length();
     }
+
     public int method(int i, String s, int j) {
       return i + s.length() - j;
     }
+
     public int method(String s, int i, int j) {
       return s.length() - i - j;
     }
+  }
+
+  public static int getANum() {
+    try {
+      return 1;
+    }
+    finally {
+      return 2;
+    }
+  }
+
+  public static void main(String[] args) {
+    System.out.println(getANum());
   }
 }

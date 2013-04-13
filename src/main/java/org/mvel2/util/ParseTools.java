@@ -834,7 +834,6 @@ public class ParseTools {
           return 5;
         }
 
-
       default:
         //octal
         s = pos;
