@@ -21,6 +21,9 @@ package org.mvel2.templates.res;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
+import org.mvel2.integration.impl.StackDelimiterResolverFactory;
+import org.mvel2.integration.impl.StackDemarcResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.TemplateRuntime;
@@ -52,6 +55,7 @@ public class CompiledNamedIncludeNode extends Node {
   }
 
   public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
+    factory = new StackDelimiterResolverFactory(factory);
     if (cPreExpression != null) {
       MVEL.executeExpression(cPreExpression, ctx, factory);
     }

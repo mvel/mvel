@@ -9,8 +9,8 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateCompiler;
+import org.mvel2.templates.TemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
-import org.mvel2.templates.res.Node;
 import org.mvel2.tests.core.CoreConfidenceTests;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Base;
@@ -223,7 +223,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testPluginNode() {
-        Map<String, Class<? extends Node>> plugins = new HashMap<String, Class<? extends Node>>();
+        Map<String, Class<? extends org.mvel2.templates.res.Node>> plugins = new HashMap<String, Class<? extends org.mvel2.templates.res.Node>>();
         plugins.put("testNode", TestPluginNode.class);
 
         TemplateCompiler compiler = new TemplateCompiler("Foo:@testNode{}!!", plugins);
@@ -958,5 +958,47 @@ public class TemplateTests extends TestCase {
         public void setVal(String val) {
             this.val = val;
         }
+    }
+
+    public static class Node {
+        public Node(int base, List<Node> list) {
+            this.base = base;
+            this.list = list;
+        }
+
+        public int base;
+        public List<Node> list;
+    }
+
+    public void testDRLTemplate() {
+
+        String template = "@declare{\"drl\"}@includeNamed{\"ced\"; node=root }@end{}" +
+                          "" +
+                          "@declare{\"ced\"}" +
+                          "@if{ node.base==1 } @includeNamed{ \"cedX\"; connect=\"AND\"; args=node.list }" +
+                          "@elseif{ node.base ==2 }@includeNamed{ \"cedX\"; connect=\"OR\"; args=node.list }" +
+                          "@end{}" +
+                          "@end{}" +
+                          "" +
+                          "@declare{\"cedX\"}@{connect}@foreach{child : args}" +
+                          "@includeNamed{\"ced\"; node=child; }@end{} @{connect}@end{}";
+
+        TemplateRegistry reportRegistry = new SimpleTemplateRegistry();
+
+        reportRegistry.addNamedTemplate("drl", TemplateCompiler.compileTemplate(template));
+        TemplateRuntime.execute(reportRegistry.getNamedTemplate("drl"), null, reportRegistry);
+
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put( "root", new Node( 2,
+                                       Arrays.asList( new Node( 1,
+                                                                Collections.EMPTY_LIST ) ) ) );
+
+
+        String result = (String) TemplateRuntime.execute( reportRegistry.getNamedTemplate( "drl" ),
+                                                          null,
+                                                          new MapVariableResolverFactory( context ),
+                                                          reportRegistry );
+
+        assertEquals("OR AND AND OR", result);
     }
 }
