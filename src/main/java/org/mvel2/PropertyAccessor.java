@@ -82,16 +82,16 @@ public class PropertyAccessor {
 
   private static final Object[] EMPTYARG = new Object[0];
 
-  private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>> READ_PROPERTY_RESOLVER_CACHE;
-  private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>> WRITE_PROPERTY_RESOLVER_CACHE;
-  private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Object[]>>> METHOD_RESOLVER_CACHE;
-  private static final WeakHashMap<Member, WeakReference<Class[]>> METHOD_PARMTYPES_CACHE;
+  private static final Map<Class, WeakHashMap<Integer, WeakReference<Member>>> READ_PROPERTY_RESOLVER_CACHE;
+  private static final Map<Class, WeakHashMap<Integer, WeakReference<Member>>> WRITE_PROPERTY_RESOLVER_CACHE;
+  private static final Map<Class, WeakHashMap<Integer, WeakReference<Object[]>>> METHOD_RESOLVER_CACHE;
+  private static final Map<Member, WeakReference<Class[]>> METHOD_PARMTYPES_CACHE;
 
   static {
-    READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
-    WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
-    METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Object[]>>>(10));
-    METHOD_PARMTYPES_CACHE = new WeakHashMap<Member, WeakReference<Class[]>>(10);
+    READ_PROPERTY_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
+    WRITE_PROPERTY_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
+    METHOD_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Object[]>>>(10));
+    METHOD_PARMTYPES_CACHE = Collections.synchronizedMap(new WeakHashMap<Member, WeakReference<Class[]>>(10));
   }
 
   public PropertyAccessor(String property, Object ctx) {
