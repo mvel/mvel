@@ -288,7 +288,7 @@ public class AbstractParser implements Parser, Serializable {
 
         if (capture) {
           String t;
-          if (OPERATORS.containsKey(t = new String(expr, st, cursor - st))) {
+          if (OPERATORS.containsKey(t = new String(expr, st, cursor - st)) && !Character.isDigit(expr[st])) {
             switch (OPERATORS.get(t)) {
               case NEW:
                 if (!isIdentifierPart(expr[st = cursor = trimRight(cursor)])) {
@@ -314,9 +314,14 @@ public class AbstractParser implements Parser, Serializable {
 
                 if (pCtx == null) pCtx = getParserContext();
 
+                if (pCtx.getFunctions().containsKey(descr.getClassName())) {
+                  return lastNode = new NewObjectPrototype(pCtx, pCtx.getFunction(descr.getClassName()));
+                }
+
                 if (pCtx.hasProtoImport(descr.getClassName())) {
                   return lastNode = new NewPrototypeNode(descr, pCtx);
                 }
+
 
                 lastNode = new NewObjectNode(descr, fields, pCtx);
 
@@ -1058,7 +1063,7 @@ public class AbstractParser implements Parser, Serializable {
                       st = cursor;
 
                       captureToEOT();
-                   //   captureToEOS();
+                      //   captureToEOS();
 
                       return lastNode = new TypeCast(expr, st, cursor - st,
                           cls, fields, pCtx);
@@ -1575,7 +1580,6 @@ public class AbstractParser implements Parser, Serializable {
      * Functions are a special case we handle differently from the rest of block parsing
      */
     switch (type) {
-
       case FUNCTION: {
         int st = cursor;
 
@@ -1852,14 +1856,6 @@ public class AbstractParser implements Parser, Serializable {
   }
 
   /**
-   * From the current cursor position, capture to the end of the line.
-   */
-//  protected void captureToEOL() {
-//    while (cursor != end && (expr[cursor] != '\n')) cursor++;
-//  }
-
-
-  /**
    * Capture to the end of the current identifier under the cursor.
    */
   protected void captureIdentifier() {
@@ -1975,7 +1971,7 @@ public class AbstractParser implements Parser, Serializable {
 
   /**
    * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace
-   * character, but account for carraige returns in the script (updates parser field: line).
+   * character, but account for carriage returns in the script (updates parser field: line).
    */
   protected void skipWhitespace() {
     Skip:
@@ -1991,9 +1987,10 @@ public class AbstractParser implements Parser, Serializable {
           if (cursor + 1 != end) {
             switch (expr[cursor + 1]) {
               case '/':
-                cursor++;
+
+                expr[cursor++] = ' ';
                 while (cursor != end && expr[cursor] != '\n') {
-                  cursor++;
+                  expr[cursor++] = ' ';
                 }
                 if (cursor != end) {
                   cursor++;
@@ -2078,7 +2075,7 @@ public class AbstractParser implements Parser, Serializable {
 
           // trim any whitespace.
           while (start < length && isWhitespace(expr[start])) start++;
-          
+
           while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
 
           char[] e = new char[length];
@@ -2208,7 +2205,6 @@ public class AbstractParser implements Parser, Serializable {
     if (expr[cursor] != c)
       throw new CompileException("unexpected character ('" + expr[cursor] + "'); was expecting: " + c, expr, st);
   }
-
 
   /**
    * NOTE: This method assumes that the current position of the cursor is at the end of a logical statement, to

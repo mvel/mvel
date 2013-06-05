@@ -35,7 +35,6 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.newInstance;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.analyze;
@@ -55,6 +54,8 @@ public class NewObjectNode extends ASTNode {
   private TypeDescriptor typeDescr;
   private char[] name;
 
+  private static final Class[] EMPTYCLS = new Class[0];
+
   public NewObjectNode(TypeDescriptor typeDescr, int fields, ParserContext pCtx) {
     super(pCtx);
     this.typeDescr = typeDescr;
@@ -65,7 +66,8 @@ public class NewObjectNode extends ASTNode {
 
     if (offset < expr.length) {
       this.name = subArray(expr, start, start + offset);
-    } else {
+    }
+    else {
       this.name = expr;
     }
 
@@ -73,9 +75,10 @@ public class NewObjectNode extends ASTNode {
       if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
         pCtx.setAllowBootstrapBypass(false);
         egressType = pCtx.getImport(typeDescr.getClassName());
-      } else {
+      }
+      else {
         try {
-          egressType = Class.forName(typeDescr.getClassName(), true, getClassLoader() );
+          egressType = Class.forName(typeDescr.getClassName(), true, getClassLoader());
         }
         catch (ClassNotFoundException e) {
           if (pCtx.isStrongTyping())
@@ -90,8 +93,8 @@ public class NewObjectNode extends ASTNode {
         if (typeDescr.isArray()) {
           try {
             egressType = egressType.isPrimitive() ?
-                    toPrimitiveArrayType(egressType) :
-                    findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
+                toPrimitiveArrayType(egressType) :
+                findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
           }
           catch (Exception e) {
             e.printStackTrace();
@@ -110,7 +113,7 @@ public class NewObjectNode extends ASTNode {
           String[] cnsResid = captureContructorAndResidual(expr, start, offset);
 
           final List<char[]> constructorParms
-                  = parseMethodOrConstructor(cnsResid[0].toCharArray());
+              = parseMethodOrConstructor(cnsResid[0].toCharArray());
 
           final Class[] parms = new Class[constructorParms.size()];
           for (int i = 0; i < parms.length; i++) {
@@ -120,12 +123,12 @@ public class NewObjectNode extends ASTNode {
           if (getBestConstructorCandidate(parms, egressType, true) == null) {
             if (pCtx.isStrongTyping())
               pCtx.addError(new ErrorDetail(expr, start, pCtx.isStrongTyping(), "could not resolve constructor " + typeDescr.getClassName()
-                      + Arrays.toString(parms)));
+                  + Arrays.toString(parms)));
           }
 
           if (cnsResid.length == 2) {
             String residualProperty =
-                    cnsResid[1].trim();
+                cnsResid[1].trim();
 
             if (residualProperty.length() == 0) return;
 
@@ -148,7 +151,8 @@ public class NewObjectNode extends ASTNode {
         this.name = new char[idx = fqcn.length];
         for (int i = 0; i < idx; i++)
           this.name[i] = fqcn[i];
-      } else {
+      }
+      else {
         char[] newName = new char[fqcn.length + (name.length - idx)];
 
         for (int i = 0; i < fqcn.length; i++)
@@ -182,7 +186,7 @@ public class NewObjectNode extends ASTNode {
             if (typeDescr.isArray()) {
               try {
                 egressType = findClass(factory,
-                        repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
+                    repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
               }
               catch (Exception e) {
                 // for now, don't handle this.
@@ -192,23 +196,23 @@ public class NewObjectNode extends ASTNode {
           }
           catch (ClassCastException e) {
             throw new CompileException("cannot construct object: " + typeDescr.getClassName()
-                    + " is not a class reference", expr, start, e);
+                + " is not a class reference", expr, start, e);
           }
         }
       }
 
       if (typeDescr.isArray()) {
         return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), typeDescr.getCompiledArraySize()))
-                .getValue(ctx, thisValue, factory);
+            .getValue(ctx, thisValue, factory);
       }
 
       try {
         AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-        
+
         ParserContext pCtx = this.pCtx;
-        if ( pCtx == null ) {
-            pCtx = new ParserContext();
-            pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));            
+        if (pCtx == null) {
+          pCtx = new ParserContext();
+          pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
         }
 
         newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, 0, name.length, ctx, thisValue, factory);
@@ -233,7 +237,6 @@ public class NewObjectNode extends ASTNode {
     return newObjectOptimizer.getValue(ctx, thisValue, factory);
   }
 
-  private static final Class[] EMPTYCLS = new Class[0];
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     try {
@@ -248,7 +251,8 @@ public class NewObjectNode extends ASTNode {
         }
 
         return newInstance(cls, s);
-      } else {
+      }
+      else {
         String[] cnsRes = captureContructorAndResidual(name, 0, name.length);
         List<char[]> constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
@@ -272,16 +276,19 @@ public class NewObjectNode extends ASTNode {
 
           if (cnsRes.length > 1) {
             return PropertyAccessor.get(cnsRes[1], cns.newInstance(parms), factory, thisValue, pCtx);
-          } else {
+          }
+          else {
             return cns.newInstance(parms);
           }
-        } else {
-          Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, pCtx.getParserConfiguration().getClassLoader() )
-                  .getConstructor(EMPTYCLS);
+        }
+        else {
+          Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, pCtx.getParserConfiguration().getClassLoader())
+              .getConstructor(EMPTYCLS);
 
           if (cnsRes.length > 1) {
             return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue, pCtx);
-          } else {
+          }
+          else {
             return cns.newInstance();
           }
         }
@@ -299,6 +306,15 @@ public class NewObjectNode extends ASTNode {
     catch (Exception e) {
       throw new CompileException("could not instantiate class: " + e.getMessage(), expr, start, e);
     }
+  }
+
+  private boolean isPrototypeFunction() {
+    return pCtx.getFunctions().containsKey(typeDescr.getClassName());
+  }
+
+  private Object createPrototypalObject(Object ctx, Object thisRef, VariableResolverFactory factory) {
+    final Function function = pCtx.getFunction(typeDescr.getClassName());
+    return function.getReducedValueAccelerated(ctx, thisRef, factory);
   }
 
   public static class NewObjectArray implements Accessor, Serializable {

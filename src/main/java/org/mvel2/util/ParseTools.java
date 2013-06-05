@@ -290,7 +290,8 @@ public class ParseTools {
             if (score > bestScore) {
               bestCandidate = meth;
               bestScore = score;
-            } else if (score == bestScore) {
+            }
+            else if (score == bestScore) {
               if (bestCandidate == null || (bestCandidate.getReturnType() != meth.getReturnType() && bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()))) {
                 bestCandidate = meth;
               }
@@ -336,8 +337,8 @@ public class ParseTools {
     int score = 0;
     for (int i = 0; i != arguments.length; i++) {
       Class actualParamType;
-      if (varArgs && i >= parmTypes.length-1)
-        actualParamType = parmTypes[parmTypes.length-1].getComponentType();
+      if (varArgs && i >= parmTypes.length - 1)
+        actualParamType = parmTypes[parmTypes.length - 1].getComponentType();
       else
         actualParamType = parmTypes[i];
 
@@ -383,13 +384,13 @@ public class ParseTools {
         break;
       }
     }
-    if(score == 0 && varArgs && parmTypes.length - 1 == arguments.length){
+    if (score == 0 && varArgs && parmTypes.length - 1 == arguments.length) {
       score += 3;
     }
     return score;
   }
 
-    public static int scoreInterface(Class parm, Class arg) {
+  public static int scoreInterface(Class parm, Class arg) {
     if (parm.isInterface()) {
       Class[] iface = arg.getInterfaces();
       if (iface != null) {
@@ -525,7 +526,7 @@ public class ParseTools {
 
   public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
     ClassLoader classLoader = pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
-    
+
     Map<String, WeakReference<Class>> cache = CLASS_RESOLVER_CACHE.get(classLoader);
 
     if (cache == null) {
@@ -548,7 +549,8 @@ public class ParseTools {
          */
         if (classLoader != Thread.currentThread().getContextClassLoader()) {
           cls = forName(className, true, Thread.currentThread().getContextClassLoader());
-        } else {
+        }
+        else {
           throw e;
         }
       }
@@ -731,17 +733,17 @@ public class ParseTools {
     if (primitiveType == boolean.class)
       return compareTest instanceof Boolean && containsCheckOnBooleanArray((boolean[]) primitiveArray, (Boolean) compareTest);
     if (primitiveType == int.class)
-      return compareTest instanceof Integer && containsCheckOnIntArray((int[])primitiveArray, (Integer)compareTest);
+      return compareTest instanceof Integer && containsCheckOnIntArray((int[]) primitiveArray, (Integer) compareTest);
     if (primitiveType == long.class)
-      return compareTest instanceof Long && containsCheckOnLongArray((long[])primitiveArray, (Long)compareTest);
+      return compareTest instanceof Long && containsCheckOnLongArray((long[]) primitiveArray, (Long) compareTest);
     if (primitiveType == double.class)
       return compareTest instanceof Double && containsCheckOnDoubleArray((double[]) primitiveArray, (Double) compareTest);
     if (primitiveType == float.class)
-      return compareTest instanceof Float && containsCheckOnFloatArray((float[])primitiveArray, (Float)compareTest);
+      return compareTest instanceof Float && containsCheckOnFloatArray((float[]) primitiveArray, (Float) compareTest);
     if (primitiveType == char.class)
-      return compareTest instanceof Character && containsCheckOnCharArray((char[])primitiveArray, (Character)compareTest);
+      return compareTest instanceof Character && containsCheckOnCharArray((char[]) primitiveArray, (Character) compareTest);
     if (primitiveType == short.class)
-      return compareTest instanceof Short && containsCheckOnShortArray((short[])primitiveArray, (Short)compareTest);
+      return compareTest instanceof Short && containsCheckOnShortArray((short[]) primitiveArray, (Short) compareTest);
     if (primitiveType == byte.class)
       return compareTest instanceof Byte && containsCheckOnByteArray((byte[]) primitiveArray, (Byte) compareTest);
     return false;
@@ -799,7 +801,7 @@ public class ParseTools {
     int hash = 0;
     for (int i = 0; i < sig.length; i++) {
       if (sig[i] != null) {
-        hash += ( sig[i].hashCode() * ( i * 2 + 3 ) );
+        hash += (sig[i].hashCode() * (i * 2 + 3));
       }
     }
 
@@ -1180,13 +1182,6 @@ public class ParseTools {
   }
 
   public static int skipWhitespace(char[] expr, int cursor) {
-//        int line = 0;
-//        int lastLineStart = 0;
-//
-//        if (pCtx != null) {
-//            line = pCtx.getLineCount();
-//            lastLineStart = pCtx.getLineOffset();
-//        }
     Skip:
     while (cursor != expr.length) {
       switch (expr[cursor]) {
@@ -1265,9 +1260,9 @@ public class ParseTools {
    * From the specified cursor position, trim out any whitespace between the current position and the end of the
    * last non-whitespace character.
    *
-   * @param expr -
+   * @param expr  -
    * @param start -
-   * @param pos - current position
+   * @param pos   - current position
    * @return new position.
    */
   public static int trimLeft(char[] expr, int start, int pos) {
@@ -1280,9 +1275,8 @@ public class ParseTools {
    * From the specified cursor position, trim out any whitespace between the current position and beginning of the
    * first non-whitespace character.
    *
-   *
    * @param expr -
-   * @param pos -
+   * @param pos  -
    * @return -
    */
   public static int trimRight(char[] expr, int pos) {
@@ -1356,7 +1350,8 @@ public class ParseTools {
           }
           else if (chars[start + 1] == '*') {
             start += 2;
-            SkipComment: while (start < end) {
+            SkipComment:
+            while (start < end) {
               switch (chars[start]) {
                 case '*':
                   if (start + 1 < end && chars[start + 1] == '/') {
@@ -1516,8 +1511,12 @@ public class ParseTools {
   }
 
 
-  public static void parseWithExpressions(String nestParm, char[] block, int start, int offset,
-                                          Object ctx, VariableResolverFactory factory) {
+  public static void parseWithExpressions(String nestParm,
+                                          char[] block,
+                                          int start,
+                                          int offset,
+                                          Object ctx,
+                                          VariableResolverFactory factory) {
     /**
      *
      * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
@@ -1571,7 +1570,6 @@ public class ParseTools {
             oper = opLookup(block[i]);
           }
           continue;
-
 
         case '=':
           parm = new String(block, _st, i - _st - (oper != -1 ? 1 : 0)).trim();
@@ -1649,9 +1647,12 @@ public class ParseTools {
               throw new CompileException("operative assignment not possible here", block, start);
             }
 
-            String rewrittenExpr = new String(createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper));
-
-            MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
+            MVEL.setProperty(ctx, parm,
+                MVEL.eval(
+                    new String(createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper)),
+                    ctx, factory
+                )
+            );
           }
           else {
             MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));
@@ -1666,7 +1667,6 @@ public class ParseTools {
     }
   }
 
-
   public static Object handleNumericConversion(final char[] val, int start, int offset) {
     if (offset != 1 && val[start] == '0' && val[start + 1] != '.') {
       if (!isDigit(val[start + offset - 1])) {
@@ -1675,9 +1675,9 @@ public class ParseTools {
           case 'l':
             return Long.decode(new String(val, start, offset - 1));
           case 'I':
-            return BigInteger.valueOf(Long.decode(new String(val, start, offset - 1)));
+            return new BigInteger(new String(val, start, offset - 1));
           case 'B':
-            return BigDecimal.valueOf(Long.decode(new String(val, start, offset - 1)));
+            return new BigDecimal(new String(val, start, offset - 1));
         }
       }
 
@@ -1921,7 +1921,6 @@ public class ParseTools {
     int tD = test.length - 1;
     int cD = start + offset - 1;
 
-
     while (tD >= 0) {
       if (c[cD--] != test[tD--]) return false;
     }
@@ -2073,7 +2072,7 @@ public class ParseTools {
   }
 
   public static boolean isArrayType(char[] array, int start, int end) {
-    return end > start + 2 && isPropertyOnly(array, start, end-2) && array[end-2] == '[' && array[end-1] == ']';
+    return end > start + 2 && isPropertyOnly(array, start, end - 2) && array[end - 2] == '[' && array[end - 1] == ']';
   }
 
   public static void checkNameSafety(String name) {
@@ -2118,7 +2117,6 @@ public class ParseTools {
   public static Serializable subCompileExpression(String expression, ParserContext ctx) {
     ExpressionCompiler c = new ExpressionCompiler(expression);
     c.setPCtx(ctx);
-
     return _optimizeTree(c._compile());
   }
 

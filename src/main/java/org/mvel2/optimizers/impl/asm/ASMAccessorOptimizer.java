@@ -1756,7 +1756,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         ctx = ((MethodStub) ptr).getClassReference();
         name = ((MethodStub) ptr).getMethodName();
       }
-      else if (ptr instanceof Function) {
+      else if (ptr instanceof FunctionInstance) {
 
         if (es != null && es.length != 0) {
           compiledInputs.addAll(Arrays.asList(es));
@@ -1807,7 +1807,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
           loadVariableByName(name);
         }
 
-        checkcast(Function.class);
+        checkcast(FunctionInstance.class);
 
         assert debug("ALOAD 1");
         mv.visitVarInsn(ALOAD, 1);
@@ -1823,12 +1823,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("INVOKEVIRTUAL Function.call");
         mv.visitMethodInsn(INVOKEVIRTUAL,
-            getInternalName(Function.class),
+            getInternalName(FunctionInstance.class),
             "call",
             "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE
                 + "integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
 
-        return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
+        return ((FunctionInstance) ptr).call(ctx, thisRef, variableFactory, args);
       }
       else {
         throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "

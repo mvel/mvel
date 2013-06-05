@@ -18,16 +18,16 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
-import org.mvel2.ast.Function;
+import org.mvel2.ast.FunctionInstance;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 
 
 public class FunctionAccessor extends BaseAccessor {
-  private Function function;
+  private FunctionInstance function;
   private Accessor[] parameters;
 
-  public FunctionAccessor(Function function, Accessor[] parms) {
+  public FunctionAccessor(FunctionInstance function, Accessor[] parms) {
     this.function = function;
     this.parameters = parms;
   }

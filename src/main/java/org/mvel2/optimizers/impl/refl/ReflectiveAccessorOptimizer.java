@@ -18,13 +18,9 @@
 package org.mvel2.optimizers.impl.refl;
 
 import org.mvel2.*;
-import org.mvel2.ast.Function;
+import org.mvel2.ast.FunctionInstance;
 import org.mvel2.ast.TypeDescriptor;
-import org.mvel2.compiler.Accessor;
-import org.mvel2.compiler.AccessorNode;
-import org.mvel2.compiler.ExecutableLiteral;
-import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.compiler.PropertyVerifier;
+import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolver;
@@ -57,7 +53,8 @@ import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
-import static org.mvel2.util.Varargs.*;
+import static org.mvel2.util.Varargs.normalizeArgsForVarArgs;
+import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
   private AccessorNode rootNode;
@@ -325,7 +322,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
           + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", this.expr, st, e);
     }
 
-
     return rootNode;
   }
 
@@ -452,9 +448,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
     WithAccessor wa = new WithAccessor(root, expr, st, cursor++ - st, ingressType, false);
-
     addAccessorNode(wa);
-
     return wa.getValue(ctx, thisRef, variableFactory);
   }
 
@@ -467,7 +461,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx, ctx.getClass());
-
 
     return getBeanProperty(ctx, property);
   }
@@ -999,16 +992,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         ctx = ((MethodStub) ptr).getClassReference();
         name = ((MethodStub) ptr).getMethodName();
       }
-      else if (ptr instanceof Function) {
-        Function func = (Function) ptr;
-        if (!name.equals(func.getName())) {
+      else if (ptr instanceof FunctionInstance) {
+        FunctionInstance func = (FunctionInstance) ptr;
+        if (!name.equals(func.getFunction().getName())) {
           getBeanProperty(ctx, name);
           addAccessorNode(new DynamicFunctionAccessor(es));
         }
         else {
-          addAccessorNode(new FunctionAccessor((Function) ptr, es));
+          addAccessorNode(new FunctionAccessor(func, es));
         }
-        return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
+        return func.call(ctx, thisRef, variableFactory, args);
       }
       else {
         throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "

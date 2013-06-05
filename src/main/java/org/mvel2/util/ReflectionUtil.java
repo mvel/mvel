@@ -181,7 +181,7 @@ public class ReflectionUtil {
   }
 
   private static boolean areBoxingCompatible(Class<?> c1, Class<?> c2) {
-    return c1.isPrimitive() ? isPrimitiveOf(c2, c1) : (c2.isPrimitive() ? isPrimitiveOf(c1, c2) : false);
+    return c1.isPrimitive() ? isPrimitiveOf(c2, c1) : (c2.isPrimitive() && isPrimitiveOf(c1, c2));
   }
 
   private static boolean isPrimitiveOf(Class<?> boxed, Class<?> primitive) {

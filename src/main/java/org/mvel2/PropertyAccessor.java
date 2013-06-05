@@ -17,9 +17,7 @@
  */
 package org.mvel2;
 
-import org.mvel2.ast.Function;
-import org.mvel2.ast.Proto;
-import org.mvel2.ast.TypeDescriptor;
+import org.mvel2.ast.*;
 import org.mvel2.integration.GlobalListenerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
@@ -47,7 +45,8 @@ import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
-import static org.mvel2.util.Varargs.*;
+import static org.mvel2.util.Varargs.normalizeArgsForVarArgs;
+import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 
 
 @SuppressWarnings({"unchecked"})
@@ -338,14 +337,14 @@ public class PropertyAccessor {
       if (member instanceof Method) {
         Method meth = (Method) member;
 
-        Class[] paramaterTypes = checkParmTypesCache(meth);
+        Class[] parameterTypes = checkParmTypesCache(meth);
 
-        if (value != null && !paramaterTypes[0].isAssignableFrom(value.getClass())) {
-          if (!canConvert(paramaterTypes[0], value.getClass())) {
+        if (value != null && !parameterTypes[0].isAssignableFrom(value.getClass())) {
+          if (!canConvert(parameterTypes[0], value.getClass())) {
             throw new CompileException("cannot convert type: "
                 + value.getClass() + ": to " + meth.getParameterTypes()[0], property, cursor);
           }
-          meth.invoke(curr, convert(value, paramaterTypes[0]));
+          meth.invoke(curr, convert(value, parameterTypes[0]));
         }
         else {
           meth.invoke(curr, value);
@@ -369,6 +368,9 @@ public class PropertyAccessor {
       else if (curr instanceof Map) {
         //noinspection unchecked
         ((Map) curr).put(eval(tk, this.ctx, this.variableFactory), value);
+      }
+      else if (curr instanceof FunctionInstance) {
+        ((PrototypalFunctionInstance) curr).getResolverFactory().getVariableResolver(tk).setValue(value);
       }
       else {
         throw new PropertyAccessException("could not access/write property (" + tk + ") in: "
@@ -571,8 +573,6 @@ public class PropertyAccessor {
     }
 
     if (ctx != null) {
-
-
       Class<?> cls;
       if (ctx instanceof Class) {
         if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
@@ -585,7 +585,6 @@ public class PropertyAccessor {
       else {
         cls = ctx.getClass();
       }
-
 
       Member member = checkReadCache(cls, property.hashCode());
 
@@ -656,6 +655,9 @@ public class PropertyAccessor {
       }
       else if (hasPropertyHandler(cls)) {
         return getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
+      }
+      else if (ctx instanceof FunctionInstance) {
+        return ((PrototypalFunctionInstance) ctx).getResolverFactory().getVariableResolver(property).getValue();
       }
     }
 
@@ -767,7 +769,6 @@ public class PropertyAccessor {
       return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
     }
     else {
-      //     TypeDescriptor td = new TypeDescriptor(property, 0);
       try {
         return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
       }
@@ -882,9 +883,9 @@ public class PropertyAccessor {
         ctx = ((MethodStub) ptr).getClassReference();
         name = ((MethodStub) ptr).getMethodName();
       }
-      else if (ptr instanceof Function) {
-        ((Function) ptr).checkArgumentCount(args.length);
-        return ((Function) ptr).call(null, thisReference, variableFactory, args);
+      else if (ptr instanceof FunctionInstance) {
+        ((FunctionInstance) ptr).getFunction().checkArgumentCount(args.length);
+        return ((FunctionInstance) ptr).call(null, thisReference, variableFactory, args);
       }
       else {
         throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
@@ -956,6 +957,14 @@ public class PropertyAccessor {
       }
     }
 
+    if (ctx instanceof PrototypalFunctionInstance) {
+      final VariableResolverFactory funcCtx = ((PrototypalFunctionInstance) ctx).getResolverFactory();
+      Object prop = funcCtx.getVariableResolver(name).getValue();
+      if (prop instanceof PrototypalFunctionInstance) {
+        return ((PrototypalFunctionInstance) prop).call(ctx, thisReference, new InvokationContextFactory(variableFactory, funcCtx), args);
+      }
+    }
+
     if (m == null) {
       StringAppender errorBuild = new StringAppender();
       for (int i = 0; i < args.length; i++) {
@@ -967,8 +976,7 @@ public class PropertyAccessor {
         return getLength(ctx);
       }
 
-      System.out.println("{ " + new String(property) + " }");
-
+//      System.out.println("{ " + new String(property) + " }");
 
       throw new PropertyAccessException("unable to resolve method: "
           + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]"
@@ -1008,11 +1016,6 @@ public class PropertyAccessor {
   private static int createSignature(String name, String args) {
     return name.hashCode() + args.hashCode();
   }
-
-//  public int getCursorPosition() {
-//    return cursor;
-//  }
-
 
   private ClassLoader getClassLoader() {
       return pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
@@ -1106,11 +1109,8 @@ public class PropertyAccessor {
             }
 
             meth = true;
-
             last = i++;
-
             break;
-
 
           case '\'':
             while (--i > 0) {

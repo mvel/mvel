@@ -1,13 +1,13 @@
 package org.mvel2.tests.core;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.KnowledgeHelperFixer;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
@@ -152,4 +152,21 @@ public class CommentParsingTests extends AbstractTest {
 
   }
 
+  public void testComments6() {
+    String ex = "//This is an array\n" +
+        "long[] arr = [ //start of array\n" +
+        "\t1,2, // one and two\n" +
+        "\t3, /*three*/\n" +
+        "\t4, /*four*/ 5,\n" +
+        "\t6, /*six*/ 7,/*seven*/ //six & seven\n" +
+        "\t8/*eight*/  \n" +
+        "\t,9,\n" +
+        "\t10 //ten\n" +
+        "]; //end of array\n" +
+        "java.util.Arrays.toString(arr)";
+
+    final Object o = MVEL.eval(ex, new HashMap<String, Object>());
+
+    assertEquals("[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]", o);
+  }
 }

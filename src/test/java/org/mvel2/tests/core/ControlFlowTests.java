@@ -202,7 +202,7 @@ public class ControlFlowTests extends AbstractTest {
     ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
 
     Map vars = new HashMap();
-    assertEquals( new Integer(100), MVEL.executeExpression(stmt, vars) );
+    assertEquals(new Integer(100), MVEL.executeExpression(stmt, vars));
   }
 
   public void testEmptyLoopSemantics() {
@@ -430,11 +430,13 @@ public class ControlFlowTests extends AbstractTest {
         " \t\t\treturn [1: ((y > 12) ? 1 : 2), 2: (12 + 1)];\n" +
         "\t\t} ;\n" +
         "\t}\n" +
-        "(null).print();\n" +   // THIS LINE SHOULD NEVER EXECUTE BUT IT DOES, INCORRECT!
+        "(null).print();\n" +
         "\n" +
         "}\n" +
         "\n" +
         "cond('fetlock', 12)";
+
+    System.out.println(expression);
 
     Exception thrown = null;
     try {
@@ -466,9 +468,9 @@ public class ControlFlowTests extends AbstractTest {
     System.out.println(o);
   }
 
-//  public void testDhanji2() {
-//    System.out.println(MVEL.eval("x = 1; y = 2; [x,y] + [3,4]", new HashMap<String, Object>()));
-//  }
+  public void testDhanji2() {
+    assertEquals(Arrays.asList(1, 2, 3, 4), MVEL.eval("x = 1; y = 2; [x,y] + [3,4]", new HashMap<String, Object>()));
+  }
 
 
   private static int fibonacci(int n) {

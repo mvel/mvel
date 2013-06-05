@@ -72,6 +72,7 @@ public class ParserContext implements Serializable {
 
   private transient Parser rootParser;
 
+  private boolean functionContext = false;
   private boolean compiled = false;
   private boolean strictTypeEnforcement = false;
   private boolean strongTyping = false;
@@ -98,6 +99,12 @@ public class ParserContext implements Serializable {
 
   public ParserContext(ParserConfiguration parserConfiguration) {
     this.parserConfiguration = parserConfiguration;
+  }
+
+  public ParserContext(ParserConfiguration parserConfiguration, ParserContext parent, boolean functionContext) {
+    this.parserConfiguration = parserConfiguration;
+    this.parent = parent;
+    this.functionContext = functionContext;
   }
 
   public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
@@ -149,7 +156,7 @@ public class ParserContext implements Serializable {
       @Override
       public void addVariable(String name, Class type) {
         if ((parent.variables != null && parent.variables.containsKey(name))
-                || (parent.inputs != null && parent.inputs.containsKey(name))) {
+            || (parent.inputs != null && parent.inputs.containsKey(name))) {
           this.variablesEscape = true;
         }
         super.addVariable(name, type);
@@ -158,7 +165,7 @@ public class ParserContext implements Serializable {
       @Override
       public void addVariable(String name, Class type, boolean failIfNewAssignment) {
         if ((parent.variables != null && parent.variables.containsKey(name))
-                || (parent.inputs != null && parent.inputs.containsKey(name))) {
+            || (parent.inputs != null && parent.inputs.containsKey(name))) {
           this.variablesEscape = true;
         }
         super.addVariable(name, type, failIfNewAssignment);
@@ -167,7 +174,7 @@ public class ParserContext implements Serializable {
       @Override
       public Class getVarOrInputType(String name) {
         if ((parent.variables != null && parent.variables.containsKey(name))
-                || (parent.inputs != null && parent.inputs.containsKey(name))) {
+            || (parent.inputs != null && parent.inputs.containsKey(name))) {
           this.variablesEscape = true;
         }
 
@@ -216,7 +223,7 @@ public class ParserContext implements Serializable {
    */
   public boolean hasVarOrInput(String name) {
     return (variables != null && variables.containsKey(name))
-            || (inputs != null && inputs.containsKey(name));
+        || (inputs != null && inputs.containsKey(name));
   }
 
   /**
@@ -229,7 +236,8 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputType(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    } else if (inputs != null && inputs.containsKey(name)) {
+    }
+    else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return Object.class;
@@ -238,7 +246,8 @@ public class ParserContext implements Serializable {
   public Class getVarOrInputTypeOrNull(String name) {
     if (variables != null && variables.containsKey(name)) {
       return variables.get(name);
-    } else if (inputs != null && inputs.containsKey(name)) {
+    }
+    else if (inputs != null && inputs.containsKey(name)) {
       return inputs.get(name);
     }
     return null;
@@ -451,13 +460,14 @@ public class ParserContext implements Serializable {
         for (Method m : ctxType.getMethods()) {
           if ((m.getModifiers() & Modifier.PUBLIC) != 0) {
             if (m.getName().startsWith("get")
-                    || (m.getName().startsWith("is")
-                    && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
+                || (m.getName().startsWith("is")
+                && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
               String propertyName = ReflectionUtil.getPropertyFromAccessor(m.getName());
               scope.add(propertyName);
               propertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
               scope.add(propertyName);
-            } else {
+            }
+            else {
               scope.add(m.getName());
             }
           }
@@ -559,8 +569,8 @@ public class ParserContext implements Serializable {
     else {
       for (ErrorDetail detail : errorList) {
         if (detail.getMessage().equals(errorDetail.getMessage())
-                && detail.getColumn() == errorDetail.getColumn()
-                && detail.getLineNumber() == errorDetail.getLineNumber()) {
+            && detail.getColumn() == errorDetail.getColumn()
+            && detail.getLineNumber() == errorDetail.getLineNumber()) {
           return;
         }
       }
@@ -651,11 +661,14 @@ public class ParserContext implements Serializable {
     for (Map.Entry<String, Object> entry : imports.entrySet()) {
       if ((val = entry.getValue()) instanceof Class) {
         addImport(entry.getKey(), (Class) val);
-      } else if (val instanceof Method) {
+      }
+      else if (val instanceof Method) {
         addImport(entry.getKey(), (Method) val);
-      } else if (val instanceof MethodStub) {
+      }
+      else if (val instanceof MethodStub) {
         addImport(entry.getKey(), (MethodStub) val);
-      } else {
+      }
+      else {
         throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
       }
     }
@@ -752,14 +765,14 @@ public class ParserContext implements Serializable {
 
   public int getLineFor(String sourceName, int cursor) {
     return (sourceLineLookups != null
-            && sourceLineLookups.containsKey(sourceName)) ?
-            sourceLineLookups.get(sourceName).getLineFromCursor(cursor) : -1;
+        && sourceLineLookups.containsKey(sourceName)) ?
+        sourceLineLookups.get(sourceName).getLineFromCursor(cursor) : -1;
   }
 
   public boolean isVisitedLine(String sourceName, int lineNumber) {
     return visitedLines != null
-            && visitedLines.containsKey(sourceName)
-            && visitedLines.get(sourceName).contains(lineNumber);
+        && visitedLines.containsKey(sourceName)
+        && visitedLines.get(sourceName).contains(lineNumber);
   }
 
   public void visitLine(String sourceName, int lineNumber) {
@@ -797,7 +810,7 @@ public class ParserContext implements Serializable {
   }
 
   public Map getFunctions() {
-    return globalFunctions;
+    return globalFunctions == null ? Collections.emptyMap() : globalFunctions;
   }
 
   public boolean hasFunction(String name) {
@@ -963,6 +976,10 @@ public class ParserContext implements Serializable {
     this.indexAllocation = indexAllocation;
   }
 
+  public boolean isFunctionContext() {
+    return functionContext;
+  }
+
   public ParserConfiguration getParserConfiguration() {
     return parserConfiguration;
   }
@@ -989,7 +1006,7 @@ public class ParserContext implements Serializable {
 
   public String[] getIndexedVarNames() {
     if (indexedInputs == null) return new String[0];
-    
+
     String[] s = new String[indexedInputs.size()];
     indexedInputs.toArray(s);
     return s;

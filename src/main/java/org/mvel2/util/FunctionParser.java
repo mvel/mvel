@@ -12,7 +12,6 @@ public class FunctionParser {
   private String name;
 
   private int cursor;
-  private int start;
   private int length;
 
   private int fields;
@@ -21,9 +20,16 @@ public class FunctionParser {
 
   private ExecutionStack splitAccumulator;
 
-  public FunctionParser(String functionName, int cursor, int endOffset, char[] expr, int fields, ParserContext pCtx, ExecutionStack splitAccumulator) {
+  public FunctionParser(String functionName,
+                        int cursor,
+                        int endOffset,
+                        char[] expr,
+                        int fields,
+                        ParserContext pCtx,
+                        ExecutionStack splitAccumulator) {
+
     this.name = functionName;
-    this.cursor = this.start = cursor;
+    this.cursor = cursor;
     this.length = endOffset;
 
     this.expr = expr;
