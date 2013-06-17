@@ -1,9 +1,11 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.tests.core.res.Foo;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -294,4 +296,31 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, MVEL.eval("0<-1"));
   }
 
+  public void testStringCoercionForComparison() {
+    assertEquals(false, MVEL.eval("36 > 242"));
+    assertEquals(false, MVEL.eval("\"36\" > 242"));
+    assertEquals(false, MVEL.eval("36 > \"242\""));
+    assertEquals(true, MVEL.eval("\"36\" > \"242\""));
+
+    ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("36 > 242", parserContext)));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("\"36\" > 242", parserContext)));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("36 > \"242\"", parserContext)));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("\"36\" > \"242\"", parserContext)));
+
+    parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", String.class);
+    parserContext.addInput("b", String.class);
+
+    Serializable expression = MVEL.compileExpression("a > b", parserContext);
+    assertEquals(true, MVEL.executeExpression(expression, new HashMap() {{
+      put("a", "36");
+      put("b", "242");
+    }}));
+  }
 }
