@@ -12,6 +12,7 @@ import org.mvel2.integration.ResolverTools;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
+import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
@@ -4185,5 +4186,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public static class StringConcrete extends AbstractBase<String> {
     public StringConcrete() { this.foo = new String(); }
+  }
+
+  public void testNullCollection() throws CompileException {
+    boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+    String[] names  = { "missing" };
+    String[] values = { null };
+
+    try {
+      MVEL.executeExpression( (CompiledExpression) MVEL.compileExpression("1; missing[3]"),
+                              new IndexedVariableResolverFactory(names, values) );
+      fail("Should throw a NullPointerExcption");
+    } catch (Exception e) {
+    } finally {
+      MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
+    }
   }
 }
