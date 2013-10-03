@@ -4204,4 +4204,12 @@ public class CoreConfidenceTests extends AbstractTest {
       MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
     }
   }
+
+  public void testRegExWithCast() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", Foo.class);
+    assertEquals(Boolean.class, MVEL.analyze("(String)bar.name ~= '[a-z].+'", parserContext));
+  }
+
 }
