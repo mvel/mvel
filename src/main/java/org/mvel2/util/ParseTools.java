@@ -233,7 +233,8 @@ public class ParseTools {
     return list;
   }
 
-  private static Map<String, Map<Integer, WeakReference<Method>>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, WeakReference<Method>>>(10);
+  private static final Map<String, Map<Integer, WeakReference<Method>>> RESOLVED_METH_CACHE
+      = Collections.synchronizedMap( new WeakHashMap<String, Map<Integer, WeakReference<Method>>>(10) );
 
   public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
     Class[] targetParms = new Class[arguments.length];
@@ -302,7 +303,7 @@ public class ParseTools {
 
       if (bestCandidate != null) {
         if (methCache == null) {
-          RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, WeakReference<Method>>());
+          RESOLVED_METH_CACHE.put(method, methCache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Method>>() ) );
         }
 
         methCache.put(hash, new WeakReference<Method>(bestCandidate));
@@ -449,10 +450,10 @@ public class ParseTools {
     return best;
   }
 
-  private static Map<Class, Map<Integer, WeakReference<Constructor>>> RESOLVED_CONST_CACHE
-      = new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10);
-  private static Map<Constructor, WeakReference<Class[]>> CONSTRUCTOR_PARMS_CACHE
-      = new WeakHashMap<Constructor, WeakReference<Class[]>>(10);
+  private static final Map<Class, Map<Integer, WeakReference<Constructor>>> RESOLVED_CONST_CACHE
+      = Collections.synchronizedMap( new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10) );
+  private static final Map<Constructor, WeakReference<Class[]>> CONSTRUCTOR_PARMS_CACHE
+      = Collections.synchronizedMap( new WeakHashMap<Constructor, WeakReference<Class[]>>(10) );
 
   private static Class[] getConstructors(Constructor cns) {
     WeakReference<Class[]> ref = CONSTRUCTOR_PARMS_CACHE.get(cns);
@@ -509,7 +510,7 @@ public class ParseTools {
 
     if (bestCandidate != null) {
       if (cache == null) {
-        RESOLVED_CONST_CACHE.put(cls, cache = new WeakHashMap<Integer, WeakReference<Constructor>>());
+        RESOLVED_CONST_CACHE.put(cls, cache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Constructor>>() ) );
       }
       cache.put(hash, new WeakReference<Constructor>(bestCandidate));
     }
@@ -518,10 +519,10 @@ public class ParseTools {
   }
 
 
-  private static Map<ClassLoader, Map<String, WeakReference<Class>>> CLASS_RESOLVER_CACHE
-      = new WeakHashMap<ClassLoader, Map<String, WeakReference<Class>>>(1, 1.0f);
-  private static Map<Class, WeakReference<Constructor[]>> CLASS_CONSTRUCTOR_CACHE
-      = new WeakHashMap<Class, WeakReference<Constructor[]>>(10);
+  private static final Map<ClassLoader, Map<String, WeakReference<Class>>> CLASS_RESOLVER_CACHE
+      = Collections.synchronizedMap( new WeakHashMap<ClassLoader, Map<String, WeakReference<Class>>>(1, 1.0f) );
+  private static final Map<Class, WeakReference<Constructor[]>> CLASS_CONSTRUCTOR_CACHE
+      = Collections.synchronizedMap( new WeakHashMap<Class, WeakReference<Constructor[]>>(10) );
 
 
   public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
@@ -530,7 +531,7 @@ public class ParseTools {
     Map<String, WeakReference<Class>> cache = CLASS_RESOLVER_CACHE.get(classLoader);
 
     if (cache == null) {
-      CLASS_RESOLVER_CACHE.put(classLoader, cache = new WeakHashMap<String, WeakReference<Class>>(10));
+      CLASS_RESOLVER_CACHE.put(classLoader, cache = Collections.synchronizedMap( new WeakHashMap<String, WeakReference<Class>>(10) ) );
     }
 
     WeakReference<Class> ref;
