@@ -4212,12 +4212,32 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Boolean.class, MVEL.analyze("(String)bar.name ~= '[a-z].+'", parserContext));
   }
 
-    public void testUnwantedImport() {
-        ParserConfiguration conf = new ParserConfiguration();
-        conf.addPackageImport("java.util");
-        conf.addPackageImport("org.mvel2.tests.core.res");
-        ParserContext pctx = new ParserContext( conf );
-        MVEL.analysisCompile( "ScenarioType.Set.ADD", pctx );
-        assertNull(conf.getImports().get("Set"));
-    }
+  public void testUnwantedImport() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport("java.util");
+    conf.addPackageImport("org.mvel2.tests.core.res");
+    ParserContext pctx = new ParserContext( conf );
+    MVEL.analysisCompile( "ScenarioType.Set.ADD", pctx );
+    assertNull(conf.getImports().get("Set"));
+  }
+
+  public void testUnaryNegative() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", int.class);
+    Map vars = new HashMap() {{ put("value", 42); }};
+    assertEquals(-42, MVEL.executeExpression(MVEL.compileExpression("-value", pctx), vars));
+  }
+
+  public void testUnaryNegativeWithSpace() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", int.class);
+    Map vars = new HashMap() {{ put("value", 42); }};
+    assertEquals(-42, MVEL.executeExpression(MVEL.compileExpression("- value", pctx), vars));
+  }
 }
