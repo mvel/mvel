@@ -231,7 +231,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       return getReturnType(ctx, method);
     }
 
-    if (pCtx != null && pCtx.hasImport(property)) {
+    if (pCtx != null && first && pCtx.hasImport(property)) {
       Class<?> importedClass = pCtx.getImport(property);
       if (importedClass != null) return pCtx.getImport(property);
     }

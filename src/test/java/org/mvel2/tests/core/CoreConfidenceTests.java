@@ -4212,4 +4212,12 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Boolean.class, MVEL.analyze("(String)bar.name ~= '[a-z].+'", parserContext));
   }
 
+    public void testUnwantedImport() {
+        ParserConfiguration conf = new ParserConfiguration();
+        conf.addPackageImport("java.util");
+        conf.addPackageImport("org.mvel2.tests.core.res");
+        ParserContext pctx = new ParserContext( conf );
+        MVEL.analysisCompile( "ScenarioType.Set.ADD", pctx );
+        assertNull(conf.getImports().get("Set"));
+    }
 }
