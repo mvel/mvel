@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mvel</groupId>
-    <artifactId>mvel2</artifactId>
+    <groupId>org.mule.mvel</groupId>
+    <artifactId>mule-mvel2</artifactId>
     <packaging>jar</packaging>
     <version>2.1.9-SNAPSHOT</version>
 
     <name>mvel</name>
-    <url>http://mvel.codehaus.org/</url>
+
     <description>
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
@@ -24,28 +24,14 @@
 
     <scm>
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
-        <url>scm:git:git@github.com:mvel/mvel.git</url>
+        <url>scm:git:git@github.com:mulesoft/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
     </scm>
-    <issueManagement>
-        <system>jira</system>
-        <url>http://jira.codehaus.org/browse/MVEL</url>
-    </issueManagement>
-
-    <!--<pluginRepositories>-->
-    <!--<pluginRepository>-->
-    <!--<id>apache-snapshots</id>-->
-    <!--<name>Apache Snapshot Repository</name>-->
-    <!--<url>http://repository.apache.org/snapshots/</url>-->
-    <!--<snapshots>-->
-    <!--<enabled>true</enabled>-->
-    <!--</snapshots>-->
-    <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
 
     <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <build>
         <extensions>
             <extension>
@@ -104,8 +90,8 @@
                     <archive>
                         <manifestFile>META-INF/MANIFEST.MF</manifestFile>
                         <manifest>
-                            <mainClass>org.mvel2.sh.Main</mainClass>
-                            <packageName>org.mvel2</packageName>
+                            <mainClass>org.mule.mvel2.sh.Main</mainClass>
+                            <packageName>org.mule.mvel2</packageName>
                         </manifest>
                     </archive>
                 </configuration>
@@ -184,7 +170,7 @@
                 <configuration>
                     <manifestLocation>META-INF</manifestLocation>
                     <instructions>
-                        <Bundle-SymbolicName>org.mvel2</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>org.mule.mvel2</Bundle-SymbolicName>
                         <Bundle-Name>mvel2</Bundle-Name>
                         <Import-Package>sun.*;resolution:=optional, *</Import-Package>
                     </instructions>
@@ -227,26 +213,20 @@
             <scope>test</scope>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>org.hibernate</groupId>-->
-        <!--<artifactId>ejb3-persistence</artifactId>-->
-        <!--<version>1.0.2.GA</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>        -->
     </dependencies>
 
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
-            <id>codehaus.org</id>
-            <name>Codehaus Maven Repository</name>
-            <url>dav:https://dav.codehaus.org/repository/mvel/</url>
+            <id>mule-releases</id>
+            <name>Mule Release Repository</name>
+            <url>dav:https://dav.codehaus.org/repository/mule/</url>
         </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
-            <id>codehaus.org</id>
-            <name>Codehaus Snapshot Maven Repository</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/mvel/</url>
+            <id>mule-snapshots</id>
+            <name>Mule Snapshot Repository</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/mule/</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
