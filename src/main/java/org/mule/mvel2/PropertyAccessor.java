@@ -78,6 +78,7 @@ public class PropertyAccessor {
   private static final int METH = 1;
   private static final int COL = 2;
   private static final int WITH = 3;
+  private static final int ESCAPED_PROPERTY = 4;
 
   private static final Object[] EMPTYARG = new Object[0];
 
@@ -178,6 +179,9 @@ public class PropertyAccessor {
         case NORM:
           curr = getBeanProperty(curr, capture());
           break;
+        case ESCAPED_PROPERTY:
+            curr = getBeanProperty(curr, captureEscaped());
+            break;
         case METH:
           curr = getMethod(curr, capture());
           break;
@@ -396,19 +400,42 @@ public class PropertyAccessor {
         }
         break;
       case '.':
-        // ++cursor;
-        while (cursor < end && isWhitespace(property[cursor])) cursor++;
-        if ((st + 1) != end) {
-          switch (property[cursor = ++st]) {
+        nullHandle = MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT;
+        cursor = ++st;
+        while (cursor < end && isWhitespace(property[cursor])) cursor = ++st;
+        
+        if (cursor == end) {
+            throw new CompileException("unexpected end of statement", property, start);
+        }
+          switch (property[cursor]) {
             case '?':
               cursor = ++st;
               nullHandle = true;
               break;
+
+            case '\'':
+                // we've got an escaped bean property, e.g. foo.'bar'.baz
+                if ((cursor = ++st) == end) {
+                  throw new CompileException("unexpected end of statement", property, start);
+                }
+                
+                // move the cursor to the end of the property name
+                while (++cursor < end && (property[cursor] != '\''
+                        // handle escaped single quotes
+                        || property[cursor-1] == '\\')) ;
+
+                // advance it to the end quote and check for end of statement
+                if (++cursor > end) {
+                    throw new CompileException("unexpected end of statement", property, start);
+                }
+                return ESCAPED_PROPERTY;
+                
             case '{':
               return WITH;
-          }
 
         }
+        // TODO: is this right?
+        break;
       case '?':
         if (cursor == start) {
           cursor = ++st;
@@ -451,6 +478,12 @@ public class PropertyAccessor {
     return new String(property, st, trimLeft(cursor) - st);
   }
 
+  private String captureEscaped() {
+    int end = cursor;
+    ++cursor;
+    return new String(property, st, end - st - 1).replaceAll("\\\\'", "'");
+  }
+  
   protected int trimLeft(int pos) {
     while (pos > 0 && isWhitespace(property[pos - 1])) pos--;
     return pos;

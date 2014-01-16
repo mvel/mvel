@@ -29,6 +29,7 @@ import org.mule.mvel2.tests.core.res.TestInterface;
 import org.mule.mvel2.util.StringAppender;
 
 import javax.swing.plaf.OptionPaneUI;
+
 import java.io.*;
 
 import static java.lang.Integer.parseInt;
@@ -99,11 +100,21 @@ public abstract class AbstractTest extends TestCase {
 
     map.put("dt1", new Date(currentTimeMillis() - 100000));
     map.put("dt2", new Date(currentTimeMillis()));
+    
+
+    Map propertyMap = new HashMap();
+    map.put("properties", propertyMap);
+    propertyMap.put("nospaces", "bar");
+    propertyMap.put("property with spaces", "bar");
+    propertyMap.put("property with \'", "bar");
     return map;
   }
 
 
   protected void tearDown() throws Exception {
+    // revert to default properties that were changed by the tests
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = false;
   }
 
   protected Object test(final String ex) {
@@ -117,7 +128,7 @@ public abstract class AbstractTest extends TestCase {
       threadCount = parseInt(getProperty("mvel.tests.threadcount"));
     }
     else {
-      threadCount = 5;
+      threadCount = 1;
     }
     threads = new Thread[threadCount];
 
