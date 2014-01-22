@@ -99,6 +99,13 @@ public abstract class AbstractTest extends TestCase {
 
     map.put("dt1", new Date(currentTimeMillis() - 100000));
     map.put("dt2", new Date(currentTimeMillis()));
+    
+
+    Map propertyMap = new HashMap();
+    map.put("properties", propertyMap);
+    propertyMap.put("nospaces", "bar");
+    propertyMap.put("property with spaces", "bar");
+    propertyMap.put("property with \'", "bar");
     return map;
   }
 
