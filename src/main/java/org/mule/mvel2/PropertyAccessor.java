@@ -434,7 +434,6 @@ public class PropertyAccessor {
               return WITH;
 
         }
-        // TODO: is this right?
         break;
       case '?':
         if (cursor == start) {

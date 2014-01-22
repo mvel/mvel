@@ -128,7 +128,7 @@ public abstract class AbstractTest extends TestCase {
       threadCount = parseInt(getProperty("mvel.tests.threadcount"));
     }
     else {
-      threadCount = 1;
+      threadCount = 5;
     }
     threads = new Thread[threadCount];
 
