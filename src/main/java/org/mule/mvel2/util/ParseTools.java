@@ -1931,7 +1931,7 @@ public class ParseTools {
 
   public static boolean isIdentifierPart(final int c) {
     return ((c > 96 && c < 123)
-        || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$')
+        || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$') 
         || Character.isJavaIdentifierPart(c));
   }
 

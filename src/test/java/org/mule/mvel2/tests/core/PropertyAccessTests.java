@@ -277,6 +277,7 @@ public class PropertyAccessTests extends AbstractTest {
   }
 
   public void testMVELCompilerBoth2() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
     PropertyHandlerFactory.registerPropertyHandler(DynaBean.class, new DynaBeanPropertyHandler());
 
     Map<String, Object> vars = new LinkedHashMap<String, Object>();
@@ -346,7 +347,22 @@ public class PropertyAccessTests extends AbstractTest {
     //   tmp.put("latitude", 0.5f);
     ctx.put("SessionSetupRequest", tmp);
 
-    System.out.println("Result = " + MVEL.getProperty("SessionSetupRequest.?latitude", ctx));
+    Object result = MVEL.getProperty("SessionSetupRequest.?latitude", ctx);
+    assertNull(result);
+    System.out.println("Result = " + result);
+  }
+  
+
+  public void testNullSafeDefault() {
+    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = true;
+    Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
+    Map<String, Float> tmp = new HashMap<String, Float>();
+    //   tmp.put("latitude", 0.5f);
+    ctx.put("SessionSetupRequest", tmp);
+
+    Object result = MVEL.getProperty("SessionSetupRequest.latitude", ctx);
+    assertNull(result);
+    System.out.println("Result = " + result);
   }
 
   public static class A226 {
@@ -358,6 +374,7 @@ public class PropertyAccessTests extends AbstractTest {
   }
 
   public void testMVEL226() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
     A226 a = new A226();
     Map m = Collections.singletonMap("a", a);
     Map<String, Object> nestMap = Collections.<String, Object>singletonMap("foo", "bar");
@@ -393,4 +410,5 @@ public class PropertyAccessTests extends AbstractTest {
         // ignore
       }
     }
+    
 }

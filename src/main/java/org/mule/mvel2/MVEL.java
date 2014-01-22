@@ -58,6 +58,7 @@ public class MVEL {
   public static boolean COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
   public static boolean COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = getBoolean("mvel2.compiler.support_java_style_class_literals");
   public static boolean COMPILER_OPT_ALLOCATE_TYPE_LITERALS_TO_SHARED_SYMBOL_TABLE = getBoolean("mvel2.compiler.allocate_type_literals_to_shared_symbol_table");
+  public static boolean COMPILER_OPT_NULL_SAFE_DEFAULT = getBoolean("mvel2.compiler.null_safe_default");
 
   static boolean OPTIMIZER = true;
 

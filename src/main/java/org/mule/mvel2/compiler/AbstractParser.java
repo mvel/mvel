@@ -505,7 +505,6 @@ public class AbstractParser implements Parser, Serializable {
                 skipWhitespace();
 
                 continue;
-
               case '?':
                 if (lookToLast() == '.' || cursor == start) {
                   union = true;
@@ -607,13 +606,31 @@ public class AbstractParser implements Parser, Serializable {
                 }
                 break CaptureLoop;
 
+              case '\'':
+                // we've got an escaped property
+                if (lookToLast() == '.' || cursor == start) {
+                  union = true;
+                  capture = true;
+                  
+                  while (++cursor < end && (expr[cursor] != '\''
+                          // handle escaped single quotes
+                          || expr[cursor-1] == '\\')) ;
+                  
+                  if (++cursor > end) {
+                    throw new CompileException("unexpected end of statement", expr, start);
+                  }
+                } else {
+                    // not an escaped property name
+                    break CaptureLoop;
+                }
+                continue;
+              
               /**
                * Exit immediately for any of these cases.
                */
               case '!':
               case ',':
               case '"':
-              case '\'':
               case ';':
               case ':':
                 break CaptureLoop;
@@ -853,6 +870,7 @@ public class AbstractParser implements Parser, Serializable {
                 capture = true;
                 continue;
               }
+              
               expectNextChar_IW('{');
 
               return lastNode = new ThisWithNode(expr, st, cursor - st - 1
