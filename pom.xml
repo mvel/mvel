@@ -5,7 +5,7 @@
     <groupId>org.mule.mvel</groupId>
     <artifactId>mule-mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.1.9-SNAPSHOT</version>
+    <version>2.1.8.Final-MULE-001</version>
 
     <name>mvel</name>
 
@@ -13,6 +13,7 @@
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
         from the smallest property binding and extraction, to full blown scripts.
+        This is a fork of MVEL customized for use in Mule ESB
     </description>
     <licenses>
         <license>
