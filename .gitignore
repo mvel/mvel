@@ -15,3 +15,5 @@
 /META-INF
 .DS_Store
 
+
+.settings/org.eclipse.jdt.core.prefs

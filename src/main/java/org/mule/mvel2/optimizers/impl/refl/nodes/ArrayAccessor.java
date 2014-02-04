@@ -34,14 +34,33 @@ public class ArrayAccessor implements AccessorNode {
     this.index = index;
   }
 
-  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
-    if (nextNode != null) {
-      return nextNode.getValue(Array.get(ctx, index), elCtx, vars);
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars)
+    {
+        if (nextNode != null)
+        {
+            return nextNode.getValue(optimizedArrayGet(ctx), elCtx, vars);
+        }
+        else
+        {
+            return optimizedArrayGet(ctx);
+        }
     }
-    else {
-      return Array.get(ctx, index);
+
+    private Object optimizedArrayGet(Object ctx)
+    {
+        if (ctx instanceof String[])
+        {
+            return ((String[]) ctx)[index];
+        }
+        else if (ctx instanceof Object[])
+        {
+            return ((Object[]) ctx)[index];
+        }
+        else
+        {
+            return Array.get(ctx, index);
+        }
     }
-  }
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
