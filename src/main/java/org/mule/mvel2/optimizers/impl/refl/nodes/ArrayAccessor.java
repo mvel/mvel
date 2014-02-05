@@ -48,11 +48,7 @@ public class ArrayAccessor implements AccessorNode {
 
     private Object optimizedArrayGet(Object ctx)
     {
-        if (ctx instanceof String[])
-        {
-            return ((String[]) ctx)[index];
-        }
-        else if (ctx instanceof Object[])
+        if (ctx instanceof Object[])
         {
             return ((Object[]) ctx)[index];
         }
