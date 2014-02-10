@@ -22,6 +22,7 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.Parser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.LineMapper;
@@ -71,6 +72,8 @@ public class ParserContext implements Serializable {
   private LineLabel lastLineLabel;
 
   private transient Parser rootParser;
+  private transient Map<String, CompiledExpression> compiledExpressionCache;
+  private transient Map<String, Class> returnTypeCache;
 
   private boolean functionContext = false;
   private boolean compiled = false;
@@ -1010,6 +1013,20 @@ public class ParserContext implements Serializable {
     String[] s = new String[indexedInputs.size()];
     indexedInputs.toArray(s);
     return s;
+  }
+
+  public Map<String, CompiledExpression> getCompiledExpressionCache() {
+    if (compiledExpressionCache == null) {
+      compiledExpressionCache = new HashMap<String, CompiledExpression>();
+    }
+    return compiledExpressionCache;
+  }
+
+  public Map<String, Class> getReturnTypeCache() {
+    if (returnTypeCache == null) {
+      returnTypeCache = new HashMap<String, Class>();
+    }
+    return returnTypeCache;
   }
 
   // Introduce some new Fluent API stuff here.
