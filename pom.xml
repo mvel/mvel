@@ -5,7 +5,7 @@
     <groupId>org.mule.mvel</groupId>
     <artifactId>mule-mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.1.8.Final-MULE-002-SNAPSHOT</version>
+    <version>2.1.8.Final-MULE-002</version>
 
     <name>mvel</name>
 
