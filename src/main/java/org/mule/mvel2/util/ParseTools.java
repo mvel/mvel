@@ -424,6 +424,10 @@ public class ParseTools {
   }
 
   public static Method getWidenedTarget(Class cls, Method method) {
+    if (Modifier.isStatic(method.getModifiers())) {
+      return method;
+    }
+
     Method m = method, best = method;
     Class[] args = method.getParameterTypes();
     String name = method.getName();

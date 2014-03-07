@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.mule.mvel2;
 
 import org.mule.mvel2.ast.Function;
 import org.mule.mvel2.ast.LineLabel;
 import org.mule.mvel2.ast.Proto;
 import org.mule.mvel2.compiler.AbstractParser;
+import org.mule.mvel2.compiler.CompiledExpression;
 import org.mule.mvel2.compiler.Parser;
 import org.mule.mvel2.integration.Interceptor;
 import org.mule.mvel2.util.LineMapper;
@@ -71,6 +71,8 @@ public class ParserContext implements Serializable {
   private LineLabel lastLineLabel;
 
   private transient Parser rootParser;
+  private transient Map<String, CompiledExpression> compiledExpressionCache;
+  private transient Map<String, Class> returnTypeCache;
 
   private boolean functionContext = false;
   private boolean compiled = false;
@@ -1010,6 +1012,20 @@ public class ParserContext implements Serializable {
     String[] s = new String[indexedInputs.size()];
     indexedInputs.toArray(s);
     return s;
+  }
+
+  public Map<String, CompiledExpression> getCompiledExpressionCache() {
+    if (compiledExpressionCache == null) {
+      compiledExpressionCache = new HashMap<String, CompiledExpression>();
+    }
+    return compiledExpressionCache;
+  }
+
+  public Map<String, Class> getReturnTypeCache() {
+    if (returnTypeCache == null) {
+      returnTypeCache = new HashMap<String, Class>();
+    }
+    return returnTypeCache;
   }
 
   // Introduce some new Fluent API stuff here.

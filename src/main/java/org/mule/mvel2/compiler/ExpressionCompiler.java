@@ -24,6 +24,7 @@ import org.mule.mvel2.util.*;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.mule.mvel2.DataConversion.canConvert;
 import static org.mule.mvel2.DataConversion.convert;
@@ -140,10 +141,20 @@ public class ExpressionCompiler extends AbstractParser {
         returnType = tk.getEgressType();
 
         if (tk instanceof Substatement) {
-          ExpressionCompiler subCompiler = new ExpressionCompiler(expr, tk.getStart(), tk.getOffset(), pCtx);
-          tk.setAccessor(subCompiler._compile());
-
-          returnType = subCompiler.getReturnType();
+          String key = new String(expr, tk.getStart(), tk.getOffset());
+          Map<String, CompiledExpression> cec = pCtx.getCompiledExpressionCache();
+          Map<String, Class> rtc = pCtx.getReturnTypeCache();
+          CompiledExpression compiled = cec.get(key);
+          Class rt = rtc.get(key);
+          if (compiled == null) {
+            ExpressionCompiler subCompiler = new ExpressionCompiler(expr, tk.getStart(), tk.getOffset(), pCtx);
+            compiled = subCompiler._compile();
+            rt = subCompiler.getReturnType();
+            cec.put(key, compiled);
+            rtc.put(key, rt);
+          }
+          tk.setAccessor(compiled);
+          returnType = rt;
         }
 
         /**

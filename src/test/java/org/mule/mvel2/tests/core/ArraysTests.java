@@ -208,4 +208,16 @@ public class ArraysTests extends AbstractTest {
       this.length = length;
     }
   }
+
+  public void testAssignmentOnTwoDimensionalArrayUsingIndexedInput() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setIndexAllocation( true );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("array", Double[][].class);
+    pctx.addIndexedInput("array");
+    Map vars = new HashMap() {{ put("array", new Double[2][2]); }};
+    assertEquals(42.0, MVEL.executeExpression(MVEL.compileExpression("array[1][1] = 42.0;\narray[1][1]", pctx), vars));
+  }
 }

@@ -4241,4 +4241,29 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap() {{ put("value", 42); }};
     assertEquals(-42, MVEL.executeExpression(MVEL.compileExpression("- value", pctx), vars));
   }
+
+  public static class ARef {
+    public static int getSize(String s) {
+      return 0;
+    }
+  }
+
+  public static class BRef extends ARef {
+    public static int getSize(String s) {
+      return s.length();
+    }
+  }
+
+  public void testStaticMethodInvocation() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport(ARef.class);
+    conf.addImport(BRef.class);
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", String.class);
+    Map vars = new HashMap() {{ put("value", "1234"); }};
+    assertEquals(0, MVEL.executeExpression(MVEL.compileExpression("ARef.getSize(value)", pctx), vars));
+    assertEquals(4, MVEL.executeExpression(MVEL.compileExpression("BRef.getSize(value)", pctx), vars));
+  }
 }
