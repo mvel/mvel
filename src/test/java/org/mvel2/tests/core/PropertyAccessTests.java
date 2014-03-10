@@ -393,4 +393,15 @@ public class PropertyAccessTests extends AbstractTest {
         // ignore
       }
     }
+    
+	public void testNullSafeWithDynamicOptimizerMVEL305() {
+		Foo foo = new Foo();
+		foo.setBar(null);
+		OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+		Serializable s = MVEL.compileExpression("this.?bar.name");
+		// Iterate 100 times to ensure JIT ASM kicks in
+		for (int i = 1; i < 100; i++) {
+			assertNull(MVEL.executeExpression(s, foo));
+		}
+	}
 }
