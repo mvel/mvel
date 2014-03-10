@@ -66,7 +66,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
             return optimize(ctx, elCtx, variableFactory);
           }
           catch(OptimizationNotSupported ex){
-        	  // If optimization fails that rather than fail evaluation, fallback to use safe reflective accessor
+        	  // If optimization fails then, rather than fail evaluation, fallback to use safe reflective accessor
           }
         }
         else {
