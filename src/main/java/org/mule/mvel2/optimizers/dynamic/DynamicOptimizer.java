@@ -24,6 +24,11 @@ import org.mule.mvel2.integration.VariableResolverFactory;
 import org.mule.mvel2.optimizers.AbstractOptimizer;
 import org.mule.mvel2.optimizers.AccessorOptimizer;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+
 import static java.lang.Thread.currentThread;
 import static org.mule.mvel2.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mule.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
@@ -39,6 +44,9 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
   public static int maximumTenure = 1500;
   public static int totalRecycled = 0;
   private static volatile boolean useSafeClassloading = false;
+  private static ReadWriteLock lock = new ReentrantReadWriteLock();
+  private static Lock readLock = lock.readLock();
+  private static Lock writeLock = lock.writeLock();
 
   public void init() {
     _init();
@@ -49,23 +57,31 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
   }
 
   public static void enforceTenureLimit() {
-    if (classLoader.isOverloaded()) {
-      synchronized (oLock) {
+    writeLock.lock();
+    try{
+  	  if (classLoader.isOverloaded()) {
         classLoader.deoptimizeAll();
         totalRecycled = +classLoader.getTotalClasses();
         _init();
       }
     }
+	  finally{
+	    writeLock.unlock();
+	  }
   }
 
   public static final int REGULAR_ACCESSOR = 0;
 
   public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                    VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
-    synchronized (oLock) {
+    readLock.lock();
+    try{
       pCtx.optimizationNotify();
       return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
           firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
+    }
+    finally{
+      readLock.unlock();
     }
   }
 
@@ -74,9 +90,13 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
   public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                       VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
 
-    synchronized (oLock) {
+    readLock.lock();
+    try{
       return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, start, offset,
           firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
+    }
+    finally{
+      readLock.unlock();
     }
   }
 
@@ -84,9 +104,13 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
   public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, int start,
                                      int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
-    synchronized (oLock) {
+    readLock.lock();
+    try{
       return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
           firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
+    }
+    finally{
+      readLock.unlock();
     }
   }
 
@@ -94,9 +118,13 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
   public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset,
                                          Object ctx, Object thisRef, VariableResolverFactory factory) {
-    synchronized (oLock) {
+    readLock.lock();
+    try{
       return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
           firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
+    }
+    finally{
+      readLock.unlock();
     }
   }
 
