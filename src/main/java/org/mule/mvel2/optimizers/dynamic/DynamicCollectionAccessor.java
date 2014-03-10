@@ -24,8 +24,6 @@ import org.mule.mvel2.compiler.Accessor;
 import org.mule.mvel2.integration.VariableResolverFactory;
 import org.mule.mvel2.optimizers.OptimizerFactory;
 
-import static java.lang.System.currentTimeMillis;
-
 public class DynamicCollectionAccessor implements DynamicAccessor {
   private Object rootObject;
   private Class colType;
@@ -34,7 +32,6 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
   private int start;
   private int offset;
 
-  private long stamp;
   private int type;
 
   private int runcount;
@@ -53,22 +50,13 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     this.property = property;
     this.start = start;
     this.offset = offset;
-
-    stamp = currentTimeMillis();
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (!opt) {
       if (++runcount > DynamicOptimizer.tenuringThreshold) {
-        if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
-
           return optimize(AbstractParser.getCurrentThreadParserContext(), ctx, elCtx, variableFactory);
-        }
-        else {
-          runcount = 0;
-          stamp = currentTimeMillis();
-        }
       }
     }
 
@@ -96,11 +84,6 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     this._accessor = this._safeAccessor;
     opt = false;
     runcount = 0;
-    stamp = currentTimeMillis();
-  }
-
-  public long getStamp() {
-    return stamp;
   }
 
   public int getRuncount() {

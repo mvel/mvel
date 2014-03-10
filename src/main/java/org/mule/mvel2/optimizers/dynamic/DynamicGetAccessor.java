@@ -26,14 +26,11 @@ import org.mule.mvel2.optimizers.AccessorOptimizer;
 import org.mule.mvel2.optimizers.OptimizationNotSupported;
 import org.mule.mvel2.optimizers.OptimizerFactory;
 
-import static java.lang.System.currentTimeMillis;
-
 public class DynamicGetAccessor implements DynamicAccessor {
   private char[] expr;
   private int start;
   private int offset;
 
-  private long stamp;
   private int type;
 
   private int runcount;
@@ -54,13 +51,11 @@ public class DynamicGetAccessor implements DynamicAccessor {
     this.offset = offset;
 
     this.context = context;
-    stamp = currentTimeMillis();
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (!opt) {
       if (++runcount > DynamicOptimizer.tenuringThreshold) {
-        if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
           try{
             return optimize(ctx, elCtx, variableFactory);
@@ -68,11 +63,6 @@ public class DynamicGetAccessor implements DynamicAccessor {
           catch(OptimizationNotSupported ex){
         	  // If optimization fails then, rather than fail evaluation, fallback to use safe reflective accessor
           }
-        }
-        else {
-          runcount = 0;
-          stamp = currentTimeMillis();
-        }
       }
     }
 
@@ -109,11 +99,6 @@ public class DynamicGetAccessor implements DynamicAccessor {
     this._accessor = this._safeAccessor;
     opt = false;
     runcount = 0;
-    stamp = currentTimeMillis();
-  }
-
-  public long getStamp() {
-    return stamp;
   }
 
   public int getRuncount() {

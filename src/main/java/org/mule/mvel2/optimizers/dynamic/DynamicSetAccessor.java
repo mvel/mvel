@@ -24,8 +24,6 @@ import org.mule.mvel2.integration.VariableResolverFactory;
 import org.mule.mvel2.optimizers.AccessorOptimizer;
 import org.mule.mvel2.optimizers.OptimizerFactory;
 
-import static java.lang.System.currentTimeMillis;
-
 public class DynamicSetAccessor implements DynamicAccessor {
   private char[] property;
   private int start;
@@ -33,7 +31,6 @@ public class DynamicSetAccessor implements DynamicAccessor {
 
   private boolean opt = false;
   private int runcount = 0;
-  private long stamp;
 
   private ParserContext context;
   private final Accessor _safeAccessor;
@@ -48,21 +45,13 @@ public class DynamicSetAccessor implements DynamicAccessor {
     this.property = property;
     this.start = start;
     this.offset = offset;
-
-    this.stamp = System.currentTimeMillis();
   }
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (!opt) {
       if (++runcount > DynamicOptimizer.tenuringThreshold) {
-        if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
           return optimize(ctx, elCtx, variableFactory, value);
-        }
-        else {
-          runcount = 0;
-          stamp = currentTimeMillis();
-        }
       }
     }
 
@@ -91,7 +80,6 @@ public class DynamicSetAccessor implements DynamicAccessor {
     this._accessor = this._safeAccessor;
     opt = false;
     runcount = 0;
-    stamp = currentTimeMillis();
   }
 
   public String getDescription() {
