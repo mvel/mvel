@@ -34,7 +34,7 @@ public class ConcurrentEvaluationTests extends TestCase {
 	}
 
 	private void internalConcurrentEvaluation() throws Exception {
-		final int N = 100;
+		final int N = 20;
 		final CountDownLatch start = new CountDownLatch(1);
 		final CountDownLatch end = new CountDownLatch(N);
 		final AtomicInteger errors = new AtomicInteger(0);
