@@ -1,6 +1,6 @@
 /***
  * ASM: a very small and fast Java bytecode manipulation framework
- * Copyright (c) 2000-2007 INRIA, France Telecom
+ * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,12 @@
 package org.mvel2.asm;
 
 /**
- * An {@link org.mvel2.asm.AnnotationVisitor} that generates annotations in bytecode form.
+ * An {@link AnnotationVisitor} that generates annotations in bytecode form.
  * 
  * @author Eric Bruneton
  * @author Eugene Kuleshov
  */
-final class AnnotationWriter implements AnnotationVisitor {
+final class AnnotationWriter extends AnnotationVisitor {
 
     /**
      * The class writer to which this annotation must be added.
@@ -48,7 +48,7 @@ final class AnnotationWriter implements AnnotationVisitor {
     private int size;
 
     /**
-     * <tt>true<tt> if values are named, <tt>false</tt> otherwise. Annotation 
+     * <tt>true<tt> if values are named, <tt>false</tt> otherwise. Annotation
      * writers used for annotation default and annotation arrays use unnamed
      * values.
      */
@@ -90,20 +90,21 @@ final class AnnotationWriter implements AnnotationVisitor {
     /**
      * Constructs a new {@link org.mvel2.asm.AnnotationWriter}.
      * 
-     * @param cw the class writer to which this annotation must be added.
-     * @param named <tt>true<tt> if values are named, <tt>false</tt> otherwise.
-     * @param bv where the annotation values must be stored.
-     * @param parent where the number of annotation values must be stored.
-     * @param offset where in <tt>parent</tt> the number of annotation values must 
-     *      be stored.
+     * @param cw
+     *            the class writer to which this annotation must be added.
+     * @param named
+     *            <tt>true<tt> if values are named, <tt>false</tt> otherwise.
+     * @param bv
+     *            where the annotation values must be stored.
+     * @param parent
+     *            where the number of annotation values must be stored.
+     * @param offset
+     *            where in <tt>parent</tt> the number of annotation values must
+     *            be stored.
      */
-    AnnotationWriter(
-        final ClassWriter cw,
-        final boolean named,
-        final ByteVector bv,
-        final ByteVector parent,
-        final int offset)
-    {
+    AnnotationWriter(final ClassWriter cw, final boolean named,
+            final ByteVector bv, final ByteVector parent, final int offset) {
+        super(Opcodes.ASM5);
         this.cw = cw;
         this.named = named;
         this.bv = bv;
@@ -112,9 +113,10 @@ final class AnnotationWriter implements AnnotationVisitor {
     }
 
     // ------------------------------------------------------------------------
-    // Implementation of the AnnotationVisitor interface
+    // Implementation of the AnnotationVisitor abstract class
     // ------------------------------------------------------------------------
 
+    @Override
     public void visit(final String name, final Object value) {
         ++size;
         if (named) {
@@ -187,11 +189,9 @@ final class AnnotationWriter implements AnnotationVisitor {
         }
     }
 
-    public void visitEnum(
-        final String name,
-        final String desc,
-        final String value)
-    {
+    @Override
+    public void visitEnum(final String name, final String desc,
+            final String value) {
         ++size;
         if (named) {
             bv.putShort(cw.newUTF8(name));
@@ -199,10 +199,9 @@ final class AnnotationWriter implements AnnotationVisitor {
         bv.put12('e', cw.newUTF8(desc)).putShort(cw.newUTF8(value));
     }
 
-    public AnnotationVisitor visitAnnotation(
-        final String name,
-        final String desc)
-    {
+    @Override
+    public AnnotationVisitor visitAnnotation(final String name,
+            final String desc) {
         ++size;
         if (named) {
             bv.putShort(cw.newUTF8(name));
@@ -212,6 +211,7 @@ final class AnnotationWriter implements AnnotationVisitor {
         return new AnnotationWriter(cw, true, bv, bv, bv.length - 2);
     }
 
+    @Override
     public AnnotationVisitor visitArray(final String name) {
         ++size;
         if (named) {
@@ -222,6 +222,7 @@ final class AnnotationWriter implements AnnotationVisitor {
         return new AnnotationWriter(cw, false, bv, bv, bv.length - 2);
     }
 
+    @Override
     public void visitEnd() {
         if (parent != null) {
             byte[] data = parent.data;
@@ -253,7 +254,8 @@ final class AnnotationWriter implements AnnotationVisitor {
      * Puts the annotations of this annotation writer list into the given byte
      * vector.
      * 
-     * @param out where the annotations must be put.
+     * @param out
+     *            where the annotations must be put.
      */
     void put(final ByteVector out) {
         int n = 0;
@@ -280,15 +282,15 @@ final class AnnotationWriter implements AnnotationVisitor {
     /**
      * Puts the given annotation lists into the given byte vector.
      * 
-     * @param panns an array of annotation writer lists.
-     * @param off index of the first annotation to be written.
-     * @param out where the annotations must be put.
+     * @param panns
+     *            an array of annotation writer lists.
+     * @param off
+     *            index of the first annotation to be written.
+     * @param out
+     *            where the annotations must be put.
      */
-    static void put(
-        final AnnotationWriter[] panns,
-        final int off,
-        final ByteVector out)
-    {
+    static void put(final AnnotationWriter[] panns, final int off,
+            final ByteVector out) {
         int size = 1 + 2 * (panns.length - off);
         for (int i = off; i < panns.length; ++i) {
             size += panns[i] == null ? 0 : panns[i].getSize();
@@ -311,6 +313,59 @@ final class AnnotationWriter implements AnnotationVisitor {
                 out.putByteArray(aw.bv.data, 0, aw.bv.length);
                 aw = aw.prev;
             }
+        }
+    }
+
+    /**
+     * Puts the given type reference and type path into the given bytevector.
+     * LOCAL_VARIABLE and RESOURCE_VARIABLE target types are not supported.
+     * 
+     * @param typeRef
+     *            a reference to the annotated type. See {@link TypeReference}.
+     * @param typePath
+     *            the path to the annotated type argument, wildcard bound, array
+     *            element type, or static inner type within 'typeRef'. May be
+     *            <tt>null</tt> if the annotation targets 'typeRef' as a whole.
+     * @param out
+     *            where the type reference and type path must be put.
+     */
+    static void putTarget(int typeRef, TypePath typePath, ByteVector out) {
+        switch (typeRef >>> 24) {
+        case 0x00: // CLASS_TYPE_PARAMETER
+        case 0x01: // METHOD_TYPE_PARAMETER
+        case 0x16: // METHOD_FORMAL_PARAMETER
+            out.putShort(typeRef >>> 16);
+            break;
+        case 0x13: // FIELD
+        case 0x14: // METHOD_RETURN
+        case 0x15: // METHOD_RECEIVER
+            out.putByte(typeRef >>> 24);
+            break;
+        case 0x47: // CAST
+        case 0x48: // CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT
+        case 0x49: // METHOD_INVOCATION_TYPE_ARGUMENT
+        case 0x4A: // CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
+        case 0x4B: // METHOD_REFERENCE_TYPE_ARGUMENT
+            out.putInt(typeRef);
+            break;
+        // case 0x10: // CLASS_EXTENDS
+        // case 0x11: // CLASS_TYPE_PARAMETER_BOUND
+        // case 0x12: // METHOD_TYPE_PARAMETER_BOUND
+        // case 0x17: // THROWS
+        // case 0x42: // EXCEPTION_PARAMETER
+        // case 0x43: // INSTANCEOF
+        // case 0x44: // NEW
+        // case 0x45: // CONSTRUCTOR_REFERENCE
+        // case 0x46: // METHOD_REFERENCE
+        default:
+            out.put12(typeRef >>> 24, (typeRef & 0xFFFF00) >> 8);
+            break;
+        }
+        if (typePath == null) {
+            out.putByte(0);
+        } else {
+            int length = typePath.b[typePath.offset] * 2 + 1;
+            out.putByteArray(typePath.b, typePath.offset, length);
         }
     }
 }

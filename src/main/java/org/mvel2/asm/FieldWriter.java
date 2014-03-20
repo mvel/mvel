@@ -1,6 +1,6 @@
 /***
  * ASM: a very small and fast Java bytecode manipulation framework
- * Copyright (c) 2000-2007 INRIA, France Telecom
+ * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,11 @@
 package org.mvel2.asm;
 
 /**
- * An {@link org.mvel2.asm.FieldVisitor} that generates Java fields in bytecode form.
+ * An {@link FieldVisitor} that generates Java fields in bytecode form.
  * 
  * @author Eric Bruneton
  */
-final class FieldWriter implements FieldVisitor {
-
-    /**
-     * Next field writer (see {@link org.mvel2.asm.ClassWriter#firstField firstField}).
-     */
-    FieldWriter next;
+final class FieldWriter extends FieldVisitor {
 
     /**
      * The class writer to which this field must be added.
@@ -86,6 +81,17 @@ final class FieldWriter implements FieldVisitor {
     private AnnotationWriter ianns;
 
     /**
+     * The runtime visible type annotations of this field. May be <tt>null</tt>.
+     */
+    private AnnotationWriter tanns;
+
+    /**
+     * The runtime invisible type annotations of this field. May be
+     * <tt>null</tt>.
+     */
+    private AnnotationWriter itanns;
+
+    /**
      * The non standard attributes of this field. May be <tt>null</tt>.
      */
     private Attribute attrs;
@@ -97,25 +103,26 @@ final class FieldWriter implements FieldVisitor {
     /**
      * Constructs a new {@link org.mvel2.asm.FieldWriter}.
      * 
-     * @param cw the class writer to which this field must be added.
-     * @param access the field's access flags (see {@link Opcodes}).
-     * @param name the field's name.
-     * @param desc the field's descriptor (see {@link org.mvel2.asm.Type}).
-     * @param signature the field's signature. May be <tt>null</tt>.
-     * @param value the field's constant value. May be <tt>null</tt>.
+     * @param cw
+     *            the class writer to which this field must be added.
+     * @param access
+     *            the field's access flags (see {@link Opcodes}).
+     * @param name
+     *            the field's name.
+     * @param desc
+     *            the field's descriptor (see {@link Type}).
+     * @param signature
+     *            the field's signature. May be <tt>null</tt>.
+     * @param value
+     *            the field's constant value. May be <tt>null</tt>.
      */
-    FieldWriter(
-        final ClassWriter cw,
-        final int access,
-        final String name,
-        final String desc,
-        final String signature,
-        final Object value)
-    {
+    FieldWriter(final ClassWriter cw, final int access, final String name,
+            final String desc, final String signature, final Object value) {
+        super(Opcodes.ASM5);
         if (cw.firstField == null) {
             cw.firstField = this;
         } else {
-            cw.lastField.next = this;
+            cw.lastField.fv = this;
         }
         cw.lastField = this;
         this.cw = cw;
@@ -131,13 +138,12 @@ final class FieldWriter implements FieldVisitor {
     }
 
     // ------------------------------------------------------------------------
-    // Implementation of the FieldVisitor interface
+    // Implementation of the FieldVisitor abstract class
     // ------------------------------------------------------------------------
 
-    public AnnotationVisitor visitAnnotation(
-        final String desc,
-        final boolean visible)
-    {
+    @Override
+    public AnnotationVisitor visitAnnotation(final String desc,
+            final boolean visible) {
         if (!ClassReader.ANNOTATIONS) {
             return null;
         }
@@ -155,11 +161,36 @@ final class FieldWriter implements FieldVisitor {
         return aw;
     }
 
+    @Override
+    public AnnotationVisitor visitTypeAnnotation(final int typeRef,
+            final TypePath typePath, final String desc, final boolean visible) {
+        if (!ClassReader.ANNOTATIONS) {
+            return null;
+        }
+        ByteVector bv = new ByteVector();
+        // write target_type and target_info
+        AnnotationWriter.putTarget(typeRef, typePath, bv);
+        // write type, and reserve space for values count
+        bv.putShort(cw.newUTF8(desc)).putShort(0);
+        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv,
+                bv.length - 2);
+        if (visible) {
+            aw.next = tanns;
+            tanns = aw;
+        } else {
+            aw.next = itanns;
+            itanns = aw;
+        }
+        return aw;
+    }
+
+    @Override
     public void visitAttribute(final Attribute attr) {
         attr.next = attrs;
         attrs = attr;
     }
 
+    @Override
     public void visitEnd() {
     }
 
@@ -178,11 +209,12 @@ final class FieldWriter implements FieldVisitor {
             cw.newUTF8("ConstantValue");
             size += 8;
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0
-                && ((cw.version & 0xFFFF) < Opcodes.V1_5 || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0))
-        {
-            cw.newUTF8("Synthetic");
-            size += 6;
+        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < Opcodes.V1_5
+                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+                cw.newUTF8("Synthetic");
+                size += 6;
+            }
         }
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             cw.newUTF8("Deprecated");
@@ -200,6 +232,14 @@ final class FieldWriter implements FieldVisitor {
             cw.newUTF8("RuntimeInvisibleAnnotations");
             size += 8 + ianns.getSize();
         }
+        if (ClassReader.ANNOTATIONS && tanns != null) {
+            cw.newUTF8("RuntimeVisibleTypeAnnotations");
+            size += 8 + tanns.getSize();
+        }
+        if (ClassReader.ANNOTATIONS && itanns != null) {
+            cw.newUTF8("RuntimeInvisibleTypeAnnotations");
+            size += 8 + itanns.getSize();
+        }
         if (attrs != null) {
             size += attrs.getSize(cw, null, 0, -1, -1);
         }
@@ -209,21 +249,23 @@ final class FieldWriter implements FieldVisitor {
     /**
      * Puts the content of this field into the given byte vector.
      * 
-     * @param out where the content of this field must be put.
+     * @param out
+     *            where the content of this field must be put.
      */
     void put(final ByteVector out) {
-        int mask = Opcodes.ACC_DEPRECATED
-                | ClassWriter.ACC_SYNTHETIC_ATTRIBUTE
-                | ((access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) / (ClassWriter.ACC_SYNTHETIC_ATTRIBUTE / Opcodes.ACC_SYNTHETIC));
+        final int FACTOR = ClassWriter.TO_ACC_SYNTHETIC;
+        int mask = Opcodes.ACC_DEPRECATED | ClassWriter.ACC_SYNTHETIC_ATTRIBUTE
+                | ((access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) / FACTOR);
         out.putShort(access & ~mask).putShort(name).putShort(desc);
         int attributeCount = 0;
         if (value != 0) {
             ++attributeCount;
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0
-                && ((cw.version & 0xFFFF) < Opcodes.V1_5 || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0))
-        {
-            ++attributeCount;
+        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < Opcodes.V1_5
+                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+                ++attributeCount;
+            }
         }
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             ++attributeCount;
@@ -237,6 +279,12 @@ final class FieldWriter implements FieldVisitor {
         if (ClassReader.ANNOTATIONS && ianns != null) {
             ++attributeCount;
         }
+        if (ClassReader.ANNOTATIONS && tanns != null) {
+            ++attributeCount;
+        }
+        if (ClassReader.ANNOTATIONS && itanns != null) {
+            ++attributeCount;
+        }
         if (attrs != null) {
             attributeCount += attrs.getCount();
         }
@@ -245,10 +293,11 @@ final class FieldWriter implements FieldVisitor {
             out.putShort(cw.newUTF8("ConstantValue"));
             out.putInt(2).putShort(value);
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0
-                && ((cw.version & 0xFFFF) < Opcodes.V1_5 || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0))
-        {
-            out.putShort(cw.newUTF8("Synthetic")).putInt(0);
+        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < Opcodes.V1_5
+                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+                out.putShort(cw.newUTF8("Synthetic")).putInt(0);
+            }
         }
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             out.putShort(cw.newUTF8("Deprecated")).putInt(0);
@@ -264,6 +313,14 @@ final class FieldWriter implements FieldVisitor {
         if (ClassReader.ANNOTATIONS && ianns != null) {
             out.putShort(cw.newUTF8("RuntimeInvisibleAnnotations"));
             ianns.put(out);
+        }
+        if (ClassReader.ANNOTATIONS && tanns != null) {
+            out.putShort(cw.newUTF8("RuntimeVisibleTypeAnnotations"));
+            tanns.put(out);
+        }
+        if (ClassReader.ANNOTATIONS && itanns != null) {
+            out.putShort(cw.newUTF8("RuntimeInvisibleTypeAnnotations"));
+            itanns.put(out);
         }
         if (attrs != null) {
             attrs.put(cw, null, 0, -1, -1, out);

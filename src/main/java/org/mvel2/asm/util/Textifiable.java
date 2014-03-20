@@ -1,7 +1,6 @@
-<html>
-<!--
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
- * Copyright (c) 2000-2005 INRIA, France Telecom
+ * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,10 +26,31 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
--->
-<body>
-Provides support for type signatures.
+ */
+package org.mvel2.asm.util;
 
-@since ASM 2.0
-</body>
-</html>
+import java.util.Map;
+
+import org.mvel2.asm.Label;
+
+/**
+ * An {@link org.objectweb.asm.Attribute Attribute} that can print a readable
+ * representation of itself.
+ * 
+ * Implementations should construct readable output from an attribute data
+ * structure. Such representation could be used in unit test assertions.
+ * 
+ * @author Eugene Kuleshov
+ */
+public interface Textifiable {
+
+    /**
+     * Build a human readable representation of this attribute.
+     * 
+     * @param buf
+     *            a buffer used for printing Java code.
+     * @param labelNames
+     *            map of label instances to their names.
+     */
+    void textify(StringBuffer buf, Map<Label, String> labelNames);
+}
