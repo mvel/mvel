@@ -4266,4 +4266,16 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(0, MVEL.executeExpression(MVEL.compileExpression("ARef.getSize(value)", pctx), vars));
     assertEquals(4, MVEL.executeExpression(MVEL.compileExpression("BRef.getSize(value)", pctx), vars));
   }
+
+  public void testMultiplyIntByDouble() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("i", Integer.class);
+    pctx.addInput("d", Double.class);
+    Map vars = new HashMap() {{ put("i", 10); put("d", 0.3); }};
+    assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*d", pctx), vars));
+    assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
+  }
 }
