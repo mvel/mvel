@@ -737,7 +737,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     }
     catch (VerifyError e) {
-      System.out.println("**** COMPILER BUG! REPORT THIS IMMEDIATELY AT http://jira.codehaus.org/browse/mvel2");
+      System.out.println("**** COMPILER BUG! REPORT THIS IMMEDIATELY AT http://jira.codehaus.org/browse/MVEL");
       System.out.println("Expression: " + (expr == null ? null : new String(expr)));
       throw e;
     }
