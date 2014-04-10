@@ -394,30 +394,28 @@ public class PropertyAccessTests extends AbstractTest {
       }
     }
     
-    public void testStaleReflectiveCollectionAccessor()
+  public void testStaleReflectiveCollectionAccessor() {
+    try
     {
-        try
-        {
-            OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
-            Serializable getFooExpression = MVEL.compileExpression("foo[0]");
-            Map vars = new HashMap();
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+      Serializable getFooExpression = MVEL.compileExpression("foo[0]");
+      Map vars = new HashMap();
 
-            // Array -> List
-            vars.put("foo", new String[]{"1", "2", "3"});
-            assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
-            vars.put("foo", Collections.singletonList("1"));
-            assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+       // Array -> List
+      vars.put("foo", new String[]{"1", "2", "3"});
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+      vars.put("foo", Collections.singletonList("1"));
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
             
-            // List -> Array
-            vars.put("foo", new String[]{"1", "2", "3"});
-            assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
-            OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-        }
-        finally
-        {
-            OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-
-        }
+      // List -> Array
+      vars.put("foo", new String[]{"1", "2", "3"});
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
     }
+    finally
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
     
 }

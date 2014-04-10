@@ -39,10 +39,10 @@ public class ArrayAccessor implements AccessorNode {
       return nextNode.getValue(Array.get(ctx, index), elCtx, vars);
     }
     else {
-      try{
+      try {
         return Array.get(ctx, index);
       }
-      catch(IllegalArgumentException e){
+      catch(IllegalArgumentException e) {
         // This isn't great, but the mechanism for deoptimizing a stale accessor is currently based on 
         //  Accessor's  throwing a ClassCastException.  Catching  IllegalArgumentException in 
         // org.mvel2.ast.ASTNode.getReducedValueAccelerated(Object, Object, VariableResolverFactory)
