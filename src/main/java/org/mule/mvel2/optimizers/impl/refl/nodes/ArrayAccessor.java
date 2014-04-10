@@ -34,29 +34,36 @@ public class ArrayAccessor implements AccessorNode {
     this.index = index;
   }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars)
+  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars)
+  {
+    if (nextNode != null)
     {
-        if (nextNode != null)
-        {
-            return nextNode.getValue(optimizedArrayGet(ctx), elCtx, vars);
-        }
-        else
-        {
-            return optimizedArrayGet(ctx);
-        }
+      return nextNode.getValue(optimizedArrayGet(ctx), elCtx, vars);
     }
+    else
+    {
+      return optimizedArrayGet(ctx);
+    }
+  }
 
-    private Object optimizedArrayGet(Object ctx)
-    {
-        if (ctx instanceof Object[])
-        {
-            return ((Object[]) ctx)[index];
-        }
-        else
-        {
-            return Array.get(ctx, index);
-        }
+  private Object optimizedArrayGet(Object ctx)
+  {
+    if (ctx instanceof Object[]) {
+      return ((Object[]) ctx)[index];
     }
+    else {
+      try {
+        return Array.get(ctx, index);
+      }
+      catch(IllegalArgumentException e){
+        // This isn't great, but the mechanism for deoptimizing a stale accessor is currently based on 
+        //  Accessor's  throwing a ClassCastException.  Catching  IllegalArgumentException in 
+        // org.mvel2.ast.ASTNode.getReducedValueAccelerated(Object, Object, VariableResolverFactory)
+        // is a bad idea and currently there is nowhere to easily introduce pre-emptive accessor validity.
+        throw new ClassCastException("Argument of type '"+ctx.getClass()+"' is not an Array");  
+      }
+    }
+  }
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
     if (nextNode != null) {
