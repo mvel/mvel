@@ -332,7 +332,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             assert debug("ALOAD 4");
             mv.visitVarInsn(ALOAD, 4);
 
-            if (value != null & returnType != value.getClass()) {
+            if (value != null && returnType != value.getClass()) {
               dataConversion(returnType);
               checkcast(returnType);
             }
@@ -363,7 +363,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             assert debug("ALOAD 4");
             mv.visitVarInsn(ALOAD, 4);
 
-            if (value != null & !value.getClass().isAssignableFrom(returnType)) {
+            if (value != null && !value.getClass().isAssignableFrom(returnType)) {
               dataConversion(returnType);
               checkcast(returnType);
             }
