@@ -226,6 +226,11 @@ public class PropertyAccessor {
         case WITH:
           curr = getWithProperty(curr);
           break;
+        case ESCAPED_PROPERTY:
+          if ((curr = getBeanPropertyAO(curr, captureEscaped())) == null && hasNullPropertyHandler()) {
+            curr = getNullPropertyHandler().getProperty(captureEscaped(), ctx, variableFactory);
+          }
+          break;
       }
 
       if (nullHandle) {
@@ -591,7 +596,9 @@ public class PropertyAccessor {
   private Object getBeanProperty(Object ctx, String property)
       throws IllegalAccessException, InvocationTargetException {
 
-    if (first) {
+    boolean shouldReturnNull = false;
+
+      if (first) {
       if ("this".equals(property)) {
         return this.ctx;
       }
@@ -690,6 +697,9 @@ public class PropertyAccessor {
       else if (ctx instanceof FunctionInstance) {
         return ((PrototypalFunctionInstance) ctx).getResolverFactory().getVariableResolver(property).getValue();
       }
+      else if (!first && MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) {
+          shouldReturnNull = true;
+      }
     }
 
     Object tryStatic = tryStaticAccess();
@@ -703,6 +713,11 @@ public class PropertyAccessor {
     else if (pCtx!=null&& pCtx.getParserConfiguration()!=null?pCtx.getParserConfiguration().isAllowNakedMethCall():MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
       return getMethod(ctx, property);
     }
+
+    if (shouldReturnNull || (!first && ctx == null && nullHandle)) {
+      return null;
+    }
+
 
     if (ctx == null) {
       throw new PropertyAccessException("unresolvable property or identifier: " + property, this.property, st);
