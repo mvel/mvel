@@ -2,6 +2,7 @@ package org.mule.mvel2.tests.core;
 
 import org.mule.mvel2.MVEL;
 import org.mule.mvel2.ParserContext;
+import org.mule.mvel2.PropertyAccessException;
 import org.mule.mvel2.integration.PropertyHandler;
 import org.mule.mvel2.integration.PropertyHandlerFactory;
 import org.mule.mvel2.integration.VariableResolverFactory;
@@ -341,29 +342,77 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
 
-  public void testNullSafe() {
-    Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
-    Map<String, Float> tmp = new HashMap<String, Float>();
-    //   tmp.put("latitude", 0.5f);
-    ctx.put("SessionSetupRequest", tmp);
+  public void testNullSafeMapPropertyAccessReturnsNullIfNoKey() {
+    MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
 
-    Object result = MVEL.getProperty("SessionSetupRequest.?latitude", ctx);
+    Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
+    ctx.put("SessionSetupRequest", new HashMap<String, Float>());
+
+    Object result = MVEL.getProperty("SessionSetupRequest.?keyDoesntExist", ctx);
     assertNull(result);
-    System.out.println("Result = " + result);
   }
   
+  public void testMapPropertyAccessReturnsNullIfNoKey() {
+    MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
 
-  public void testNullSafeDefault() {
-    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = true;
     Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
     Map<String, Float> tmp = new HashMap<String, Float>();
-    //   tmp.put("latitude", 0.5f);
     ctx.put("SessionSetupRequest", tmp);
 
-    Object result = MVEL.getProperty("SessionSetupRequest.latitude", ctx);
+    Object result = MVEL.getProperty("SessionSetupRequest.keyDoesntExist", ctx);
     assertNull(result);
-    System.out.println("Result = " + result);
   }
+
+    public void testNullSafeBeanPropertyAccessReturnsNullIfNoKey() {
+      MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+
+      Map<String, Object> ctx = new HashMap<String, Object>();
+      ctx.put("foo", null);
+
+      Object result = MVEL.getProperty("foo.?keyDoesntExist", ctx);
+      assertNull(result);
+    }
+
+
+    public void testBeanPropertyAccessReturnsNullIfNoKey() {
+      MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+
+      Map<String, Object> ctx = new HashMap<String, Object>();
+      Foo foo = new Foo();
+      ctx.put("foo", foo);
+
+      Object result = MVEL.getProperty("foo.keyDoesntExist", ctx);
+      assertNull(result);
+    }
+
+    public void testPropertyAccessDoesntFailDoesntChangeNullSafe() {
+        MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+
+        Map<String, Object> ctx = new HashMap<String, Object>();
+        Foo foo = new Foo();
+        ctx.put("foo", foo);
+
+        try {
+            MVEL.getProperty("foo.keyDoesntExist.other", ctx);
+            fail("access to a null nested field must fail, even if property access doesn't");
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    public void testPropertyAccessDoesntFailDoesntChangeFirstAccess() {
+        MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+
+        Map<String, Object> ctx = new HashMap<String, Object>();
+
+        try {
+            MVEL.getProperty("varDoesntExist", ctx);
+            fail("access to a non-existant variable in the context fail, even if property access doesn't");
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
 
   public static class A226 {
     Map<String, Object> map = null;

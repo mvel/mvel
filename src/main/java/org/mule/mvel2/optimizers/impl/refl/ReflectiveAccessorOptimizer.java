@@ -360,7 +360,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
               addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
               if (curr == null) break;
             }
-            if (curr == null) throw new NullPointerException();
+            if (curr == null && !MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) throw new NullPointerException();
           }
           staticAccess = false;
         }
@@ -680,6 +680,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       if (ctx != this.thisRef && this.thisRef != null) {
         addAccessorNode(new ThisValueAccessor());
         return getBeanProperty(this.thisRef, property);
+      }
+
+      if (ctx != null && MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL ||
+          ctx == null && nullSafe) {
+        addAccessorNode(new NullAccessor());
+        return null;
       }
 
       if (ctx == null) {
