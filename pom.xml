@@ -24,9 +24,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@github.com:mvel/mvel.git</connection>
+        <connection>scm:git:git@github.com:mulesoft/mvel.git</connection>
         <url>scm:git:git@github.com:mulesoft/mvel.git</url>
-        <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:mulesoft/mvel.git</developerConnection>
     </scm>
 
     <properties>
