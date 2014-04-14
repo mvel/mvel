@@ -352,19 +352,6 @@ public class PropertyAccessTests extends AbstractTest {
     System.out.println("Result = " + result);
   }
   
-
-  public void testNullSafeDefault() {
-    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = true;
-    Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
-    Map<String, Float> tmp = new HashMap<String, Float>();
-    //   tmp.put("latitude", 0.5f);
-    ctx.put("SessionSetupRequest", tmp);
-
-    Object result = MVEL.getProperty("SessionSetupRequest.latitude", ctx);
-    assertNull(result);
-    System.out.println("Result = " + result);
-  }
-
   public static class A226 {
     Map<String, Object> map = null;
 

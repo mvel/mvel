@@ -114,7 +114,6 @@ public abstract class AbstractTest extends TestCase {
   protected void tearDown() throws Exception {
     // revert to default properties that were changed by the tests
     MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
-    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = false;
   }
 
   protected Object test(final String ex) {

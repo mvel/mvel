@@ -37,7 +37,7 @@ public class AbstractOptimizer extends AbstractParser {
   protected static final int ESCAPED_BEAN = 4;
 
   protected boolean collection = false;
-  protected boolean nullSafe = MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT;
+  protected boolean nullSafe = false;
   protected Class currType = null;
   protected boolean staticAccess = false;
 
@@ -181,9 +181,8 @@ public class AbstractOptimizer extends AbstractParser {
 
   protected int nextSubToken() {
     skipWhitespace();
-    nullSafe = MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT;
-    if (nullSafe) fields = -1;
-    
+    nullSafe = false;
+
     switch (expr[tkStart = cursor]) {
       case '[':
         return COL;

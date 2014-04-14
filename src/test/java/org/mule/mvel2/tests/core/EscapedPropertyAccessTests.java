@@ -26,14 +26,4 @@ public class EscapedPropertyAccessTests extends AbstractTest {
   public void testNewlines() {
     assertEquals("bar", test("properties .\n 'property with \\'' "));
   }
-
-  public void testNullSafe() {
-    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = true;
-    assertEquals(null, test("properties.'doesntexist'"));
-  }
-
-  public void testNullSafeDeep() {
-    MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT = true;
-    assertEquals(null, test("properties.foo.bar.baz"));
-  }
 }

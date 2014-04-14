@@ -400,7 +400,6 @@ public class PropertyAccessor {
         }
         break;
       case '.':
-        nullHandle = MVEL.COMPILER_OPT_NULL_SAFE_DEFAULT;
         cursor = ++st;
         while (cursor < end && isWhitespace(property[cursor])) cursor = ++st;
         
