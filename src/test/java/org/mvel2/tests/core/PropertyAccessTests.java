@@ -457,7 +457,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertNull(target.get("value"));
   }
 
- public void testNullListMapArrayValueMVEL312(){
+  public void testNullListMapArrayValueMVEL312(){
     // Map
     assertNull(runSingleTest("['test1' : null].test1"));
     assertNull(runSingleTest("['test1' : null].get('test1')"));
@@ -473,5 +473,9 @@ public class PropertyAccessTests extends AbstractTest {
     // Array
     assertNull(runSingleTest("{null}[0]"));
     assertNull(runSingleTest("a={null};a[0]"));
+  }
+
+  public void testPublicStaticFieldMVEL314(){
+    assertEquals(Foo.STATIC_BAR, runSingleTest("org.mvel2.tests.core.res.Foo.STATIC_BAR"));
   }
 }
