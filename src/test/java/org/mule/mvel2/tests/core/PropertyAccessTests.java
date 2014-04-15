@@ -522,4 +522,27 @@ public class PropertyAccessTests extends AbstractTest {
       assertNull(runSingleTest("a={null};a[0]"));
     }
 
+  public void testMVEL308() {
+    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.key] = field.value; }";
+    Serializable compiled = MVEL.compileExpression(expression);
+
+    Map<String, Object> target = new HashMap<String, Object>();
+    target.put("value", "notnull");
+
+    Map<String, Object> ctx = new HashMap<String, Object>();
+    ctx.put("_target", target);
+
+    Map<String, Object> updates = new HashMap<String, Object>();
+    updates.put("value", null);
+
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("updates", updates);
+    vars.put("ctx", ctx);
+
+    for (int i = 0; i < 100; i++) {
+        MVEL.executeExpression(compiled, vars);
+    }
+
+    assertNull(target.get("value"));
+  }
 }
