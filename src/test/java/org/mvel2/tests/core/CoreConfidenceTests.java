@@ -2795,6 +2795,10 @@ public class CoreConfidenceTests extends AbstractTest {
     executeExpression(expr, vars);
   }
 
+  public void testMethodWithNegativeIntParamMVEL313() {
+    assertTrue((Boolean) runSingleTest("ord(true,-1)"));
+  }
+
   public static class StaticMethods {
     public static <T> boolean is(List<T> arg) {
       return true;
@@ -2952,6 +2956,7 @@ public class CoreConfidenceTests extends AbstractTest {
     Map<String, Object> vars = createTestMap();
     vars.put("Foo244", Foo.class);
 
+    OptimizerFactory.setDefaultOptimizer("ASM");
     Serializable s = MVEL.compileExpression("foo.getClass().getName()");
 
     System.out.println(MVEL.executeExpression(s, vars));

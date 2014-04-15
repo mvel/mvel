@@ -3017,7 +3017,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
   }
 
   private void intPush(int index) {
-    if (index < 6) {
+    if (index >= 0 && index < 6) {
       switch (index) {
         case 0:
           assert debug("ICONST_0");
