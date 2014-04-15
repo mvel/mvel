@@ -393,4 +393,23 @@ public class PropertyAccessTests extends AbstractTest {
         // ignore
       }
     }
+    
+    public void testNullListMapArrayValueMVEL312(){
+      // Map
+      assertNull(runSingleTest("['test1' : null].test1"));
+      assertNull(runSingleTest("['test1' : null].get('test1')"));
+      assertNull(runSingleTest("a=['test1' : null];a.test1"));
+      assertNull(runSingleTest("a=['test1' : null];a.get('test1')"));
+
+      // List
+      assertNull(runSingleTest("[null][0]"));
+      assertNull(runSingleTest("[null].get(0)"));
+      assertNull(runSingleTest("a=[null];a[0]"));
+      assertNull(runSingleTest("a=[null];a.get(0)"));
+        
+      // Array
+      assertNull(runSingleTest("{null}[0]"));
+      assertNull(runSingleTest("a={null};a[0]"));
+    }
+
 }
