@@ -601,8 +601,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("ALOAD 4");
         mv.visitVarInsn(ALOAD, 4);
 
-        assert debug("INVOKEVIRTUAL java/util/HashMap.put");
-        mv.visitMethodInsn(INVOKEVIRTUAL, "java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+        assert debug("INVOKEINTERFACE java/util/Map.put");
+        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
         assert debug("ALOAD 4");
         mv.visitVarInsn(ALOAD, 4);

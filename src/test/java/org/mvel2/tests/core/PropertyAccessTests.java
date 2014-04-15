@@ -393,4 +393,9 @@ public class PropertyAccessTests extends AbstractTest {
         // ignore
       }
     }
+    
+    public void testNonHashMapImplMapPutMVEL302() {
+        test("map=new java.util.Hashtable();map.foo='bar'");
+    }
+
 }
