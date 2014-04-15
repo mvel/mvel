@@ -1,6 +1,7 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
+
 import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -2793,6 +2794,10 @@ public class CoreConfidenceTests extends AbstractTest {
     // this also should be fine
     Serializable expr = MVEL.compileExpression("TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx);
     executeExpression(expr, vars);
+  }
+  
+  public void testMethodWithNegativeIntParamMVEL313() {
+    assertTrue((Boolean) runSingleTest("ord(true,-1)"));
   }
 
   public static class StaticMethods {
