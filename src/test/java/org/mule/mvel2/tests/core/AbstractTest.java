@@ -22,6 +22,7 @@ import static org.mule.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
 
 import org.mule.mvel2.optimizers.OptimizerFactory;
 import org.mule.mvel2.optimizers.dynamic.DynamicOptimizer;
+import org.mule.mvel2.tests.core.res.Bar;
 import org.mule.mvel2.tests.core.res.Base;
 import org.mule.mvel2.tests.core.res.DerivedClass;
 import org.mule.mvel2.tests.core.res.Foo;
@@ -104,6 +105,8 @@ public abstract class AbstractTest extends TestCase {
 
     Map propertyMap = new HashMap();
     map.put("properties", propertyMap);
+    propertyMap.put("nothing", null);
+    propertyMap.put("bar", new Bar());
     propertyMap.put("nospaces", "bar");
     propertyMap.put("property with spaces", "bar");
     propertyMap.put("property with \'", "bar");

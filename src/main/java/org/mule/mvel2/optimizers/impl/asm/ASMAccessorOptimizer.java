@@ -1289,6 +1289,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return getMethod(ctx, property);
       }
 
+      if (ctx != null && MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) {
+          assert debug("ACONST_NULL");
+          mv.visitInsn(ACONST_NULL);
+          return null;
+      }
+
       if (ctx == null) {
         throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, st);
       }
