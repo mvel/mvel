@@ -23,6 +23,7 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
+import org.mvel2.optimizers.OptimizationNotSupported;
 import org.mvel2.optimizers.OptimizerFactory;
 
 import static java.lang.System.currentTimeMillis;
@@ -61,7 +62,12 @@ public class DynamicGetAccessor implements DynamicAccessor {
       if (++runcount > DynamicOptimizer.tenuringThreshold) {
         if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
-          return optimize(ctx, elCtx, variableFactory);
+          try{
+            return optimize(ctx, elCtx, variableFactory);
+          }
+          catch(OptimizationNotSupported ex){
+        	  // If optimization fails then, rather than fail evaluation, fallback to use safe reflective accessor
+          }
         }
         else {
           runcount = 0;

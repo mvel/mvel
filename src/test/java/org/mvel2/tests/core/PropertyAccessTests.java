@@ -381,21 +381,31 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("bar", MVEL.executeExpression(s, m));
   }
 
-    public void testInfiniteLoop() {
-      A226 a = new A226();
-      Map m = Collections.singletonMap("a", a);
-      String ex = "a.map['foo']";
+  public void testInfiniteLoop() {
+    A226 a = new A226();
+    Map m = Collections.singletonMap("a", a);
+    String ex = "a.map['foo']";
 
-      try {
-        MVEL.getProperty(ex, m);
-        fail("access to a null field must fail");
-      } catch (Exception e) {
-        // ignore
-      }
+    try {
+      MVEL.getProperty(ex, m);
+      fail("access to a null field must fail");
+    } catch (Exception e) {
+      // ignore
     }
+  }
     
-    public void testNonHashMapImplMapPutMVEL302() {
-        test("map=new java.util.Hashtable();map.foo='bar'");
-    }
+  public void testNonHashMapImplMapPutMVEL302() {
+    test("map=new java.util.Hashtable();map.foo='bar'");
+  }
 
+  public void testNullSafeWithDynamicOptimizerMVEL305() {
+    Foo foo = new Foo();
+    foo.setBar(null);
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    Serializable s = MVEL.compileExpression("this.?bar.name");
+    // Iterate 100 times to ensure JIT ASM kicks in
+    for (int i = 1; i < 100; i++) {
+        assertNull(MVEL.executeExpression(s, foo));
+    }
+  }
 }
