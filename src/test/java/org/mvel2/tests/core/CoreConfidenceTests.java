@@ -2956,7 +2956,7 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testAmbiguousGetName() {
       
     // Not sure what the goal of this test method is, but it only passes with ASM  
-    //OptimizerFactory.setDefaultOptimizer("ASM");
+    OptimizerFactory.setDefaultOptimizer("ASM");
       
     Map<String, Object> vars = createTestMap();
     vars.put("Foo244", Foo.class);
