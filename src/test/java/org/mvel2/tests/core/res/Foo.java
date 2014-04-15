@@ -14,7 +14,9 @@ public class Foo {
   public char charTestFld;
   private Collection collectionTest;
   private SampleBean sampleBean = new SampleBean();
-
+  public Bar publicBar = new Bar();
+  public static final Bar STATIC_BAR = new Bar();
+  
   private char[] charArray;
 
   private char[][] charArrayMulti;

@@ -1062,54 +1062,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     if (member instanceof Field) {
-      Object o = ((Field) member).get(ctx);
-
-      if (((member.getModifiers() & STATIC) != 0)) {
-        // Check if the static field reference is a constant and a primitive.
-        if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field) member).getType().isPrimitive())) {
-          o = ((Field) member).get(null);
-          assert debug("LDC " + valueOf(o));
-          mv.visitLdcInsn(o);
-          wrapPrimitive(o.getClass());
-
-          if (hasNullPropertyHandler()) {
-            if (o == null) {
-              o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
-            }
-
-            writeOutNullHandler(member, 0);
-          }
-          return o;
-        }
-        else {
-          assert debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
-              + member.getName() + "::" + getDescriptor(((Field) member).getType()));
-
-          mv.visitFieldInsn(GETSTATIC, getInternalName(member.getDeclaringClass()),
-              member.getName(), getDescriptor(returnType = ((Field) member).getType()));
-        }
-      }
-      else {
-        assert debug("CHECKCAST " + getInternalName(cls));
-        mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
-
-        assert debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
-        mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(returnType = ((Field) member)
-            .getType()));
-      }
-
-      returnType = ((Field) member).getType();
-
-      if (hasNullPropertyHandler()) {
-        if (o == null) {
-          o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
-        }
-
-        writeOutNullHandler(member, 0);
-      }
-
-      currType = toNonPrimitiveType(returnType);
-      return o;
+      return optimizeFieldMethodProperty(ctx, property, cls, member);
     }
     else if (member != null) {
       Object o;
@@ -1222,24 +1175,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
           Field f = (Field) ts;
-
-          if ((f.getModifiers() & FINAL) != 0) {
-            Object finalVal = f.get(null);
-            assert debug("LDC " + valueOf(finalVal));
-            mv.visitLdcInsn(finalVal);
-            wrapPrimitive(finalVal.getClass());
-            return finalVal;
-          }
-          else {
-            assert debug("GETSTATIC " + getInternalName(f.getDeclaringClass()) + "."
-                + ((Field) ts).getName() + "::" + getDescriptor(f.getType()));
-
-            mv.visitFieldInsn(GETSTATIC, getInternalName(f.getDeclaringClass()),
-                f.getName(), getDescriptor(returnType = f.getType()));
-
-
-            return f.get(null);
-          }
+          return optimizeFieldMethodProperty(ctx, property, cls, f);
         }
       }
       else if (ctx instanceof Class) {
@@ -1292,6 +1228,59 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       }
     }
   }
+
+private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?> cls, Member member)
+    throws IllegalAccessException
+{
+    Object o = ((Field) member).get(ctx);
+
+      if (((member.getModifiers() & STATIC) != 0)) {
+        // Check if the static field reference is a constant and a primitive.
+        if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field) member).getType().isPrimitive())) {
+          o = ((Field) member).get(null);
+          assert debug("LDC " + valueOf(o));
+          mv.visitLdcInsn(o);
+          wrapPrimitive(o.getClass());
+
+          if (hasNullPropertyHandler()) {
+            if (o == null) {
+              o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
+            }
+
+            writeOutNullHandler(member, 0);
+          }
+          return o;
+        }
+        else {
+          assert debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
+              + member.getName() + "::" + getDescriptor(((Field) member).getType()));
+
+          mv.visitFieldInsn(GETSTATIC, getInternalName(member.getDeclaringClass()),
+              member.getName(), getDescriptor(returnType = ((Field) member).getType()));
+        }
+      }
+      else {
+        assert debug("CHECKCAST " + getInternalName(cls));
+        mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+
+        assert debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
+        mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(returnType = ((Field) member)
+            .getType()));
+      }
+
+      returnType = ((Field) member).getType();
+
+      if (hasNullPropertyHandler()) {
+        if (o == null) {
+          o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
+        }
+
+        writeOutNullHandler(member, 0);
+      }
+
+      currType = toNonPrimitiveType(returnType);
+      return o;
+}
 
 
   private void writeFunctionPointerStub(Class c, Method m) {

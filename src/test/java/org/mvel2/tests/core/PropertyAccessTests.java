@@ -393,4 +393,8 @@ public class PropertyAccessTests extends AbstractTest {
         // ignore
       }
     }
+    
+  public void testPublicStaticFieldMVEL314(){
+    assertEquals(Foo.STATIC_BAR, runSingleTest("org.mvel2.tests.core.res.Foo.STATIC_BAR"));
+  }
 }
