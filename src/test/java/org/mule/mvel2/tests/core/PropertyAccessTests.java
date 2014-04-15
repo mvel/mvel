@@ -1,8 +1,10 @@
 package org.mule.mvel2.tests.core;
 
+import static org.mule.mvel2.MVEL.compileExpression;
+import static org.mule.mvel2.MVEL.executeExpression;
+
 import org.mule.mvel2.MVEL;
 import org.mule.mvel2.ParserContext;
-import org.mule.mvel2.PropertyAccessException;
 import org.mule.mvel2.integration.PropertyHandler;
 import org.mule.mvel2.integration.PropertyHandlerFactory;
 import org.mule.mvel2.integration.VariableResolverFactory;
@@ -12,10 +14,14 @@ import org.mule.mvel2.tests.core.res.Cake;
 import org.mule.mvel2.tests.core.res.Foo;
 
 import java.io.Serializable;
-import java.util.*;
-
-import static org.mule.mvel2.MVEL.compileExpression;
-import static org.mule.mvel2.MVEL.executeExpression;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 public class PropertyAccessTests extends AbstractTest {
@@ -498,4 +504,22 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
     
+    public void testNullListMapArrayValueMVEL312(){
+      // Map
+      assertNull(runSingleTest("['test1' : null].test1"));
+      assertNull(runSingleTest("['test1' : null].get('test1')"));
+      assertNull(runSingleTest("a=['test1' : null];a.test1"));
+      assertNull(runSingleTest("a=['test1' : null];a.get('test1')"));
+
+      // List
+      assertNull(runSingleTest("[null][0]"));
+      assertNull(runSingleTest("[null].get(0)"));
+      assertNull(runSingleTest("a=[null];a[0]"));
+      assertNull(runSingleTest("a=[null];a.get(0)"));
+        
+      // Array
+      assertNull(runSingleTest("{null}[0]"));
+      assertNull(runSingleTest("a={null};a[0]"));
+    }
+
 }
