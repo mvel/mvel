@@ -2907,7 +2907,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     if (stmt instanceof ExecutableLiteral) {
         Object literalValue = ((ExecutableLiteral) stmt).getLiteral();
 
-        Class type = literalValue == null ? desiredTarget : literalValue.getClass();
+      // Handle the case when the literal is null MVEL-312 
+      if(literalValue == null){
+        mv.visitInsn(ACONST_NULL);
+        return null;
+      }        
+        
+      Class type = literalValue == null ? desiredTarget : literalValue.getClass();
 
       assert debug("*** type:" + type + ";desired:" + desiredTarget);
 
