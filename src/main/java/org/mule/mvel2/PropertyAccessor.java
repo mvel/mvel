@@ -697,7 +697,7 @@ public class PropertyAccessor {
       else if (ctx instanceof FunctionInstance) {
         return ((PrototypalFunctionInstance) ctx).getResolverFactory().getVariableResolver(property).getValue();
       }
-      else if (!first && MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) {
+      else if (MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL && (!first || ctx instanceof Map)) {
           shouldReturnNull = true;
       }
     }
