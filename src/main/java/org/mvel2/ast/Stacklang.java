@@ -65,6 +65,10 @@ public class Stacklang extends BlockNode {
 
     for (int i1 = 0, instructionListSize = instructionList.size(); i1 < instructionListSize; i1++) {
       Instruction instruction = instructionList.get(i1);
+
+      System.out.println(stack.toString() + " >> " + instruction.opcode + ":" + instruction.expr);
+
+
       switch (instruction.opcode) {
         case Operator.STORE:
           if (instruction.cache == null) {
@@ -217,10 +221,19 @@ public class Stacklang extends BlockNode {
         case Operator.NEQUAL:
           stack.push(!stack.pop().equals(stack.pop()));
           break;
-
         case Operator.REDUCE:
           stack.op();
           break;
+        case Operator.XSWAP:
+          stack.xswap2();
+          break;
+        case Operator.SWAP:
+          Object o = stack.pop();
+          Object o2 = stack.pop();
+          stack.push(o);
+          stack.push(o2);
+          break;
+
       }
     }
 
@@ -270,5 +283,7 @@ public class Stacklang extends BlockNode {
     opcodes.put("eq", Operator.EQUAL);
     opcodes.put("ne", Operator.NEQUAL);
     opcodes.put("reduce", Operator.REDUCE);
+    opcodes.put("xswap", Operator.XSWAP);
+    opcodes.put("swap", Operator.SWAP);
   }
 }

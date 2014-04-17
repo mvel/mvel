@@ -17,6 +17,7 @@
  */
 package org.mvel2.optimizers.impl.asm;
 
+import com.sun.org.apache.xpath.internal.compiler.OpCodes;
 import org.mvel2.*;
 import org.mvel2.asm.ClassWriter;
 import org.mvel2.asm.Label;
@@ -87,9 +88,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       OPCODES_VERSION = Opcodes.V1_5;
     else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7"))
       OPCODES_VERSION = Opcodes.V1_6;
+    else if (javaVersion.startsWith("1.8"))
+      OPCODES_VERSION = Opcodes.V1_8;
     else
       OPCODES_VERSION = Opcodes.V1_2;
-
 
     String defaultNameSapce = getProperty("mvel2.namespace");
     if (defaultNameSapce == null) NAMESPACE = "org/mvel2/";
@@ -453,7 +455,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Label jmp = null;
         Label jmp2 = new Label();
 
-
         if (fld.getType().isPrimitive()) {
           assert debug("ASTORE 5");
           mv.visitVarInsn(ASTORE, 5);
@@ -530,8 +531,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Class targetType = meth.getParameterTypes()[0];
 
-
-        Label jmp = null;
+        Label jmp;
         Label jmp2 = new Label();
         if (value != null && !targetType.isAssignableFrom(value.getClass())) {
           if (!canConvert(targetType, value.getClass())) {
@@ -578,7 +578,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
           }
 
           meth.invoke(ctx, value);
-
         }
 
         assert debug("INVOKEVIRTUAL " + getInternalName(meth.getDeclaringClass()) + "." + meth.getName());
@@ -694,7 +693,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     cw.visitEnd();
-
   }
 
   private void visitConstantClass(Class<?> clazz) {

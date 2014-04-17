@@ -94,7 +94,6 @@ public class MVELRuntime {
           case RETURN:
             variableFactory.setTiltFlag(true);
             return stk.pop();
-          //     throw new EndWithValue(stk.pop());
 
           case NOOP:
             continue;

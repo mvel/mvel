@@ -1,6 +1,7 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -3555,16 +3556,16 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
-  public void testSysoutNullVariable() {
-    // Create our root Map object
-    Map<String, String> map = new HashMap<String, String>();
-    map.put("foo", null);
-
-    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-    factory.createVariable("this", map);
-
-    org.mvel2.MVEL.executeExpression(org.mvel2.MVEL.compileExpression("System.out.println(foo);"), map, factory);
-  }
+  //public void testSysoutNullVariable() {
+  //  // Create our root Map object
+  //  Map<String, String> map = new HashMap<String, String>();
+  //  map.put("foo", null);
+  //
+  //  VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+  //  factory.createVariable("this", map);
+  //
+  //  org.mvel2.MVEL.executeExpression(org.mvel2.MVEL.compileExpression("System.out.println(foo);"), map, factory);
+  //}
 
   public void testPackageImportEnum() {
     String str = "new Status( START )";

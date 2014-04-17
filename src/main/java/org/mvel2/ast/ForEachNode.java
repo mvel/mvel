@@ -58,8 +58,6 @@ public class ForEachNode extends BlockNode {
       if (pCtx.isStrictTypeEnforcement() && itemType != null) {
         pCtx = pCtx.createSubcontext();
         pCtx.addInput(item, itemType);
-
-
       }
 
       pCtx.pushVariableScope();

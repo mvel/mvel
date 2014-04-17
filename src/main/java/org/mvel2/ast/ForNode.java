@@ -87,7 +87,7 @@ public class ForNode extends BlockNode {
     boolean varsEscape = false;
 
     try {
-      ParserContext spCtx = pCtx;
+      ParserContext spCtx;
       if (pCtx != null) {
         spCtx = pCtx.createSubcontext().createColoringSubcontext();
       }

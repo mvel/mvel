@@ -165,5 +165,7 @@ public interface Operator {
   public static final int JUMP = 112;
   public static final int JUMPIF = 113;
   public static final int REDUCE = 114;
+  public static final int SWAP = 115;
+  public static final int XSWAP = 116;
 
 }
