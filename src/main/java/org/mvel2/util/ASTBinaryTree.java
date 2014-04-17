@@ -40,6 +40,7 @@ public class ASTBinaryTree {
             case SOUNDEX:
             case INSTANCEOF:
             case SIMILARITY:
+            case REGEX:
                 return Boolean.class;
             case ADD:
                 if (leftType.equals(String.class) || rightType.equals(String.class)) return String.class;

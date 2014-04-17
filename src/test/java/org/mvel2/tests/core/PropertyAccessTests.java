@@ -381,16 +381,101 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("bar", MVEL.executeExpression(s, m));
   }
 
-    public void testInfiniteLoop() {
-      A226 a = new A226();
-      Map m = Collections.singletonMap("a", a);
-      String ex = "a.map['foo']";
+  public void testInfiniteLoop() {
+    A226 a = new A226();
+    Map m = Collections.singletonMap("a", a);
+    String ex = "a.map['foo']";
 
-      try {
-        MVEL.getProperty(ex, m);
-        fail("access to a null field must fail");
-      } catch (Exception e) {
-        // ignore
-      }
+    try {
+      MVEL.getProperty(ex, m);
+      fail("access to a null field must fail");
+    } catch (Exception e) {
+      // ignore
     }
+  }
+    
+  public void testNonHashMapImplMapPutMVEL302() {
+    test("map=new java.util.Hashtable();map.foo='bar'");
+  }
+
+  public void testNullSafeWithDynamicOptimizerMVEL305() {
+    Foo foo = new Foo();
+    foo.setBar(null);
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    Serializable s = MVEL.compileExpression("this.?bar.name");
+    // Iterate 100 times to ensure JIT ASM kicks in
+    for (int i = 1; i < 100; i++) {
+        assertNull(MVEL.executeExpression(s, foo));
+    }
+  }
+
+  public void testStaleReflectiveCollectionAccessor() {
+    try
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+      Serializable getFooExpression = MVEL.compileExpression("foo[0]");
+      Map vars = new HashMap();
+
+       // Array -> List
+      vars.put("foo", new String[]{"1", "2", "3"});
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+      vars.put("foo", Collections.singletonList("1"));
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+            
+      // List -> Array
+      vars.put("foo", new String[]{"1", "2", "3"});
+      assertEquals("1", MVEL.executeExpression(getFooExpression, vars));
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+    finally
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
+  public void testMVEL308() {
+    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.key] = field.value; }";
+    Serializable compiled = MVEL.compileExpression(expression);
+
+    Map<String, Object> target = new HashMap<String, Object>();
+    target.put("value", "notnull");
+
+    Map<String, Object> ctx = new HashMap<String, Object>();
+    ctx.put("_target", target);
+
+    Map<String, Object> updates = new HashMap<String, Object>();
+    updates.put("value", null);
+
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("updates", updates);
+    vars.put("ctx", ctx);
+
+    for (int i = 0; i < 100; i++) {
+        MVEL.executeExpression(compiled, vars);
+    }
+
+    assertNull(target.get("value"));
+  }
+
+  public void testNullListMapArrayValueMVEL312(){
+    // Map
+    assertNull(runSingleTest("['test1' : null].test1"));
+    assertNull(runSingleTest("['test1' : null].get('test1')"));
+    assertNull(runSingleTest("a=['test1' : null];a.test1"));
+    assertNull(runSingleTest("a=['test1' : null];a.get('test1')"));
+
+    // List
+    assertNull(runSingleTest("[null][0]"));
+    assertNull(runSingleTest("[null].get(0)"));
+    assertNull(runSingleTest("a=[null];a[0]"));
+    assertNull(runSingleTest("a=[null];a.get(0)"));
+
+    // Array
+    assertNull(runSingleTest("{null}[0]"));
+    assertNull(runSingleTest("a={null};a[0]"));
+  }
+
+  public void testPublicStaticFieldMVEL314(){
+    assertEquals(Foo.STATIC_BAR, runSingleTest("org.mvel2.tests.core.res.Foo.STATIC_BAR"));
+  }
 }

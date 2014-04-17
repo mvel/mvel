@@ -802,7 +802,7 @@ public class AbstractParser implements Parser, Serializable {
                         ASTNode.ASSIGN, idx, pCtx);
 
                     if (idx == -1) {
-                      pCtx.addIndexedInput(t = ian.getAssignmentVar());
+                      pCtx.addIndexedInput(t = ian.getVarName());
                       ian.setRegister(pCtx.variableIndexOf(t));
                     }
                     return lastNode = ian;
@@ -896,6 +896,7 @@ public class AbstractParser implements Parser, Serializable {
                   (lastNode instanceof BooleanNode || lastNode.isOperator())))
                   && !isDigit(lookAhead())) {
 
+                cursor += 1;
                 captureToEOT();
                 return new Sign(expr, st, cursor - st, fields, pCtx);
               }

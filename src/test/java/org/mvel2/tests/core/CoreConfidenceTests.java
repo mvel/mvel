@@ -2796,6 +2796,10 @@ public class CoreConfidenceTests extends AbstractTest {
     executeExpression(expr, vars);
   }
 
+  public void testMethodWithNegativeIntParamMVEL313() {
+    assertTrue((Boolean) runSingleTest("ord(true,-1)"));
+  }
+
   public static class StaticMethods {
     public static <T> boolean is(List<T> arg) {
       return true;
@@ -2953,6 +2957,7 @@ public class CoreConfidenceTests extends AbstractTest {
     Map<String, Object> vars = createTestMap();
     vars.put("Foo244", Foo.class);
 
+    OptimizerFactory.setDefaultOptimizer("ASM");
     Serializable s = MVEL.compileExpression("foo.getClass().getName()");
 
     System.out.println(MVEL.executeExpression(s, vars));
@@ -4204,5 +4209,78 @@ public class CoreConfidenceTests extends AbstractTest {
     } finally {
       MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
     }
+  }
+
+  public void testRegExWithCast() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("this", Foo.class);
+    assertEquals(Boolean.class, MVEL.analyze("(String)bar.name ~= '[a-z].+'", parserContext));
+  }
+
+  public void testUnwantedImport() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport("java.util");
+    conf.addPackageImport("org.mvel2.tests.core.res");
+    ParserContext pctx = new ParserContext( conf );
+    MVEL.analysisCompile( "ScenarioType.Set.ADD", pctx );
+    assertNull(conf.getImports().get("Set"));
+  }
+
+  public void testUnaryNegative() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", int.class);
+    Map vars = new HashMap() {{ put("value", 42); }};
+    assertEquals(-42, MVEL.executeExpression(MVEL.compileExpression("-value", pctx), vars));
+  }
+
+  public void testUnaryNegativeWithSpace() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", int.class);
+    Map vars = new HashMap() {{ put("value", 42); }};
+    assertEquals(-42, MVEL.executeExpression(MVEL.compileExpression("- value", pctx), vars));
+  }
+
+  public static class ARef {
+    public static int getSize(String s) {
+      return 0;
+    }
+  }
+
+  public static class BRef extends ARef {
+    public static int getSize(String s) {
+      return s.length();
+    }
+  }
+
+  public void testStaticMethodInvocation() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport(ARef.class);
+    conf.addImport(BRef.class);
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", String.class);
+    Map vars = new HashMap() {{ put("value", "1234"); }};
+    assertEquals(0, MVEL.executeExpression(MVEL.compileExpression("ARef.getSize(value)", pctx), vars));
+    assertEquals(4, MVEL.executeExpression(MVEL.compileExpression("BRef.getSize(value)", pctx), vars));
+  }
+
+  public void testMultiplyIntByDouble() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("i", Integer.class);
+    pctx.addInput("d", Double.class);
+    Map vars = new HashMap() {{ put("i", 10); put("d", 0.3); }};
+    assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*d", pctx), vars));
+    assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
   }
 }
