@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jline.console.ConsoleReader;
+import org.fusesource.jansi.Ansi;
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
@@ -46,14 +48,23 @@ public class MVELSH {
   }
 
   public void start() {
-    consoleReader.setPrompt(renderPrompt());
-    consoleReader.addCompleter(this::complete);
-
     try {
+
+      consoleReader.setPrompt(renderPrompt());
+      consoleReader.setExpandEvents(false);
+      consoleReader.addCompleter(this::complete);
+
+      shellVariableContext.createVariable("__SHELL_VARIABLE_CONTEXT", shellVariableContext);
+
+      for (BuiltinFunction builtinFunction : BuiltinFunction.values()) {
+        eval(builtinFunction.functionDeclaration, shellVariableContext);
+      }
+
       consoleReader.println("MVELSH 3.0 (C)2014.");
 
       String input;
       while ((input = consoleReader.readLine()) != null) {
+        color(ansi().reset());
         processInput(input);
         consoleReader.setPrompt(renderPrompt());
       }
@@ -79,8 +90,13 @@ public class MVELSH {
     if (!bufferState.whitespaceOnly && !bufferState.shouldDeferExecution()) {
       String expression = commandBuffer.toString();
       try {
-        consoleReader.println(ansi().fgBright(WHITE)
-            .render(String.valueOf(eval(expression, shellVariableContext))).reset().toString());
+        Class returnType = MVEL.analyze(expression, computeParserContext());
+        Object eval = eval(expression, shellVariableContext);
+
+        if (returnType != void.class) {
+          consoleReader.println(ansi().fgBright(WHITE)
+              .render(String.valueOf(eval)).reset().toString());
+        }
       } catch (CompileException e) {
         consoleReader.println(ansi().fg(RED).render(e.getMessage()).reset().toString());
       }
@@ -164,20 +180,7 @@ public class MVELSH {
       return i;
     }
 
-    ParserContext localContext = ParserContext.create();
-    for (String varName : shellVariableContext.getKnownVariables()) {
-      VariableResolver variableResolver = shellVariableContext.getVariableResolver(varName);
-      Object value = variableResolver.getValue();
-      if (value == null) continue;
-      localContext.addInput(varName, value.getClass());
-    }
-
-    getDynamicImports().entrySet().stream()
-        .forEach(e -> localContext.addImport(e.getKey(), e.getValue()));
-
-    for (Map.Entry<String, Class> entry : getDynamicImports().entrySet()) {
-      localContext.addImport(entry.getKey(), entry.getValue());
-    }
+    ParserContext localContext = computeParserContext();
 
     String matchRoot = stringInput.substring(0, endIndex + 1);
     Class outputType;
@@ -195,6 +198,10 @@ public class MVELSH {
         }
       }
 
+      if (outputType == Class.class) {
+        outputType = (Class) eval(stringInput.substring(0, endIndex), shellVariableContext);
+      }
+
       asList(outputType.getMethods()).stream().map((m) -> matchRoot + m.getName())
           .filter((m) -> startsWithFuzzyIgnoreCase(m, stringInput)).forEach(matchCandidates::add);
       asList(outputType.getFields()).stream().map((f) -> matchRoot + f.getName())
@@ -202,6 +209,33 @@ public class MVELSH {
     }
 
     return 0;
+  }
+
+  public void color(Ansi ansi) {
+    try {
+      consoleReader.print(ansi.toString());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private ParserContext computeParserContext() {
+    ParserContext parserContext = ParserContext.create();
+    for (String varName : shellVariableContext.getKnownVariables()) {
+      VariableResolver variableResolver = shellVariableContext.getVariableResolver(varName);
+      Object value = variableResolver.getValue();
+      if (value == null) continue;
+      parserContext.addInput(varName, value.getClass());
+    }
+
+    getDynamicImports().entrySet().stream()
+        .forEach(e -> parserContext.addImport(e.getKey(), e.getValue()));
+
+    for (Map.Entry<String, Class> entry : getDynamicImports().entrySet()) {
+      parserContext.addImport(entry.getKey(), entry.getValue());
+    }
+
+    return parserContext;
   }
 
   public static boolean startsWithFuzzyIgnoreCase(String target, String test) {
