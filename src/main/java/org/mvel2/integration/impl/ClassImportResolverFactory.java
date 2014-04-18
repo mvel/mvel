@@ -116,6 +116,8 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     //   variableResolvers.clear();
   }
 
+  public Map<String, Object> getDynamicImports() { return dynImports; }
+
   public Map<String, Object> getImportedClasses() {
     return imports;
   }
