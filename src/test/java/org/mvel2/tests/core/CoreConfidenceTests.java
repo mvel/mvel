@@ -4283,4 +4283,9 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*d", pctx), vars));
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
   }
+
+  public void testMVEL313() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    assertTrue((Boolean) runSingleTest("ord(true,-1)"));
+  }
 }
