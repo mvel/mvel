@@ -3,6 +3,8 @@ mvel
 
 MVEL (MVFLEX Expression Language)
 
+I ran into the same error (one of them) in my application that is occurring in the MVEL2 unit tests. By fixing it for the unit tests, I also have fixed it for my application. The fix has been independently tested against Drools 5.3.
+
 After the fix:
 Results :
 
