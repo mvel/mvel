@@ -475,7 +475,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         ctx = m.getDeclaringClass();
         name = m.getName();
       }
-      else if (pCtx.hasFunction(name)) {
+      else if (pCtx.hasFunction(name) && pCtx.getFunction(name).getEgressType() != null) {
         resolvedExternally = false;
         Function f = pCtx.getFunction(name);
         f.checkArgumentCount(
