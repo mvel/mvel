@@ -3,8 +3,21 @@ mvel
 
 MVEL (MVFLEX Expression Language)
 
+After the fix:
+Results :
+
+```
+Tests in error: 
+  testFunctionPointerAsParam(org.mvel2.tests.core.MutationsTests): 1 out of 1 threads terminated due to exception: Detailed Failure Report:  FIRST TEST: { squareRoot = Math.sqrt; new String(St...
+  testFunctionPointerInAssignment(org.mvel2.tests.core.MutationsTests): 1 out of 1 threads terminated due to exception: Detailed Failure Report:  FIRST TEST: { squareRoot = Math.sqrt; i = squareRoo...
+
+Tests run: 1065, Failures: 0, Errors: 2, Skipped: 0
+```
+
+
 Before the fix:
 
+```
  Results :
 
  Tests in error: 
@@ -46,4 +59,4 @@ Please refer to /home/dev/work/mvel2/target/surefire-reports for the individual 
 [INFO] Total time: 46 seconds
 [INFO] Finished at: Wed Jun 04 14:01:07 MDT 2014
 [INFO] Final Memory: 32M/399M
-
+```
