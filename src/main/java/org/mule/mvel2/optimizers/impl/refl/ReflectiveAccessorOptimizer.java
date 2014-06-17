@@ -360,6 +360,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
               addAccessorNode(new NullSafe(expr, cursor + os, length - cursor - os, pCtx));
               if (curr == null) break;
             }
+            if (curr == null) throw new NullPointerException();
             if (curr == null && !MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) throw new NullPointerException();
           }
           staticAccess = false;
