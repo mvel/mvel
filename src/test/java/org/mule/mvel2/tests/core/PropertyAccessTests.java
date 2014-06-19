@@ -379,6 +379,26 @@ public class PropertyAccessTests extends AbstractTest {
         }
     }
 
+    public void testNestedMapAccesFailsCorrectly() {
+        MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+        try {
+            test("['test1' : null]['test1']['test2']");
+            fail("nested map accesss when first access yields a null value should fail");
+        }
+        catch (Exception e) {
+            // expected
+        }
+    }
+
+    public void testNestedArrayAccessFailsCorrectly() {
+        try {
+            test("{{1,2}, null, {3,4}}[1][0]");
+            fail("accessing a nested array where the first access yields null should have failed");
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
     public void testInlineMapHonorsPropertyAccess() {
         MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
         assertNull(test("['test1' : 4].keyDoesntExist"));

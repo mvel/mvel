@@ -1339,6 +1339,21 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     //   deferFinish = true;
   }
 
+  private String parseMapProperty() {
+      int start = ++cursor;
+
+      skipWhitespace();
+
+      if (cursor == end)
+          throw new CompileException("unterminated '['", expr, st);
+
+      if (scanTo(']'))
+          throw new CompileException("unterminated '['", expr, st);
+
+      String tk = new String(expr, start, cursor - start);
+      ++cursor;
+      return tk;
+  }
 
   private Object getCollectionProperty(Object ctx, String prop)
       throws IllegalAccessException, InvocationTargetException {
@@ -1348,7 +1363,11 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     currType = null;
-    if (ctx == null) return null;
+    if (ctx == null) {
+        // skip the '[...]'
+        parseMapProperty();
+        return null;
+    }
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
@@ -1357,24 +1376,12 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       mv.visitVarInsn(ALOAD, 1);
     }
 
-    int start = ++cursor;
-
-    skipWhitespace();
-
-    if (cursor == end)
-      throw new CompileException("unterminated '['", expr, st);
-
-    if (scanTo(']'))
-      throw new CompileException("unterminated '['", expr, st);
-
-    String tk = new String(expr, start, cursor - start);
+    String tk = parseMapProperty();
 
     assert debug("{collection token: [" + tk + "]}");
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray(), pCtx);
     Object item = compiled.getValue(ctx, variableFactory);
-
-    ++cursor;
 
     if (ctx instanceof Map) {
       assert debug("CHECKCAST java/util/Map");
