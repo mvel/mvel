@@ -126,7 +126,7 @@ public class CompileException extends RuntimeException {
     int lastCr;
 
     try {
-      cs = copyValueOf(expr, start, end - start);
+      cs = copyValueOf(expr, start, end - start).trim();
     }
     catch (StringIndexOutOfBoundsException e) {
       throw e;
