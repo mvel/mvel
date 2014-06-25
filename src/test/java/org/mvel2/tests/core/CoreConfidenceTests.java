@@ -1,7 +1,6 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
-import org.junit.Ignore;
 import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -922,6 +921,17 @@ public class CoreConfidenceTests extends AbstractTest {
         Drools.class);
 
     compiler.compile(context);
+  }
+
+  public void testCompilerExceptionFormatting() throws Exception {
+
+    try {
+      Object value = test("\n2x * 3\n");
+      fail("Invalid expression should fail");
+    } catch (Exception e) {
+      // Invalid expression should fail to compile
+    }
+
   }
 
   /**
