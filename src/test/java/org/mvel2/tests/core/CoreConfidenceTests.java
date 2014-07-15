@@ -4323,6 +4323,17 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
   }
 
+  public void testCharToStringCoercionForComparison() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("ch", Character.class);
+    Map vars = new HashMap() {{ put("ch", 'a'); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("ch == \"a\"", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("ch == \"b\"", pctx), vars));
+  }
+
   public void testFieldNameWithUnderscore() {
       final ParserContext parserContext = new ParserContext();
       parserContext.setStrictTypeEnforcement(true);
