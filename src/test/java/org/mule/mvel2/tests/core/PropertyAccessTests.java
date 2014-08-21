@@ -2,7 +2,6 @@ package org.mule.mvel2.tests.core;
 
 import static org.mule.mvel2.MVEL.compileExpression;
 import static org.mule.mvel2.MVEL.executeExpression;
-
 import org.mule.mvel2.MVEL;
 import org.mule.mvel2.ParserContext;
 import org.mule.mvel2.integration.PropertyHandler;
@@ -424,6 +423,26 @@ public class PropertyAccessTests extends AbstractTest {
         }
     }
 
+    public void testNonExistantMapPropertyReflectiveAccess()
+    {
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+        MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
+
+        Map context = new HashMap();
+        Map map = new HashMap();
+        context.put("map", map);
+
+        Serializable mapAccessExpression= MVEL.compileExpression("map['foo']");
+        Serializable propertyAccessExpression= MVEL.compileExpression("map.foo");
+
+        assertNull(MVEL.executeExpression(mapAccessExpression, context));
+        assertNull(MVEL.executeExpression(propertyAccessExpression, context));
+
+        map.put("foo", "bar");
+
+        assertEquals("bar", MVEL.executeExpression(mapAccessExpression, context));
+        assertEquals("bar", MVEL.executeExpression(propertyAccessExpression, context));
+    }
 
   public static class A226 {
     Map<String, Object> map = null;

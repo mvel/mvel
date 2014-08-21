@@ -612,7 +612,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       currType = toNonPrimitiveType(f.getType());
       return o;
     }
-    else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe)) {
+    else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe || MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL)) {
       addAccessorNode(new MapAccessor(property));
       return ((Map) ctx).get(property);
     }
