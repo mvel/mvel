@@ -77,7 +77,7 @@ public class CompiledIncludeNode extends Node {
       fileDateStamp = file.lastModified();
       cFileCache = TemplateCompiler.compileTemplate(readInFile(runtime, file), context);
     }
-    return String.valueOf(TemplateRuntime.execute(cFileCache, ctx, factory));
+    return String.valueOf(TemplateRuntime.execute(cFileCache, ctx, factory, file.getParent()));
   }
 
   public boolean demarcate(Node terminatingNode, char[] template) {
