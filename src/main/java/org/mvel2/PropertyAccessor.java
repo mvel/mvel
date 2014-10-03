@@ -941,7 +941,7 @@ public class PropertyAccessor {
         /**
          * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
          */
-        if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+        if ((m = getBestCandidate(args, name, cls, cls.getDeclaredMethods(), false)) != null) {
           addMethodCache(cls, createSignature(name, tk), m);
           parameterTypes = m.getParameterTypes();
         }
@@ -951,7 +951,7 @@ public class PropertyAccessor {
     // If we didn't find anything and the declared class is different from the actual one try also with the actual one
     if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
       cls = ctx.getClass();
-      if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+      if ((m = getBestCandidate(args, name, cls, cls.getDeclaredMethods(), false)) != null) {
         addMethodCache(cls, createSignature(name, tk), m);
         parameterTypes = m.getParameterTypes();
       }

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static java.lang.reflect.Modifier.PUBLIC;
+import static java.lang.reflect.Modifier.STATIC;
 import static java.lang.reflect.Modifier.isPublic;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.util.ParseTools.boxPrimitive;
@@ -93,12 +94,12 @@ public class PropertyTools {
     String simple = "get" + property;
     String simpleIsGet = "is" + property;
     String isGet = ReflectionUtil.getIsGetter(property);
-    property = ReflectionUtil.getGetter(property);
+    String getter = ReflectionUtil.getGetter(property);
 
     Method candidate = null;
     for (Method meth : clazz.getMethods()) {
-      if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-          && (property.equals(meth.getName()) || ((isGet.equals(meth.getName()) || simpleIsGet.equals(meth.getName())) && meth.getReturnType() == boolean.class)
+      if ((meth.getModifiers() & PUBLIC) != 0 && (meth.getModifiers() & STATIC) == 0 && meth.getParameterTypes().length == 0
+          && (getter.equals(meth.getName()) || property.equals(meth.getName()) || ((isGet.equals(meth.getName()) || simpleIsGet.equals(meth.getName())) && meth.getReturnType() == boolean.class)
           || simple.equals(meth.getName()))) {
         if (candidate == null || candidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
           candidate = meth;

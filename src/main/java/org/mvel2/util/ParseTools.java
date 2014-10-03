@@ -76,7 +76,6 @@ import static org.mvel2.integration.ResolverTools.appendFactory;
 
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
-  public static final String[] EMPTY_STR_ARR = new String[0];
   public static final Object[] EMPTY_OBJ_ARR = new Object[0];
   public static final Class[] EMPTY_CLS_ARR = new Class[0];
 
@@ -233,9 +232,6 @@ public class ParseTools {
     return list;
   }
 
-  private static final Map<String, Map<Integer, WeakReference<Method>>> RESOLVED_METH_CACHE
-      = Collections.synchronizedMap( new WeakHashMap<String, Map<Integer, WeakReference<Method>>>(10) );
-
   public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
     Class[] targetParms = new Class[arguments.length];
     for (int i = 0; i != arguments.length; i++) {
@@ -250,39 +246,27 @@ public class ParseTools {
 
   public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact, boolean classTarget) {
 
-
     if (methods.length == 0) {
       return null;
     }
 
     Class[] parmTypes;
     Method bestCandidate = null;
-    int bestScore = 0;
+    int bestScore = -1;
     boolean retry = false;
-
-    Integer hash = createClassSignatureHash(decl, arguments);
-
-    Map<Integer, WeakReference<Method>> methCache = RESOLVED_METH_CACHE.get(method);
-
-    WeakReference<Method> ref;
-
-    if (methCache != null && (ref = methCache.get(hash)) != null && (bestCandidate = ref.get()) != null) {
-      return bestCandidate;
-    }
 
     do {
       for (Method meth : methods) {
         if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
 
         if (method.equals(meth.getName())) {
-          boolean isVarArgs = meth.isVarArgs();
-          if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !isVarArgs) {
-            continue;
-          }
-          else if (arguments.length == 0 && parmTypes.length == 0) {
-            if (bestCandidate == null || bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
+          if ((parmTypes = meth.getParameterTypes()).length == 0 && arguments.length == 0) {
               bestCandidate = meth;
-            }
+              break;
+          }
+
+          boolean isVarArgs = meth.isVarArgs();
+          if (parmTypes.length != arguments.length && !isVarArgs) {
             continue;
           }
 
@@ -293,7 +277,7 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (bestCandidate == null || (bestCandidate.getReturnType() != meth.getReturnType() && bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()))) {
+              if (bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()) && !isVarArgs) {
                 bestCandidate = meth;
               }
             }
@@ -302,12 +286,6 @@ public class ParseTools {
       }
 
       if (bestCandidate != null) {
-        if (methCache == null) {
-          RESOLVED_METH_CACHE.put(method, methCache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Method>>() ) );
-        }
-
-        methCache.put(hash, new WeakReference<Method>(bestCandidate));
-
         break;
       }
 
@@ -454,8 +432,6 @@ public class ParseTools {
     return best;
   }
 
-  private static final Map<Class, Map<Integer, WeakReference<Constructor>>> RESOLVED_CONST_CACHE
-      = Collections.synchronizedMap( new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10) );
   private static final Map<Constructor, WeakReference<Class[]>> CONSTRUCTOR_PARMS_CACHE
       = Collections.synchronizedMap( new WeakHashMap<Constructor, WeakReference<Class[]>>(10) );
 
@@ -488,14 +464,6 @@ public class ParseTools {
     Constructor bestCandidate = null;
     int bestScore = 0;
 
-    Integer hash = createClassSignatureHash(cls, arguments);
-
-    Map<Integer, WeakReference<Constructor>> cache = RESOLVED_CONST_CACHE.get(cls);
-    WeakReference<Constructor> ref;
-    if (cache != null && (ref = cache.get(hash)) != null && (bestCandidate = ref.get()) != null) {
-      return bestCandidate;
-    }
-
     for (Constructor construct : getConstructors(cls)) {
       boolean isVarArgs = construct.isVarArgs();
       if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
@@ -510,13 +478,6 @@ public class ParseTools {
         bestCandidate = construct;
         bestScore = score;
       }
-    }
-
-    if (bestCandidate != null) {
-      if (cache == null) {
-        RESOLVED_CONST_CACHE.put(cls, cache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Constructor>>() ) );
-      }
-      cache.put(hash, new WeakReference<Constructor>(bestCandidate));
     }
 
     return bestCandidate;
@@ -800,17 +761,6 @@ public class ParseTools {
     byte test = compareTest.byteValue();
     for (byte b : array) if (b == test) return true;
     return false;
-  }
-
-  public static int createClassSignatureHash(Class declaring, Class[] sig) {
-    int hash = 0;
-    for (int i = 0; i < sig.length; i++) {
-      if (sig[i] != null) {
-        hash += (sig[i].hashCode() * (i * 2 + 3));
-      }
-    }
-
-    return hash + sig.length + declaring.hashCode();
   }
 
   /**
@@ -1142,12 +1092,16 @@ public class ParseTools {
 
 
   public static Method determineActualTargetMethod(Method method) {
+    return determineActualTargetMethod(method.getDeclaringClass(), method);
+  }
+
+  private static Method determineActualTargetMethod(Class clazz, Method method) {
     String name = method.getName();
 
     /**
      * Follow our way up the class heirarchy until we find the physical target method.
      */
-    for (Class cls : method.getDeclaringClass().getInterfaces()) {
+    for (Class cls : clazz.getInterfaces()) {
       for (Method meth : cls.getMethods()) {
         if (meth.getParameterTypes().length == 0 && name.equals(meth.getName())) {
           return meth;
@@ -1155,7 +1109,7 @@ public class ParseTools {
       }
     }
 
-    return null;
+    return clazz.getSuperclass() != null ? determineActualTargetMethod(clazz.getSuperclass(), method) : null;
   }
 
   public static int captureToNextTokenJunction(char[] expr, int cursor, int end, ParserContext pCtx) {
