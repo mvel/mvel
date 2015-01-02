@@ -4349,4 +4349,67 @@ public class CoreConfidenceTests extends AbstractTest {
             return "test";
         }
     }
+
+  public void testEmptyOperatorOnStrings() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("nullString", String.class);
+    pctx.addInput("emptyString", String.class);
+    pctx.addInput("blankString", String.class);
+    pctx.addInput("nonEmptyString", String.class);
+    Map vars = new HashMap() {{
+        put("nullString", null);
+        put("emptyString", "");
+        put("blankString", "   ");
+        put("nonEmptyString", "abc");
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("nullString == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("emptyString == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("blankString == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonEmptyString == empty", pctx), vars));
+  }
+
+  public void testEmptyOperatorOnBoolean() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("bNull", Boolean.class);
+    pctx.addInput("bTrue", Boolean.class);
+    pctx.addInput("bFalse", Boolean.class);
+    Map vars = new HashMap() {{
+        put("bNull", null);
+        put("bTrue", true);
+        put("bFalse", false);
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("bNull == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("bTrue == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("bFalse == empty", pctx), vars));
+  }
+
+  public void testEmptyOperatorOnInteger() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("nullInt", Integer.class);
+    pctx.addInput("zero", Integer.class);
+    pctx.addInput("nonZero", Integer.class);
+    Map vars = new HashMap() {{
+        put("nullInt", null);
+        put("zero", 0);
+        put("nonZero", 42);
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("nullInt == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("zero == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonZero == empty", pctx), vars));
+  }
 }
