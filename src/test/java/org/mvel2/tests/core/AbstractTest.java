@@ -4,23 +4,11 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.debug.DebugTools;
-
-import static org.mvel2.debug.DebugTools.decompile;
-
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-
-import static org.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
-
-import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.DerivedClass;
@@ -28,18 +16,37 @@ import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.TestInterface;
 import org.mvel2.util.StringAppender;
 
-import javax.swing.plaf.OptionPaneUI;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.getProperty;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.debug.DebugTools.decompile;
+import static org.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
 
 public abstract class AbstractTest extends TestCase {
 
@@ -435,7 +442,6 @@ public abstract class AbstractTest extends TestCase {
 
     try {
       Serializable xx = serializationTest(compiledD);
-      AbstractParser.resetParserContext();
       eighth = executeExpression(xx, new Base(), new MapVariableResolverFactory(createTestMap()));
     }
     catch (Exception e) {

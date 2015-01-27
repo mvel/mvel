@@ -25,7 +25,6 @@ import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
 import static org.mvel2.Operator.*;
@@ -197,7 +196,7 @@ public class MVELRuntime {
    *
    * @return boolean
    */
-  private static boolean hasDebuggerContext() {
+  public static boolean hasDebuggerContext() {
     return debuggerContext != null && debuggerContext.get() != null;
   }
 

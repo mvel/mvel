@@ -13,7 +13,7 @@ public class Convertable extends ASTNode {
     super(pCtx);
     this.stmt = stmt;
     this.clsStmt = clsStmt;
-    CompilerTools.expectType(clsStmt, Class.class, true);
+    CompilerTools.expectType(pCtx, clsStmt, Class.class, true);
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

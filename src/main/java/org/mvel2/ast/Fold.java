@@ -72,7 +72,7 @@ public class Fold extends ASTNode {
 
     while (isWhitespace(expr[cursor])) cursor--;
 
-    expectType(dataEx = (ExecutableStatement) subCompileExpression(expr, st, cursor - st, pCtx),
+    expectType(pCtx, dataEx = (ExecutableStatement) subCompileExpression(expr, st, cursor - st, pCtx),
         Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
   }
 

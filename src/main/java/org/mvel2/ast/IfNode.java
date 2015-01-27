@@ -55,7 +55,7 @@ public class IfNode extends BlockNode implements NestedStatement {
     idxAlloc = pCtx != null && pCtx.isIndexAllocation();
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
-      expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
+      expectType(pCtx, this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
           Boolean.class, true);
 
       if (pCtx != null) {

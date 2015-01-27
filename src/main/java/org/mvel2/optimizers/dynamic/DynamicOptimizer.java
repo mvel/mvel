@@ -19,15 +19,15 @@
 package org.mvel2.optimizers.dynamic;
 
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.Thread.currentThread;
 import static org.mvel2.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
@@ -106,7 +106,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
                                      int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
     readLock.lock();
     try{
-      return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
+      return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(pCtx, rootObject, type, property, start, offset, 2,
           firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
     }
     finally{

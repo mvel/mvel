@@ -45,7 +45,7 @@ public class DoNode extends BlockNode {
 
     this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
 
-    expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+    expectType(pCtx, this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
     if (pCtx != null) {
       pCtx.pushVariableScope();

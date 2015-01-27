@@ -10,7 +10,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import java.io.Serializable;
 
 import static org.mvel2.MVEL.executeSetExpression;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel2.util.PropertyTools.getReturnType;
 
 public class WithAccessor implements AccessorNode {
@@ -20,8 +19,7 @@ public class WithAccessor implements AccessorNode {
   protected ExecutableStatement nestedStatement;
   protected WithNode.ParmValuePair[] withExpressions;
 
-  public WithAccessor(String property, char[] expr, int start, int offset, Class ingressType, boolean strict) {
-    ParserContext pCtx = getCurrentThreadParserContext();
+  public WithAccessor(ParserContext pCtx, String property, char[] expr, int start, int offset, Class ingressType) {
     pCtx.setBlockSymbols(true);
 
     withExpressions = WithNode.compileWithExpressions(expr, start, offset, property, ingressType, pCtx);
@@ -73,8 +71,7 @@ public class WithAccessor implements AccessorNode {
     public ExecutablePairs(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
       if (parameter != null && parameter.length() != 0) {
         this.setExpression = MVEL.compileSetExpression(parameter,
-            ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
-            , getCurrentThreadParserContext());
+            ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class, pCtx);
 
       }
       this.statement = statement;

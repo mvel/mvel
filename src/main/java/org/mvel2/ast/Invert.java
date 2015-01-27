@@ -37,7 +37,7 @@ public class Invert extends ASTNode {
     this.offset = offset;
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
-      expectType(this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx), Integer.class, true);
+      expectType(pCtx, this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx), Integer.class, true);
     }
   }
 

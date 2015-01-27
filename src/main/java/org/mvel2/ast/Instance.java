@@ -1,7 +1,6 @@
 package org.mvel2.ast;
 
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 
@@ -14,7 +13,7 @@ public class Instance extends ASTNode {
     super(pCtx);
     this.stmt = stmt;
     this.clsStmt = clsStmt;
-    CompilerTools.expectType(clsStmt, Class.class, true);
+    CompilerTools.expectType(pCtx, clsStmt, Class.class, true);
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

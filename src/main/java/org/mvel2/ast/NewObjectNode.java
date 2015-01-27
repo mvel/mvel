@@ -103,7 +103,7 @@ public class NewObjectNode extends ASTNode {
         }
       }
 
-      if (pCtx != null && pCtx.isStrongTyping()) {
+      if (pCtx != null) {
         if (egressType == null) {
           pCtx.addError(new ErrorDetail(expr, start, true, "could not resolve class: " + typeDescr.getClassName()));
           return;

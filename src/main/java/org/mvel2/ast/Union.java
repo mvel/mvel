@@ -25,8 +25,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-
 public class Union extends ASTNode {
   private ASTNode main;
   private transient Accessor accessor;
@@ -43,7 +41,7 @@ public class Union extends ASTNode {
     else {
       try {
         AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
-        accessor = o.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
+        accessor = o.optimizeAccessor(pCtx, expr, start, offset,
             main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
         return o.getResultOptPass();
       }

@@ -988,8 +988,6 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addImport(Foo.class);
 
-    compiler.removeParserContext();
-
     System.out.println(executeExpression(compiler.compile(ctx)));
   }
 

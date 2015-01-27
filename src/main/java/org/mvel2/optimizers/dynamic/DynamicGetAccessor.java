@@ -19,7 +19,6 @@
 package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -40,12 +39,12 @@ public class DynamicGetAccessor implements DynamicAccessor {
 
   private boolean opt = false;
 
-  private ParserContext context;
+  private ParserContext pCtx;
 
   private Accessor _safeAccessor;
   private Accessor _accessor;
 
-  public DynamicGetAccessor(ParserContext context, char[] expr, int start, int offset, int type, Accessor _accessor) {
+  public DynamicGetAccessor(ParserContext pCtx, char[] expr, int start, int offset, int type, Accessor _accessor) {
     this._safeAccessor = this._accessor = _accessor;
     this.type = type;
 
@@ -53,7 +52,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
     this.start = start;
     this.offset = offset;
 
-    this.context = context;
+    this.pCtx = pCtx;
     stamp = currentTimeMillis();
   }
 
@@ -93,13 +92,13 @@ public class DynamicGetAccessor implements DynamicAccessor {
     AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
     switch (type) {
       case DynamicOptimizer.REGULAR_ACCESSOR:
-        _accessor = ao.optimizeAccessor(context, expr, start, offset, ctx, elCtx, variableResolverFactory, false, null);
+        _accessor = ao.optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, variableResolverFactory, false, null);
         return ao.getResultOptPass();
       case DynamicOptimizer.OBJ_CREATION:
-        _accessor = ao.optimizeObjectCreation(context, expr, start, offset, ctx, elCtx, variableResolverFactory);
+        _accessor = ao.optimizeObjectCreation(pCtx, expr, start, offset, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
       case DynamicOptimizer.COLLECTION:
-        _accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), ctx, null, expr, start, offset, ctx, elCtx, variableResolverFactory);
+        _accessor = ao.optimizeCollection(pCtx, ctx, null, expr, start, offset, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
     }
     return null;

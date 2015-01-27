@@ -18,12 +18,11 @@
  */
 package org.mvel2.optimizers.impl.refl.nodes;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
-
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 
 /**
  * @author Christopher Brock
@@ -34,12 +33,14 @@ public class Union implements Accessor {
   private int start;
   private int offset;
   private Accessor nextAccessor;
+  private ParserContext pCtx;
 
-  public Union(Accessor accessor, char[] nextAccessor, int start, int offset) {
+  public Union(ParserContext pCtx, Accessor accessor, char[] nextAccessor, int start, int offset) {
     this.accessor = accessor;
     this.start = start;
     this.offset = offset;
     this.nextExpr = nextAccessor;
+    this.pCtx = pCtx;
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
@@ -61,8 +62,7 @@ public class Union implements Accessor {
       AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
       Class ingress = accessor.getKnownEgressType();
 
-      nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, start, offset, o, elCtx, variableFactory,
-          false, ingress);
+      nextAccessor = ao.optimizeAccessor(pCtx, nextExpr, start, offset, o, elCtx, variableFactory, false, ingress);
       return ao.getResultOptPass();
     }
     else {

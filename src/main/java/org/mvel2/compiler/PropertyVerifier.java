@@ -672,7 +672,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     int start = cursor + 1;
     cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
-    new WithAccessor(root, expr, start, cursor++ - start, ctx, pCtx.isStrictTypeEnforcement());
+    new WithAccessor(pCtx, root, expr, start, cursor++ - start, ctx);
 
     return ctx;
   }
