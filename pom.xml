@@ -187,7 +187,12 @@
                     <instructions>
                         <Bundle-SymbolicName>org.mvel2</Bundle-SymbolicName>
                         <Bundle-Name>mvel2</Bundle-Name>
-                        <Import-Package>sun.*;resolution:=optional, *</Import-Package>
+                        <Import-Package>
+                            sun.*;resolution:=optional, *
+                        </Import-Package>
+                        <Export-Package>
+                            org.mvel2.*
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
