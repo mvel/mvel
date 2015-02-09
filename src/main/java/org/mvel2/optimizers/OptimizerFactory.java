@@ -37,28 +37,29 @@ public class OptimizerFactory {
 
   static {
     accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
-    accessorCompilers.put(DYNAMIC, new DynamicOptimizer());
-    /**
-     * By default, activate the JIT if ASM is present in the classpath
-     */
-    try {
-      OptimizerFactory.class.getClassLoader().loadClass("org.mvel2.asm.ClassWriter");
-      accessorCompilers.put("ASM", new ASMAccessorOptimizer());
-    }
-    catch (ClassNotFoundException e) {
-      defaultOptimizer = SAFE_REFLECTIVE;
-    }
-    catch (Throwable e) {
-      e.printStackTrace();
-      System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
-          "Disabling JIT compiler.  Reflective Optimizer will be used.");
-      defaultOptimizer = SAFE_REFLECTIVE;
-    }
-
-    if (Boolean.getBoolean("mvel2.disable.jit"))
+    
+    if (!Boolean.getBoolean("mvel2.disable.jit") && !isOSGiEnvironment()) {
+      /**
+       * By default, activate the JIT if ASM is present in the classpath
+       */
+      try {
+        OptimizerFactory.class.getClassLoader().loadClass("org.mvel2.asm.ClassWriter");
+        accessorCompilers.put("ASM", new ASMAccessorOptimizer());
+        accessorCompilers.put(DYNAMIC, new DynamicOptimizer());
+        setDefaultOptimizer(DYNAMIC);
+      }
+      catch (ClassNotFoundException e) {
+        defaultOptimizer = SAFE_REFLECTIVE;
+      }
+      catch (Throwable e) {
+        e.printStackTrace();
+        System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
+            "Disabling JIT compiler.  Reflective Optimizer will be used.");
+        defaultOptimizer = SAFE_REFLECTIVE;
+      }
+    } else {
       setDefaultOptimizer(SAFE_REFLECTIVE);
-    else
-      setDefaultOptimizer(DYNAMIC);
+    }
   }
 
   public static AccessorOptimizer getDefaultAccessorCompiler() {
@@ -68,6 +69,48 @@ public class OptimizerFactory {
     catch (Exception e) {
       throw new RuntimeException("unable to instantiate accessor compiler", e);
     }
+  }
+
+  /**
+   * @return true if MVEL was loaded by a ClassLoader within an OSGi container, false otherwise.
+   */
+  private static boolean isOSGiEnvironment() {
+    ClassLoader classLoader = OptimizerFactory.class.getClassLoader();
+    Class<? extends ClassLoader> classLoaderType = classLoader.getClass();
+    return inheritsFromType(classLoaderType, "org.osgi.framework.BundleReference");
+  }
+
+  /**
+   * Checks whether the given class implements or extends the specified super type.
+   * 
+   * @param clazz
+   *          The class that should inherit from super type.
+   * @param superTypeName
+   *          The name of the interface or super class.
+   * @return True if the specified class implements/extends the super type.
+   */
+  private static boolean inheritsFromType(Class<?> clazz, String superTypeName) {
+    if (clazz == null) {
+      return false;
+    }
+
+    if (clazz.getName().equals(superTypeName)) {
+      return true;
+    }
+    
+    boolean result = inheritsFromType(clazz.getSuperclass(), superTypeName);
+    if (result) {
+      return result;
+    }
+    
+    Class<?>[] interfaces = clazz.getInterfaces();
+    for (Class<?> interfaze : interfaces) {
+      result = inheritsFromType(interfaze, superTypeName);
+      if (result) {
+        return result;
+      }
+    }
+    return false;
   }
 
   public static AccessorOptimizer getAccessorCompiler(String name) {
