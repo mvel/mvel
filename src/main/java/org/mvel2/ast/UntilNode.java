@@ -22,6 +22,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.sh.IterationLimiter;
 
 import java.util.HashMap;
 
@@ -54,8 +55,10 @@ public class UntilNode extends BlockNode {
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+    IterationLimiter iterationLimiter = new IterationLimiter(ctx);
     while (!(Boolean) condition.getValue(ctx, thisValue, factory)) {
-      compiledBlock.getValue(ctx, thisValue, ctxFactory);
+        iterationLimiter.increment();
+        compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
 
     return null;
@@ -64,8 +67,10 @@ public class UntilNode extends BlockNode {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
 
+    IterationLimiter iterationLimiter = new IterationLimiter(ctx);
     while (!(Boolean) condition.getValue(ctx, thisValue, factory)) {
-      compiledBlock.getValue(ctx, thisValue, ctxFactory);
+    	iterationLimiter.increment();
+    	compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
     return null;
   }
