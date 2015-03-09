@@ -82,6 +82,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
+import org.mvel2.util.PropertyTools;
 import org.mvel2.util.ProtoParser;
 
 import java.io.Serializable;
@@ -219,7 +220,7 @@ public class AbstractParser implements Parser, Serializable {
 
       CLASS_LITERALS.put("Array", java.lang.reflect.Array.class);
 
-      if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
+      if (parseDouble(PropertyTools.getJavaVersion().substring(0, 3)) >= 1.5) {
         try {
           CLASS_LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
         }

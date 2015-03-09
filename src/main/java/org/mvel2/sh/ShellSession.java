@@ -26,6 +26,7 @@ import org.mvel2.sh.command.basic.BasicCommandSet;
 import org.mvel2.sh.command.file.FileCommandSet;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.PropertyTools;
 
 import java.io.*;
 import java.util.*;
@@ -78,7 +79,7 @@ public class ShellSession {
     env.put(PROMPT_VAR, DefaultEnvironment.PROMPT);
     env.put("$OS_NAME", getProperty("os.name"));
     env.put("$OS_VERSION", getProperty("os.version"));
-    env.put("$JAVA_VERSION", getProperty("java.version"));
+    env.put("$JAVA_VERSION", PropertyTools.getJavaVersion());
     env.put("$CWD", new File(".").getAbsolutePath());
     env.put("$COMMAND_PASSTRU", "false");
     env.put("$PRINTOUTPUT", "true");

@@ -104,7 +104,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
   private static final int OPCODES_VERSION;
 
   static {
-    final String javaVersion = getProperty("java.version");
+    final String javaVersion = PropertyTools.getJavaVersion();
     if (javaVersion.startsWith("1.4"))
       OPCODES_VERSION = Opcodes.V1_4;
     else if (javaVersion.startsWith("1.5"))
