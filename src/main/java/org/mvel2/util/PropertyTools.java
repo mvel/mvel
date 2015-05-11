@@ -203,4 +203,16 @@ public class PropertyTools {
   public static boolean isAssignable(Class to, Class from) {
     return (to.isPrimitive() ? boxPrimitive(to) : to).isAssignableFrom(from.isPrimitive() ? boxPrimitive(from) : from);
   }
+
+  /**
+   * Get the JVM version
+   * @return first <code>mvel.java.version</code>, then <code>java.version</code>
+   * @see System.getProperty("mvel.java.version");
+   * @see System.getProperty("java.version");
+   */
+  public static String getJavaVersion() {
+    return System.getProperty("mvel.java.version")!=null ?
+            System.getProperty("mvel.java.version") :
+            System.getProperty("java.version");
+  }
 }

@@ -35,6 +35,7 @@ import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
+import org.mvel2.util.PropertyTools;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,6 +66,7 @@ import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
+import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.mvel2.DataConversion.canConvert;
@@ -81,7 +83,7 @@ public class ParseTools {
 
   static {
     try {
-      double version = parseDouble(System.getProperty("java.version").substring(0, 3));
+      double version = parseDouble(PropertyTools.getJavaVersion().substring(0, 3));
       if (version < 1.5) {
         throw new RuntimeException("unsupported java version: " + version);
       }
