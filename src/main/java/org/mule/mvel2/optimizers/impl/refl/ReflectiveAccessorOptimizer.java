@@ -613,8 +613,21 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       return o;
     }
     else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe || MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL)) {
-      addAccessorNode(new MapAccessor(property));
-      return ((Map) ctx).get(property);
+
+      Object staticReference = null;
+      if (MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL) {
+        staticReference = tryStaticAccess();
+        staticAccess = true;
+      }
+
+      if (staticReference != null) {
+        return processStaticReference(staticReference);
+      }
+      else
+      {
+        addAccessorNode(new MapAccessor(property));
+        return ((Map) ctx).get(property);
+      }
     }
     else if (ctx != null && "length".equals(property) && ctx.getClass().isArray()) {
       addAccessorNode(new ArrayLength());
@@ -628,18 +641,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       Object tryStaticMethodRef = tryStaticAccess();
       staticAccess = true;
       if (tryStaticMethodRef != null) {
-        if (tryStaticMethodRef instanceof Class) {
-          addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
-          return tryStaticMethodRef;
-        }
-        else if (tryStaticMethodRef instanceof Field) {
-          addAccessorNode(new StaticVarAccessor((Field) tryStaticMethodRef));
-          return ((Field) tryStaticMethodRef).get(null);
-        }
-        else {
-          addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
-          return tryStaticMethodRef;
-        }
+        return processStaticReference(tryStaticMethodRef);
       }
       else if (ctx instanceof Class) {
         Class c = (Class) ctx;
@@ -696,6 +698,22 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         throw new PropertyAccessException("could not access: " + property + "; in class: "
             + ctx.getClass().getName(), expr, start);
       }
+    }
+  }
+
+  private Object processStaticReference(Object staticReference) throws IllegalAccessException
+  {
+    if (staticReference instanceof Class) {
+      addAccessorNode(new StaticReferenceAccessor(staticReference));
+      return staticReference;
+    }
+    else if (staticReference instanceof Field) {
+      addAccessorNode(new StaticVarAccessor((Field) staticReference));
+      return ((Field) staticReference).get(null);
+    }
+    else {
+      addAccessorNode(new StaticReferenceAccessor(staticReference));
+      return staticReference;
     }
   }
 
