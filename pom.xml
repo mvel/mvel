@@ -5,7 +5,7 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.2.6-SNAPSHOT</version>
+    <version>2.2.5-SNAPSHOT</version>
 
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
@@ -21,18 +21,52 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <inceptionYear>2001</inceptionYear>
+    <organization>
+        <name>JBoss by Red Hat</name>
+        <url>http://www.jboss.org/</url>
+    </organization>
 
     <scm>
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
-      <tag>mvel2-2.2.5.Final</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <issueManagement>
         <system>jira</system>
         <url>http://jira.codehaus.org/browse/MVEL</url>
     </issueManagement>
-
+    <developers>
+        <developer>
+            <name>All developers are listed on the team website</name>
+            <url>http://www.jboss.org/drools/team</url>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>All contributors are listed on the team website</name>
+            <url>http://www.jboss.org/drools/team</url>
+        </contributor>
+    </contributors>
+    <mailingLists>
+        <mailingList>
+            <name>user</name>
+            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-users</subscribe>
+            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-users</unsubscribe>
+            <archive>http://dir.gmane.org/gmane.comp.java.drools.user</archive>
+            <otherArchives>
+                <otherArchive>http://drools.46999.n3.nabble.com/Drools-User-forum-f47000.html</otherArchive>
+            </otherArchives>
+        </mailingList>
+        <mailingList>
+            <name>dev</name>
+            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</subscribe>
+            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</unsubscribe>
+            <archive>http://dir.gmane.org/gmane.comp.java.drools.devel</archive>
+        </mailingList>
+    </mailingLists>
+    
     <!--<pluginRepositories>-->
     <!--<pluginRepository>-->
     <!--<id>apache-snapshots</id>-->
@@ -45,7 +79,7 @@
     <!--</pluginRepositories>-->
 
     <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <build>
         <extensions>
@@ -241,17 +275,17 @@
         <!--</dependency>        -->
     </dependencies>
 
-  <distributionManagement>
-    <repository>
-      <id>jboss-releases-repository</id>
-      <name>JBoss Releases Repository</name>
-      <url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>jboss-snapshots-repository</id>
-      <name>JBoss Snapshot Repository</name>
-      <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshot Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
