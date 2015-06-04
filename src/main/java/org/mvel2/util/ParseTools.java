@@ -35,7 +35,6 @@ import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
-import org.mvel2.util.PropertyTools;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,7 +65,6 @@ import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
-import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.mvel2.DataConversion.canConvert;
@@ -259,7 +257,7 @@ public class ParseTools {
 
     do {
       for (Method meth : methods) {
-        if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
+        if (classTarget && !Modifier.isStatic(meth.getModifiers())) continue;
 
         if (method.equals(meth.getName())) {
           if ((parmTypes = meth.getParameterTypes()).length == 0 && arguments.length == 0) {
@@ -279,7 +277,9 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()) && !isVarArgs) {
+              if (bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()) &&
+                  bestCandidate.getDeclaringClass().isAssignableFrom(meth.getDeclaringClass()) &&
+                  !isVarArgs) {
                 bestCandidate = meth;
               }
             }
