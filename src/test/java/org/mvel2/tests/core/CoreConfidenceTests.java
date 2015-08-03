@@ -4410,4 +4410,40 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("zero == empty", pctx), vars));
     assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonZero == empty", pctx), vars));
   }
+
+  public void testInstanceofOnInnerClass() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport(ARef.class);
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new ARef()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof ARef", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + ARef.class.getCanonicalName(), pctx), vars));
+  }
+
+  public void testInstanceofWithPackageImport() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport( "org.mvel2.tests.core" );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new CoreConfidenceTests()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof CoreConfidenceTests", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + CoreConfidenceTests.class.getCanonicalName(), pctx), vars));
+  }
+
+  public void testInstanceofWithPackageImportAndInnerClass() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport( "org.mvel2.tests.core.CoreConfidenceTests" );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new ARef()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof ARef", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + ARef.class.getCanonicalName(), pctx), vars));
+  }
 }

@@ -425,7 +425,6 @@ public class ParseTools {
 
     if (best != method) return best;
 
-    currentCls = cls;
     for (currentCls = cls; currentCls != null; currentCls = currentCls.getSuperclass()) {
       if ((m = getExactMatch(name, args, rt, currentCls)) != null) {
         best = m;
@@ -502,7 +501,7 @@ public class ParseTools {
     }
 
     WeakReference<Class> ref;
-    Class cls = null;
+    Class cls;
 
     if ((ref = cache.get(className)) != null && (cls = ref.get()) != null) {
       return cls;
@@ -2183,5 +2182,23 @@ public class ParseTools {
     finally {
       if (inStream != null) inStream.close();
     }
+  }
+
+  public static Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
+    try {
+      return Class.forName(className, true, classLoader);
+    } catch (ClassNotFoundException cnfe) {
+      return findInnerClass( className, classLoader, cnfe );
+    }
+  }
+
+  public static Class findInnerClass( String className, ClassLoader classLoader, ClassNotFoundException cnfe ) throws ClassNotFoundException {
+    for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
+      className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
+      try {
+        return Class.forName(className, true, classLoader);
+      } catch (ClassNotFoundException e) { /* ignore */ }
+    }
+    throw cnfe;
   }
 }
