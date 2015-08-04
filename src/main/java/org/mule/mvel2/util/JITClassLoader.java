@@ -18,9 +18,9 @@
 
 package org.mule.mvel2.util;
 
-import sun.misc.Unsafe;
-
 import java.lang.reflect.Field;
+
+import sun.misc.Unsafe;
 
 public class JITClassLoader extends ClassLoader implements MVELClassLoader {
   private static boolean sunJVM;
@@ -34,7 +34,6 @@ public class JITClassLoader extends ClassLoader implements MVELClassLoader {
       sunJVM = true;
     }
     catch (Throwable t) {
-      //      t.printStackTrace();
       sunJVM = false;
     }
   }

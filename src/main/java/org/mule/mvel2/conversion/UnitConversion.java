@@ -21,17 +21,22 @@ package org.mule.mvel2.conversion;
 import org.mule.mvel2.ConversionHandler;
 import org.mule.mvel2.Unit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnitConversion implements ConversionHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(UnitConversion.class);
+
   public Object convertFrom(Object in) {
     try {
       return Unit.class.newInstance().convertFrom(in);
     }
     catch (InstantiationException e) {
-      e.printStackTrace();
+      LOGGER.error("Could not instantiate unit", e);
     }
     catch (IllegalAccessException e) {
-      e.printStackTrace();
+      LOGGER.error("Could not access unit", e);
     }
     return null;
   }
@@ -42,10 +47,10 @@ public class UnitConversion implements ConversionHandler {
         return Unit.class.newInstance().canConvertFrom(cls);
       }
       catch (InstantiationException e) {
-        e.printStackTrace();
+        LOGGER.error("Could not instantiate unit", e);
       }
       catch (IllegalAccessException e) {
-        e.printStackTrace();
+        LOGGER.error("Could not access unit", e);
       }
     }
     return false;

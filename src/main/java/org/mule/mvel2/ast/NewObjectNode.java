@@ -17,6 +17,22 @@
  */
 package org.mule.mvel2.ast;
 
+import static java.lang.reflect.Array.newInstance;
+import static org.mule.mvel2.DataConversion.convert;
+import static org.mule.mvel2.MVEL.analyze;
+import static org.mule.mvel2.MVEL.eval;
+import static org.mule.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+import static org.mule.mvel2.util.ArrayTools.findFirst;
+import static org.mule.mvel2.util.CompilerTools.getInjectedImports;
+import static org.mule.mvel2.util.ParseTools.captureContructorAndResidual;
+import static org.mule.mvel2.util.ParseTools.findClass;
+import static org.mule.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mule.mvel2.util.ParseTools.getBestConstructorCandidate;
+import static org.mule.mvel2.util.ParseTools.parseMethodOrConstructor;
+import static org.mule.mvel2.util.ParseTools.repeatChar;
+import static org.mule.mvel2.util.ParseTools.subArray;
+import static org.mule.mvel2.util.ParseTools.subset;
+import static org.mule.mvel2.util.ReflectionUtil.toPrimitiveArrayType;
 import org.mule.mvel2.CompileException;
 import org.mule.mvel2.ErrorDetail;
 import org.mule.mvel2.ParserContext;
@@ -35,21 +51,17 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.reflect.Array.newInstance;
-import static org.mule.mvel2.DataConversion.convert;
-import static org.mule.mvel2.MVEL.analyze;
-import static org.mule.mvel2.MVEL.eval;
-import static org.mule.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
-import static org.mule.mvel2.util.ArrayTools.findFirst;
-import static org.mule.mvel2.util.CompilerTools.getInjectedImports;
-import static org.mule.mvel2.util.ParseTools.*;
-import static org.mule.mvel2.util.ReflectionUtil.toPrimitiveArrayType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christopher Brock
  */
 @SuppressWarnings({"ManualArrayCopy"})
 public class NewObjectNode extends ASTNode {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NewObjectNode.class);
+
   private transient Accessor newObjectOptimizer;
   private TypeDescriptor typeDescr;
   private char[] name;
@@ -97,8 +109,7 @@ public class NewObjectNode extends ASTNode {
                 findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
           }
           catch (Exception e) {
-            e.printStackTrace();
-            // for now, don't handle this.
+            LOGGER.error("Exception found creating object node", e);
           }
         }
       }
