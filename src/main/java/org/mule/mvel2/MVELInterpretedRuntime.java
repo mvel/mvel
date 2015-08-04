@@ -18,21 +18,25 @@
 
 package org.mule.mvel2;
 
+import static org.mule.mvel2.Operator.AND;
+import static org.mule.mvel2.Operator.CHOR;
+import static org.mule.mvel2.Operator.END_OF_STMT;
+import static org.mule.mvel2.Operator.NOOP;
+import static org.mule.mvel2.Operator.OR;
+import static org.mule.mvel2.Operator.RETURN;
+import static org.mule.mvel2.Operator.TERNARY;
+import static org.mule.mvel2.Operator.TERNARY_ELSE;
 import org.mule.mvel2.ast.ASTNode;
 import org.mule.mvel2.ast.Substatement;
 import org.mule.mvel2.compiler.AbstractParser;
 import org.mule.mvel2.compiler.BlankLiteral;
 import org.mule.mvel2.integration.VariableResolverFactory;
 import org.mule.mvel2.integration.impl.ImmutableDefaultFactory;
-import org.mule.mvel2.integration.impl.MapVariableResolver;
 import org.mule.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mule.mvel2.util.ErrorUtil;
 import org.mule.mvel2.util.ExecutionStack;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static org.mule.mvel2.Operator.*;
 
 
 /**
@@ -49,12 +53,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
       return parseAndExecuteInterpreted();
     }
     catch (ArrayIndexOutOfBoundsException e) {
-      e.printStackTrace();
       throw new CompileException("unexpected end of statement", expr, length);
     }
     catch (NullPointerException e) {
-      e.printStackTrace();
-
       if (cursor >= length) {
         throw new CompileException("unexpected end of statement", expr, length);
       }

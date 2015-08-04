@@ -25,7 +25,13 @@ import org.mule.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class OptimizerFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(OptimizerFactory.class);
+
   public static String DYNAMIC = "dynamic";
   public static String SAFE_REFLECTIVE = "reflective";
 
@@ -49,8 +55,7 @@ public class OptimizerFactory {
       defaultOptimizer = SAFE_REFLECTIVE;
     }
     catch (Throwable e) {
-      e.printStackTrace();
-      System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
+      LOGGER.error("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
           "Disabling JIT compiler.  Reflective Optimizer will be used.");
       defaultOptimizer = SAFE_REFLECTIVE;
     }

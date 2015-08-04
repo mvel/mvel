@@ -18,6 +18,14 @@
 
 package org.mule.mvel2.sh;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Runtime.getRuntime;
+import static java.lang.System.arraycopy;
+import static java.lang.System.getProperty;
+import static java.util.ResourceBundle.getBundle;
+import static org.mule.mvel2.MVEL.compileExpression;
+import static org.mule.mvel2.MVEL.executeExpression;
+import static org.mule.mvel2.util.PropertyTools.contains;
 import org.mule.mvel2.MVELInterpretedRuntime;
 import org.mule.mvel2.ParserContext;
 import org.mule.mvel2.integration.VariableResolverFactory;
@@ -27,17 +35,22 @@ import org.mule.mvel2.sh.command.file.FileCommandSet;
 import org.mule.mvel2.templates.TemplateRuntime;
 import org.mule.mvel2.util.StringAppender;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Runtime.getRuntime;
-import static java.lang.System.arraycopy;
-import static java.lang.System.getProperty;
-import static java.util.ResourceBundle.getBundle;
-import static org.mule.mvel2.MVEL.compileExpression;
-import static org.mule.mvel2.MVEL.executeExpression;
-import static org.mule.mvel2.util.PropertyTools.contains;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A shell session.
@@ -45,6 +58,7 @@ import static org.mule.mvel2.util.PropertyTools.contains;
 public class ShellSession {
   public static final String PROMPT_VAR = "$PROMPT";
   private static final String[] EMPTY = new String[0];
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShellSession.class);
 
   private final Map<String, Command> commands = new HashMap<String, Command>();
   private Map<String, Object> variables;
@@ -325,7 +339,6 @@ public class ShellSession {
         ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
         PrintStream capture = new PrintStream(stackTraceCap);
 
-        e.printStackTrace(capture);
         capture.flush();
 
         env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
@@ -376,8 +389,7 @@ public class ShellSession {
       }
     }
     catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("unexpected exception. exiting.");
+      LOGGER.error("unexpected exception. exiting.", e);
     }
 
   }
