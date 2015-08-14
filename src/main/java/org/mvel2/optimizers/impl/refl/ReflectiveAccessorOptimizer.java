@@ -133,7 +133,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
   private ReflectiveAccessorOptimizer(ParserContext pCtx, char[] property, int start, int offset, Object ctx,
                                       Object thisRef, VariableResolverFactory variableFactory) {
-    this.pCtx = pCtx;
+    super(pCtx);
     this.expr = property;
     this.start = start;
     this.length = property != null ? offset : start;

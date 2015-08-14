@@ -1,24 +1,39 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.*;
+import org.mvel2.CompileException;
+import org.mvel2.ConversionHandler;
+import org.mvel2.DataConversion;
+import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.*;
-import org.mvel2.util.Make;
+import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Cheese;
+import org.mvel2.tests.core.res.Foo;
+import org.mvel2.tests.core.res.MyInterface2;
+import org.mvel2.tests.core.res.MyInterface3;
+import org.mvel2.tests.core.res.SampleBean;
 import org.mvel2.util.MethodStub;
-import org.mvel2.util.VariableSpaceCompiler;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mvel2.MVEL.*;
 
@@ -82,12 +97,12 @@ public class TypesAndInferenceTests extends AbstractTest {
   }
 
   public void testVarInputs2() {
-    ExpressionCompiler compiler =
-            new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
-
     ParserContext ctx = new ParserContext();
 
-    compiler.compile(ctx);
+    ExpressionCompiler compiler =
+            new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;", ctx);
+
+    compiler.compile();
 
     System.out.println(ctx.getVarOrInputType("bleh"));
   }
@@ -132,9 +147,9 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.setStrongTyping(false);
     ctx.addImport(Foo.class);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("new Foo244( $bar,  $bar.age );");
+    ExpressionCompiler compiler = new ExpressionCompiler("new Foo244( $bar,  $bar.age );", ctx);
 
-    Serializable compiled = compiler.compile(ctx);
+    Serializable compiled = compiler.compile();
 
     Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
     assertEquals(1, requiredInputs.size());
@@ -158,10 +173,10 @@ public class TypesAndInferenceTests extends AbstractTest {
 
   public void testAnalysisCompile() {
     ParserContext pCtx = new ParserContext();
-    ExpressionCompiler e = new ExpressionCompiler("foo.aValue = 'bar'");
+    ExpressionCompiler e = new ExpressionCompiler("foo.aValue = 'bar'", pCtx);
     e.setVerifyOnly(true);
 
-    e.compile(pCtx);
+    e.compile();
 
     assertTrue(pCtx.getInputs().keySet().contains("foo"));
     assertEquals(1,
@@ -174,9 +189,9 @@ public class TypesAndInferenceTests extends AbstractTest {
     String ex = "var a, b, c";
 
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
     compiler.setVerifyOnly(true);
-    compiler.compile(ctx);
+    compiler.compile();
 
     assertEquals(3,
             ctx.getVariables().size());
@@ -186,9 +201,9 @@ public class TypesAndInferenceTests extends AbstractTest {
     String ex = "var a";
 
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
     compiler.setVerifyOnly(true);
-    compiler.compile(ctx);
+    compiler.compile();
 
     assertEquals(1,
             ctx.getVariables().size());
@@ -197,8 +212,8 @@ public class TypesAndInferenceTests extends AbstractTest {
   public void testMultiTypeVarDeclr() {
     String ex = "String a, b, c";
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+    compiler.compile();
 
     assertNotNull(ctx.getVariables());
     assertEquals(3,
@@ -212,8 +227,8 @@ public class TypesAndInferenceTests extends AbstractTest {
   public void testMultiTypeVarDeclr2() {
     String ex = "String a = 'foo', b = 'baz', c = 'bar'";
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+    compiler.compile();
 
     assertNotNull(ctx.getVariables());
     assertEquals(3,
@@ -227,8 +242,8 @@ public class TypesAndInferenceTests extends AbstractTest {
   public void testMultiTypeVarDeclr3() {
     String ex = "int a = 52 * 3, b = 8, c = 16;";
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    Serializable s = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+    Serializable s = compiler.compile();
 
     assertNotNull(ctx.getVariables());
     assertEquals(3,
@@ -254,8 +269,8 @@ public class TypesAndInferenceTests extends AbstractTest {
   public void testTypeVarDeclr() {
     String ex = "String a;";
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+    compiler.compile();
 
     assertNotNull(ctx.getVariables());
     assertEquals(1,
@@ -272,22 +287,22 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.addImport(Foo.class);
     ctx.setStrictTypeEnforcement(true);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("x_a = new Foo()");
+    ExpressionCompiler compiler = new ExpressionCompiler("x_a = new Foo()", ctx);
 
-    compiler.compile(ctx);
+    compiler.compile();
 
     assertEquals(Foo.class,
             ctx.getVariables().get("x_a"));
   }
 
   public void testEgressType() {
-    ExpressionCompiler compiler = new ExpressionCompiler("( $cheese )");
     ParserContext context = new ParserContext();
     context.addInput("$cheese",
             Cheese.class);
 
+    ExpressionCompiler compiler = new ExpressionCompiler("( $cheese )", context);
     assertEquals(Cheese.class,
-            compiler.compile(context).getKnownEgressType());
+            compiler.compile().getKnownEgressType());
   }
 
   public void testEgressTypeCorrect() {
@@ -352,7 +367,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             List.class,
             new Class[]{String.class});
 
-    final CompiledExpression expr = new ExpressionCompiler("strings").compile(parserContext);
+    final CompiledExpression expr = new ExpressionCompiler("strings", parserContext).compile();
 
     assertTrue(STRINGS.equals(executeExpression(expr,
             new A())));
@@ -530,9 +545,9 @@ public class TypesAndInferenceTests extends AbstractTest {
             Object.class);
 
     ExpressionCompiler compiler =
-            new ExpressionCompiler("org.mvel2.DataConversion.convert(ctx, String).toUpperCase()");
+            new ExpressionCompiler("org.mvel2.DataConversion.convert(ctx, String).toUpperCase()", ctx);
     assertEquals(String.class,
-            compiler.compile(ctx).getKnownEgressType());
+            compiler.compile().getKnownEgressType());
   }
 
   public void testParameterizedTypeInStrictMode3() {
@@ -552,8 +567,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.addInput("base",
             Base.class);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("base.list.get(1).toUpperCase()");
-    CompiledExpression ce = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("base.list.get(1).toUpperCase()", ctx);
+    CompiledExpression ce = compiler.compile();
 
     assertEquals(String.class,
             ce.getKnownEgressType());
@@ -574,7 +589,7 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.setStrongTyping(true);
 
     try {
-      new ExpressionCompiler("foo.toUC(100.5").compile(ctx);
+      new ExpressionCompiler("foo.toUC(100.5", ctx).compile();
     }
     catch (Exception e) {
       // should fail.
@@ -590,13 +605,13 @@ public class TypesAndInferenceTests extends AbstractTest {
   }
 
   public void testStrictStaticMethodCall() {
-    ExpressionCompiler compiler = new ExpressionCompiler("Bar.staticMethod()");
     ParserContext ctx = new ParserContext();
     ctx.addImport("Bar",
             Bar.class);
     ctx.setStrictTypeEnforcement(true);
 
-    Serializable s = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("Bar.staticMethod()", ctx);
+    Serializable s = compiler.compile();
 
     assertEquals(1,
             executeExpression(s));
@@ -611,10 +626,10 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     ctx.setStrictTypeEnforcement(true);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("getRuntime()");
+    ExpressionCompiler compiler = new ExpressionCompiler("getRuntime()", ctx);
     StaticMethodImportResolverFactory si = new StaticMethodImportResolverFactory(ctx);
 
-    Serializable expression = compiler.compile(ctx);
+    Serializable expression = compiler.compile();
 
     serializationTest(expression);
 
@@ -629,10 +644,10 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     ExpressionCompiler compiler =
             new ExpressionCompiler("message='Hello';b=7;\nSystem.out.println(message + ';' + b);\n"
-                    + "System.out.println(message + ';' + b); b");
+                    + "System.out.println(message + ';' + b); b", ctx);
 
     assertEquals(7,
-            executeExpression(compiler.compile(ctx),
+            executeExpression(compiler.compile(),
                     new DefaultLocalVariableResolverFactory()));
   }
 
@@ -645,9 +660,9 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.addInput("$bar", Bar.class);
 
     try {
-      ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( $ba );");
+      ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( $ba );", ctx);
 
-      compiler.compile(ctx);
+      compiler.compile();
       fail("This should not compileShared");
     }
     catch (Exception e) {
@@ -672,13 +687,13 @@ public class TypesAndInferenceTests extends AbstractTest {
 
 
   public void testProvidedExternalTypes() {
-    ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.addInput("foo",
             Foo.class);
 
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("foo.bar", ctx);
+    compiler.compile();
   }
 
 
@@ -855,7 +870,6 @@ public class TypesAndInferenceTests extends AbstractTest {
   }
 
   public void testMapWithStrictTyping() {
-    ExpressionCompiler compiler = new ExpressionCompiler("map['KEY1'] == $msg");
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.setStrongTyping(true);
@@ -863,7 +877,8 @@ public class TypesAndInferenceTests extends AbstractTest {
             String.class);
     ctx.addInput("map",
             Map.class);
-    Serializable expr = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("map['KEY1'] == $msg", ctx);
+    Serializable expr = compiler.compile();
 
     Map map = new HashMap();
     map.put("KEY1",
@@ -882,7 +897,6 @@ public class TypesAndInferenceTests extends AbstractTest {
   }
 
   public void testMapAsContextWithStrictTyping() {
-    ExpressionCompiler compiler = new ExpressionCompiler("this['KEY1'] == $msg");
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.setStrongTyping(true);
@@ -890,7 +904,8 @@ public class TypesAndInferenceTests extends AbstractTest {
             String.class);
     ctx.addInput("this",
             Map.class);
-    Serializable expr = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("this['KEY1'] == $msg", ctx);
+    Serializable expr = compiler.compile();
 
     Map map = new HashMap();
     map.put("KEY1",
@@ -911,7 +926,7 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.setStrongTyping(true);
 
     try {
-      new ExpressionCompiler("blah").compile(ctx);
+      new ExpressionCompiler("blah", ctx).compile();
     }
     catch (Exception e) {
       // should fail
@@ -929,7 +944,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             String.class);
 
     try {
-      new ExpressionCompiler("1-blah").compile(ctx);
+      new ExpressionCompiler("1-blah", ctx).compile();
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -946,8 +961,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     ctx.addInput("foo",
             HashMap.class,
             new Class[]{String.class, String.class});
-    ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()", ctx);
+    compiler.compile();
   }
 
   public void testSetAccessorOverloadedEqualsStrictMode2() {
@@ -957,7 +972,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             Foo.class);
 
     try {
-      CompiledExpression expr = new ExpressionCompiler("foo.aValue = 'bar'").compile(ctx);
+      CompiledExpression expr = new ExpressionCompiler("foo.aValue = 'bar'", ctx).compile();
     }
     catch (CompileException e) {
       assertTrue(false);
@@ -981,8 +996,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     Cheese expectedCheese = new Cheese();
     expectedCheese.setUseBy(new SimpleDateFormat("dd-MMM-yyyy").parse("10-Jul-1974"));
 
-    ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c");
-    Cheese actualCheese = (Cheese) executeExpression(compiler.compile(ctx),
+    ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c", ctx);
+    Cheese actualCheese = (Cheese) executeExpression(compiler.compile(),
             createTestMap());
     assertEquals(expectedCheese.getUseBy(),
             actualCheese.getUseBy());
@@ -1017,7 +1032,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             Foo.class);
 
     assertEquals(true,
-            executeExpression(new ExpressionCompiler("foo.bar.woof == 'true'").compile(ctx),
+            executeExpression(new ExpressionCompiler("foo.bar.woof == 'true'", ctx).compile(),
                     createTestMap()));
   }
 

@@ -126,8 +126,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     checkNameSafety(varName);
 
-    MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(expr, start, offset, ctx, factory);
-    runtime.setPCtx(pCtx);
+    MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(expr, start, offset, ctx, factory, pCtx);
 
     if (col) {
       PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = runtime.parse(), pCtx);

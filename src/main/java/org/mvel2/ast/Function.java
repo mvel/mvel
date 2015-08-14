@@ -87,9 +87,9 @@ public class Function extends ASTNode implements Safe {
      * Compile the expression so we can determine the input-output delta.
      */
     ctx.setIndexAllocation(false);
-    ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset, ctx);
     compiler.setVerifyOnly(true);
-    compiler.compile(ctx);
+    compiler.compile();
 
     ctx.setIndexAllocation(true);
 

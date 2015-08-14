@@ -2058,25 +2058,17 @@ public class ParseTools {
   }
 
   public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression);
-    if (ctx != null) c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, ctx);
     return _optimizeTree(c._compile());
   }
 
-
-  public static Serializable subCompileExpression(char[] expression, int start, int offset) {
-    return _optimizeTree(new ExpressionCompiler(expression, start, offset)._compile());
-  }
-
   public static Serializable subCompileExpression(char[] expression, int start, int offset, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
-    if (ctx != null) c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, start, offset, ctx);
     return _optimizeTree(c._compile());
   }
 
   public static Serializable subCompileExpression(String expression, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression);
-    c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, ctx);
     return _optimizeTree(c._compile());
   }
 

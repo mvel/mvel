@@ -92,7 +92,6 @@ import java.util.WeakHashMap;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Double.parseDouble;
-import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import static org.mvel2.Operator.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
@@ -157,6 +156,10 @@ public class AbstractParser implements Parser, Serializable {
 
   protected AbstractParser() {
     pCtx = new ParserContext();
+  }
+
+  protected AbstractParser(ParserContext pCtx) {
+    this.pCtx = pCtx != null ? pCtx : new ParserContext();
   }
 
   /**
@@ -2795,9 +2798,5 @@ public class AbstractParser implements Parser, Serializable {
 
   private static int asInt(final Object o) {
     return (Integer) o;
-  }
-
-  public void setPCtx(ParserContext pCtx) {
-    this.debugSymbols = (this.pCtx = pCtx).isDebugSymbols();
   }
 }

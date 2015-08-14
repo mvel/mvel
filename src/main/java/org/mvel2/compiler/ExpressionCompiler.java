@@ -47,19 +47,8 @@ public class ExpressionCompiler extends AbstractParser {
   private boolean secondPassOptimization = false;
 
   public CompiledExpression compile() {
-    return compile(pCtx);
-  }
-
-  @Deprecated
-  /**
-   * @deprecated use {@link org.mvel2.MVEL#compileExpression(String, org.mvel2.ParserContext)} instead.
-   * @param ctx
-   * @return compile payload.
-   */
-  public CompiledExpression compile(ParserContext ctx) {
     try {
-      this.debugSymbols = ctx.isDebugSymbols();
-      setPCtx(ctx);
+      this.debugSymbols = pCtx.isDebugSymbols();
       return _compile();
     }
     finally {

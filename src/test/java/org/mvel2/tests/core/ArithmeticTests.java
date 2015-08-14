@@ -1,17 +1,12 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.CoreConfidenceTests.POJO;
 import org.mvel2.util.Make;
 
 import java.io.Serializable;
@@ -19,6 +14,9 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 public class ArithmeticTests extends AbstractTest {
   public void testMath() {
@@ -650,7 +648,7 @@ public class ArithmeticTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("a", Long.class);
 
-    CompiledExpression compiledExpression = new ExpressionCompiler("a==0").compile(parserContext);
+    CompiledExpression compiledExpression = new ExpressionCompiler("a==0", parserContext).compile();
     HashMap<String, Object> variables = new HashMap<String, Object>();
     variables.put("a", 0l);
     MVEL.executeExpression(compiledExpression, variables);
@@ -682,7 +680,7 @@ public class ArithmeticTests extends AbstractTest {
 
     ParserContext ctx = new ParserContext();
     ctx.setStrongTyping(true);
-    CompiledExpression compiledExpression = new ExpressionCompiler("1==-(-1)").compile(ctx);
+    CompiledExpression compiledExpression = new ExpressionCompiler("1==-(-1)", ctx).compile();
     assertEquals(1 == -(-1), MVEL.executeExpression(compiledExpression));
   }
 

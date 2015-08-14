@@ -127,7 +127,7 @@ public class ForEachNode extends BlockNode {
     if (itemType != null && itemType.isArray())
       enforceTypeSafety(itemType, getBaseComponentType(iterCond.getClass()));
 
-    this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset);
+    this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
 
     Object v;
     if (iterCond instanceof Iterable) {

@@ -386,10 +386,10 @@ public abstract class AbstractTest extends TestCase {
     ctx.setSourceFile("unittest");
     ctx.setDebugSymbols(true);
 
-    ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
+    ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex, ctx);
     //     debuggingCompiler.setDebugSymbols(true);
 
-    CompiledExpression compiledD = debuggingCompiler.compile(ctx);
+    CompiledExpression compiledD = debuggingCompiler.compile();
 
     try {
       sixth = executeExpression(compiledD, new Base(), createTestMap());

@@ -1,8 +1,5 @@
 package org.mvel2.tests.core;
 
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
@@ -12,8 +9,11 @@ import org.mvel2.tests.core.res.Foo;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 public class MutationsTests extends AbstractTest {
   public void testDeepAssignment() {
@@ -25,13 +25,13 @@ public class MutationsTests extends AbstractTest {
   public void testDeepAssignment2() {
     Map map = createTestMap();
 
-    ExpressionCompiler compiler = new ExpressionCompiler("foo.bar.age = 21");
     ParserContext ctx = new ParserContext();
 
     ctx.addInput("foo", Foo.class);
     ctx.setStrongTyping(true);
 
-    CompiledExpression ce = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("foo.bar.age = 21", ctx);
+    CompiledExpression ce = compiler.compile();
 
     executeExpression(ce, map);
 

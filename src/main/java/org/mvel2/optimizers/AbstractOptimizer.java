@@ -19,6 +19,7 @@ package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
 
 import java.lang.reflect.Method;
@@ -41,6 +42,12 @@ public class AbstractOptimizer extends AbstractParser {
   protected boolean staticAccess = false;
 
   protected int tkStart;
+
+  protected AbstractOptimizer() { }
+
+  protected AbstractOptimizer(ParserContext pCtx) {
+    super(pCtx);
+  }
 
   /**
    * Try static access of the property, and return an instance of the Field, Method of Class if successful.

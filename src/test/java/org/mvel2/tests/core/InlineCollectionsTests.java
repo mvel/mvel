@@ -1,8 +1,5 @@
 package org.mvel2.tests.core;
 
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -13,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 public class InlineCollectionsTests extends AbstractTest {
   public void testListCreation2() {
@@ -251,9 +251,9 @@ public class InlineCollectionsTests extends AbstractTest {
         String.class);
 
     ctx.setStrictTypeEnforcement(true);
-    ExpressionCompiler compiler = new ExpressionCompiler(text);
+    ExpressionCompiler compiler = new ExpressionCompiler(text, ctx);
 
-    List list = (List) executeExpression(compiler.compile(ctx),
+    List list = (List) executeExpression(compiler.compile(),
         createTestMap());
 
     assertSame("dog",
