@@ -7,6 +7,7 @@ import org.mule.mvel2.MVEL;
 
 import static org.mule.mvel2.MVEL.compileExpression;
 import static org.mule.mvel2.MVEL.executeExpression;
+import static org.mule.mvel2.MVEL.resetDefaultCompilerOpts;
 
 import org.mule.mvel2.ParserContext;
 import org.mule.mvel2.compiler.AbstractParser;
@@ -58,7 +59,7 @@ public abstract class AbstractTest extends TestCase {
   }
 
   protected void setUp() throws Exception {
-
+    resetDefaultCompilerOpts();
   }
 
   protected static Map createTestMap() {

@@ -44,6 +44,7 @@ import static org.mule.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
+
   public void testWhileUsingImports() {
     Map<String, Object> imports = new HashMap<String, Object>();
     imports.put("ArrayList",
