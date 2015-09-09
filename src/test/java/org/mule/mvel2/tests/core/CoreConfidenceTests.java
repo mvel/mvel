@@ -4284,4 +4284,14 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*d", pctx), vars));
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
   }
+
+  public void testIncompleteConcatExpression() {
+    try {
+      MVEL.compileExpression("''+");
+    }
+    catch (CompileException e) {
+      return;
+    }
+    fail();
+  }
 }

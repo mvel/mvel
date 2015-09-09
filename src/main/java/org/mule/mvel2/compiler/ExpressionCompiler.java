@@ -309,10 +309,14 @@ public class ExpressionCompiler extends AbstractParser {
     catch (NullPointerException e) {
       throw new CompileException("not a statement, or badly formed structure", expr, st, e);
     }
+    catch (ScriptRuntimeException e) {
+      throw new CompileException(e.getMessage(), expr, st, e);
+    }
     catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, expr, st);
     }
     catch (Throwable e) {
+      // TODO: Check if all exceptions can be actually wrapped by a CompileException.
       parserContext.set(null);
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       else {
