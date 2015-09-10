@@ -18,20 +18,25 @@
 
 package org.mule.mvel2.compiler;
 
+import static org.mule.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+
 import org.mule.mvel2.ParserContext;
 import org.mule.mvel2.integration.VariableResolverFactory;
 import org.mule.mvel2.optimizers.OptimizerFactory;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
-
-import static org.mule.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompiledAccExpression implements ExecutableStatement, Serializable {
   private char[] expression;
   private int start;
   private int offset;
 
-  private transient Accessor accessor;
+  // Should this be thread safe? Original version didn't have the accessor as volatile nor synchronized access to it.
+  private transient Map<Class, Accessor> accessorsByIngressType;
   private ParserContext context;
   private Class ingressType;
 
@@ -44,16 +49,28 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     this.start = start;
     this.offset = offset;
 
+    this.accessorsByIngressType = new HashMap<Class, Accessor>(4, 1.0f);
     this.context = context;
     this.ingressType = ingressType != null ? ingressType : Object.class;
   }
 
-  public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
+  public Object setValue(final Object ctx, final Object elCtx, final VariableResolverFactory vrf, final Object value) {
+    Class valueIngressType;
+    if (ingressType == Object.class && value != null) {
+      valueIngressType = value.getClass();
+    }
+    else {
+      valueIngressType = ingressType;
+    }
+    Accessor accessor = accessorsByIngressType.get(valueIngressType);
     if (accessor == null) {
-      if (ingressType == Object.class && value != null) ingressType = value.getClass();
-      accessor = getThreadAccessorOptimizer()
-          .optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, ingressType);
-
+      try {
+        accessor = getThreadAccessorOptimizer().optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, valueIngressType);
+        accessorsByIngressType.put(valueIngressType, accessor);
+      }
+      finally {
+        OptimizerFactory.clearThreadAccessorOptimizer();
+      }
     }
     else {
       accessor.setValue(ctx, elCtx, vrf, value);
@@ -61,18 +78,21 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     return value;
   }
 
-  public Object getValue(Object staticContext, VariableResolverFactory factory) {
+  public Object getValue(final Object staticContext, final VariableResolverFactory factory) {
+    Accessor accessor = accessorsByIngressType.get(ingressType);
     if (accessor == null) {
       try {
-        accessor = getThreadAccessorOptimizer()
-            .optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
+        accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
+        accessorsByIngressType.put(ingressType, accessor);
         return getValue(staticContext, factory);
       }
       finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
-    return accessor.getValue(staticContext, staticContext, factory);
+    else {
+      return accessor.getValue(factory, staticContext, factory);
+    }
   }
 
   public void setKnownIngressType(Class type) {
@@ -106,29 +126,37 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     return false;
   }
 
-  public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+  public Object getValue(final Object ctx, final Object elCtx, final VariableResolverFactory variableFactory) {
+    Accessor accessor = accessorsByIngressType.get(ingressType);
     if (accessor == null) {
       try {
-        accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx,
-            variableFactory, false, ingressType);
+        accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx, variableFactory, false, ingressType);
+        accessorsByIngressType.put(ingressType, accessor);
         return getValue(ctx, elCtx, variableFactory);
       }
       finally {
         OptimizerFactory.clearThreadAccessorOptimizer();
       }
     }
-    return accessor.getValue(ctx, elCtx, variableFactory);
+    else {
+      return accessor.getValue(ctx, elCtx, variableFactory);
+    }
   }
 
   public Accessor getAccessor() {
-    return accessor;
+    return isEmptyStatement() ? null : accessorsByIngressType.values().iterator().next();
   }
 
   public boolean isEmptyStatement() {
-    return accessor == null;
+    return accessorsByIngressType.isEmpty();
   }
 
   public boolean isExplicitCast() {
     return false;
+  }
+
+  private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
+    in.defaultReadObject();
+    accessorsByIngressType = new HashMap<Class, Accessor>(4, 1.0f);
   }
 }
