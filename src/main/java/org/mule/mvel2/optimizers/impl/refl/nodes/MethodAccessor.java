@@ -54,6 +54,14 @@ public class MethodAccessor implements AccessorNode {
           if (o != null) {
             return executeOverrideTarget(getWidenedTarget(o), ctx, elCtx, vars);
           }
+          else {
+            if (parms != null) {
+              o = getBestCandidate(argTypes(elCtx, vars), method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+              if (o != null) {
+                return executeOverrideTarget(getWidenedTarget(o), ctx, elCtx, vars);
+              }
+            }
+          }
         }
 
         coercionNeeded = true;
@@ -130,6 +138,18 @@ public class MethodAccessor implements AccessorNode {
             "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
       }
     }
+  }
+
+  private Class[] argTypes(Object ctx, VariableResolverFactory vars) {
+    if (parms.length == 0)
+      return new Class[0];
+
+    Class[] vals = new Class[parms.length];
+    for (int i = 0; i < parms.length; i++) {
+      vals[i] = parms[i].getValue(ctx, vars).getClass();
+    }
+
+    return vals;
   }
 
   private Object[] executeAll(Object ctx, VariableResolverFactory vars, Method m) {

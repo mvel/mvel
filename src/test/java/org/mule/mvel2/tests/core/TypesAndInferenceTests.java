@@ -1,26 +1,53 @@
 package org.mule.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mule.mvel2.*;
+import static org.mule.mvel2.MVEL.compileExpression;
+import static org.mule.mvel2.MVEL.compileSetExpression;
+import static org.mule.mvel2.MVEL.executeExpression;
+import static org.mule.mvel2.MVEL.executeSetExpression;
+import static org.mule.mvel2.MVEL.setProperty;
+
+import org.mule.mvel2.CompileException;
+import org.mule.mvel2.ConversionHandler;
+import org.mule.mvel2.DataConversion;
+import org.mule.mvel2.MVEL;
+import org.mule.mvel2.ParserConfiguration;
+import org.mule.mvel2.ParserContext;
+import org.mule.mvel2.compiler.CompiledAccExpression;
 import org.mule.mvel2.compiler.CompiledExpression;
+import org.mule.mvel2.compiler.ExecutableAccessor;
 import org.mule.mvel2.compiler.ExecutableStatement;
 import org.mule.mvel2.compiler.ExpressionCompiler;
+import org.mule.mvel2.integration.impl.CachedMapVariableResolverFactory;
 import org.mule.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mule.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mule.mvel2.optimizers.OptimizerFactory;
-import org.mule.mvel2.tests.core.res.*;
-import org.mule.mvel2.util.Make;
+import org.mule.mvel2.tests.core.res.Bar;
+import org.mule.mvel2.tests.core.res.Base;
+import org.mule.mvel2.tests.core.res.Cheese;
+import org.mule.mvel2.tests.core.res.Foo;
+import org.mule.mvel2.tests.core.res.MyInterface2;
+import org.mule.mvel2.tests.core.res.MyInterface3;
+import org.mule.mvel2.tests.core.res.SampleBean;
 import org.mule.mvel2.util.MethodStub;
-import org.mule.mvel2.util.VariableSpaceCompiler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static org.mule.mvel2.MVEL.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Mike Brock .
@@ -1580,4 +1607,95 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  private static final String ASSIGNMENT_LEFT_EXPRESSION = "payload.details";
+  private static final String VARIABLE = "VARIABLE";
+  private static final String ASSIGNMENT_EXPRESSION = ASSIGNMENT_LEFT_EXPRESSION + "=" + VARIABLE;
+  private static final String SETTER_EXPRESSION = "payload.setDetails(" + VARIABLE + ")";
+
+  public void testCacheCreatesNewCompiledExpressionInstances() throws Exception {
+    Map<String, Object> vars = new HashMap();
+    vars.put(VARIABLE, new FooDetails());
+    ExecutableAccessor compiledExpr = (ExecutableAccessor) MVEL.compileExpression(ASSIGNMENT_EXPRESSION, new ParserContext(new ParserConfiguration()));
+    MVEL.executeExpression(compiledExpr, new Message(new Foo2()), vars);
+
+    BarDetails barDetails = new BarDetails();
+    vars.put(VARIABLE, barDetails);
+    Object result = MVEL.executeExpression(compiledExpr, new Message(new Bar2()), vars);
+    assertEquals(barDetails, result);
+  }
+
+  public void testCacheCreatesNewCompiledExpressionInstancesSetter() throws Exception {
+    Map<String, Object> vars = new HashMap();
+    vars.put(VARIABLE, new FooDetails());
+    ExecutableAccessor compiledExpr = (ExecutableAccessor) MVEL.compileExpression(SETTER_EXPRESSION, new ParserContext(new ParserConfiguration()));
+    MVEL.executeExpression(compiledExpr, new Message(new Foo2()), vars);
+
+    BarDetails barDetails = new BarDetails();
+    vars.put(VARIABLE, barDetails);
+    Bar2 payload = new Bar2();
+    assertNull(payload.getDetails());
+    Object result = MVEL.executeExpression(compiledExpr, new Message(payload), vars);
+    assertNull(result);
+    assertEquals(barDetails, payload.getDetails());
+  }
+
+  public void testCompiledAccExpressionSerialization() throws IOException, ClassNotFoundException {
+    Map<String, Object> vars = new HashMap();
+    vars.put(VARIABLE, new FooDetails());
+
+    ParserContext pCtx = new ParserContext(new ParserConfiguration());
+    CompiledAccExpression compiledAccExpression = new CompiledAccExpression(ASSIGNMENT_LEFT_EXPRESSION.toCharArray(), Object.class, pCtx);
+    assertNull(compiledAccExpression.getAccessor());
+
+    Message msg = new Message(new Foo2());
+    compiledAccExpression.setValue(msg, msg, new CachedMapVariableResolverFactory(vars), new FooDetails());
+    assertNotNull(compiledAccExpression.getAccessor());
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    new ObjectOutputStream(baos).writeObject(compiledAccExpression);
+    CompiledAccExpression readCompiledAccExpression = (CompiledAccExpression) new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray())).readObject();
+    assertNull(readCompiledAccExpression.getAccessor());
+  }
+
+  public static class Message {
+    public Object payload;
+
+    public Message(Object payload) {
+      this.payload = payload;
+    }
+  }
+
+  public static class Foo2 {
+
+    public FooDetails details;
+
+    public FooDetails getDetails() {
+      return details;
+    }
+
+    public void setDetails(FooDetails details) {
+      this.details = details;
+    }
+  }
+
+  public static class FooDetails {
+
+  }
+
+  public static class Bar2 {
+
+    public BarDetails details;
+
+    public BarDetails getDetails() {
+      return details;
+    }
+
+    public void setDetails(BarDetails details) {
+      this.details = details;
+    }
+  }
+
+  public static class BarDetails {
+
+  }
 }
