@@ -19,6 +19,8 @@
 package org.mule.mvel2.optimizers.impl.refl.nodes;
 
 import org.mule.mvel2.ast.Function;
+import org.mule.mvel2.ast.FunctionInstance;
+import org.mule.mvel2.ast.PrototypalFunctionInstance;
 import org.mule.mvel2.compiler.Accessor;
 import org.mule.mvel2.integration.VariableResolverFactory;
 
@@ -34,7 +36,13 @@ public class DynamicFunctionAccessor extends BaseAccessor {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     Object[] parms = null;
 
-    Function function = (Function) ctx;
+    Function function;
+    if (ctx instanceof FunctionInstance) {
+      function = ((FunctionInstance) ctx).getFunction();
+    }
+    else {
+      function = (Function) ctx;
+    }
 
     if (parameters != null && parameters.length != 0) {
       parms = new Object[parameters.length];

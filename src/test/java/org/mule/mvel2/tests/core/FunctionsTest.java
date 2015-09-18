@@ -17,6 +17,9 @@ import static org.mule.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Dhanji R. Prasanna (dhanji@gmail com)
@@ -198,6 +201,58 @@ public class FunctionsTest extends AbstractTest {
     Serializable s = MVEL.compileExpression("foo() + bar();");
 
     assertEquals("foobar", MVEL.executeExpression(s, myVarFactory));
+  }
+
+  Serializable lambdaDef = MVEL.compileExpression("lambda = def() {return 1;}");
+  Serializable lambdaCall = MVEL.compileExpression("lambda();");
+
+  public void testLambda() {
+    VariableResolverFactory functionFactory = new MapVariableResolverFactory();
+
+    MVEL.executeExpression(lambdaDef, functionFactory);
+    assertEquals(1, MVEL.executeExpression(lambdaCall, functionFactory));
+
+    MVEL.executeExpression(MVEL.compileExpression("lambda = def() {return 2;}"), functionFactory);
+    assertEquals(2, MVEL.executeExpression(lambdaCall, functionFactory));
+
+    MVEL.executeExpression(lambdaDef, functionFactory);
+    assertEquals(1, MVEL.executeExpression(lambdaCall, functionFactory));
+  }
+
+  /**
+   * MULE-8955
+   * @throws InterruptedException
+   */
+  public void testConcurrentLambda() throws InterruptedException {
+    final int N = 20;
+    final int iterations = 1000;
+    final CountDownLatch start = new CountDownLatch(1);
+    final CountDownLatch end = new CountDownLatch(N);
+    final AtomicInteger errors = new AtomicInteger(0);
+    for (int i = 0; i < N; i++) {
+      new Thread(new Runnable() {
+        public void run() {
+          try {
+            start.await();
+            for (int i = 0; i < iterations; ++i) {
+              testLambda();
+            }
+          }
+          catch (Exception e) {
+            errors.incrementAndGet();
+          }
+          finally {
+            end.countDown();
+          }
+        }
+      }, "thread-eval-" + i).start();
+    }
+    start.countDown();
+    assertEquals("Test did not complete withing 10s", true,
+                 end.await(10, TimeUnit.SECONDS));
+    if (errors.get() > 0) {
+      fail();
+    }
   }
 
 }
