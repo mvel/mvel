@@ -8,15 +8,12 @@ import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Cheese;
 import org.mvel2.tests.core.res.Foo;
-import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mvel2.MVEL.*;
-import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.MVEL.executeSetExpression;
 
 /**
  * @author Mike Brock .
@@ -61,7 +58,7 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testArrayDefinitionWithCoercion2() {
-    float[] d = (float[]) test("new float[] { 1,2,3,4 }");
+    float[] d = (float[]) MVEL.executeExpression( MVEL.compileExpression( "new float[] { 1,2,3,4 }" ) );
     assertEquals(2f,
         d[1]);
   }
