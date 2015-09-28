@@ -4438,4 +4438,13 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof ARef", pctx), vars));
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + ARef.class.getCanonicalName(), pctx), vars));
   }
+
+  public void testCompilerExceptionFormatting() throws Exception {
+    try {
+      Object value = test("\n2x * 3\n");
+      fail("Invalid expression should fail");
+    } catch (Exception e) {
+      // Invalid expression should fail to compile
+    }
+  }
 }
