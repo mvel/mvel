@@ -255,14 +255,31 @@ public class ParseTools {
     int bestScore = -1;
     boolean retry = false;
 
+    int maxDepth = -1;
     do {
       for (Method meth : methods) {
         if (classTarget && !Modifier.isStatic(meth.getModifiers())) continue;
 
         if (method.equals(meth.getName())) {
           if ((parmTypes = meth.getParameterTypes()).length == 0 && arguments.length == 0) {
+            if(bestCandidate == null) {
               bestCandidate = meth;
-              break;
+            }
+            // if meth is overridden in the object hierarchy it will appear multiple time in the Method[] and their order is not guaranteed
+            // from jvm version or even between process execution, hence we need to find which of them has the deepest hierarchy to return the covariant type.
+            if(bestCandidate != meth && bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType())){
+              Class<?> methReturnType = meth.getReturnType();
+              int deep = -1;
+              while(!methReturnType.equals(Object.class)){
+                deep++;
+                methReturnType = methReturnType.getSuperclass();
+              }
+              if(deep > maxDepth){
+                bestCandidate = meth;
+                maxDepth = deep;
+              }
+            }
+            continue;
           }
 
           boolean isVarArgs = meth.isVarArgs();
