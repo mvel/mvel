@@ -48,6 +48,7 @@ import org.mvel2.tests.core.res.WorkingMemoryImpl;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
+import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
@@ -4445,6 +4446,17 @@ public class CoreConfidenceTests extends AbstractTest {
       fail("Invalid expression should fail");
     } catch (Exception e) {
       // Invalid expression should fail to compile
+    }
+  }
+
+  public void testHandleNumericConversionBug() {
+    String[] testLiterals = {"0x20","020",};
+    String baseExpression = "int foo = ";
+
+    for( String literal : testLiterals ) {
+      char[] decExpr = ( baseExpression + literal ).toCharArray();
+      assertEquals( Integer.decode( literal ),
+                    ParseTools.handleNumericConversion( decExpr, baseExpression.length(), literal.length() ) );
     }
   }
 }

@@ -1641,7 +1641,7 @@ public class ParseTools {
         }
       }
 
-      return Integer.decode(new String(val));
+      return Integer.decode(new String(val, start, offset));
     }
     else if (!isDigit(val[start + offset - 1])) {
       switch (val[start + offset - 1]) {
