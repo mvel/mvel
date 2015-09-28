@@ -818,8 +818,7 @@ public class ParserContext implements Serializable {
   }
 
   public Function getFunction(String name) {
-    if (globalFunctions == null) return null;
-    return globalFunctions.get(name);
+    return globalFunctions == null ? null : globalFunctions.get(name);
   }
 
   public Map getFunctions() {

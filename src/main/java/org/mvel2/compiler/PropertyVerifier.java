@@ -463,22 +463,24 @@ public class PropertyVerifier extends AbstractOptimizer {
         ctx = m.getDeclaringClass();
         name = m.getName();
       }
-      else if (pCtx.hasFunction(name)) {
-        resolvedExternally = false;
+      else {
         Function f = pCtx.getFunction(name);
-        f.checkArgumentCount(
-            parseParameterList(
-                (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
-                    ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
+        if (f != null && f.getEgressType() != null) {
+          resolvedExternally = false;
+          f.checkArgumentCount(
+                  parseParameterList(
+                          (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
+                           ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
-        return f.getEgressType();
-      }
-      else if (pCtx.hasVarOrInput("this")) {
-        if (pCtx.isStrictTypeEnforcement()) {
-          recordTypeParmsForProperty("this");
+          return f.getEgressType();
         }
-        ctx = pCtx.getVarOrInputType("this");
-        resolvedExternally = false;
+        else if (pCtx.hasVarOrInput("this")) {
+          if (pCtx.isStrictTypeEnforcement()) {
+            recordTypeParmsForProperty("this");
+          }
+          ctx = pCtx.getVarOrInputType("this");
+          resolvedExternally = false;
+        }
       }
     }
 
