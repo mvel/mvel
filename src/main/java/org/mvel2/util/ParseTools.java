@@ -250,7 +250,7 @@ public class ParseTools {
       return null;
     }
 
-    Class[] parmTypes;
+    Class<?>[] parmTypes;
     Method bestCandidate = null;
     int bestScore = -1;
     boolean retry = false;
@@ -260,9 +260,12 @@ public class ParseTools {
         if (classTarget && !Modifier.isStatic(meth.getModifiers())) continue;
 
         if (method.equals(meth.getName())) {
-          if ((parmTypes = meth.getParameterTypes()).length == 0 && arguments.length == 0) {
+          parmTypes = meth.getParameterTypes();
+          if (parmTypes.length == 0 && arguments.length == 0) {
+            if (bestCandidate == null || isMoreSpecialized(meth, bestCandidate) ) {
               bestCandidate = meth;
-              break;
+            }
+            continue;
           }
 
           boolean isVarArgs = meth.isVarArgs();
@@ -277,9 +280,7 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()) &&
-                  bestCandidate.getDeclaringClass().isAssignableFrom(meth.getDeclaringClass()) &&
-                  !isVarArgs) {
+              if (isMoreSpecialized(meth, bestCandidate) && !isVarArgs) {
                 bestCandidate = meth;
               }
             }
@@ -314,10 +315,15 @@ public class ParseTools {
     return bestCandidate;
   }
 
-  private static int getMethodScore(Class[] arguments, boolean requireExact, Class[] parmTypes, boolean varArgs) {
+  private static boolean isMoreSpecialized( Method newCandidate, Method oldCandidate ) {
+    return oldCandidate.getReturnType().isAssignableFrom( newCandidate.getReturnType()) &&
+           oldCandidate.getDeclaringClass().isAssignableFrom( newCandidate.getDeclaringClass());
+  }
+
+  private static int getMethodScore(Class[] arguments, boolean requireExact, Class<?>[] parmTypes, boolean varArgs) {
     int score = 0;
     for (int i = 0; i != arguments.length; i++) {
-      Class actualParamType;
+      Class<?> actualParamType;
       if (varArgs && i >= parmTypes.length - 1)
         actualParamType = parmTypes[parmTypes.length - 1].getComponentType();
       else
@@ -371,7 +377,7 @@ public class ParseTools {
     return score;
   }
 
-  public static int scoreInterface(Class parm, Class arg) {
+  public static int scoreInterface(Class<?> parm, Class<?> arg) {
     if (parm.isInterface()) {
       Class[] iface = arg.getInterfaces();
       if (iface != null) {
@@ -566,7 +572,7 @@ public class ParseTools {
   }
 
 
-  public static Class boxPrimitive(Class cls) {
+  public static Class<?> boxPrimitive(Class cls) {
     if (cls == int.class || cls == Integer.class) {
       return Integer.class;
     }
@@ -717,49 +723,49 @@ public class ParseTools {
   }
 
   private static boolean containsCheckOnBooleanArray(boolean[] array, Boolean compareTest) {
-    boolean test = compareTest.booleanValue();
+    boolean test = compareTest;
     for (boolean b : array) if (b == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnIntArray(int[] array, Integer compareTest) {
-    int test = compareTest.intValue();
+    int test = compareTest;
     for (int i : array) if (i == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnLongArray(long[] array, Long compareTest) {
-    long test = compareTest.longValue();
+    long test = compareTest;
     for (long l : array) if (l == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnDoubleArray(double[] array, Double compareTest) {
-    double test = compareTest.doubleValue();
+    double test = compareTest;
     for (double d : array) if (d == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnFloatArray(float[] array, Float compareTest) {
-    float test = compareTest.floatValue();
+    float test = compareTest;
     for (float f : array) if (f == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnCharArray(char[] array, Character compareTest) {
-    char test = compareTest.charValue();
+    char test = compareTest;
     for (char c : array) if (c == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnShortArray(short[] array, Short compareTest) {
-    short test = compareTest.shortValue();
+    short test = compareTest;
     for (short s : array) if (s == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnByteArray(byte[] array, Byte compareTest) {
-    byte test = compareTest.byteValue();
+    byte test = compareTest;
     for (byte b : array) if (b == test) return true;
     return false;
   }

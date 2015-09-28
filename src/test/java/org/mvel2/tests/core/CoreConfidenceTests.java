@@ -4459,4 +4459,27 @@ public class CoreConfidenceTests extends AbstractTest {
                     ParseTools.handleNumericConversion( decExpr, baseExpression.length(), literal.length() ) );
     }
   }
+
+  public static class Parent {
+    public Object getSomething() {
+      return null;
+    }
+  }
+
+  public static class Child extends Parent {
+    @Override
+    public String getSomething() {
+      return null;
+    }
+  }
+
+  public void testNoArgMethodInheritance() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", Parent.class);
+    parserContext.addInput("b", Child.class);
+    assertEquals(Object.class, MVEL.analyze("a.getSomething()", parserContext));
+    assertEquals(String.class, MVEL.analyze("b.getSomething()", parserContext));
+  }
 }
