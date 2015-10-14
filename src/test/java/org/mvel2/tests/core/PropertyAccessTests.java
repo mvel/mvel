@@ -1,5 +1,6 @@
 package org.mvel2.tests.core;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.PropertyHandler;
@@ -18,6 +19,13 @@ import static org.mvel2.MVEL.executeExpression;
 
 
 public class PropertyAccessTests extends AbstractTest {
+  protected void setUp() throws Exception {
+    super.setUp();
+    // Ensure MVEL settings are not leaked across tests
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+  }
+
   public void testSingleProperty() {
     assertEquals(false, test("fun"));
   }
@@ -358,6 +366,7 @@ public class PropertyAccessTests extends AbstractTest {
   }
 
   public void testMVEL226() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
     A226 a = new A226();
     Map m = Collections.singletonMap("a", a);
     Map<String, Object> nestMap = Collections.<String, Object>singletonMap("foo", "bar");
@@ -380,6 +389,27 @@ public class PropertyAccessTests extends AbstractTest {
     a.map = nestMap;
     assertEquals("bar", MVEL.executeExpression(s, m));
   }
+  
+  private void infiniteLoop() {
+    try {
+      Serializable compiled = MVEL.compileExpression("a['b']['c']");
+      Map<String, Object> vars = Collections.singletonMap("a", (Object)Collections.emptyMap());
+      MVEL.executeExpression(compiled, vars);
+      fail("expected exception");
+    } catch(CompileException t) {
+    }
+  }
+
+  public void testInfiniteLoopWithASMOptimizer() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    infiniteLoop();
+  }
+
+  public void testInfiniteLoopWithASMOptimizerAO() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    infiniteLoop();
+  }
 
   public void testInfiniteLoop() {
     A226 a = new A226();
@@ -393,7 +423,12 @@ public class PropertyAccessTests extends AbstractTest {
       // ignore
     }
   }
-    
+  
+  public void testInfiniteLoopAO() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+    testInfiniteLoop();
+  }
+
   public void testNonHashMapImplMapPutMVEL302() {
     test("map=new java.util.Hashtable();map.foo='bar'");
   }

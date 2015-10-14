@@ -1357,14 +1357,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     currType = null;
-    if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
-
-    if (first) {
-      assert debug("ALOAD 1");
-      mv.visitVarInsn(ALOAD, 1);
-    }
 
     int start = ++cursor;
 
@@ -1379,6 +1373,12 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     String tk = new String(expr, start, cursor - start);
 
     assert debug("{collection token: [" + tk + "]}");
+
+    if (ctx == null) return null;
+    if (first) {
+      assert debug("ALOAD 1");
+      mv.visitVarInsn(ALOAD, 1);
+    }
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray(), pCtx);
     Object item = compiled.getValue(ctx, variableFactory);
@@ -1514,7 +1514,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     currType = null;
-    if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
@@ -1531,6 +1530,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     String tk = new String(expr, _start, cursor - _start);
 
     assert debug("{collection token:<<" + tk + ">>}");
+
+    if (ctx == null) return null;
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
     Object item = compiled.getValue(ctx, variableFactory);
