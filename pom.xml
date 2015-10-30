@@ -8,13 +8,14 @@
     <version>2.1.9-MULE-008-SNAPSHOT</version>
 
     <name>mvel</name>
-
     <description>
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
         from the smallest property binding and extraction, to full blown scripts.
-        This is a fork of MVEL customized for use in Mule ESB
+        This is a fork of MVEL customized for use in Mule.
     </description>
+    <url>http://www.mulesoft.org</url>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -22,6 +23,61 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <id>mbaldini</id>
+            <name>Matias Baldini</name>
+            <email>matias.baldini@mulesoft.com</email>
+            <roles>
+                <role>Project Manager</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>dfeist</id>
+            <name>Daniel Feist</name>
+        </developer>
+        <developer>
+            <id>afelisatti</id>
+            <name>Ana Felisatti</name>
+        </developer>
+        <developer>
+            <id>LucianoGandini</id>
+            <name>Luciano Gandini</name>
+        </developer>
+        <developer>
+            <id>marianogonzalez</id>
+            <name>Mariano Gonzalez</name>
+        </developer>
+        <developer>
+            <id>aiannucci</id>
+            <name>Alejandro Iannucci</name>
+        </developer>
+        <developer>
+            <id>pablokraan</id>
+            <name>Pablo Kraan</name>
+        </developer>
+        <developer>
+            <id>pablolagreca</id>
+            <name>Pablo La Greca</name>
+        </developer>
+        <developer>
+            <id>marcosnc</id>
+            <name>Marcos Nunez Cortes</name>
+        </developer>
+        <developer>
+            <id>anosenzo</id>
+            <name>Alejandro Nosenzo</name>
+        </developer>
+        <developer>
+            <id>asequeira</id>
+            <name>Alejandro Sequeira</name>
+        </developer>
+        <developer>
+            <id>elrodro83</id>
+            <name>Rodrigo Merino</name>
+        </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:mulesoft/mvel.git</connection>
@@ -32,6 +88,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4jVersion>1.7.7</slf4jVersion>
+        <skipGpg>true</skipGpg>
     </properties>
 
     <build>
@@ -153,6 +210,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.2.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>${skipGpg}</skip>
+                </configuration>
             </plugin>
 
             <plugin>
