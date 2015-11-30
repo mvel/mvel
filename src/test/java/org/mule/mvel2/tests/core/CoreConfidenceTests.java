@@ -4294,4 +4294,14 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     fail();
   }
+
+  public void testCompilerExceptionFormatting() throws Exception {
+    try {
+      Object value = test("\n2x * 3\n");
+      fail("Invalid expression should fail");
+    }
+    catch (Exception e) {
+      // Invalid expression should fail to compile
+    }
+  }
 }
