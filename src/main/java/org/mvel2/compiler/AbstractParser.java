@@ -223,14 +223,7 @@ public class AbstractParser implements Parser, Serializable {
 
       CLASS_LITERALS.put("Array", java.lang.reflect.Array.class);
 
-      if (parseDouble(PropertyTools.getJavaVersion().substring(0, 3)) >= 1.5) {
-        try {
-          CLASS_LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
-        }
-        catch (Exception e) {
-          throw new RuntimeException("cannot resolve a built-in literal", e);
-        }
-      }
+      CLASS_LITERALS.put("StringBuilder", StringBuilder.class);
 
       // Setup LITERALS
       LITERALS.putAll(CLASS_LITERALS);

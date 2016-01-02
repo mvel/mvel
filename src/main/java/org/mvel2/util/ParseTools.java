@@ -79,21 +79,6 @@ public class ParseTools {
   public static final Object[] EMPTY_OBJ_ARR = new Object[0];
   public static final Class[] EMPTY_CLS_ARR = new Class[0];
 
-  static {
-    try {
-      double version = parseDouble(PropertyTools.getJavaVersion().substring(0, 3));
-      if (version < 1.5) {
-        throw new RuntimeException("unsupported java version: " + version);
-      }
-    }
-    catch (RuntimeException e) {
-      throw e;
-    }
-    catch (Exception e) {
-      throw new RuntimeException("unable to initialize math processor", e);
-    }
-  }
-
   public static List<char[]> parseMethodOrConstructor(char[] parm) {
     int start = -1;
     for (int i = 0; i < parm.length; i++) {
