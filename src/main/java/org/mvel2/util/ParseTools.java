@@ -376,13 +376,14 @@ public class ParseTools {
   }
 
   public static Method getExactMatch(String name, Class[] args, Class returnType, Class cls) {
-    for (Method meth : cls.getMethods()) {
+	outer:
+	for (Method meth : cls.getMethods()) {
       if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
         Class[] parameterTypes = meth.getParameterTypes();
         if (parameterTypes.length != args.length) continue;
 
         for (int i = 0; i < parameterTypes.length; i++) {
-          if (parameterTypes[i] != args[i]) return null;
+          if (parameterTypes[i] != args[i]) continue outer;
         }
         return meth;
       }

@@ -34,6 +34,7 @@ import org.mvel2.tests.core.res.KnowledgeHelperFixer;
 import org.mvel2.tests.core.res.MapObject;
 import org.mvel2.tests.core.res.MyClass;
 import org.mvel2.tests.core.res.MyInterface;
+import org.mvel2.tests.core.res.OverloadedInterface;
 import org.mvel2.tests.core.res.PojoStatic;
 import org.mvel2.tests.core.res.RuleBase;
 import org.mvel2.tests.core.res.RuleBaseImpl;
@@ -47,6 +48,7 @@ import org.mvel2.tests.core.res.WorkingMemory;
 import org.mvel2.tests.core.res.WorkingMemoryImpl;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
+import org.mvel2.tests.core.res.res2.OverloadedClass;
 import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
@@ -4482,4 +4484,13 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(Object.class, MVEL.analyze("a.getSomething()", parserContext));
     assertEquals(String.class, MVEL.analyze("b.getSomething()", parserContext));
   }
+  
+  
+  public void testMethodOverloadMatch() throws Exception {
+	  OverloadedClass c = new OverloadedClass();
+	  Method found  = ParseTools.getExactMatch("putXX", new Class[]{int.class, String.class}, void.class, OverloadedInterface.class);
+	  Method correct = OverloadedInterface.class.getMethod("putXX", new Class[]{int.class, String.class});
+	  assertEquals(correct, found);
+  }
+  
 }
