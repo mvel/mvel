@@ -4019,6 +4019,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testDhanji2() {
+    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
     String ex =
         "name = null;\n" +
             "$_1 = ?name.?toLowerCase();\n";
