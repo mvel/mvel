@@ -22,6 +22,7 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class CachingMapVariableResolverFactory extends BaseVariableResolverFacto
   protected Map<String, Object> variables;
 
   public CachingMapVariableResolverFactory(Map variables) {
-    this.variables = variables;
+    this.variables = new HashMap<>(variables);
   }
 
   public VariableResolver createVariable(String name, Object value) {
