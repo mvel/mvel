@@ -20,6 +20,7 @@ package org.mule.mvel2.math;
 import org.mule.mvel2.DataTypes;
 import org.mule.mvel2.Operator;
 import org.mule.mvel2.Unit;
+import org.mule.mvel2.compiler.BlankLiteral;
 import org.mule.mvel2.debug.DebugTools;
 import org.mule.mvel2.util.InternalNumber;
 
@@ -664,7 +665,7 @@ public strictfp class MathProcessor {
   }
 
   private static Double getNumber(Object in, int type) {
-    if (in == null)
+    if (in == null || in == BlankLiteral.INSTANCE)
       return 0d;
     switch (type) {
       case BIG_DECIMAL:

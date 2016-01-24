@@ -151,6 +151,14 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, _test("empty == ['a']"));
   }
 
+  public void testBlank11() {
+    assertEquals(false, _test("1 == empty"));
+  }
+
+  public void testBlank12() {
+    assertEquals(true, _test("0 == empty"));
+  }
+
   public void testInstanceCheck1() {
     assertEquals(true, test("c is java.lang.String"));
   }
