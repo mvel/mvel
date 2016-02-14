@@ -2,10 +2,6 @@ package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
-
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
@@ -21,7 +17,14 @@ import org.mvel2.tests.core.res.MyEnum;
 import org.mvel2.tests.core.res.Thing;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 public class WithTests extends AbstractTest {
   public void testWith() {
@@ -118,11 +121,11 @@ public class WithTests extends AbstractTest {
 
   public void testInlineWith4() {
     OptimizerFactory.setDefaultOptimizer("ASM");
-    ExpressionCompiler expr = new ExpressionCompiler("new Foo().{ name = 'bar' }");
     ParserContext pCtx = new ParserContext();
     pCtx.addImport(Foo.class);
 
-    CompiledExpression c = expr.compile(pCtx);
+    ExpressionCompiler expr = new ExpressionCompiler("new Foo().{ name = 'bar' }", pCtx);
+    CompiledExpression c = expr.compile();
 
     Foo f = (Foo) executeExpression(c);
 
@@ -141,7 +144,7 @@ public class WithTests extends AbstractTest {
 
     pCtx.addInput("foo", Foo.class);
 
-    CompiledExpression expr = new ExpressionCompiler("foo.{name='poopy', aValue='bar'}").compile(pCtx);
+    CompiledExpression expr = new ExpressionCompiler("foo.{name='poopy', aValue='bar'}", pCtx).compile();
     Foo f = (Foo) executeExpression(expr, createTestMap());
     assertEquals("poopy", f.getName());
     assertEquals("bar", f.aValue);
@@ -216,13 +219,12 @@ public class WithTests extends AbstractTest {
     vars.put("$value",
         new Long(5));
 
-    ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
-
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("test.mv");
     ctx.setDebugSymbols(true);
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };", ctx);
+    CompiledExpression compiled = compiler.compile();
 
     executeExpression(compiled, null, vars);
     executeExpression(compiled, null, vars);
@@ -237,13 +239,12 @@ public class WithTests extends AbstractTest {
     vars.put("$value",
         new Long(5));
 
-    ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
-
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("test.mv");
     ctx.setDebugSymbols(true);
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };", ctx);
+    CompiledExpression compiled = compiler.compile();
 
     executeExpression(compiled,
         null,
@@ -273,8 +274,8 @@ public class WithTests extends AbstractTest {
     ParserContext context = new ParserContext();
     context.addImport(Recipient.class);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(text);
-    Serializable execution = compiler.compile(context);
+    ExpressionCompiler compiler = new ExpressionCompiler(text, context);
+    Serializable execution = compiler.compile();
     List result = (List) executeExpression(execution,
         new HashMap());
     assertEquals(list,
@@ -313,8 +314,8 @@ public class WithTests extends AbstractTest {
 
     OptimizerFactory.setDefaultOptimizer("ASM");
 
-    ExpressionCompiler compiler = new ExpressionCompiler(text);
-    Serializable execution = compiler.compile(context);
+    ExpressionCompiler compiler = new ExpressionCompiler(text, context);
+    Serializable execution = compiler.compile();
 
     assertEquals(msg,
         executeExpression(execution));
@@ -326,8 +327,8 @@ public class WithTests extends AbstractTest {
     OptimizerFactory.setDefaultOptimizer("reflective");
 
     context = new ParserContext(context.getParserConfiguration());
-    compiler = new ExpressionCompiler(text);
-    execution = compiler.compile(context);
+    compiler = new ExpressionCompiler(text, context);
+    execution = compiler.compile();
 
     assertEquals(msg,
         executeExpression(execution));

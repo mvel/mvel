@@ -43,6 +43,8 @@ public class CompileException extends RuntimeException {
 
   private List<ErrorDetail> errors;
 
+  private Object evaluationContext;
+
   public CompileException(String message, List<ErrorDetail> errors, char[] expr, int cursor, ParserContext ctx) {
     super(message);
     this.expr = expr;
@@ -56,6 +58,10 @@ public class CompileException extends RuntimeException {
     }
 
     this.errors = errors;
+  }
+
+  public void setEvaluationContext(Object evaluationContext) {
+    this.evaluationContext = evaluationContext;
   }
 
   public String toString() {
@@ -126,7 +132,7 @@ public class CompileException extends RuntimeException {
     int lastCr;
 
     try {
-      cs = copyValueOf(expr, start, end - start);
+      cs = copyValueOf(expr, start, end - start).trim();
     }
     catch (StringIndexOutOfBoundsException e) {
       throw e;
@@ -226,8 +232,10 @@ public class CompileException extends RuntimeException {
 
     calcRowAndColumn();
 
-    if (lineNumber != -1) {
-      appender.append('\n')
+    if (evaluationContext != null) {
+      appender.append("\n").append("In ").append(evaluationContext);
+    } else if (lineNumber != -1) {
+      appender.append("\n")
           .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
     }
     return appender.toString();

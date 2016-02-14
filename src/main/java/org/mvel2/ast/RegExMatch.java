@@ -48,7 +48,7 @@ public class RegExMatch extends ASTNode {
     this.patternOffset = patternOffset;
 
     if ((fields & COMPILE_IMMEDIATE) != 0) {
-      this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
+      this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
       if ((this.patternStmt = (ExecutableStatement)
           subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
 

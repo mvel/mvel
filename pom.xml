@@ -5,7 +5,7 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.2.0.Final</version>
+    <version>2.2.8-SNAPSHOT</version>
 
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
@@ -21,17 +21,52 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <inceptionYear>2001</inceptionYear>
+    <organization>
+        <name>JBoss by Red Hat</name>
+        <url>http://www.jboss.org/</url>
+    </organization>
 
     <scm>
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
+        <tag>HEAD</tag>
     </scm>
     <issueManagement>
         <system>jira</system>
         <url>http://jira.codehaus.org/browse/MVEL</url>
     </issueManagement>
-
+    <developers>
+        <developer>
+            <name>All developers are listed on the team website</name>
+            <url>http://www.jboss.org/drools/team</url>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>All contributors are listed on the team website</name>
+            <url>http://www.jboss.org/drools/team</url>
+        </contributor>
+    </contributors>
+    <mailingLists>
+        <mailingList>
+            <name>user</name>
+            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-users</subscribe>
+            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-users</unsubscribe>
+            <archive>http://dir.gmane.org/gmane.comp.java.drools.user</archive>
+            <otherArchives>
+                <otherArchive>http://drools.46999.n3.nabble.com/Drools-User-forum-f47000.html</otherArchive>
+            </otherArchives>
+        </mailingList>
+        <mailingList>
+            <name>dev</name>
+            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</subscribe>
+            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</unsubscribe>
+            <archive>http://dir.gmane.org/gmane.comp.java.drools.devel</archive>
+        </mailingList>
+    </mailingLists>
+    
     <!--<pluginRepositories>-->
     <!--<pluginRepository>-->
     <!--<id>apache-snapshots</id>-->
@@ -44,7 +79,7 @@
     <!--</pluginRepositories>-->
 
     <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <build>
         <extensions>
@@ -164,13 +199,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>2.5.1</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.0.1</version>
+                <version>2.3.7</version>
                 <extensions>true</extensions>
                 <executions>
                     <execution>
@@ -186,7 +221,12 @@
                     <instructions>
                         <Bundle-SymbolicName>org.mvel2</Bundle-SymbolicName>
                         <Bundle-Name>mvel2</Bundle-Name>
-                        <Import-Package>sun.*;resolution:=optional, *</Import-Package>
+                        <Import-Package>
+                            sun.*;resolution:=optional, *
+                        </Import-Package>
+                        <Export-Package>
+                            org.mvel2.*
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -236,18 +276,15 @@
     </dependencies>
 
     <distributionManagement>
-        <!-- use the following if you're not using a snapshot version. -->
         <repository>
-            <id>codehaus.org</id>
-            <name>Codehaus Maven Repository</name>
-            <url>dav:https://dav.codehaus.org/repository/mvel/</url>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
         </repository>
-        <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
-            <id>codehaus.org</id>
-            <name>Codehaus Snapshot Maven Repository</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/mvel/</url>
-            <uniqueVersion>false</uniqueVersion>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshot Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 

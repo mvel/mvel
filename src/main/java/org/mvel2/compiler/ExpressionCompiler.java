@@ -47,28 +47,12 @@ public class ExpressionCompiler extends AbstractParser {
   private boolean secondPassOptimization = false;
 
   public CompiledExpression compile() {
-    return compile(contextControl(GET_OR_CREATE, null, this));
-  }
-
-  @Deprecated
-  /**
-   * @deprecated use {@link org.mvel2.MVEL#compileExpression(String, org.mvel2.ParserContext)} instead.
-   * @param ctx
-   * @return compile payload.
-   */
-  public CompiledExpression compile(ParserContext ctx) {
     try {
-      this.debugSymbols = (this.pCtx = ctx).isDebugSymbols();
-      newContext(ctx);
+      this.debugSymbols = pCtx.isDebugSymbols();
       return _compile();
     }
     finally {
-      //noinspection ThrowFromFinallyBlock
-      removeContext();
-
       if (pCtx.isFatalError()) {
-        contextControl(REMOVE, null, null);
-
         StringAppender err = new StringAppender();
 
         Iterator<ErrorDetail> iter = pCtx.getErrorList().iterator();
@@ -116,8 +100,6 @@ public class ExpressionCompiler extends AbstractParser {
     compileMode = true;
 
     boolean firstLA;
-
-    if (pCtx == null) pCtx = getParserContext();
 
     try {
       if (verifying) {
@@ -313,7 +295,6 @@ public class ExpressionCompiler extends AbstractParser {
       throw ErrorUtil.rewriteIfNeeded(e, expr, st);
     }
     catch (Throwable e) {
-      parserContext.set(null);
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       else {
         throw new CompileException(e.getMessage(), expr, st, e);
@@ -494,7 +475,7 @@ public class ExpressionCompiler extends AbstractParser {
 
   public ExpressionCompiler(String expression, ParserContext ctx) {
     setExpression(expression);
-    contextControl(SET, ctx, this);
+    this.pCtx = ctx;
   }
 
   public ExpressionCompiler(char[] expression, int start, int offset) {
@@ -511,8 +492,7 @@ public class ExpressionCompiler extends AbstractParser {
     this.end = start + offset;
     this.end = trimLeft(this.end);
     this.length = this.end - start;
-
-    contextControl(SET, ctx, this);
+    this.pCtx = ctx;
   }
 
   public ExpressionCompiler(char[] expression, int start, int offset, ParserContext ctx) {
@@ -521,13 +501,12 @@ public class ExpressionCompiler extends AbstractParser {
     this.end = start + offset;
     this.end = trimLeft(this.end);
     this.length = this.end - start;
-
-    contextControl(SET, ctx, this);
+    this.pCtx = ctx;
   }
 
   public ExpressionCompiler(char[] expression, ParserContext ctx) {
     setExpression(expression);
-    contextControl(SET, ctx, this);
+    this.pCtx = ctx;
   }
 
   public boolean isVerifying() {
@@ -556,10 +535,6 @@ public class ExpressionCompiler extends AbstractParser {
 
   public ParserContext getParserContextState() {
     return pCtx;
-  }
-
-  public void removeParserContext() {
-    removeContext();
   }
 
   public boolean isLiteralOnly() {

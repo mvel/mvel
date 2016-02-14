@@ -2,11 +2,11 @@ package org.mvel2.tests.core;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
-import org.mvel2.*;
-
-import static org.mvel2.MVEL.executeExpression;
-import static org.mvel2.MVEL.parseMacros;
-
+import org.mvel2.MVEL;
+import org.mvel2.MVELRuntime;
+import org.mvel2.Macro;
+import org.mvel2.MacroProcessor;
+import org.mvel2.ParserContext;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -21,6 +21,9 @@ import org.mvel2.tests.core.res.Foo;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.parseMacros;
 
 public class MacroProcessorTest extends TestCase {
 
@@ -112,13 +115,12 @@ public class MacroProcessorTest extends TestCase {
       }
     });
 
-    ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo = poo', bValue = 'poo, poo' }; mod", macros));
-
     ParserContext ctx = new ParserContext(null, interceptors, null);
     ctx.setSourceFile("test.mv");
     ctx.setDebugSymbols(true);
 
-    assertEquals("FOOBAR!", executeExpression(compiler.compile(ctx), null, vars));
+    ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo = poo', bValue = 'poo, poo' }; mod", macros), ctx);
+    assertEquals("FOOBAR!", executeExpression(compiler.compile(), null, vars));
   }
 
 
@@ -137,13 +139,12 @@ public class MacroProcessorTest extends TestCase {
 
     assertEquals("", foo.aValue);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("\"This is an modify()\"", macros));
-
     ParserContext ctx = new ParserContext(null, null, null);
     ctx.setSourceFile("test.mv");
     ctx.setDebugSymbols(true);
 
-    assertEquals("This is an modify()", executeExpression(compiler.compile(ctx), null, vars));
+    ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("\"This is an modify()\"", macros), ctx);
+    assertEquals("This is an modify()", executeExpression(compiler.compile(), null, vars));
   }
 
 
@@ -176,20 +177,20 @@ public class MacroProcessorTest extends TestCase {
       }
     });
 
+    ParserContext ctx = new ParserContext(null, interceptors, null);
+    ctx.setSourceFile("test.mv");
+    ctx.setDebugSymbols(true);
+
     ExpressionCompiler compiler = new ExpressionCompiler(
         parseMacros(
             "System.out.println('hello');\n" +
                 "System.out.println('bye');\n" +
                 "modify (foo) { aValue = 'poo', \n" +
                 " aValue = 'poo' };\n mod", macros)
-    );
+    , ctx);
     // compiler.setDebugSymbols(true);
 
-    ParserContext ctx = new ParserContext(null, interceptors, null);
-    ctx.setSourceFile("test.mv");
-    ctx.setDebugSymbols(true);
-
-    CompiledExpression compiled = compiler.compile(ctx);
+    CompiledExpression compiled = compiler.compile();
 
     MVELRuntime.setThreadDebugger(new Debugger() {
 

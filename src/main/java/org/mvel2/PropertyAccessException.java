@@ -19,27 +19,19 @@ package org.mvel2;
 
 public class PropertyAccessException extends CompileException {
 
-//    public PropertyAccessException() {
-//        super();
-//    }
-//
-//    public PropertyAccessException(String message) {
-//        super( message);
-//    }
-//
-//    public PropertyAccessException(String message, Throwable cause) {
-//        super( message, cause);
-//    }
-//
-//    public PropertyAccessException(Throwable cause) {
-//        super(cause);
-//    }
-
-  public PropertyAccessException(String message, char[] expr, int cursor, Throwable e) {
+  public PropertyAccessException(String message, char[] expr, int cursor, Throwable e, ParserContext pCtx) {
     super(message, expr, cursor, e);
+    setParserContext(pCtx);
   }
 
-  public PropertyAccessException(String message, char[] expr, int cursor) {
+  public PropertyAccessException(String message, char[] expr, int cursor, ParserContext pCtx) {
     super(message, expr, cursor);
+    setParserContext(pCtx);
+  }
+
+  private void setParserContext(ParserContext pCtx) {
+    if (pCtx != null) {
+      setEvaluationContext(pCtx.getEvaluationContext());
+    }
   }
 }

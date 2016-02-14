@@ -24,12 +24,10 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
-import org.mvel2.integration.impl.MapVariableResolver;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.mvel2.Operator.*;
@@ -64,9 +62,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
     }
     catch (CompileException e) {
       throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
-    }
-    finally {
-      if (parserContext != null) contextControl(REMOVE, null, null);
     }
   }
 
@@ -351,8 +346,24 @@ public class MVELInterpretedRuntime extends AbstractParser {
     this.variableFactory = resolverFactory;
   }
 
+  public MVELInterpretedRuntime(char[] expr, int start, int offset, Object ctx, VariableResolverFactory resolverFactory, ParserContext pCtx) {
+    super(pCtx);
+    this.expr = expr;
+    this.start = start;
+    this.end = start + offset;
+    this.length = end - start;
+    this.ctx = ctx;
+    this.variableFactory = resolverFactory;
+  }
 
   public MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory) {
+    setExpression(expression);
+    this.ctx = ctx;
+    this.variableFactory = resolverFactory;
+  }
+
+  public MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory, ParserContext pCtx) {
+    super(pCtx);
     setExpression(expression);
     this.ctx = ctx;
     this.variableFactory = resolverFactory;

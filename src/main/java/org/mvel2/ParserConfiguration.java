@@ -28,10 +28,16 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.lang.Thread.currentThread;
+import static org.mvel2.util.ParseTools.forNameWithInner;
 
 /**
  * The resusable parser configuration object.
@@ -118,7 +124,7 @@ public class ParserConfiguration implements Serializable {
       }
       else {
         for (Field f : c.getDeclaredFields()) {
-          if ((f.getModifiers() & (Modifier.STATIC | Modifier.PUBLIC)) != 0) {
+          if ((f.getModifiers() & (Modifier.STATIC | Modifier.PUBLIC)) == (Modifier.STATIC | Modifier.PUBLIC)) {
             imports.put(f.getName(), f.get(null));
           }
         }
@@ -160,10 +166,10 @@ public class ParserConfiguration implements Serializable {
     Class cls = null;
     for (String pkg : packageImports) {
       try {
-        cls = Class.forName(pkg + "." + className, true, getClassLoader());
+        cls = forNameWithInner( pkg + "." + className, getClassLoader() );
         found++;
       }
-      catch (ClassNotFoundException e) {
+      catch (ClassNotFoundException cnfe) {
         // do nothing.
       }
       catch (NoClassDefFoundError e) {

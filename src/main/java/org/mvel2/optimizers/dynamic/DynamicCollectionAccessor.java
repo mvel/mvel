@@ -19,7 +19,6 @@
 package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -27,6 +26,7 @@ import org.mvel2.optimizers.OptimizerFactory;
 import static java.lang.System.currentTimeMillis;
 
 public class DynamicCollectionAccessor implements DynamicAccessor {
+  private ParserContext pCtx;
   private Object rootObject;
   private Class colType;
 
@@ -44,7 +44,8 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
   private Accessor _safeAccessor;
   private Accessor _accessor;
 
-  public DynamicCollectionAccessor(Object rootObject, Class colType, char[] property, int start, int offset, int type, Accessor _accessor) {
+  public DynamicCollectionAccessor(ParserContext pCtx, Object rootObject, Class colType, char[] property, int start, int offset, int type, Accessor _accessor) {
+    this.pCtx = pCtx;
     this.rootObject = rootObject;
     this.colType = colType;
     this._safeAccessor = this._accessor = _accessor;
@@ -63,7 +64,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
         if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
           opt = true;
 
-          return optimize(AbstractParser.getCurrentThreadParserContext(), ctx, elCtx, variableFactory);
+          return optimize(pCtx, ctx, elCtx, variableFactory);
         }
         else {
           runcount = 0;

@@ -19,7 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
-import org.mvel2.MVEL;
+import org.mvel2.MVELInterpretedRuntime;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.compiler.CompiledAccExpression;
@@ -126,11 +126,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     checkNameSafety(varName);
 
+    MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(expr, start, offset, ctx, factory, pCtx);
+
     if (col) {
-      PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory), pCtx);
+      PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = runtime.parse(), pCtx);
     }
     else {
-      return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();
+      return factory.createVariable(varName, runtime.parse()).getValue();
     }
 
     return ctx;

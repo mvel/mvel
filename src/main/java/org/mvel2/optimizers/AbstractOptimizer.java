@@ -19,6 +19,7 @@ package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
 
 import java.lang.reflect.Method;
@@ -41,6 +42,12 @@ public class AbstractOptimizer extends AbstractParser {
   protected boolean staticAccess = false;
 
   protected int tkStart;
+
+  protected AbstractOptimizer() { }
+
+  protected AbstractOptimizer(ParserContext pCtx) {
+    super(pCtx);
+  }
 
   /**
    * Try static access of the property, and return an instance of the Field, Method of Class if successful.
@@ -68,20 +75,21 @@ public class AbstractOptimizer extends AbstractParser {
           case '.':
             if (!meth) {
               ClassLoader classLoader = pCtx != null ? pCtx.getClassLoader() : currentThread().getContextClassLoader();
+              String test = new String(expr, start, (cursor = last) - start);
               try {
-                String test = new String(expr, start, (cursor = last) - start);
                 if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && test.endsWith(".class"))
                     test = test.substring(0, test.length() - 6);
 
                 return Class.forName(test, true, classLoader);
-              }
-              catch (ClassNotFoundException e) {
+              } catch (ClassNotFoundException cnfe) {
+                try {
+                  return findInnerClass( test, classLoader, cnfe );
+                } catch (ClassNotFoundException e) { /* ignore */ }
                 Class cls = forNameWithInner(new String(expr, start, i - start), classLoader);
                 String name = new String(expr, i + 1, end - i - 1);
                 try {
                   return cls.getField(name);
-                }
-                catch (NoSuchFieldException nfe) {
+                } catch (NoSuchFieldException nfe) {
                   for (Method m : cls.getMethods()) {
                     if (name.equals(m.getName())) return m;
                   }
@@ -158,24 +166,6 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     return null;
-  }
-
-  private Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
-    ClassNotFoundException cnfe = null;
-    try {
-      return Class.forName(className, true, classLoader);
-    } catch (ClassNotFoundException e) {
-      cnfe = e;
-    }
-
-    for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
-      className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
-      try {
-        return Class.forName(className, true, classLoader);
-      } catch (ClassNotFoundException e) { }
-    }
-
-     throw cnfe;
   }
 
   protected int nextSubToken() {

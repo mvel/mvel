@@ -1,11 +1,14 @@
 package org.mvel2.compiler;
 
-import java.util.*;
-
 import junit.framework.TestCase;
-
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Asserts that the element at the end of the parse chain has its type parameter correctly inferred
@@ -22,8 +25,8 @@ public class GenericsTypeInferenceTest extends TestCase {
 
     context.addInput("a", A.class);
 
-    final CompiledExpression compiledExpression = new ExpressionCompiler("a.strings")
-        .compile(context);
+    final CompiledExpression compiledExpression = new ExpressionCompiler("a.strings", context)
+        .compile();
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -38,8 +41,8 @@ public class GenericsTypeInferenceTest extends TestCase {
 
     context.addInput("a", A.class);
 
-    final CompiledExpression compiledExpression = new ExpressionCompiler("a.values()")
-        .compile(context);
+    final CompiledExpression compiledExpression = new ExpressionCompiler("a.values()", context)
+        .compile();
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -54,8 +57,8 @@ public class GenericsTypeInferenceTest extends TestCase {
 
     context.addInput("a", A.class);
 
-    final CompiledExpression compiledExpression = new ExpressionCompiler("a.getFooMap()[\"key\"].someMethod()")
-        .compile(context);
+    final CompiledExpression compiledExpression = new ExpressionCompiler("a.getFooMap()[\"key\"].someMethod()", context)
+        .compile();
 
     final Object val = MVEL.executeExpression(compiledExpression, new AWrapper());
 
@@ -70,7 +73,7 @@ public class GenericsTypeInferenceTest extends TestCase {
 
     context.addInput("a", A.class);
 
-    CompiledExpression compiledExpression = new ExpressionCompiler("!a.show").compile(context);
+    CompiledExpression compiledExpression = new ExpressionCompiler("!a.show", context).compile();
 
     assertEquals(Boolean.class, compiledExpression.getKnownEgressType());
   }

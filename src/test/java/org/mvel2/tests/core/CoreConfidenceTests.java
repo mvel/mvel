@@ -1,8 +1,13 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
-import org.junit.Ignore;
-import org.mvel2.*;
+import org.mvel2.CompileException;
+import org.mvel2.DataConversion;
+import org.mvel2.MVEL;
+import org.mvel2.Macro;
+import org.mvel2.ParserConfiguration;
+import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessor;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
@@ -16,10 +21,36 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.*;
+import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Cheese;
+import org.mvel2.tests.core.res.Cheesery;
+import org.mvel2.tests.core.res.Column;
+import org.mvel2.tests.core.res.DefaultKnowledgeHelper;
+import org.mvel2.tests.core.res.Foo;
+import org.mvel2.tests.core.res.Grid;
+import org.mvel2.tests.core.res.KnowledgeHelper;
+import org.mvel2.tests.core.res.KnowledgeHelperFixer;
+import org.mvel2.tests.core.res.MapObject;
+import org.mvel2.tests.core.res.MyClass;
+import org.mvel2.tests.core.res.MyInterface;
+import org.mvel2.tests.core.res.OverloadedInterface;
+import org.mvel2.tests.core.res.PojoStatic;
+import org.mvel2.tests.core.res.RuleBase;
+import org.mvel2.tests.core.res.RuleBaseImpl;
+import org.mvel2.tests.core.res.SampleBean;
+import org.mvel2.tests.core.res.SampleBeanAccessor;
+import org.mvel2.tests.core.res.Ship;
+import org.mvel2.tests.core.res.Status;
+import org.mvel2.tests.core.res.TestClass;
+import org.mvel2.tests.core.res.User;
+import org.mvel2.tests.core.res.WorkingMemory;
+import org.mvel2.tests.core.res.WorkingMemoryImpl;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
+import org.mvel2.tests.core.res.res2.OverloadedClass;
 import org.mvel2.tests.core.res.res2.PublicClass;
+import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
@@ -36,8 +67,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.mvel2.MVEL.*;
@@ -53,8 +95,8 @@ public class CoreConfidenceTests extends AbstractTest {
         java.util.List.class);
 
     ParserContext context = new ParserContext(imports, null, "testfile");
-    ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
-    assertTrue((Boolean) executeExpression(compiler.compile(context),
+    ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)", context);
+    assertTrue((Boolean) executeExpression(compiler.compile(),
         new DefaultLocalVariableResolverFactory()));
   }
 
@@ -284,12 +326,12 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testStrictTypingCompilation() {
     //  OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
+    ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5", ctx);
 
     try {
-      compiler.compile(ctx);
+      compiler.compile();
     }
     catch (CompileException e) {
       e.printStackTrace();
@@ -326,10 +368,10 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testTypeRegression() {
-    ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("total = 0", ctx);
+    compiler.compile();
     assertEquals(Integer.class,
         compiler.getParserContextState().getVarOrInputType("total"));
   }
@@ -444,9 +486,9 @@ public class CoreConfidenceTests extends AbstractTest {
 
     ExpressionCompiler compiler =
         new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
-            "\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
+            "\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]", ctx);
     //    Serializable s = compiler.compileShared(ctx);
-    List list = (List) executeExpression(compiler.compile(ctx),
+    List list = (List) executeExpression(compiler.compile(),
         new HashMap());
     User user = (User) list.get(0);
     assertEquals("Darth",
@@ -457,8 +499,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     compiler =
         new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
-            "\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
-    list = (List) executeExpression(compiler.compile(ctx),
+            "\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]", ctx);
+    list = (List) executeExpression(compiler.compile(),
         new HashMap());
     user = (User) list.get(0);
     assertEquals("Darth",
@@ -475,8 +517,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
     ExpressionCompiler compiler =
         new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
-            "new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
-    List list = (List) executeExpression(compiler.compile(ctx),
+            "new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]", ctx);
+    List list = (List) executeExpression(compiler.compile(),
         new HashMap());
     User user = (User) list.get(0);
     assertEquals("Darth",
@@ -486,8 +528,8 @@ public class CoreConfidenceTests extends AbstractTest {
         user.getFirstName());
 
     compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), " +
-        "new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
-    list = (List) executeExpression(compiler.compile(ctx),
+        "new User('Bobba', 'Feta') ]; [ users[0], users[1] ]", ctx);
+    list = (List) executeExpression(compiler.compile(),
         new HashMap());
     user = (User) list.get(0);
     assertEquals("Darth",
@@ -533,14 +575,14 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addPackageImport("java.util");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
-    Serializable s = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("HashMap", ctx);
+    Serializable s = compiler.compile();
 
     assertEquals(HashMap.class,
         executeExpression(s));
 
-    compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
-    s = compiler.compile(ctx);
+    compiler = new ExpressionCompiler("map = new HashMap(); map.size()", ctx);
+    s = compiler.compile();
 
     assertEquals(0,
         executeExpression(s,
@@ -566,8 +608,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addPackageImport("org.mvel2.tests.core.res");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]");
-    List list = (List) executeExpression(compiler.compile(ctx));
+    ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]", ctx);
+    List list = (List) executeExpression(compiler.compile());
     User user = (User) list.get(0);
     assertEquals("Bobba",
         user.getFirstName());
@@ -577,8 +619,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addPackageImport("org.mvel2.tests.core.res");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]");
-    Map map = (Map) executeExpression(compiler.compile(ctx));
+    ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]", ctx);
+    Map map = (Map) executeExpression(compiler.compile());
     User user = (User) map.get("bobba");
     assertEquals("Bobba",
         user.getFirstName());
@@ -588,12 +630,12 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addPackageImport("org.mvel2.tests.core.res");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))");
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))", ctx);
 
     Cheesery p1 = new Cheesery("bobbo",
         new Cheese("cheddar",
             15));
-    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(),
         new DefaultLocalVariableResolverFactory());
 
     assertEquals(p1,
@@ -604,11 +646,11 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.addPackageImport("org.mvel2.tests.core.res");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)", ctx);
 
     Cheesery p1 = new Cheesery("bobbo",
         null);
-    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(),
         new DefaultLocalVariableResolverFactory());
 
     assertEquals(p1,
@@ -620,11 +662,11 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.setStrongTyping(true);
     ctx.addPackageImport("org.mvel2.tests.core.res");
 
-    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
+    ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)", ctx);
 
     Cheesery p1 = new Cheesery("bobbo",
         null);
-    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(ctx),
+    Cheesery p2 = (Cheesery) executeExpression(compiler.compile(),
         new DefaultLocalVariableResolverFactory());
 
     assertEquals(p1,
@@ -636,8 +678,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.addPackageImport("org.mvel2.tests.core.res");
     ctx.setStrictTypeEnforcement(false);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")", ctx);
+    compiler.compile();
   }
 
   public void testTypedAssignment() {
@@ -733,30 +775,27 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testParsingStability2() {
-    ExpressionCompiler compiler =
-        new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
-
     Map<String, Object> imports = new HashMap<String, Object>();
     imports.put("java.awt.Dimension",
         Dimension.class);
 
-    final ParserContext parserContext = new ParserContext(imports,
-        null,
-        "sourceFile");
-
+    final ParserContext parserContext = new ParserContext(imports, null, "sourceFile");
     parserContext.setStrictTypeEnforcement(false);
-    compiler.compile(parserContext);
+
+    ExpressionCompiler compiler =
+      new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )", parserContext);
+    compiler.compile();
   }
 
   public void testConcatWithLineBreaks() {
-    ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"");
 
     ParserContext ctx = new ParserContext();
     ctx.setDebugSymbols(true);
     ctx.setSourceFile("source.mv");
 
+    ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"", ctx);
     assertEquals("foobar",
-        executeExpression(parser.compile(ctx)));
+        executeExpression(parser.compile()));
   }
 
 
@@ -799,8 +838,6 @@ public class CoreConfidenceTests extends AbstractTest {
         "System.out.println(m.getStatus());\n" + //
         "m.setStatus( Message.GOODBYE );\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext context = new ParserContext();
     context.setStrictTypeEnforcement(false);
 
@@ -813,7 +850,8 @@ public class CoreConfidenceTests extends AbstractTest {
     context.addInput("m",
         Object.class);
 
-    compiler.compile(context);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+    compiler.compile();
   }
 
   public void testStaticNested() {
@@ -825,22 +863,19 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testStaticNestedWithImport() {
     String expr = "Message.GOODBYE;\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext context = new ParserContext();
     context.setStrictTypeEnforcement(false);
 
     context.addImport("Message",
         Message.class);
 
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
     assertEquals(1,
-        executeExpression(compiler.compile(context)));
+        executeExpression(compiler.compile()));
   }
 
   public void testStaticNestedWithMethodCall() {
     String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
-
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
     ParserContext context = new ParserContext();
     context.setStrictTypeEnforcement(false);
@@ -854,7 +889,9 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap();
     vars.put("$msg",
         new Message());
-    Message msg = (Message) executeExpression(compiler.compile(context),
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+
+    Message msg = (Message) executeExpression(compiler.compile(),
         vars);
     Item item = (Item) msg.getItems().get(0);
     assertEquals("Some Item",
@@ -864,8 +901,6 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testsequentialAccessorsThenMethodCall() {
     String expr = "System.out.println(drools.workingMemory); " +
         "drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
-
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
     ParserContext context = new ParserContext();
     context.setStrictTypeEnforcement(true);
@@ -879,7 +914,8 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap();
     vars.put("drools",
         drools);
-    executeExpression(compiler.compile(context),
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+    executeExpression(compiler.compile(),
         vars);
   }
 
@@ -890,23 +926,20 @@ public class CoreConfidenceTests extends AbstractTest {
     String expr = "\t\tmodel.latestHeadlines = $list;\n"
         + "model.latestHeadlines.add( 0, (model.latestHeadlines[2]) );";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-    compiler.setVerifying(true);
-
     ParserContext pCtx = new ParserContext();
     pCtx.addInput("$list",
         List.class);
     pCtx.addInput("model",
         Model.class);
 
-    compiler.compile(pCtx);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, pCtx);
+    compiler.setVerifying(true);
+    compiler.compile();
   }
 
   public void testCompileWithNewInsideMethodCall() {
     String expr = "     p.name = \"goober\";\n" + "     System.out.println(p.name);\n"
         + "     drools.insert(new Address(\"Latona\"));\n";
-
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
     ParserContext context = new ParserContext();
     context.setStrictTypeEnforcement(false);
@@ -921,7 +954,8 @@ public class CoreConfidenceTests extends AbstractTest {
     context.addInput("drools",
         Drools.class);
 
-    compiler.compile(context);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+    compiler.compile();
   }
 
   /**
@@ -945,13 +979,11 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testLateResolveOfClass() {
-    ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
     ParserContext ctx = new ParserContext();
     ctx.addImport(Foo.class);
 
-    compiler.removeParserContext();
-
-    System.out.println(executeExpression(compiler.compile(ctx)));
+    ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());", ctx);
+    System.out.println(executeExpression(compiler.compile()));
   }
 
   public void testClassAliasing() {
@@ -1285,11 +1317,11 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testDuplicateVariableDeclaration() {
-    ExpressionCompiler compiler = new ExpressionCompiler("String x = \"abc\"; Integer x = new Integer( 10 );");
     ParserContext context = new ParserContext();
+    ExpressionCompiler compiler = new ExpressionCompiler("String x = \"abc\"; Integer x = new Integer( 10 );", context);
 
     try {
-      compiler.compile(context);
+      compiler.compile();
       fail("Compilation must fail with duplicate variable declaration exception.");
     }
     catch (RuntimeException ce) {
@@ -1368,8 +1400,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.addInput("fooString",
         String[].class);
 
-    ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()");
-    compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()", ctx);
+    compiler.compile();
   }
 
   public void testStringToArrayCast() {
@@ -1389,9 +1421,9 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testParserErrorHandling() {
     final ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler("a[");
+    ExpressionCompiler compiler = new ExpressionCompiler("a[", ctx);
     try {
-      compiler.compile(ctx);
+      compiler.compile();
     }
     catch (Exception e) {
       return;
@@ -1516,7 +1548,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Foo.class);
 
     try {
-      CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
+      CompiledExpression expr = new ExpressionCompiler("foo.bar = 0", ctx).compile();
     }
     catch (CompileException e) {
       // should fail.
@@ -2084,8 +2116,8 @@ public class CoreConfidenceTests extends AbstractTest {
     String ex = "a.explanation = \"There is a coma, in here\"";
 
     ParserContext ctx = new ParserContext();
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    Serializable s = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+    Serializable s = compiler.compile();
 
     Base a = new Base();
     Map<String, Object> variables = new HashMap<String, Object>();
@@ -2125,8 +2157,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.addInput("services",
         Services.class);
     try {
-      ExpressionCompiler compiler = new ExpressionCompiler(ex);
-      compiler.compile(ctx);
+      ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+      compiler.compile();
     }
     catch (Throwable e) {
       e.printStackTrace();
@@ -2143,8 +2175,8 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.addInput("services",
         Services.class);
     try {
-      ExpressionCompiler compiler = new ExpressionCompiler(ex);
-      compiler.compile(ctx);
+      ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+      compiler.compile();
     }
     catch (Throwable e) {
       e.printStackTrace();
@@ -2193,9 +2225,9 @@ public class CoreConfidenceTests extends AbstractTest {
     ParserContext ctx = new ParserContext();
     ctx.setStrongTyping(false);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
     compiler.setVerifyOnly(true);
-    compiler.compile(ctx);
+    compiler.compile();
 
     Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
     assertTrue(requiredInputs.contains("aMap"));
@@ -2474,14 +2506,14 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.setStrongTyping(true);
     ctx.addImport(TestHelper.class);
     ctx.addImport(Fooz.class);
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
 
     OptimizerFactory.setDefaultOptimizer("ASM");
-    CompiledExpression expr = compiler.compile(ctx);
+    CompiledExpression expr = compiler.compile();
     executeExpression(expr);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
-    expr = compiler.compile(ctx);
+    expr = compiler.compile();
     executeExpression(expr);
   }
 
@@ -2493,14 +2525,14 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.setStrongTyping(true);
     ctx.addImport(TestHelper.class);
     ctx.addImport(Fooz.class);
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
 
     OptimizerFactory.setDefaultOptimizer("ASM");
-    CompiledExpression expr = compiler.compile(ctx);
+    CompiledExpression expr = compiler.compile();
     executeExpression(expr);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
-    expr = compiler.compile(ctx);
+    expr = compiler.compile();
     executeExpression(expr);
   }
 
@@ -2552,7 +2584,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput(entry.getKey(),
             entry.getValue().getClass());
       }
-      CompiledExpression expr = new ExpressionCompiler(expressionNaked).compile(ctx);
+      CompiledExpression expr = new ExpressionCompiler(expressionNaked, ctx).compile();
 
       Boolean result = (Boolean) executeExpression(expr,
           st);
@@ -4283,4 +4315,182 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*d", pctx), vars));
     assertEquals(3.0, MVEL.executeExpression(MVEL.compileExpression("i*0.3", pctx), vars));
   }
+
+  public void testCharToStringCoercionForComparison() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("ch", Character.class);
+    Map vars = new HashMap() {{ put("ch", 'a'); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("ch == \"a\"", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("ch == \"b\"", pctx), vars));
+  }
+
+  public void testFieldNameWithUnderscore() {
+      final ParserContext parserContext = new ParserContext();
+      parserContext.setStrictTypeEnforcement(true);
+      parserContext.setStrongTyping(true);
+      parserContext.addInput("this", Underscore.class);
+      Underscore underscore = new Underscore();
+
+      assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("_id == \"test\"", parserContext), underscore));
+  }
+
+    public static class Underscore {
+        public String get_id() {
+            return "test";
+        }
+    }
+
+  public void testEmptyOperatorOnStrings() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("nullString", String.class);
+    pctx.addInput("emptyString", String.class);
+    pctx.addInput("blankString", String.class);
+    pctx.addInput("nonEmptyString", String.class);
+    Map vars = new HashMap() {{
+        put("nullString", null);
+        put("emptyString", "");
+        put("blankString", "   ");
+        put("nonEmptyString", "abc");
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("nullString == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("emptyString == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("blankString == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonEmptyString == empty", pctx), vars));
+  }
+
+  public void testEmptyOperatorOnBoolean() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("bNull", Boolean.class);
+    pctx.addInput("bTrue", Boolean.class);
+    pctx.addInput("bFalse", Boolean.class);
+    Map vars = new HashMap() {{
+        put("bNull", null);
+        put("bTrue", true);
+        put("bFalse", false);
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("bNull == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("bTrue == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("bFalse == empty", pctx), vars));
+  }
+
+  public void testEmptyOperatorOnInteger() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("nullInt", Integer.class);
+    pctx.addInput("zero", Integer.class);
+    pctx.addInput("nonZero", Integer.class);
+    Map vars = new HashMap() {{
+        put("nullInt", null);
+        put("zero", 0);
+        put("nonZero", 42);
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("nullInt == empty", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("zero == empty", pctx), vars));
+    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonZero == empty", pctx), vars));
+  }
+
+  public void testInstanceofOnInnerClass() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport(ARef.class);
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new ARef()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof ARef", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + ARef.class.getCanonicalName(), pctx), vars));
+  }
+
+  public void testInstanceofWithPackageImport() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport( "org.mvel2.tests.core" );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new CoreConfidenceTests()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof CoreConfidenceTests", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + CoreConfidenceTests.class.getCanonicalName(), pctx), vars));
+  }
+
+  public void testInstanceofWithPackageImportAndInnerClass() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addPackageImport( "org.mvel2.tests.core.CoreConfidenceTests" );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("value", Object.class);
+    Map vars = new HashMap() {{ put("value", new ARef()); }};
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof ARef", pctx), vars));
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("value instanceof " + ARef.class.getCanonicalName(), pctx), vars));
+  }
+
+  public void testCompilerExceptionFormatting() throws Exception {
+    try {
+      Object value = test("\n2x * 3\n");
+      fail("Invalid expression should fail");
+    } catch (Exception e) {
+      // Invalid expression should fail to compile
+    }
+  }
+
+  public void testHandleNumericConversionBug() {
+    String[] testLiterals = {"0x20","020",};
+    String baseExpression = "int foo = ";
+
+    for( String literal : testLiterals ) {
+      char[] decExpr = ( baseExpression + literal ).toCharArray();
+      assertEquals( Integer.decode( literal ),
+                    ParseTools.handleNumericConversion( decExpr, baseExpression.length(), literal.length() ) );
+    }
+  }
+
+  public static class Parent {
+    public Object getSomething() {
+      return null;
+    }
+  }
+
+  public static class Child extends Parent {
+    @Override
+    public String getSomething() {
+      return null;
+    }
+  }
+
+  public void testNoArgMethodInheritance() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", Parent.class);
+    parserContext.addInput("b", Child.class);
+    assertEquals(Object.class, MVEL.analyze("a.getSomething()", parserContext));
+    assertEquals(String.class, MVEL.analyze("b.getSomething()", parserContext));
+  }
+  
+  
+  public void testMethodOverloadMatch() throws Exception {
+	  OverloadedClass c = new OverloadedClass();
+	  Method found  = ParseTools.getExactMatch("putXX", new Class[]{int.class, String.class}, void.class, OverloadedInterface.class);
+	  Method correct = OverloadedInterface.class.getMethod("putXX", new Class[]{int.class, String.class});
+	  assertEquals(correct, found);
+  }
+  
 }

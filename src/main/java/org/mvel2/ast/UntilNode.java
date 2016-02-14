@@ -37,7 +37,7 @@ public class UntilNode extends BlockNode {
 
   public UntilNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
     super(pCtx);
-    expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
+    expectType(pCtx, this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
         Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
 

@@ -221,14 +221,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     if (member != null) {
-      Method method = (Method) member;
-
-      if (pCtx.isStrictTypeEnforcement()) {
-        //if not a field, then this is a property getter
-        recordParametricReturnedType(method.getGenericReturnType());
-      }
-
-      return getReturnType(ctx, method);
+      return getReturnType(ctx, (Method) member);
     }
 
     if (pCtx != null && first && pCtx.hasImport(property)) {
@@ -282,12 +275,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
     }
 
-    if (ctx != null && ctx.getClass() == Class.class) {
-      for (Method m : ctx.getMethods()) {
-        if (property.equals(m.getName())) {
-          return returnGenericType(m);
-        }
-      }
+    if (ctx != null) {
       try {
         return findClass(variableFactory, ctx.getName() + "$" + property, pCtx);
       }
@@ -313,7 +301,7 @@ public class PropertyVerifier extends AbstractOptimizer {
   private Class getReturnType(Class context, Method m) {
     Class declaringClass = m.getDeclaringClass();
     if (context == declaringClass) {
-      return m.getReturnType();
+      return returnGenericType(m);
     }
     Type returnType = m.getGenericReturnType();
     if (returnType instanceof TypeVariable) {
@@ -325,7 +313,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         superClass = superClass.getSuperclass();
       }
       if (superClass == null) {
-        return m.getReturnType();
+        return returnGenericType(m);
       }
       if (superType instanceof ParameterizedType) {
         TypeVariable[] typeParams = superClass.getTypeParameters();
@@ -337,13 +325,13 @@ public class PropertyVerifier extends AbstractOptimizer {
           }
         }
         if (typePos < 0) {
-          return m.getReturnType();
+          return returnGenericType(m);
         }
         Type actualType = ((ParameterizedType)superType).getActualTypeArguments()[typePos];
-        return actualType instanceof Class ? (Class)actualType : m.getReturnType();
+        return actualType instanceof Class ? (Class)actualType : returnGenericType(m);
       }
     }
-    return m.getReturnType();
+    return returnGenericType(m);
   }
 
   private void recordParametricReturnedType(Type parametricReturnType) {
@@ -475,22 +463,24 @@ public class PropertyVerifier extends AbstractOptimizer {
         ctx = m.getDeclaringClass();
         name = m.getName();
       }
-      else if (pCtx.hasFunction(name)) {
-        resolvedExternally = false;
+      else {
         Function f = pCtx.getFunction(name);
-        f.checkArgumentCount(
-            parseParameterList(
-                (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
-                    ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
+        if (f != null && f.getEgressType() != null) {
+          resolvedExternally = false;
+          f.checkArgumentCount(
+                  parseParameterList(
+                          (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
+                           ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
-        return f.getEgressType();
-      }
-      else if (pCtx.hasVarOrInput("this")) {
-        if (pCtx.isStrictTypeEnforcement()) {
-          recordTypeParmsForProperty("this");
+          return f.getEgressType();
         }
-        ctx = pCtx.getVarOrInputType("this");
-        resolvedExternally = false;
+        else if (pCtx.hasVarOrInput("this")) {
+          if (pCtx.isStrictTypeEnforcement()) {
+            recordTypeParmsForProperty("this");
+          }
+          ctx = pCtx.getVarOrInputType("this");
+          resolvedExternally = false;
+        }
       }
     }
 
@@ -684,7 +674,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     int start = cursor + 1;
     cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
-    new WithAccessor(root, expr, start, cursor++ - start, ctx, pCtx.isStrictTypeEnforcement());
+    new WithAccessor(pCtx, root, expr, start, cursor++ - start, ctx);
 
     return ctx;
   }

@@ -4,7 +4,6 @@ import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.Function;
-import org.mvel2.compiler.AbstractParser;
 
 import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
 
@@ -115,8 +114,7 @@ public class FunctionParser {
     /**
      * Produce the funciton node.
      */
-    return new Function(name, expr, startCond, endCond - startCond, blockStart, blockEnd - blockStart, fields,
-        pCtx == null ? pCtx = AbstractParser.getCurrentThreadParserContext() : pCtx);
+    return new Function(name, expr, startCond, endCond - startCond, blockStart, blockEnd - blockStart, fields, pCtx);
   }
 
   public String getName() {

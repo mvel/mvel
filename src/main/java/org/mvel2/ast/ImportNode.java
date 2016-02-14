@@ -35,8 +35,7 @@ public class ImportNode extends ASTNode {
   private Class importClass;
   private boolean packageImport;
   private int _offset;
-  ParserContext pCtx;
-  
+
   private static final char[] WC_TEST = new char[]{'.', '*'};
 
   public ImportNode(char[] expr, int start, int offset, ParserContext pCtx) {

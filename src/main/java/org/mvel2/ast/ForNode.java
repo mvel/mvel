@@ -102,7 +102,7 @@ public class ForNode extends BlockNode {
       }
 
       try {
-        expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
+        expectType(pCtx, this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
             (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
       }
       catch (CompileException e) {

@@ -53,11 +53,11 @@ public class DebuggerTests extends AbstractTest {
     });
 
     String src = "a1=7;\na2=8;\na3=9;\na4=10;\na5=11;\na6=12;\na7=13;\na8=14;";
-    ExpressionCompiler c = new ExpressionCompiler(src);
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("mysource");
     ctx.setDebugSymbols(true);
-    CompiledExpression compexpr = c.compile(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(src, ctx);
+    CompiledExpression compexpr = c.compile();
 
     System.out.println(decompile(compexpr));
 
@@ -89,11 +89,11 @@ public class DebuggerTests extends AbstractTest {
 
     String src = "a1=7;\na2=8;\nSystem.out.println(\"h\");\nac=23;\nde=23;\nge=23;\ngef=34;";
 
-    ExpressionCompiler c = new ExpressionCompiler(src);
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("mysource");
     ctx.setDebugSymbols(true);
-    CompiledExpression compexpr = c.compile(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(src, ctx);
+    CompiledExpression compexpr = c.compile();
 
     System.out.println(decompile(compexpr));
 
@@ -111,14 +111,14 @@ public class DebuggerTests extends AbstractTest {
   }
 
   public void testBreakpoints() {
-    ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n");
-    System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
     ParserContext ctx = new ParserContext();
-    ctx.setSourceFile("test.mv");
-    ctx.setDebugSymbols(true);
+    ctx.setSourceFile( "test.mv" );
+    ctx.setDebugSymbols( true );
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n", ctx);
+    System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
+    CompiledExpression compiled = compiler.compile();
 
     MVELRuntime.registerBreakpoint("test.mv", 7);
 
@@ -140,13 +140,13 @@ public class DebuggerTests extends AbstractTest {
   }
 
   public void testBreakpoints2() {
-    ExpressionCompiler compiler = new ExpressionCompiler("System.out.println('test the debugger');\n a = 0;");
 
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("test.mv");
     ctx.setDebugSymbols(true);
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler("System.out.println('test the debugger');\n a = 0;", ctx);
+    CompiledExpression compiled = compiler.compile();
   }
 
   public void testBreakpoints3() {
@@ -155,15 +155,14 @@ public class DebuggerTests extends AbstractTest {
             "System.out.println( \"a3\" );\n" +
             "System.out.println( \"a4\" );\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext context = new ParserContext();
     context.addImport("System", System.class);
     context.setStrictTypeEnforcement(true);
     context.setDebugSymbols(true);
     context.setSourceFile("mysource");
 
-    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile(context));
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile());
 
     System.out.println("output: " + s);
 
@@ -186,8 +185,6 @@ public class DebuggerTests extends AbstractTest {
 
     System.out.println(expr);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext context = new ParserContext();
     context.addImport("System", System.class);
     context.addImport("Cheese", Cheese.class);
@@ -195,7 +192,8 @@ public class DebuggerTests extends AbstractTest {
     context.setDebugSymbols(true);
     context.setSourceFile("mysource");
 
-    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile(context));
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, context);
+    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile());
 
     System.out.println("output: " + s);
 
@@ -219,17 +217,17 @@ public class DebuggerTests extends AbstractTest {
             "b = 1;\n" +                    // 8
             "a + b";                        // 9
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expression);
-
-    System.out.println("Expression:\n------------");
-    System.out.println(expression);
-    System.out.println("------------");
-
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("test2.mv");
-    ctx.setDebugSymbols(true);
+    ctx.setDebugSymbols( true );
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(expression, ctx);
+
+    System.out.println( "Expression:\n------------");
+    System.out.println( expression);
+    System.out.println( "------------");
+
+    CompiledExpression compiled = compiler.compile();
 
     MVELRuntime.registerBreakpoint("test2.mv", 9);
 
@@ -254,6 +252,10 @@ public class DebuggerTests extends AbstractTest {
   }
 
   public void testBreakpointsAcrossComments2() {
+    ParserContext ctx = new ParserContext();
+    ctx.setSourceFile("test2.mv");
+    ctx.setDebugSymbols(true);
+
     ExpressionCompiler compiler = new ExpressionCompiler(
             "// This is a comment\n" +                  // 1
                     "//Second comment line\n" +         // 2
@@ -264,14 +266,10 @@ public class DebuggerTests extends AbstractTest {
                     "//System.out.println('5'); \n" +    // 7
                     "a = 0;\n" +                        // 8
                     "b = 1;\n" +                        // 9
-                    " a + b");                          // 10
+                    " a + b", ctx);                          // 10
 
 
-    ParserContext ctx = new ParserContext();
-    ctx.setSourceFile("test2.mv");
-    ctx.setDebugSymbols(true);
-
-    CompiledExpression compiled = compiler.compile(ctx);
+    CompiledExpression compiled = compiler.compile();
 
     MVELRuntime.registerBreakpoint("test2.mv", 6);
     MVELRuntime.registerBreakpoint("test2.mv", 8);
@@ -336,15 +334,14 @@ public class DebuggerTests extends AbstractTest {
 
     expression = parseMacros(expression, macros);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expression);
-
     ParserContext ctx = new ParserContext();
     ctx.setDebugSymbols(true);
     ctx.setSourceFile("test2.mv");
     ctx.addImport("Foo244", Foo.class);
     ctx.setInterceptors(interceptors);
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(expression, ctx);
+    CompiledExpression compiled = compiler.compile();
 
     System.out.println("\nExpression:------------");
     System.out.println(expression);
@@ -389,15 +386,14 @@ public class DebuggerTests extends AbstractTest {
 
     expression = parseMacros(expression, macros);
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expression);
-
     ParserContext ctx = new ParserContext();
     ctx.setSourceFile("test2.mv");
     ctx.setDebugSymbols(true);
     ctx.addImport("Foo244", Foo.class);
     ctx.setInterceptors(interceptors);
 
-    CompiledExpression compiled = compiler.compile(ctx);
+    ExpressionCompiler compiler = new ExpressionCompiler(expression, ctx);
+    CompiledExpression compiled = compiler.compile();
 
     System.out.println("\nExpression:------------");
     System.out.println(expression);
@@ -431,14 +427,13 @@ public class DebuggerTests extends AbstractTest {
             "   System.out.println( \"a3\" );\r\n" +
             "   System.out.println( \"a4\" );\r\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.setDebugSymbols(true);
     ctx.setSourceFile("mysource");
 
-    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile(ctx));
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, ctx);
+    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile());
 
     System.out.println(s);
 
@@ -456,14 +451,13 @@ public class DebuggerTests extends AbstractTest {
             "   System.out.println( \"a3\" );\n" +
             "   System.out.println( \"a4\" );\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.setDebugSymbols(true);
     ctx.setSourceFile("mysource");
 
-    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile(ctx));
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, ctx);
+    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile());
 
     int fromIndex = 0;
     int count = 0;
@@ -480,14 +474,13 @@ public class DebuggerTests extends AbstractTest {
             "   System.out.println( \"a3\" );\n" +
             "   System.out.println( \"a4\" );\r\n";
 
-    ExpressionCompiler compiler = new ExpressionCompiler(expr);
-
     ParserContext ctx = new ParserContext();
     ctx.setStrictTypeEnforcement(true);
     ctx.setDebugSymbols(true);
     ctx.setSourceFile("mysource");
 
-    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile(ctx));
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, ctx);
+    String s = org.mvel2.debug.DebugTools.decompile(compiler.compile());
 
     System.out.println(s);
 
@@ -506,8 +499,8 @@ public class DebuggerTests extends AbstractTest {
     ctx.setStrongTyping(true);
     ctx.addImport(Cheese.class);
     try {
-      ExpressionCompiler compiler = new ExpressionCompiler(ex);
-      CompiledExpression expr = compiler.compile(ctx);
+      ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+      CompiledExpression expr = compiler.compile();
 
       // executing the following line with a MVEL.executeExpression() works fine
       // but executeDebugger() fails

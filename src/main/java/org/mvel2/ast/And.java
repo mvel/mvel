@@ -26,8 +26,8 @@ public class And extends BooleanNode {
 
   public And(ASTNode left, ASTNode right, boolean strongTyping, ParserContext pCtx) {
     super(pCtx);
-    expectType(this.left = left, Boolean.class, strongTyping);
-    expectType(this.right = right, Boolean.class, strongTyping);
+    expectType(pCtx, this.left = left, Boolean.class, strongTyping);
+    expectType(pCtx, this.right = right, Boolean.class, strongTyping);
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

@@ -20,7 +20,6 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolver;
@@ -88,9 +87,9 @@ public class Function extends ASTNode implements Safe {
      * Compile the expression so we can determine the input-output delta.
      */
     ctx.setIndexAllocation(false);
-    ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset);
+    ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset, ctx);
     compiler.setVerifyOnly(true);
-    compiler.compile(ctx);
+    compiler.compile();
 
     ctx.setIndexAllocation(true);
 
@@ -110,8 +109,6 @@ public class Function extends ASTNode implements Safe {
     ctx.getVariables().clear();
 
     this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, ctx);
-
-    AbstractParser.setCurrentThreadParserContext(pCtx);
 
     this.parameters = new String[ctx.getIndexedInputs().size()];
 

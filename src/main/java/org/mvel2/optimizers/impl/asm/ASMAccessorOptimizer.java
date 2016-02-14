@@ -17,14 +17,25 @@
  */
 package org.mvel2.optimizers.impl.asm;
 
-import com.sun.org.apache.xpath.internal.compiler.OpCodes;
-import org.mvel2.*;
+import org.mvel2.CompileException;
+import org.mvel2.DataConversion;
+import org.mvel2.MVEL;
+import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
 import org.mvel2.asm.ClassWriter;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Opcodes;
-import org.mvel2.ast.*;
-import org.mvel2.compiler.*;
+import org.mvel2.ast.FunctionInstance;
+import org.mvel2.ast.TypeDescriptor;
+import org.mvel2.ast.WithNode;
+import org.mvel2.compiler.Accessor;
+import org.mvel2.compiler.AccessorNode;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableLiteral;
+import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.PropertyVerifier;
 import org.mvel2.integration.GlobalListenerFactory;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
@@ -32,11 +43,22 @@ import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import org.mvel2.optimizers.impl.refl.nodes.Union;
-import org.mvel2.util.*;
+import org.mvel2.util.JITClassLoader;
+import org.mvel2.util.MVELClassLoader;
+import org.mvel2.util.MethodStub;
+import org.mvel2.util.ParseTools;
+import org.mvel2.util.PropertyTools;
+import org.mvel2.util.StringAppender;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +86,8 @@ import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveArray;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
-import static org.mvel2.util.Varargs.*;
+import static org.mvel2.util.Varargs.normalizeArgsForVarArgs;
+import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 
 
 /**
@@ -81,12 +104,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
   private static final int OPCODES_VERSION;
 
   static {
-    final String javaVersion = getProperty("java.version");
+    final String javaVersion = PropertyTools.getJavaVersion();
     if (javaVersion.startsWith("1.4"))
       OPCODES_VERSION = Opcodes.V1_4;
     else if (javaVersion.startsWith("1.5"))
       OPCODES_VERSION = Opcodes.V1_5;
-    else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7"))
+    else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7") || javaVersion.startsWith("1.8"))
       OPCODES_VERSION = Opcodes.V1_6;
     else if (javaVersion.startsWith("1.8"))
       OPCODES_VERSION = Opcodes.V1_8;
@@ -310,10 +333,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         whiteSpaceSkip();
 
         if (st == end)
-          throw new PropertyAccessException("unterminated '['", expr, start);
+          throw new PropertyAccessException("unterminated '['", expr, start, pCtx);
 
         if (scanTo(']'))
-          throw new PropertyAccessException("unterminated '['", expr, start);
+          throw new PropertyAccessException("unterminated '['", expr, start, pCtx);
 
         String ex = new String(expr, st, cursor - st).trim();
 
@@ -415,7 +438,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
           throw new PropertyAccessException("cannot bind to collection property: " + new String(expr)
-              + ": not a recognized collection type: " + ctx.getClass(), expr, start);
+              + ": not a recognized collection type: " + ctx.getClass(), expr, start, pCtx);
         }
 
         deferFinish = false;
@@ -611,14 +634,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       }
       else {
         throw new PropertyAccessException("could not access property (" + tk + ") in: "
-            + ingressType.getName(), expr, start);
+            + ingressType.getName(), expr, start, pCtx);
       }
     }
     catch (InvocationTargetException e) {
-      throw new PropertyAccessException("could not access property", expr, start, e);
+      throw new PropertyAccessException("could not access property", expr, start, e, pCtx);
     }
     catch (IllegalAccessException e) {
-      throw new PropertyAccessException("could not access property", expr, start, e);
+      throw new PropertyAccessException("could not access property", expr, start, e, pCtx);
     }
 
     try {
@@ -857,13 +880,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       return _initializeAccessor();
     }
     catch (InvocationTargetException e) {
-      throw new PropertyAccessException(new String(expr), expr, st, e);
+      throw new PropertyAccessException(new String(expr), expr, st, e, pCtx);
     }
     catch (IllegalAccessException e) {
-      throw new PropertyAccessException(new String(expr), expr, st, e);
+      throw new PropertyAccessException(new String(expr), expr, st, e, pCtx);
     }
     catch (IndexOutOfBoundsException e) {
-      throw new PropertyAccessException(new String(expr), expr, st, e);
+      throw new PropertyAccessException(new String(expr), expr, st, e, pCtx);
     }
     catch (PropertyAccessException e) {
       throw new CompileException(e.getMessage(), expr, st, e);
@@ -872,7 +895,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       throw e;
     }
     catch (NullPointerException e) {
-      throw new PropertyAccessException(new String(expr), expr, st, e);
+      throw new PropertyAccessException(new String(expr), expr, st, e, pCtx);
     }
     catch (OptimizationNotSupported e) {
       throw e;
@@ -1087,7 +1110,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       catch (IllegalAccessException e) {
         Method iFaceMeth = determineActualTargetMethod((Method) member);
         if (iFaceMeth == null)
-          throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property, expr, st, e);
+          throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property, expr, st, e, pCtx);
 
         assert debug("CHECKCAST " + getInternalName(iFaceMeth.getDeclaringClass()));
         mv.visitTypeInsn(CHECKCAST, getInternalName(iFaceMeth.getDeclaringClass()));
@@ -1218,11 +1241,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
       }
 
       if (ctx == null) {
-        throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, st);
+        throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, st, pCtx);
       }
       else {
         throw new PropertyAccessException("could not access: " + property + "; in class: "
-            + ctx.getClass().getName(), expr, st);
+            + ctx.getClass().getName(), expr, st, pCtx);
       }
     }
   }
@@ -1334,14 +1357,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     currType = null;
-    if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
-
-    if (first) {
-      assert debug("ALOAD 1");
-      mv.visitVarInsn(ALOAD, 1);
-    }
 
     int start = ++cursor;
 
@@ -1356,6 +1373,12 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     String tk = new String(expr, start, cursor - start);
 
     assert debug("{collection token: [" + tk + "]}");
+
+    if (ctx == null) return null;
+    if (first) {
+      assert debug("ALOAD 1");
+      mv.visitVarInsn(ALOAD, 1);
+    }
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray(), pCtx);
     Object item = compiled.getValue(ctx, variableFactory);
@@ -1491,7 +1514,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     currType = null;
-    if (ctx == null) return null;
 
     assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
@@ -1508,6 +1530,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     String tk = new String(expr, _start, cursor - _start);
 
     assert debug("{collection token:<<" + tk + ">>}");
+
+    if (ctx == null) return null;
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
     Object item = compiled.getValue(ctx, variableFactory);
@@ -2986,7 +3010,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       Accessor compiledAccessor = _initializeAccessor();
 
       if (property != null && length > start) {
-        return new Union(compiledAccessor, property, start, length);
+        return new Union(pCtx, compiledAccessor, property, start, length);
       }
       else {
         return compiledAccessor;
@@ -3146,7 +3170,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         Accessor acc = _initializeAccessor();
 
         if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
-          return new Union(acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
+          return new Union(pCtx, acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
         }
 
         return acc;
@@ -3169,7 +3193,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         Accessor acc = _initializeAccessor();
 
         if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
-          return new Union(acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
+          return new Union(pCtx, acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
         }
 
         return acc;

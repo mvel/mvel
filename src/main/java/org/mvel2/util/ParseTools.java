@@ -76,24 +76,8 @@ import static org.mvel2.integration.ResolverTools.appendFactory;
 
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
-  public static final String[] EMPTY_STR_ARR = new String[0];
   public static final Object[] EMPTY_OBJ_ARR = new Object[0];
   public static final Class[] EMPTY_CLS_ARR = new Class[0];
-
-  static {
-    try {
-      double version = parseDouble(System.getProperty("java.version").substring(0, 3));
-      if (version < 1.5) {
-        throw new RuntimeException("unsupported java version: " + version);
-      }
-    }
-    catch (RuntimeException e) {
-      throw e;
-    }
-    catch (Exception e) {
-      throw new RuntimeException("unable to initialize math processor", e);
-    }
-  }
 
   public static List<char[]> parseMethodOrConstructor(char[] parm) {
     int start = -1;
@@ -233,9 +217,6 @@ public class ParseTools {
     return list;
   }
 
-  private static final Map<String, Map<Integer, WeakReference<Method>>> RESOLVED_METH_CACHE
-      = Collections.synchronizedMap( new WeakHashMap<String, Map<Integer, WeakReference<Method>>>(10) );
-
   public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
     Class[] targetParms = new Class[arguments.length];
     for (int i = 0; i != arguments.length; i++) {
@@ -250,39 +231,30 @@ public class ParseTools {
 
   public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact, boolean classTarget) {
 
-
     if (methods.length == 0) {
       return null;
     }
 
-    Class[] parmTypes;
+    Class<?>[] parmTypes;
     Method bestCandidate = null;
-    int bestScore = 0;
+    int bestScore = -1;
     boolean retry = false;
-
-    Integer hash = createClassSignatureHash(decl, arguments);
-
-    Map<Integer, WeakReference<Method>> methCache = RESOLVED_METH_CACHE.get(method);
-
-    WeakReference<Method> ref;
-
-    if (methCache != null && (ref = methCache.get(hash)) != null && (bestCandidate = ref.get()) != null) {
-      return bestCandidate;
-    }
 
     do {
       for (Method meth : methods) {
-        if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
+        if (classTarget && !Modifier.isStatic(meth.getModifiers())) continue;
 
         if (method.equals(meth.getName())) {
-          boolean isVarArgs = meth.isVarArgs();
-          if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !isVarArgs) {
-            continue;
-          }
-          else if (arguments.length == 0 && parmTypes.length == 0) {
-            if (bestCandidate == null || bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
+          parmTypes = meth.getParameterTypes();
+          if (parmTypes.length == 0 && arguments.length == 0) {
+            if (bestCandidate == null || isMoreSpecialized(meth, bestCandidate) ) {
               bestCandidate = meth;
             }
+            continue;
+          }
+
+          boolean isVarArgs = meth.isVarArgs();
+          if (parmTypes.length != arguments.length && !isVarArgs) {
             continue;
           }
 
@@ -293,7 +265,7 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (bestCandidate == null || (bestCandidate.getReturnType() != meth.getReturnType() && bestCandidate.getReturnType().isAssignableFrom(meth.getReturnType()))) {
+              if (isMoreSpecialized(meth, bestCandidate) && !isVarArgs) {
                 bestCandidate = meth;
               }
             }
@@ -302,12 +274,6 @@ public class ParseTools {
       }
 
       if (bestCandidate != null) {
-        if (methCache == null) {
-          RESOLVED_METH_CACHE.put(method, methCache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Method>>() ) );
-        }
-
-        methCache.put(hash, new WeakReference<Method>(bestCandidate));
-
         break;
       }
 
@@ -334,10 +300,15 @@ public class ParseTools {
     return bestCandidate;
   }
 
-  private static int getMethodScore(Class[] arguments, boolean requireExact, Class[] parmTypes, boolean varArgs) {
+  private static boolean isMoreSpecialized( Method newCandidate, Method oldCandidate ) {
+    return oldCandidate.getReturnType().isAssignableFrom( newCandidate.getReturnType()) &&
+           oldCandidate.getDeclaringClass().isAssignableFrom( newCandidate.getDeclaringClass());
+  }
+
+  private static int getMethodScore(Class[] arguments, boolean requireExact, Class<?>[] parmTypes, boolean varArgs) {
     int score = 0;
     for (int i = 0; i != arguments.length; i++) {
-      Class actualParamType;
+      Class<?> actualParamType;
       if (varArgs && i >= parmTypes.length - 1)
         actualParamType = parmTypes[parmTypes.length - 1].getComponentType();
       else
@@ -391,7 +362,7 @@ public class ParseTools {
     return score;
   }
 
-  public static int scoreInterface(Class parm, Class arg) {
+  public static int scoreInterface(Class<?> parm, Class<?> arg) {
     if (parm.isInterface()) {
       Class[] iface = arg.getInterfaces();
       if (iface != null) {
@@ -405,13 +376,14 @@ public class ParseTools {
   }
 
   public static Method getExactMatch(String name, Class[] args, Class returnType, Class cls) {
-    for (Method meth : cls.getMethods()) {
+	outer:
+	for (Method meth : cls.getMethods()) {
       if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
         Class[] parameterTypes = meth.getParameterTypes();
         if (parameterTypes.length != args.length) continue;
 
         for (int i = 0; i < parameterTypes.length; i++) {
-          if (parameterTypes[i] != args[i]) return null;
+          if (parameterTypes[i] != args[i]) continue outer;
         }
         return meth;
       }
@@ -445,7 +417,6 @@ public class ParseTools {
 
     if (best != method) return best;
 
-    currentCls = cls;
     for (currentCls = cls; currentCls != null; currentCls = currentCls.getSuperclass()) {
       if ((m = getExactMatch(name, args, rt, currentCls)) != null) {
         best = m;
@@ -454,8 +425,6 @@ public class ParseTools {
     return best;
   }
 
-  private static final Map<Class, Map<Integer, WeakReference<Constructor>>> RESOLVED_CONST_CACHE
-      = Collections.synchronizedMap( new WeakHashMap<Class, Map<Integer, WeakReference<Constructor>>>(10) );
   private static final Map<Constructor, WeakReference<Class[]>> CONSTRUCTOR_PARMS_CACHE
       = Collections.synchronizedMap( new WeakHashMap<Constructor, WeakReference<Class[]>>(10) );
 
@@ -488,14 +457,6 @@ public class ParseTools {
     Constructor bestCandidate = null;
     int bestScore = 0;
 
-    Integer hash = createClassSignatureHash(cls, arguments);
-
-    Map<Integer, WeakReference<Constructor>> cache = RESOLVED_CONST_CACHE.get(cls);
-    WeakReference<Constructor> ref;
-    if (cache != null && (ref = cache.get(hash)) != null && (bestCandidate = ref.get()) != null) {
-      return bestCandidate;
-    }
-
     for (Constructor construct : getConstructors(cls)) {
       boolean isVarArgs = construct.isVarArgs();
       if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
@@ -510,13 +471,6 @@ public class ParseTools {
         bestCandidate = construct;
         bestScore = score;
       }
-    }
-
-    if (bestCandidate != null) {
-      if (cache == null) {
-        RESOLVED_CONST_CACHE.put(cls, cache = Collections.synchronizedMap( new WeakHashMap<Integer, WeakReference<Constructor>>() ) );
-      }
-      cache.put(hash, new WeakReference<Constructor>(bestCandidate));
     }
 
     return bestCandidate;
@@ -539,7 +493,7 @@ public class ParseTools {
     }
 
     WeakReference<Class> ref;
-    Class cls = null;
+    Class cls;
 
     if ((ref = cache.get(className)) != null && (cls = ref.get()) != null) {
       return cls;
@@ -604,7 +558,7 @@ public class ParseTools {
   }
 
 
-  public static Class boxPrimitive(Class cls) {
+  public static Class<?> boxPrimitive(Class cls) {
     if (cls == int.class || cls == Integer.class) {
       return Integer.class;
     }
@@ -755,62 +709,51 @@ public class ParseTools {
   }
 
   private static boolean containsCheckOnBooleanArray(boolean[] array, Boolean compareTest) {
-    boolean test = compareTest.booleanValue();
+    boolean test = compareTest;
     for (boolean b : array) if (b == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnIntArray(int[] array, Integer compareTest) {
-    int test = compareTest.intValue();
+    int test = compareTest;
     for (int i : array) if (i == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnLongArray(long[] array, Long compareTest) {
-    long test = compareTest.longValue();
+    long test = compareTest;
     for (long l : array) if (l == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnDoubleArray(double[] array, Double compareTest) {
-    double test = compareTest.doubleValue();
+    double test = compareTest;
     for (double d : array) if (d == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnFloatArray(float[] array, Float compareTest) {
-    float test = compareTest.floatValue();
+    float test = compareTest;
     for (float f : array) if (f == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnCharArray(char[] array, Character compareTest) {
-    char test = compareTest.charValue();
+    char test = compareTest;
     for (char c : array) if (c == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnShortArray(short[] array, Short compareTest) {
-    short test = compareTest.shortValue();
+    short test = compareTest;
     for (short s : array) if (s == test) return true;
     return false;
   }
 
   private static boolean containsCheckOnByteArray(byte[] array, Byte compareTest) {
-    byte test = compareTest.byteValue();
+    byte test = compareTest;
     for (byte b : array) if (b == test) return true;
     return false;
-  }
-
-  public static int createClassSignatureHash(Class declaring, Class[] sig) {
-    int hash = 0;
-    for (int i = 0; i < sig.length; i++) {
-      if (sig[i] != null) {
-        hash += (sig[i].hashCode() * (i * 2 + 3));
-      }
-    }
-
-    return hash + sig.length + declaring.hashCode();
   }
 
   /**
@@ -1142,12 +1085,16 @@ public class ParseTools {
 
 
   public static Method determineActualTargetMethod(Method method) {
+    return determineActualTargetMethod(method.getDeclaringClass(), method);
+  }
+
+  private static Method determineActualTargetMethod(Class clazz, Method method) {
     String name = method.getName();
 
     /**
      * Follow our way up the class heirarchy until we find the physical target method.
      */
-    for (Class cls : method.getDeclaringClass().getInterfaces()) {
+    for (Class cls : clazz.getInterfaces()) {
       for (Method meth : cls.getMethods()) {
         if (meth.getParameterTypes().length == 0 && name.equals(meth.getName())) {
           return meth;
@@ -1155,7 +1102,7 @@ public class ParseTools {
       }
     }
 
-    return null;
+    return clazz.getSuperclass() != null ? determineActualTargetMethod(clazz.getSuperclass(), method) : null;
   }
 
   public static int captureToNextTokenJunction(char[] expr, int cursor, int end, ParserContext pCtx) {
@@ -1686,7 +1633,7 @@ public class ParseTools {
         }
       }
 
-      return Integer.decode(new String(val));
+      return Integer.decode(new String(val, start, offset));
     }
     else if (!isDigit(val[start + offset - 1])) {
       switch (val[start + offset - 1]) {
@@ -2103,25 +2050,17 @@ public class ParseTools {
   }
 
   public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression);
-    if (ctx != null) c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, ctx);
     return _optimizeTree(c._compile());
   }
 
-
-  public static Serializable subCompileExpression(char[] expression, int start, int offset) {
-    return _optimizeTree(new ExpressionCompiler(expression, start, offset)._compile());
-  }
-
   public static Serializable subCompileExpression(char[] expression, int start, int offset, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
-    if (ctx != null) c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, start, offset, ctx);
     return _optimizeTree(c._compile());
   }
 
   public static Serializable subCompileExpression(String expression, ParserContext ctx) {
-    ExpressionCompiler c = new ExpressionCompiler(expression);
-    c.setPCtx(ctx);
+    ExpressionCompiler c = new ExpressionCompiler(expression, ctx);
     return _optimizeTree(c._compile());
   }
 
@@ -2227,5 +2166,23 @@ public class ParseTools {
     finally {
       if (inStream != null) inStream.close();
     }
+  }
+
+  public static Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
+    try {
+      return Class.forName(className, true, classLoader);
+    } catch (ClassNotFoundException cnfe) {
+      return findInnerClass( className, classLoader, cnfe );
+    }
+  }
+
+  public static Class findInnerClass( String className, ClassLoader classLoader, ClassNotFoundException cnfe ) throws ClassNotFoundException {
+    for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
+      className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
+      try {
+        return Class.forName(className, true, classLoader);
+      } catch (ClassNotFoundException e) { /* ignore */ }
+    }
+    throw cnfe;
   }
 }

@@ -21,7 +21,6 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -86,7 +85,7 @@ public class InlineCollectionNode extends ASTNode {
         AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
         if (collectionGraph == null) parseGraph(true, null, null);
 
-        accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph,
+        accessor = ao.optimizeCollection(pCtx, collectionGraph,
             egressType, expr, trailingStart, trailingOffset, ctx, thisValue, factory);
         egressType = ao.getEgressType();
 
@@ -100,7 +99,7 @@ public class InlineCollectionNode extends ASTNode {
   }
 
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    parseGraph(false, egressType, AbstractParser.getCurrentThreadParserContext());
+    parseGraph(false, egressType, pCtx);
 
     return execGraph(collectionGraph, egressType, ctx, factory);
   }
@@ -155,8 +154,7 @@ public class InlineCollectionNode extends ASTNode {
       Object newArray = Array.newInstance(getSubComponentType(type), ((Object[]) o).length);
 
       try {
-        Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", AbstractParser.getCurrentThreadParserContext())
-            : type;
+        Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", pCtx) : type;
 
         int c = 0;
         for (Object item : (Object[]) o) {

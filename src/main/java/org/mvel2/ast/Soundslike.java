@@ -15,7 +15,7 @@ public class Soundslike extends ASTNode {
     super(pCtx);
     this.stmt = stmt;
     this.soundslike = clsStmt;
-    CompilerTools.expectType(clsStmt, String.class, true);
+    CompilerTools.expectType(pCtx, clsStmt, String.class, true);
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
