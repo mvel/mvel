@@ -39,17 +39,22 @@ public class ObjectInspector implements Command {
 
   public Object execute(ShellSession session, String[] args) {
 
-    if (args.length == 0) {
-      System.out.println("inspect: requires an argument.");
-      return null;
-    }
+    Object val;
 
-    if (!session.getVariables().containsKey(args[0])) {
+    if (args.length == 0) {
+      val = session.getCtxObject();
+      if (val == null) {
+        System.out.println("inspect: requires an argument or a session context.");
+        return null;
+      }
+    }
+    else if (!session.getVariables().containsKey(args[0])) {
       System.out.println("inspect: no such variable: " + args[0]);
       return null;
     }
-
-    Object val = session.getVariables().get(args[0]);
+    else {
+      val = session.getVariables().get(args[0]);
+    }
 
     System.out.println("Object Inspector");
     System.out.println(TextUtil.paint('-', PADDING));
@@ -77,7 +82,9 @@ public class ObjectInspector implements Command {
       serialized = false;
     }
 
-    write("VariableName", args[0]);
+    if (args.length > 0) {
+      write("VariableName", args[0]);
+    }
     write("Hashcode", val.hashCode());
     write("ClassType", cls.getName());
     write("Serializable", serialized);
