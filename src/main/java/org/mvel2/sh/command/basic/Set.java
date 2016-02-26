@@ -19,7 +19,6 @@
 package org.mvel2.sh.command.basic;
 
 import org.mvel2.sh.Command;
-import org.mvel2.sh.CommandException;
 import org.mvel2.sh.ShellSession;
 import org.mvel2.util.StringAppender;
 
@@ -30,23 +29,26 @@ public class Set implements Command {
 
     Map<String, String> env = session.getEnv();
 
-    if (args.length == 0) {
-      for (String var : env.keySet()) {
-        System.out.println(var + " = " + env.get(var));
-      }
-    }
-    else if (args.length == 1) {
-      throw new CommandException("incorrect number of parameters");
-    }
-    else {
-      StringAppender sbuf = new StringAppender();
-      for (int i = 1; i < args.length; i++) {
-        sbuf.append(args[i]);
-        if (i < args.length) sbuf.append(" ");
-      }
-
-      env.put(args[0], sbuf.toString().trim());
-    }
+    switch (args.length) {
+      case 0:
+        for (String var : env.keySet()) {
+          System.out.println(var + " = " + env.get(var));
+        }
+        break;
+      case 1:
+        String removed = env.remove(args[0]);
+        if (removed != null) {
+          System.out.println("Removed " + args[0] + " = " + removed);
+        }
+        break;
+      default:
+        StringAppender sbuf = new StringAppender();
+        for (int i = 1; i < args.length; i++) {
+          sbuf.append(args[i]);
+          if (i < args.length) sbuf.append(" ");
+        }		  env.put(args[0], sbuf.toString().trim());
+        break;
+	  }
 
     return null;
   }
