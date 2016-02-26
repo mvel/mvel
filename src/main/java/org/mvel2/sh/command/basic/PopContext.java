@@ -17,29 +17,20 @@
  */
 package org.mvel2.sh.command.basic;
 
-import org.mvel2.MVEL;
 import org.mvel2.sh.Command;
 import org.mvel2.sh.ShellSession;
 
-public class PushContext implements Command {
+public class PopContext implements Command {
 
   public Object execute(ShellSession session, String[] args) {
-    boolean changed;
-
-    if (args.length == 0) {
-      changed = session.pushCtxObject(null);
-    }
-    else {
-      changed = session.pushCtxObject(MVEL.eval(args[0], session.getCtxObject(), session.getVariables()));
-    }
-    if (changed) {
-      System.out.println("Pushed context to " + session.getCtxObject());
+    if (session.popCtxObject()) {
+      System.out.println("Popped context to " + session.getCtxObject());
     }
     return session.getCtxObject();
   }
 
   public String getDescription() {
-    return "pushes the given variable to the current context";
+    return "pops the previous context from the context queue";
   }
 
   public String getHelp() {
