@@ -108,7 +108,7 @@ public class ShellSession {
     }
 
     lvrf = new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
-    variables.put("t", "Zurück");
+
   }
 
   public ShellSession(String init) {
@@ -362,6 +362,7 @@ public class ShellSession {
 
   //todo: fix this
   public void run() {
+    final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
 
     try {
       //noinspection InfiniteLoopStatement
