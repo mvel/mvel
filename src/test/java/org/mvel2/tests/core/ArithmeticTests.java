@@ -456,6 +456,26 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals(true, executeExpression(compiler.compile(), vars));
   }
 
+  public void testParenthesis1() {
+    double x = 1.0d;
+    String ex = "x  - 1 / 0.50  + 1";
+    Map vars = new HashMap();
+    vars.put("x", x);
+    
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    assertEquals(x  - 1 / 0.50  + 1, executeExpression(compiler.compile(), vars));
+  }
+
+  public void testParenthesis2() {
+    double x = 1.0d;
+    String ex = "x  - (1 / 0.50)  + 1";
+    Map vars = new HashMap();
+    vars.put("x", x);
+    
+    ExpressionCompiler compiler = new ExpressionCompiler(ex);
+    assertEquals(x  - (1 / 0.50)  + 1, executeExpression(compiler.compile(), vars));
+  }
+    
   public void testModulus() {
     assertEquals(38392 % 2, test("38392 % 2"));
   }
