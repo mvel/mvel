@@ -22,7 +22,6 @@ import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
-import org.mvel2.util.PropertyTools;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -169,17 +168,8 @@ public class ParserConfiguration implements Serializable {
         cls = forNameWithInner( pkg + "." + className, getClassLoader() );
         found++;
       }
-      catch (ClassNotFoundException cnfe) {
+      catch (Throwable cnfe) {
         // do nothing.
-      }
-      catch (NoClassDefFoundError e) {
-        if (PropertyTools.contains(e.getMessage(), "wrong name")) {
-          // do nothing.  this is a weirdness in the jvm.
-          // see MVEL-43
-        }
-        else {
-          throw e;
-        }
       }
     }
 
