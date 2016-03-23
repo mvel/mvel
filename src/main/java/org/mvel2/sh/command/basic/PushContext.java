@@ -24,18 +24,28 @@ import org.mvel2.sh.ShellSession;
 public class PushContext implements Command {
 
   public Object execute(ShellSession session, String[] args) {
-    boolean changed;
+    boolean changed = false;
+    Object ctx;
 
     if (args.length == 0) {
       changed = session.pushCtxObject(null);
     }
     else {
-      changed = session.pushCtxObject(MVEL.eval(args[0], session.getCtxObject(), session.getVariables()));
+      try {
+        ctx = MVEL.eval(String.join(" ", args), session.getCtxObject(), session.getVariables());
+        if (ctx != null) {
+          changed = session.pushCtxObject(ctx);
+        }
+      }
+      catch (Exception ex) {
+        System.err.println(ex.getMessage());
+      }
     }
+    ctx = session.getCtxObject();
     if (changed) {
-      System.out.println("Pushed context to " + session.getCtxObject());
+      System.out.println("Pushed context to " + ctx);
     }
-    return session.getCtxObject();
+    return ctx;
   }
 
   public String getDescription() {
