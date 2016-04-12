@@ -45,4 +45,9 @@ public class UnresolveablePropertyException extends RuntimeException {
   public String getName() {
     return name;
   }
+
+  @Override
+  public synchronized Throwable fillInStackTrace() {
+    return null;
+  }
 }
