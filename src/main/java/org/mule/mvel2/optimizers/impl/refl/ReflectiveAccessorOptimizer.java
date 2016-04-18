@@ -757,13 +757,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       }
 
       if (ctx != null && MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL ||
-        ctx == null && nullSafe) {
-        if (currNode instanceof NullSafe) {
-          nullSafe = true;
-        }
-        else {
-          addAccessorNode(new NullAccessor());
-        }
+          ctx == null && nullSafe) {
+        addAccessorNode(new NullAccessor());
         return null;
       }
 

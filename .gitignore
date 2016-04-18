@@ -18,6 +18,3 @@
 
 .settings/org.eclipse.jdt.core.prefs
 mvel_ser_test*
-/.settings/*
-/.classpath
-/.project

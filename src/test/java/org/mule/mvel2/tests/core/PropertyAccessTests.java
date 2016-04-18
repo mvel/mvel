@@ -573,19 +573,4 @@ public class PropertyAccessTests extends AbstractTest {
   public void testPublicStaticFieldMVEL314(){
     assertEquals(Foo.STATIC_BAR, runSingleTest("org.mule.mvel2.tests.core.res.Foo.STATIC_BAR"));
   }
-
-  public void testExpressionCacheAfterMissingOptionalProperty() {
-    MVEL.COMPILER_OPT_PROPERTY_ACCESS_DOESNT_FAIL = true;
-    Map a = new HashMap<String, Object>();
-    Map m = Collections.singletonMap("a", a);
-    Map<String, Object> nestMap = Collections.<String, Object> singletonMap("foo", "bar");
-    String ex = "a.?inner.foo";
-    Serializable s;
-
-    s = MVEL.compileExpression(ex);
-    a.put("inner", "");
-    assertNull(MVEL.executeExpression(s, m));
-    a.put("inner", nestMap);
-    assertEquals("bar", MVEL.executeExpression(s, m));
-  }
 }
