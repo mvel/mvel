@@ -75,11 +75,20 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
 import static org.mvel2.asm.Opcodes.*;
-import static org.mvel2.asm.Type.*;
+import static org.mvel2.asm.Type.getConstructorDescriptor;
+import static org.mvel2.asm.Type.getDescriptor;
+import static org.mvel2.asm.Type.getInternalName;
+import static org.mvel2.asm.Type.getMethodDescriptor;
+import static org.mvel2.asm.Type.getType;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
-import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
@@ -105,16 +114,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
   static {
     final String javaVersion = PropertyTools.getJavaVersion();
-    if (javaVersion.startsWith("1.4"))
+    if (javaVersion.startsWith("1.4")) {
       OPCODES_VERSION = Opcodes.V1_4;
-    else if (javaVersion.startsWith("1.5"))
+    } else if (javaVersion.startsWith("1.5")) {
       OPCODES_VERSION = Opcodes.V1_5;
-    else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7") || javaVersion.startsWith("1.8"))
+    } else if (javaVersion.startsWith("1.6")
+            || javaVersion.startsWith("1.7")
+            || javaVersion.startsWith("1.8")
+            || javaVersion.startsWith("9")) {
       OPCODES_VERSION = Opcodes.V1_6;
-    else if (javaVersion.startsWith("1.8"))
-      OPCODES_VERSION = Opcodes.V1_8;
-    else
+    } else {
       OPCODES_VERSION = Opcodes.V1_2;
+    }
 
     String defaultNameSapce = getProperty("mvel2.namespace");
     if (defaultNameSapce == null) NAMESPACE = "org/mvel2/";
