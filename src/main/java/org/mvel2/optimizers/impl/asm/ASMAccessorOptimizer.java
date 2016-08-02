@@ -3008,6 +3008,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     this.ctx = ctx;
     this.thisRef = thisRef;
     this.variableFactory = factory;
+    this.pCtx = pCtx;
 
     _initJIT();
 
