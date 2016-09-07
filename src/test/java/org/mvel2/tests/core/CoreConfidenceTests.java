@@ -4492,5 +4492,27 @@ public class CoreConfidenceTests extends AbstractTest {
 	  Method correct = OverloadedInterface.class.getMethod("putXX", new Class[]{int.class, String.class});
 	  assertEquals(correct, found);
   }
-  
+
+  public static class O1 {
+    public O2 getObj() {
+      return new O2();
+    }
+  }
+  public static class O2 extends O3 { }
+  public abstract static class O3  {
+    public String getValue() {
+      return "value";
+    }
+  }
+
+  public void testInvokeMethodInAbstractClass() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", O1.class);
+    assertEquals(String.class, MVEL.analyze("a.getObj().getValue()", parserContext));
+
+    Map vars = new HashMap() {{ put("a", new O1()); }};
+    assertEquals("value", MVEL.executeExpression(MVEL.compileExpression("a.getObj().getValue()", parserContext), vars));
+  }
 }
