@@ -21,6 +21,7 @@ package org.mule.mvel2.optimizers.impl.refl.nodes;
 import org.mule.mvel2.compiler.AccessorNode;
 import org.mule.mvel2.compiler.ExecutableStatement;
 import org.mule.mvel2.integration.VariableResolverFactory;
+import org.mule.mvel2.util.NullType;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -146,7 +147,12 @@ public class MethodAccessor implements AccessorNode {
 
     Class[] vals = new Class[parms.length];
     for (int i = 0; i < parms.length; i++) {
-      vals[i] = parms[i].getValue(ctx, vars).getClass();
+      Object value = parms[i].getValue(ctx, vars);
+      if (value != null) {
+        vals[i] = value.getClass();
+      } else {
+        vals[i] = NullType.class;
+      }
     }
 
     return vals;

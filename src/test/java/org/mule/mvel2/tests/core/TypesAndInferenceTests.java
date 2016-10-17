@@ -1356,15 +1356,15 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertEquals(0,
             pCtx.getInputs().size());
 
-//        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;        
-//        
+//        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+//
 //        pCtx = ParserContext.create();
 //        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 //
 //        assertFalse(pCtx.getInputs().containsKey("java"));
 //
 //        assertEquals(0,
-//                pCtx.getInputs().size());        
+//                pCtx.getInputs().size());
   }
 
 
@@ -1639,6 +1639,19 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertEquals(barDetails, payload.getDetails());
   }
 
+
+  public void testParametersWithNull() throws Exception {
+    Map<String, Object> vars = new HashMap();
+    vars.put(VARIABLE, new FooDetails());
+    ExecutableAccessor compiledExpr = (ExecutableAccessor) MVEL.compileExpression(SETTER_EXPRESSION, new ParserContext(new ParserConfiguration()));
+    MVEL.executeExpression(compiledExpr, new Message(new Foo2()), vars);
+    vars.put(VARIABLE, null);
+    Bar2 payload = new Bar2();
+    assertNull(payload.getDetails());
+    Object result = MVEL.executeExpression(compiledExpr, new Message(payload), vars);
+    assertNull(result);
+    assertNull(payload.getDetails());
+  }
   public void testCompiledAccExpressionSerialization() throws IOException, ClassNotFoundException {
     Map<String, Object> vars = new HashMap();
     vars.put(VARIABLE, new FooDetails());
