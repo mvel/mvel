@@ -4515,4 +4515,22 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap() {{ put("a", new O1()); }};
     assertEquals("value", MVEL.executeExpression(MVEL.compileExpression("a.getObj().getValue()", parserContext), vars));
   }
+
+  public class Convention {
+    private final Map<String, List<String>> comms;
+    public Convention( Map<String, List<String>> comms ) {
+      this.comms = comms;
+    }
+    public Map<String, List<String>> getComms(){
+      return comms;
+    }
+  }
+
+  public void testParseGenericMap() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("conv", Convention.class);
+    assertEquals(List.class, MVEL.analyze("conv.getComms().get(\"test\")", parserContext));
+  }
 }

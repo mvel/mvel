@@ -639,7 +639,8 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If the paramTypes Map contains the known type, return that type.
          */
-        return (Class) paramTypes.get(returnTypeArg);
+        Type type = paramTypes.get(returnTypeArg);
+        return type instanceof Class ? (Class) type : (Class) ((ParameterizedType) type).getRawType();
       }
       else if (typeArgs.containsKey(returnTypeArg)) {
         /**
