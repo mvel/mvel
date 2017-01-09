@@ -28,7 +28,7 @@ public class MvelScriptEngine extends AbstractScriptEngine implements ScriptEngi
 
     @Override
     public Bindings createBindings() {
-        return new SimpleBindings();
+        return new MvelBindings();
     }
 
     @Override
