@@ -1,9 +1,9 @@
 package org.mvel2.tests.core.res;
 
-import org.mvel2.asm.MethodVisitor;
+import org.objectweb.asm.MethodVisitor;
 
-import static org.mvel2.asm.Opcodes.CHECKCAST;
-import static org.mvel2.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;

@@ -23,10 +23,10 @@ import org.mvel2.MVEL;
 import org.mvel2.OptimizationFailure;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessException;
-import org.mvel2.asm.ClassWriter;
-import org.mvel2.asm.Label;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Opcodes;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.mvel2.ast.FunctionInstance;
 import org.mvel2.ast.TypeDescriptor;
 import org.mvel2.ast.WithNode;
@@ -74,12 +74,12 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
-import static org.mvel2.asm.Opcodes.*;
-import static org.mvel2.asm.Type.getConstructorDescriptor;
-import static org.mvel2.asm.Type.getDescriptor;
-import static org.mvel2.asm.Type.getInternalName;
-import static org.mvel2.asm.Type.getMethodDescriptor;
-import static org.mvel2.asm.Type.getType;
+import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Type.getConstructorDescriptor;
+import static org.objectweb.asm.Type.getDescriptor;
+import static org.objectweb.asm.Type.getInternalName;
+import static org.objectweb.asm.Type.getMethodDescriptor;
+import static org.objectweb.asm.Type.getType;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
@@ -734,7 +734,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     if (clazz.isPrimitive()) {
         mv.visitFieldInsn(GETSTATIC, toNonPrimitiveType(clazz).getName().replace(".", "/"), "TYPE", "Ljava/lang/Class;");
     } else {
-        mv.visitLdcInsn(org.mvel2.asm.Type.getType(clazz));
+        mv.visitLdcInsn(org.objectweb.asm.Type.getType(clazz));
     }
   }
 
