@@ -1084,4 +1084,8 @@ public class ParserContext implements Serializable {
 
     return this;
   }
+  
+  public boolean isStrict() {
+    return parserConfiguration.isStrict();
+  }
 }

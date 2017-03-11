@@ -262,6 +262,9 @@ public class PropertyVerifier extends AbstractOptimizer {
       fqcn = true;
       resolvedExternally = false;
       if (tryStaticMethodRef instanceof Class) {
+        if(pCtx.isStrict() && !pCtx.hasImport(((Class) tryStaticMethodRef).getName())){
+           throw new CompileException("illegal import in verifier: ", expr, start);
+        }
         classLiteral = !(MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS &&
             new String(expr, end - 6, 6).equals(".class"));
           return classLiteral ? (Class) tryStaticMethodRef : Class.class;

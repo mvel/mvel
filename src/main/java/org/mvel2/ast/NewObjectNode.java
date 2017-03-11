@@ -206,6 +206,10 @@ public class NewObjectNode extends ASTNode {
             .getValue(ctx, thisValue, factory);
       }
 
+      if(pCtx.isStrict() && !pCtx.hasImport(typeDescr.getClassName())){
+    	  throw new CompileException("cannot construct object: " + typeDescr.getClassName() + " it is not a whitelist class", expr, start);
+      }
+
       try {
         AccessorOptimizer optimizer = getThreadAccessorOptimizer();
 

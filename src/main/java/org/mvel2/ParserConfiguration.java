@@ -47,6 +47,7 @@ public class ParserConfiguration implements Serializable {
   protected Map<String, Object> imports;
   protected HashSet<String> packageImports;
   protected Map<String, Interceptor> interceptors;
+  protected boolean isStrict = false;
   protected transient ClassLoader classLoader;
 
   private transient Set<String> nonValidImports;
@@ -310,5 +311,13 @@ public class ParserConfiguration implements Serializable {
 
   public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
     this.allowBootstrapBypass = allowBootstrapBypass;
+  }
+  
+  public boolean isStrict() {
+    return isStrict;
+  }
+
+  public void setStrict(boolean isStrict) {
+    this.isStrict = isStrict;
   }
 }
