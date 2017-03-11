@@ -954,6 +954,13 @@ public class PropertyAccessor {
         addMethodCache(cls, createSignature(name, tk), m);
         parameterTypes = m.getParameterTypes();
       }
+
+      if (m == null) {
+        if ((m = getBestCandidate(args, name, cls, cls.getMethods(), false)) != null) {
+          addMethodCache(cls, createSignature(name, tk), m);
+          parameterTypes = m.getParameterTypes();
+        }
+      }
     }
 
     if (ctx instanceof PrototypalFunctionInstance) {
