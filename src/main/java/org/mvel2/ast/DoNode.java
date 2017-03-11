@@ -22,6 +22,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.sh.IterationLimiter;
 
 import java.util.HashMap;
 
@@ -34,7 +35,7 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class DoNode extends BlockNode {
   protected String item;
   protected ExecutableStatement condition;
-
+  
   public DoNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
     super(pCtx);
     this.expr = expr;
@@ -55,14 +56,17 @@ public class DoNode extends BlockNode {
 
     if (pCtx != null) {
       pCtx.popVariableScope();
-    }
+    }    
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
     VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
 
+    IterationLimiter iterationLimiter = new IterationLimiter(ctx);
+    
     do {
-      compiledBlock.getValue(ctx, thisValue, ctxFactory);
+    	iterationLimiter.increment();
+    	compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
     while ((Boolean) condition.getValue(ctx, thisValue, factory));
 
@@ -72,8 +76,10 @@ public class DoNode extends BlockNode {
   public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
     VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
 
+    IterationLimiter iterationLimiter = new IterationLimiter(ctx);
     do {
-      compiledBlock.getValue(ctx, thisValue, ctxFactory);
+    	iterationLimiter.increment();
+    	compiledBlock.getValue(ctx, thisValue, ctxFactory);
     }
     while ((Boolean) condition.getValue(ctx, thisValue, factory));
 

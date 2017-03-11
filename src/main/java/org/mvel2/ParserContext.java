@@ -90,6 +90,8 @@ public class ParserContext implements Serializable {
   private boolean executableCodeReached = false;
   private boolean indexAllocation = false;
   protected boolean variablesEscape = false;
+  
+  private Integer maxLoopIterationsBeforeExit;
 
   public ParserContext() {
     parserConfiguration = new ParserConfiguration();
@@ -1084,4 +1086,16 @@ public class ParserContext implements Serializable {
 
     return this;
   }
+
+  public Integer getMaxLoopIterationsBeforeExit() {
+	return maxLoopIterationsBeforeExit;
+  }
+
+  public void setMaxLoopIterationsBeforeExit(Integer maxLoopIterationsBeforeExit) {
+	this.maxLoopIterationsBeforeExit = maxLoopIterationsBeforeExit;
+  }
+  
+  
+
+
 }
