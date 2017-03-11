@@ -10,11 +10,7 @@ import org.mvel2.integration.ResolverTools;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.Bar;
-import org.mvel2.tests.core.res.Base;
-import org.mvel2.tests.core.res.Foo;
-import org.mvel2.tests.core.res.MyEnum;
-import org.mvel2.tests.core.res.Thing;
+import org.mvel2.tests.core.res.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,6 +18,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
@@ -373,6 +372,22 @@ public class WithTests extends AbstractTest {
     MVEL.executeExpression(stmt, null, vars);
     assertEquals(MyEnum.FULL_DOCUMENTATION, thing.getMyEnum());
   }
+    public void testWithAndEnumGuvnorDroolsWayOfDoing() {
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.addPackageImport(MyEnum.class.getPackage().getName());
+
+        ParserContext pCtx = new ParserContext(pconf);
+        pCtx.setStrongTyping(true);
+
+        pCtx.addInput("thing", Thing.class);
+        pCtx.addInput("MyEnum", MyEnum.class);
+
+        Thing thing = new Thing("xxx");
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("thing", thing);
+        Object t = MVEL.eval("MyEnum.FULL_DOCUMENTATION") ;
+        assertEquals(MyEnum.FULL_DOCUMENTATION, t);
+      }
 
   public static class Recipient {
     private String name;
