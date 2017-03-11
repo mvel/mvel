@@ -956,6 +956,14 @@ public class PropertyAccessor {
       }
     }
 
+    if (m == null && cls != ctx.getClass() && !(ctx instanceof Class)) {
+      cls = ctx.getClass();
+      if ((m = getBestCandidate(args, name, cls, cls.getMethods(), false)) != null) {
+        addMethodCache(cls, createSignature(name, tk), m);
+        parameterTypes = m.getParameterTypes();
+      }
+    }
+
     if (ctx instanceof PrototypalFunctionInstance) {
       final VariableResolverFactory funcCtx = ((PrototypalFunctionInstance) ctx).getResolverFactory();
       Object prop = funcCtx.getVariableResolver(name).getValue();
