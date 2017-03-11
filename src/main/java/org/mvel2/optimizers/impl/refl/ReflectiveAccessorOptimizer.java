@@ -359,6 +359,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             case BEAN:
               curr = getBeanProperty(curr, capture());
               break;
+            case ESCAPED_BEAN:
+              curr = getBeanProperty(curr, captureEscaped());
+              break;
             case METH:
               curr = getMethod(curr, capture());
               break;
@@ -391,6 +394,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
           switch (nextSubToken()) {
             case BEAN:
               curr = getBeanPropertyAO(curr, capture());
+              break;
+            case ESCAPED_BEAN:
+              curr = getBeanPropertyAO(curr, captureEscaped());
               break;
             case METH:
               curr = getMethod(curr, capture());

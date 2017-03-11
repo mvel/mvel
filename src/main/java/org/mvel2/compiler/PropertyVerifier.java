@@ -131,6 +131,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         case NORM:
           ctx = getBeanProperty(ctx, capture());
           break;
+        case ESCAPED_BEAN:
+          ctx = getBeanProperty(ctx, captureEscaped());
+          break;
         case METH:
           ctx = getMethod(ctx, capture());
           break;

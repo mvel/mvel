@@ -789,6 +789,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             case BEAN:
               curr = getBeanProperty(curr, capture());
               break;
+            case ESCAPED_BEAN:
+              curr = getBeanProperty(curr, captureEscaped());
+              break;
             case METH:
               curr = getMethod(curr, capture());
               break;
@@ -838,6 +841,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
           switch (nextSubToken()) {
             case BEAN:
               curr = getBeanPropertyAO(curr, capture());
+              break;
+            case ESCAPED_BEAN:
+              curr = getBeanPropertyAO(curr, captureEscaped());
               break;
             case METH:
               curr = getMethod(curr, capture());

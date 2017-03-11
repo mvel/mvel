@@ -35,6 +35,7 @@ public class AbstractOptimizer extends AbstractParser {
   protected static final int METH = 1;
   protected static final int COL = 2;
   protected static final int WITH = 3;
+  protected static final int ESCAPED_BEAN = 4;
 
   protected boolean collection = false;
   protected boolean nullSafe = false;
@@ -181,35 +182,65 @@ public class AbstractOptimizer extends AbstractParser {
         }
         break;
       case '.':
-        if ((start + 1) != end) {
-          switch (expr[cursor = ++tkStart]) {
-            case '?':
-              skipWhitespace();
-              if ((cursor = ++tkStart) == end) {
-                throw new CompileException("unexpected end of statement", expr, start);
-              }
-              nullSafe = true;
-
-              fields = -1;
-              break;
-            case '{':
-              return WITH;
-            default:
-              if (isWhitespace(expr[tkStart])) {
-                skipWhitespace();
-                tkStart = cursor;
-              }
-          }
-        }
-        else {
+        cursor = ++tkStart;
+        while (cursor < end && isWhitespace(expr[cursor])) cursor = ++tkStart;
+        
+        if (cursor == end) {
           throw new CompileException("unexpected end of statement", expr, start);
         }
+        
+        switch (expr[cursor]) {
+          case '?':
+            skipWhitespace();
+            if ((cursor = ++tkStart) == end) {
+              throw new CompileException("unexpected end of statement", expr, start);
+            }
+            nullSafe = true;
+
+            fields = -1;
+            break;
+          case '\'':
+            // we've got an escaped bean property, e.g. foo.'bar'.baz
+            if ((cursor = ++tkStart) == end) {
+              throw new CompileException("unexpected end of statement", expr, start);
+            }
+              
+            // move the cursor to the end of the property name
+            while (++cursor < end && (expr[cursor] != '\''
+                    // handle escaped single quotes
+                    || expr[cursor-1] == '\\')) ;
+
+            // advance it to the end quote and check for end of statement
+            if (++cursor > end) {
+              throw new CompileException("unexpected end of statement", expr, start);
+            }
+
+            fields = -1;
+            return ESCAPED_BEAN;
+          case '[':
+            skipWhitespace();
+            if ((cursor = ++tkStart) == end) {
+              throw new CompileException("unexpected end of statement", expr, start);
+            }
+            nullSafe = true;
+
+            fields = -1;
+          case '{':
+            return WITH;
+          default:
+            if (isWhitespace(expr[tkStart])) {
+              skipWhitespace();
+              tkStart = cursor;
+            }
+        }
+          
         break;
       case '?':
         if (start == cursor) {
           tkStart++;
           cursor++;
           nullSafe = true;
+          fields = -1;
         }
     }
 
@@ -223,6 +254,8 @@ public class AbstractOptimizer extends AbstractParser {
           return COL;
         case '(':
           return METH;
+        case '\'':
+          return ESCAPED_BEAN;
         default:
           return BEAN;
       }
@@ -236,6 +269,16 @@ public class AbstractOptimizer extends AbstractParser {
      * Trim off any whitespace.
      */
     return new String(expr, tkStart = trimRight(tkStart), trimLeft(cursor) - tkStart);
+  }
+
+  protected String captureEscaped() {
+    /**
+     * Parse escaped property.
+     */
+    int start = tkStart;
+    int end = cursor;
+    ++cursor;
+    return new String(expr, start, end - start -1).replaceAll("\\\\'", "'");
   }
 
   /**
