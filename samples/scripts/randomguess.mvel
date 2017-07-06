@@ -5,12 +5,13 @@
  */
 
 import java.io.*;
+import java.util.Random;
 
 //
 // Seed the random number
 //
 
-$num = (int) Math.random() * 100;
+$num =new Random().nextInt(100);
 $guesses = 0;
 $in = -1;
 
