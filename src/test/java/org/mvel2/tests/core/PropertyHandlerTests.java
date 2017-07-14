@@ -389,4 +389,31 @@ public class PropertyHandlerTests extends TestCase {
 
     assertEquals("foobie", wo.getFieldValue("foo"));
   }
+
+  public class A {}
+
+  public class B extends A implements Cloneable {
+  }
+
+  public class C extends A implements Cloneable {
+    public String prop = "Property";
+  }
+
+  public void testPropertyHandlerPreCompile() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+    PropertyHandlerFactory.registerPropertyHandler(B.class, new PropertyHandler() {
+      @Override
+      public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+        return "Handled property";
+      }
+      @Override
+      public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory,
+          Object value) {
+        return null;
+      }
+    });
+
+    Serializable compiled = MVEL.compileExpression("prop");
+    assertEquals("Property", MVEL.executeExpression(compiled, new C()));
+  }
 }
