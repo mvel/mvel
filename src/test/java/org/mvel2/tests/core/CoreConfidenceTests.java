@@ -1,5 +1,33 @@
 package org.mvel2.tests.core;
 
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import junit.framework.TestCase;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
@@ -52,34 +80,6 @@ import org.mvel2.tests.core.res.res2.OverloadedClass;
 import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
-
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.mvel2.MVEL.*;
@@ -4532,5 +4532,43 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.setStrongTyping(true);
     parserContext.addInput("conv", Convention.class);
     assertEquals(List.class, MVEL.analyze("conv.getComms().get(\"test\")", parserContext));
+  }
+
+  public static class Thingy implements Serializable {
+    private String name;
+    private String version;
+    private Object[] items;
+
+    public Thingy(String name, String version, Object... items) {
+      this.name = name;
+      this.version = version;
+      this.items = items;
+    }
+
+    public Thingy(String name) {
+      this.name = name;
+      this.version = null;
+      this.items = null;
+    }
+
+    public void print() {
+      System.out.println("Printing rule " + name);
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
+
+  public void testInvokeVarargConstructor() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport( Thingy.class );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("name", String.class);
+    Map vars = new HashMap() {{ put("name", "test"); }};
+    Thingy result = (Thingy) MVEL.executeExpression(MVEL.compileExpression("new Thingy(name)", pctx), vars);
+    assertEquals( "test", result.getName() );
   }
 }

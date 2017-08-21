@@ -18,24 +18,6 @@
 
 package org.mvel2.util;
 
-import org.mvel2.CompileException;
-import org.mvel2.DataTypes;
-import org.mvel2.MVEL;
-import org.mvel2.Operator;
-import org.mvel2.OptimizationFailure;
-import org.mvel2.ParserContext;
-import org.mvel2.ast.ASTNode;
-import org.mvel2.compiler.AbstractParser;
-import org.mvel2.compiler.BlankLiteral;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExecutableAccessor;
-import org.mvel2.compiler.ExecutableAccessorSafe;
-import org.mvel2.compiler.ExecutableLiteral;
-import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.math.MathProcessor;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -60,6 +42,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import org.mvel2.CompileException;
+import org.mvel2.DataTypes;
+import org.mvel2.MVEL;
+import org.mvel2.Operator;
+import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.BlankLiteral;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableAccessorSafe;
+import org.mvel2.compiler.ExecutableLiteral;
+import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.math.MathProcessor;
 
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
@@ -254,7 +254,7 @@ public class ParseTools {
           }
 
           boolean isVarArgs = meth.isVarArgs();
-          if (parmTypes.length != arguments.length && !isVarArgs) {
+          if ( isArgsNumberNotCompatible( arguments, parmTypes, isVarArgs ) ) {
             continue;
           }
 
@@ -298,6 +298,10 @@ public class ParseTools {
     while (true);
 
     return bestCandidate;
+  }
+
+  private static boolean isArgsNumberNotCompatible( Class[] arguments, Class<?>[] parmTypes, boolean isVarArgs ) {
+    return ( isVarArgs && parmTypes.length-1 > arguments.length ) || ( !isVarArgs && parmTypes.length != arguments.length );
   }
 
   private static boolean isMoreSpecialized( Method newCandidate, Method oldCandidate ) {
@@ -459,7 +463,8 @@ public class ParseTools {
 
     for (Constructor construct : getConstructors(cls)) {
       boolean isVarArgs = construct.isVarArgs();
-      if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
+      parmTypes = getConstructors(construct);
+      if ( isArgsNumberNotCompatible( arguments, parmTypes, isVarArgs ) ) {
         continue;
       }
       else if (arguments.length == 0 && parmTypes.length == 0) {
