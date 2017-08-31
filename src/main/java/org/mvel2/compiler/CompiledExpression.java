@@ -18,6 +18,8 @@
 
 package org.mvel2.compiler;
 
+import java.io.Serializable;
+
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.TypeCast;
@@ -27,8 +29,6 @@ import org.mvel2.integration.impl.StackResetResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ASTLinkedList;
-
-import java.io.Serializable;
 
 import static org.mvel2.MVELRuntime.execute;
 import static org.mvel2.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
@@ -56,7 +56,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     this.knownEgressType = astMap.isSingleNode() ? astMap.firstNonSymbol().getEgressType() : egressType;
     this.literalOnly = literalOnly;
     this.parserConfiguration = parserConfiguration;
-    this.importInjectionRequired = parserConfiguration.getImports() != null && !parserConfiguration.getImports().isEmpty();
+    this.importInjectionRequired = !parserConfiguration.getImports().isEmpty();
   }
 
   public ASTNode getFirstNode() {

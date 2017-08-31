@@ -17,6 +17,10 @@
  */
 package org.mvel2.compiler;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
 import org.mvel2.CompileException;
 import org.mvel2.ErrorDetail;
 import org.mvel2.Operator;
@@ -82,17 +86,10 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
-import org.mvel2.util.PropertyTools;
 import org.mvel2.util.ProtoParser;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.WeakHashMap;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.Double.parseDouble;
-import static java.lang.Thread.currentThread;
 import static org.mvel2.Operator.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -1409,7 +1406,7 @@ public class AbstractParser implements Parser, Serializable {
       }
     }
 
-    if (pCtx != null && pCtx.hasImports() && isArrayType(expr, st, end)) {
+    if (pCtx != null && isArrayType(expr, st, end)) {
       if (pCtx.hasImport(new String(expr, st, cursor - st - 2))) {
         lastWasIdentifier = true;
         TypeDescriptor typeDescriptor = new TypeDescriptor(expr, st, cursor - st, fields);
