@@ -4571,4 +4571,23 @@ public class CoreConfidenceTests extends AbstractTest {
     Thingy result = (Thingy) MVEL.executeExpression(MVEL.compileExpression("new Thingy(name)", pctx), vars);
     assertEquals( "test", result.getName() );
   }
+
+  public void testGenericsWithOr() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("o", OrderLine.class);
+    parserContext.addInput("p", Product.class);
+    Class<?> clazz = MVEL.analyze("p.id == o.product.id || p.category == o.product.category", parserContext);
+    assertEquals(Boolean.class, clazz);
+  }
+
+  public interface OrderLine<T extends Product> {
+    T getProduct();
+  }
+
+  public interface Product {
+    String getId();
+    String getCategory();
+  }
 }

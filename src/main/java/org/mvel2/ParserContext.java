@@ -844,18 +844,6 @@ public class ParserContext implements Serializable {
     return globalFunctions != null && globalFunctions.size() != 0;
   }
 
-  public void addTypeParameters(String name, Class type) {
-    if (typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
-
-    Map<String, Type> newPkg = new HashMap<String, Type>();
-
-    for (Type t : type.getTypeParameters()) {
-      newPkg.put(t.toString(), Object.class);
-    }
-
-    typeParameters.put(name, newPkg);
-  }
-
   public void addTypeParameters(Map<String, Map<String, Type>> typeParameters) {
     if (typeParameters == null) return;
     if (this.typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
@@ -1071,11 +1059,6 @@ public class ParserContext implements Serializable {
 
   public ParserContext withInputs(Map<String, Class> inputs) {
     setInputs(inputs);
-    return this;
-  }
-
-  public ParserContext withTypeParameter(String name, Class type) {
-    addTypeParameters(name, type);
     return this;
   }
 

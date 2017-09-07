@@ -42,7 +42,6 @@ import static org.mvel2.util.ParseTools.forNameWithInner;
  * The resusable parser configuration object.
  */
 public class ParserConfiguration implements Serializable {
-  private static final int MAX_NEGATIVE_CACHE_SIZE;
 
   protected final Map<String, Object> imports = new ConcurrentHashMap<String, Object>();
   protected HashSet<String> packageImports;
@@ -54,16 +53,6 @@ public class ParserConfiguration implements Serializable {
   private boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
 
   private boolean allowBootstrapBypass = true;
-
-  static {
-    String negCacheSize = System.getProperty("mvel2.compiler.max_neg_cache_size");
-    if (negCacheSize != null) {
-      MAX_NEGATIVE_CACHE_SIZE = Integer.parseInt(negCacheSize);
-    }
-    else {
-      MAX_NEGATIVE_CACHE_SIZE = 1000;
-    }
-  }
 
   public ParserConfiguration() {
   }

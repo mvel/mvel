@@ -153,9 +153,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
   private void recordTypeParmsForProperty(String property) {
     if (pCtx.isStrictTypeEnforcement()) {
-      if ((paramTypes = pCtx.getTypeParameters(property)) == null) {
-        pCtx.addTypeParameters(property, pCtx.getVarOrInputType(property));
-      }
       pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
     }
   }
@@ -402,10 +399,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     if (pCtx.isStrictTypeEnforcement()) {
       if (Map.class.isAssignableFrom(property.length() != 0 ? ctx = getBeanProperty(ctx, property) : ctx)) {
-        ctx = type2Class(pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
+        ctx = type2Class(pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
       }
       else if (Collection.class.isAssignableFrom(ctx)) {
-        ctx = pCtx.getLastTypeParameters().length == 0 ? Object.class : type2Class(pCtx.getLastTypeParameters()[0]);
+        ctx = pCtx.getLastTypeParameters() == null || pCtx.getLastTypeParameters().length == 0 ? Object.class : type2Class(pCtx.getLastTypeParameters()[0]);
       }
       else if (ctx.isArray()) {
         ctx = ctx.getComponentType();
