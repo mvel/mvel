@@ -3,6 +3,7 @@ package org.mvel2.tests.templates;
 import junit.framework.TestCase;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
@@ -849,6 +850,11 @@ public class TemplateTests extends TestCase {
             "@{(map['one'] > 0) && (map['foo']==map['foo'])}" // broken
     };
 
+    String[] testCasesTernaryOperator = {
+            "(map['one'] == 1 ? true : false)", // ok
+            "(map['one'] = 1 ? true : false)" // broken
+    };
+
     public void testEvalMVEL219() {
         Map<String, Object> vars = setupVarsMVEL219();
 
@@ -880,6 +886,49 @@ public class TemplateTests extends TestCase {
             Object ret = TemplateRuntime.eval(expr, vars);
             System.out.println("'" + expr + " ' = " + ret.toString());
             assertNotNull(ret);
+        }
+    }
+
+    public void testAnalyzeInvalidTernaryExpression() {
+        Map<String, Object> vars = setupVarsMVEL219();
+
+        ParserConfiguration conf = new ParserConfiguration();
+        final ParserContext parserContext1 = new ParserContext( conf );
+        parserContext1.setStrictTypeEnforcement( true );
+        parserContext1.setStrongTyping( false );
+
+        try {
+            for (String expr : testCasesTernaryOperator) {
+                System.out.println("Analzye '" + expr + "': ......");
+                Object ret = MVEL.analyze(expr, parserContext1);
+                System.out.println("'" + expr + " ' = " + ret.toString());
+                if(!expr.contains("==")) {
+                    org.junit.Assert.fail("Expression '" + expr + "' is broken - should be detected here!");
+                }
+            }
+        } catch(Exception ex) {
+        }
+    }
+
+    public void testCompileInvalidTernaryExpression() {
+        Map<String, Object> vars = setupVarsMVEL219();
+
+        ParserConfiguration conf = new ParserConfiguration();
+        final ParserContext parserContext1 = new ParserContext( conf );
+        parserContext1.setStrictTypeEnforcement( true );
+        parserContext1.setStrongTyping( false );
+
+        try {
+            for (String expr : testCasesTernaryOperator) {
+                System.out.println("Compiling '" + expr + "': ......");
+                Serializable compiled = MVEL.compileExpression(expr);
+                Boolean ret = (Boolean) MVEL.executeExpression(compiled, vars);                
+                System.out.println("'" + expr + " ' = " + ret.toString());
+                if(!expr.contains("==")) {
+                    org.junit.Assert.fail("Expression '" + expr + "' is broken - should be detected here!");
+                }
+            }
+        } catch(Exception ex) {
         }
     }
 
