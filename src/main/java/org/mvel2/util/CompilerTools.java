@@ -18,6 +18,9 @@
 
 package org.mvel2.util;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
@@ -48,10 +51,8 @@ import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import static org.mvel2.Operator.PTABLE;
+import static org.mvel2.Operator.TERNARY;
 import static org.mvel2.util.ASTBinaryTree.buildTree;
 import static org.mvel2.util.ParseTools.__resolveType;
 import static org.mvel2.util.ParseTools.boxPrimitive;
@@ -341,6 +342,10 @@ public class CompilerTools {
       case Operator.SOUNDEX:
         optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode(), pCtx));
         break;
+
+      case TERNARY:
+        if ( pCtx.isStrongTyping() && tk.getEgressType() != Boolean.class && tk.getEgressType() != Boolean.TYPE )
+            throw new RuntimeException( "Condition of ternary operator is not of type boolean. Found " + tk.getEgressType() );
 
       default:
         optimizedAst.addTokenNode(tk, tkOp);

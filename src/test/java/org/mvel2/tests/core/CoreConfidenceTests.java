@@ -4590,4 +4590,30 @@ public class CoreConfidenceTests extends AbstractTest {
     String getId();
     String getCategory();
   }
+
+  public void testAnalyzeTernary() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("value", String.class);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    parserContext.addInput("z", Integer.class);
+    Class<?> clazz = MVEL.analyze("z = (value == \"ALU\" ? x : y);", parserContext);
+    assertEquals(Integer.class, clazz);
+  }
+
+  public void testAnalyzeWrongTernary() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("value", String.class);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    parserContext.addInput("z", Integer.class);
+    try {
+      Class<?> clazz = MVEL.analyze( "z = (value = \"ALU\" ? x : y);", parserContext );
+      fail("parse of this expression should raise an error");
+    } catch (Exception e) { }
+  }
 }

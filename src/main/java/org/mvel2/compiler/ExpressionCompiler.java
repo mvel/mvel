@@ -18,13 +18,28 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.*;
-import org.mvel2.ast.*;
-import org.mvel2.util.*;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.mvel2.CompileException;
+import org.mvel2.ErrorDetail;
+import org.mvel2.MVEL;
+import org.mvel2.Operator;
+import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.Assignment;
+import org.mvel2.ast.LiteralNode;
+import org.mvel2.ast.NewObjectNode;
+import org.mvel2.ast.OperatorNode;
+import org.mvel2.ast.Substatement;
+import org.mvel2.ast.Union;
+import org.mvel2.util.ASTLinkedList;
+import org.mvel2.util.CompilerTools;
+import org.mvel2.util.ErrorUtil;
+import org.mvel2.util.ExecutionStack;
+import org.mvel2.util.ParseTools;
+import org.mvel2.util.StringAppender;
 
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
@@ -277,7 +292,11 @@ public class ExpressionCompiler extends AbstractParser {
       }
 
       if (!verifyOnly) {
-        return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx.getParserConfiguration(), literalOnly == 1);
+        try {
+          return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx.getParserConfiguration(), literalOnly == 1);
+        } catch (RuntimeException e) {
+          throw new CompileException(e.getMessage(), expr, st, e);
+        }
       }
       else {
         try {
