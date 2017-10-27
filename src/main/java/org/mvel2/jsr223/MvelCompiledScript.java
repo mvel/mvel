@@ -7,9 +7,6 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-/**
- * Created by rahult on 4/1/17.
- */
 public class MvelCompiledScript extends CompiledScript {
 
     private final MvelScriptEngine scriptEngine;

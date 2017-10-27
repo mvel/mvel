@@ -8,9 +8,6 @@ import javax.script.*;
 
 import org.mvel2.MVEL;
 
-/**
- * Created by rahult on 4/7/16.
- */
 public class MvelScriptEngine extends AbstractScriptEngine implements ScriptEngine, Compilable {
 
     private volatile MvelScriptEngineFactory factory;

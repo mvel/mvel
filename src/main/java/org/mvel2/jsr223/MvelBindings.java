@@ -1,14 +1,12 @@
 package org.mvel2.jsr223;
 
-import javax.script.Bindings;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by rahult on 9/1/17.
- */
+import javax.script.Bindings;
+
 public class MvelBindings implements Bindings {
 
     /**

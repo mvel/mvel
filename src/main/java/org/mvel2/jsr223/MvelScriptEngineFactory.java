@@ -8,9 +8,6 @@ import javax.script.ScriptEngineFactory;
 
 import org.mvel2.MVEL;
 
-/**
- * Created by rahult on 4/7/16.
- */
 public class MvelScriptEngineFactory implements ScriptEngineFactory {
     private static final String           ENGINE_NAME        = MVEL.NAME;
     private static final String           ENGINE_VERSION     = MVEL.VERSION;
