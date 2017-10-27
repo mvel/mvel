@@ -34,7 +34,7 @@ import java.util.Map;
 import org.mvel2.asm.Label;
 
 /**
- * An {@link org.mvel2.asm.Attribute Attribute} that can print a readable
+ * An {@link org.objectweb.asm.Attribute Attribute} that can print a readable
  * representation of itself.
  * 
  * Implementations should construct readable output from an attribute data
@@ -52,5 +52,5 @@ public interface Textifiable {
      * @param labelNames
      *            map of label instances to their names.
      */
-    void textify(StringBuffer buf, Map<Label, String> labelNames);
+    void textify( StringBuffer buf, Map<Label, String> labelNames );
 }

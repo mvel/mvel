@@ -46,8 +46,8 @@ import org.xml.sax.helpers.AttributesImpl;
  * A {@link MethodVisitor} that generates SAX 2.0 events from the visited
  * method.
  * 
- * @see org.mvel2.asm.xml.SAXClassAdapter
- * @see org.mvel2.asm.xml.Processor
+ * @see org.objectweb.asm.xml.SAXClassAdapter
+ * @see org.objectweb.asm.xml.Processor
  * 
  * @author Eugene Kuleshov
  */
@@ -69,7 +69,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
      *            content handler that will be used to send SAX 2.0 events.
      */
     public SAXCodeAdapter(final SAXAdapter sa, final int access) {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM6);
         this.sa = sa;
         this.access = access;
         this.labelNames = new HashMap<Label, String>();
@@ -81,7 +81,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
         if (name != null) {
             attrs.addAttribute("", "name", "name", "", name);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         SAXClassAdapter.appendAccess(access, sb);
         attrs.addAttribute("", "access", "access", "", sb.toString());
         sa.addElement("parameter", attrs);

@@ -48,20 +48,20 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
 
     public SAXAnnotationAdapter(final SAXAdapter sa, final String elementName,
             final int visible, final String name, final String desc) {
-        this(Opcodes.ASM5, sa, elementName, visible, desc, name, -1, -1, null,
+        this(Opcodes.ASM6, sa, elementName, visible, desc, name, -1, -1, null,
                 null, null, null);
     }
 
     public SAXAnnotationAdapter(final SAXAdapter sa, final String elementName,
             final int visible, final int parameter, final String desc) {
-        this(Opcodes.ASM5, sa, elementName, visible, desc, null, parameter, -1,
+        this(Opcodes.ASM6, sa, elementName, visible, desc, null, parameter, -1,
                 null, null, null, null);
     }
 
     public SAXAnnotationAdapter(final SAXAdapter sa, final String elementName,
             final int visible, final String name, final String desc,
             final int typeRef, final TypePath typePath) {
-        this(Opcodes.ASM5, sa, elementName, visible, desc, name, -1, typeRef,
+        this(Opcodes.ASM6, sa, elementName, visible, desc, name, -1, typeRef,
                 typePath, null, null, null);
     }
 
@@ -69,7 +69,7 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
             final int visible, final String name, final String desc,
             int typeRef, TypePath typePath, final String[] start,
             final String[] end, final int[] index) {
-        this(Opcodes.ASM5, sa, elementName, visible, desc, name, -1, typeRef,
+        this(Opcodes.ASM6, sa, elementName, visible, desc, name, -1, typeRef,
                 typePath, start, end, index);
     }
 
@@ -113,21 +113,21 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
                     typePath.toString());
         }
         if (start != null) {
-            StringBuffer value = new StringBuffer(start[0]);
+            StringBuilder value = new StringBuilder(start[0]);
             for (int i = 1; i < start.length; ++i) {
                 value.append(" ").append(start[i]);
             }
             att.addAttribute("", "start", "start", "", value.toString());
         }
         if (end != null) {
-            StringBuffer value = new StringBuffer(end[0]);
+            StringBuilder value = new StringBuilder(end[0]);
             for (int i = 1; i < end.length; ++i) {
                 value.append(" ").append(end[i]);
             }
             att.addAttribute("", "end", "end", "", value.toString());
         }
         if (index != null) {
-            StringBuffer value = new StringBuffer();
+            StringBuilder value = new StringBuilder();
             value.append(index[0]);
             for (int i = 1; i < index.length; ++i) {
                 value.append(" ").append(index[i]);
@@ -146,19 +146,19 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
             if (value instanceof byte[]) {
                 byte[] b = (byte[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Byte(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof char[]) {
                 char[] b = (char[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Character(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof short[]) {
                 short[] b = (short[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Short(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof boolean[]) {
@@ -170,25 +170,25 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
             } else if (value instanceof int[]) {
                 int[] b = (int[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Integer(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof long[]) {
                 long[] b = (long[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Long(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof float[]) {
                 float[] b = (float[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Float(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof double[]) {
                 double[] b = (double[]) value;
                 for (int i = 0; i < b.length; i++) {
-                    av.visit(null, new Double(b[i]));
+                    av.visit(null, b[i]);
                 }
 
             }

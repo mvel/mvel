@@ -47,7 +47,7 @@ import org.mvel2.asm.TypePath;
 public class FieldNode extends FieldVisitor {
 
     /**
-     * The field's access flags (see {@link org.mvel2.asm.Opcodes}). This
+     * The field's access flags (see {@link org.objectweb.asm.Opcodes}). This
      * field also indicates if the field is synthetic and/or deprecated.
      */
     public int access;
@@ -58,7 +58,7 @@ public class FieldNode extends FieldVisitor {
     public String name;
 
     /**
-     * The field's descriptor (see {@link org.mvel2.asm.Type}).
+     * The field's descriptor (see {@link org.objectweb.asm.Type}).
      */
     public String desc;
 
@@ -78,7 +78,7 @@ public class FieldNode extends FieldVisitor {
      * The runtime visible annotations of this field. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
      * 
-     * @associates org.mvel2.asm.tree.AnnotationNode
+     * @associates org.objectweb.asm.tree.AnnotationNode
      * @label visible
      */
     public List<AnnotationNode> visibleAnnotations;
@@ -87,7 +87,7 @@ public class FieldNode extends FieldVisitor {
      * The runtime invisible annotations of this field. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
      * 
-     * @associates org.mvel2.asm.tree.AnnotationNode
+     * @associates org.objectweb.asm.tree.AnnotationNode
      * @label invisible
      */
     public List<AnnotationNode> invisibleAnnotations;
@@ -96,7 +96,7 @@ public class FieldNode extends FieldVisitor {
      * The runtime visible type annotations of this field. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
      * 
-     * @associates org.mvel2.asm.tree.TypeAnnotationNode
+     * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label visible
      */
     public List<TypeAnnotationNode> visibleTypeAnnotations;
@@ -105,7 +105,7 @@ public class FieldNode extends FieldVisitor {
      * The runtime invisible type annotations of this field. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
      * 
-     * @associates org.mvel2.asm.tree.TypeAnnotationNode
+     * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label invisible
      */
     public List<TypeAnnotationNode> invisibleTypeAnnotations;
@@ -114,7 +114,7 @@ public class FieldNode extends FieldVisitor {
      * The non standard attributes of this field. This list is a list of
      * {@link Attribute} objects. May be <tt>null</tt>.
      * 
-     * @associates org.mvel2.asm.Attribute
+     * @associates org.objectweb.asm.Attribute
      */
     public List<Attribute> attrs;
 
@@ -125,12 +125,12 @@ public class FieldNode extends FieldVisitor {
      * 
      * @param access
      *            the field's access flags (see
-     *            {@link org.mvel2.asm.Opcodes}). This parameter also
+     *            {@link org.objectweb.asm.Opcodes}). This parameter also
      *            indicates if the field is synthetic and/or deprecated.
      * @param name
      *            the field's name.
      * @param desc
-     *            the field's descriptor (see {@link org.mvel2.asm.Type
+     *            the field's descriptor (see {@link org.objectweb.asm.Type
      *            Type}).
      * @param signature
      *            the field's signature.
@@ -144,7 +144,7 @@ public class FieldNode extends FieldVisitor {
      */
     public FieldNode(final int access, final String name, final String desc,
             final String signature, final Object value) {
-        this(Opcodes.ASM5, access, name, desc, signature, value);
+        this(Opcodes.ASM6, access, name, desc, signature, value);
         if (getClass() != FieldNode.class) {
             throw new IllegalStateException();
         }
@@ -159,12 +159,12 @@ public class FieldNode extends FieldVisitor {
      *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      * @param access
      *            the field's access flags (see
-     *            {@link org.mvel2.asm.Opcodes}). This parameter also
+     *            {@link org.objectweb.asm.Opcodes}). This parameter also
      *            indicates if the field is synthetic and/or deprecated.
      * @param name
      *            the field's name.
      * @param desc
-     *            the field's descriptor (see {@link org.mvel2.asm.Type
+     *            the field's descriptor (see {@link org.objectweb.asm.Type
      *            Type}).
      * @param signature
      *            the field's signature.
@@ -247,8 +247,8 @@ public class FieldNode extends FieldVisitor {
      * API than the given version.
      * 
      * @param api
-     *            an ASM API version. Must be one of {@link Opcodes#ASM4} or
-     *            {@link Opcodes#ASM5}.
+     *            an ASM API version. Must be one of {@link Opcodes#ASM4},
+     *            {@link Opcodes#ASM5} or {@link Opcodes#ASM6}.
      */
     public void check(final int api) {
         if (api == Opcodes.ASM4) {

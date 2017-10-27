@@ -18,9 +18,6 @@
 
 package org.mvel2.util;
 
-import java.lang.reflect.Field;
-import sun.misc.Unsafe;
-
 public class JITClassLoader extends ClassLoader implements MVELClassLoader {
   public JITClassLoader(ClassLoader classLoader) {
     super(classLoader);

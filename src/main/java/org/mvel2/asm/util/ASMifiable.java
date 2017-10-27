@@ -34,7 +34,7 @@ import java.util.Map;
 import org.mvel2.asm.Label;
 
 /**
- * An {@link org.mvel2.asm.Attribute Attribute} that can print the ASM code
+ * An {@link org.objectweb.asm.Attribute Attribute} that can print the ASM code
  * to create an equivalent attribute.
  * 
  * @author Eugene Kuleshov
@@ -52,5 +52,5 @@ public interface ASMifiable {
      * @param labelNames
      *            map of label instances to their names.
      */
-    void asmify(StringBuffer buf, String varName, Map<Label, String> labelNames);
+    void asmify( StringBuffer buf, String varName, Map<Label, String> labelNames );
 }

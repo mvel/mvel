@@ -40,6 +40,7 @@ import org.mvel2.asm.FieldVisitor;
 import org.mvel2.asm.Handle;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
+import org.mvel2.asm.ModuleVisitor;
 import org.mvel2.asm.Opcodes;
 import org.mvel2.asm.Type;
 import org.mvel2.asm.TypePath;
@@ -52,8 +53,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * document into Java class file. This class can be feeded by any kind of SAX
  * 2.0 event producers, e.g. XML parser, XSLT or XPath engines, or custom code.
  * 
- * @see org.mvel2.asm.xml.SAXClassAdapter
- * @see org.mvel2.asm.xml.Processor
+ * @see org.objectweb.asm.xml.SAXClassAdapter
+ * @see org.objectweb.asm.xml.Processor
  * 
  * @author Eugene Kuleshov
  */
@@ -90,6 +91,18 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
         RULES.add(BASE + "/outerclass", new OuterClassRule());
         RULES.add(BASE + "/innerclass", new InnerClassRule());
         RULES.add(BASE + "/source", new SourceRule());
+        
+        ModuleRule moduleRule = new ModuleRule();
+        RULES.add(BASE + "/module", moduleRule);
+        RULES.add(BASE + "/module/main-class", moduleRule);
+        RULES.add(BASE + "/module/target", moduleRule);
+        RULES.add(BASE + "/module/packages", moduleRule);
+        RULES.add(BASE + "/module/requires", moduleRule);
+        RULES.add(BASE + "/module/exports", moduleRule);
+        RULES.add(BASE + "/module/exports/to", moduleRule);
+        RULES.add(BASE + "/module/uses", moduleRule);
+        RULES.add(BASE + "/module/provides", moduleRule);
+        
         RULES.add(BASE + "/field", new FieldRule());
 
         RULES.add(BASE + "/method", new MethodRule());
@@ -320,7 +333,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     static {
         String[] types = SAXCodeAdapter.TYPES;
         for (int i = 0; i < types.length; i++) {
-            TYPES.put(types[i], new Integer(i));
+            TYPES.put(types[i], i);
         }
     }
 
@@ -362,7 +375,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
         String name = lName == null || lName.length() == 0 ? qName : lName;
 
         // Compute the current matching rule
-        StringBuffer sb = new StringBuffer(match);
+        StringBuilder sb = new StringBuilder(match);
         if (match.length() > 0) {
             sb.append('/');
         }
@@ -554,13 +567,16 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
                 int dotIndex = val.indexOf('.');
                 int descIndex = val.indexOf('(', dotIndex + 1);
                 int tagIndex = val.lastIndexOf('(');
-
-                int tag = Integer.parseInt(val.substring(tagIndex + 1,
-                        val.length() - 1));
+                int itfIndex = val.indexOf(' ', tagIndex + 1);
+                
+                boolean itf = itfIndex != -1;
+                int tag = Integer.parseInt(
+                              val.substring(tagIndex + 1,
+                                    itf? val.length() - 1: itfIndex));
                 String owner = val.substring(0, dotIndex);
                 String name = val.substring(dotIndex + 1, descIndex);
                 String desc = val.substring(descIndex, tagIndex - 1);
-                return new Handle(tag, owner, name, desc);
+                return new Handle(tag, owner, name, desc, itf);
 
             } catch (RuntimeException e) {
                 throw new SAXException("Malformed handle " + val, e);
@@ -568,7 +584,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
         }
 
         private final String decode(final String val) throws SAXException {
-            StringBuffer sb = new StringBuffer(val.length());
+            StringBuilder sb = new StringBuilder(val.length());
             try {
                 int n = 0;
                 while (n < val.length()) {
@@ -672,6 +688,15 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
             if (s.indexOf("mandated") != -1) {
                 access |= ACC_MANDATED;
             }
+            if (s.indexOf("module") != -1) {
+                access |= ACC_MODULE;
+            }
+            if (s.indexOf("open") != -1) {
+                access |= ACC_OPEN;
+            }
+            if (s.indexOf("transitive") != -1) {
+                access |= ACC_TRANSITIVE;
+            }
             return access;
         }
     }
@@ -686,7 +711,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
             int major = Integer.parseInt(attrs.getValue("major"));
             int minor = Integer.parseInt(attrs.getValue("minor"));
             HashMap<String, Object> vals = new HashMap<String, Object>();
-            vals.put("version", new Integer(minor << 16 | major));
+            vals.put("version", minor << 16 | major);
             vals.put("access", attrs.getValue("access"));
             vals.put("name", attrs.getValue("name"));
             vals.put("parent", attrs.getValue("parent"));
@@ -714,6 +739,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     final class InterfaceRule extends Rule {
 
         @Override
+        @SuppressWarnings("unchecked")
         public final void begin(final String name, final Attributes attrs) {
             ((ArrayList<String>) ((HashMap<?, ?>) peek()).get("interfaces"))
                     .add(attrs.getValue("name"));
@@ -739,7 +765,91 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
             push(cv);
         }
     }
+    
+    /**
+     * ModuleRule: module, requires, exports, opens, uses and provides 
+     */
+    final class ModuleRule extends Rule {
+        @Override
+        public final void begin(final String element, final Attributes attrs)
+                throws SAXException {
+            if ("module".equals(element)) {
+                push(cv.visitModule(attrs.getValue("name"),
+                        getAccess(attrs.getValue("access")),
+                        attrs.getValue("version")));
+            } else if ("main-class".equals(element)) {
+                ModuleVisitor mv = (ModuleVisitor) peek();
+                mv.visitMainClass(attrs.getValue("name"));
+            } else if ("packages".equals(element)) {
+                ModuleVisitor mv = (ModuleVisitor) peek();
+                mv.visitPackage(attrs.getValue("name"));
+            } else if ("requires".equals(element)) {
+                ModuleVisitor mv = (ModuleVisitor) peek();
+                int access = getAccess(attrs.getValue("access"));
+                if ((access & Opcodes.ACC_STATIC) != 0) {
+                    access = access & ~Opcodes.ACC_STATIC | Opcodes.ACC_STATIC_PHASE;
+                }
+                mv.visitRequire(attrs.getValue("module"),
+                        access, attrs.getValue("version"));
+            } else if ("exports".equals(element)) {
+                push(attrs.getValue("name"));
+                push(getAccess(attrs.getValue("access")));
+                ArrayList<String> list = new ArrayList<String>();
+                push(list);
+            } else if ("opens".equals(element)) {
+                push(attrs.getValue("name"));
+                push(getAccess(attrs.getValue("access")));
+                ArrayList<String> list = new ArrayList<String>();
+                push(list);
+            } else if ("to".equals(element)) {
+                @SuppressWarnings("unchecked")
+                ArrayList<String> list = (ArrayList<String>) peek();
+                list.add(attrs.getValue("module"));
+            }  else if ("uses".equals(element)) {
+                ModuleVisitor mv = (ModuleVisitor) peek();
+                mv.visitUse(attrs.getValue("service"));
+            }  else if ("provides".equals(element)) {
+                push(attrs.getValue("service"));
+                push(0);  // see end() below
+                ArrayList<String> list = new ArrayList<String>();
+                push(list);
+            }  else if ("with".equals(element)) {
+                @SuppressWarnings("unchecked")
+                ArrayList<String> list = (ArrayList<String>) peek();
+                list.add(attrs.getValue("provider"));
+            }  
+        }
 
+        @Override
+        public void end(final String element) {
+            boolean exports = "exports".equals(element);
+            boolean opens = "opens".equals(element);
+            boolean provides = "provides".equals(element);
+            if (exports | opens | provides) {
+                @SuppressWarnings("unchecked")
+                ArrayList<String> list = (ArrayList<String>) pop();
+                int access = (Integer) pop();
+                String name = (String) pop();
+                String[] tos = null;
+                if (!list.isEmpty()) {
+                    tos = list.toArray(new String[list.size()]);
+                }
+                ModuleVisitor mv = (ModuleVisitor) peek();
+                if (exports) {
+                    mv.visitExport(name, access, tos);
+                } else {
+                    if (opens) {
+                        mv.visitOpen(name, access, tos);
+                    } else {
+                        mv.visitProvide(name, tos);
+                    }
+                }
+            } else if ("module".equals(element)) {
+                ((ModuleVisitor) pop()).visitEnd();
+            }
+        }
+    }
+    
     /**
      * OuterClassRule
      */
@@ -822,6 +932,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     final class ExceptionRule extends Rule {
 
         @Override
+        @SuppressWarnings("unchecked")
         public final void begin(final String name, final Attributes attrs) {
             ((ArrayList<String>) ((HashMap<?, ?>) peek()).get("exceptions"))
                     .add(attrs.getValue("name"));
@@ -892,6 +1003,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     final class TableSwitchLabelRule extends Rule {
 
         @Override
+        @SuppressWarnings("unchecked")
         public final void begin(final String name, final Attributes attrs) {
             ((ArrayList<Label>) ((HashMap<?, ?>) peek()).get("labels"))
                     .add(getLabel(attrs.getValue("name")));
@@ -916,6 +1028,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
         public final void end(final String name) {
             HashMap<?, ?> vals = (HashMap<?, ?>) pop();
             Label dflt = getLabel(vals.get("dflt"));
+            @SuppressWarnings("unchecked")
             ArrayList<String> keyList = (ArrayList<String>) vals.get("keys");
             ArrayList<?> lbls = (ArrayList<?>) vals.get("labels");
             Label[] labels = lbls.toArray(new Label[lbls.size()]);
@@ -933,6 +1046,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     final class LookupSwitchLabelRule extends Rule {
 
         @Override
+        @SuppressWarnings("unchecked")
         public final void begin(final String name, final Attributes attrs) {
             HashMap<?, ?> vals = (HashMap<?, ?>) peek();
             ((ArrayList<Label>) vals.get("labels")).add(getLabel(attrs
@@ -991,6 +1105,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
 
         @Override
         public void begin(final String name, final Attributes attrs) {
+            @SuppressWarnings("unchecked")
             ArrayList<Object> types = (ArrayList<Object>) ((HashMap<?, ?>) peek())
                     .get(name);
             String type = attrs.getValue("type");
@@ -1095,6 +1210,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
         @Override
         public final void begin(final String element, final Attributes attrs)
                 throws SAXException {
+            @SuppressWarnings("unchecked")
             ArrayList<Object> bsmArgs = (ArrayList<Object>) peek();
             bsmArgs.add(getValue(attrs.getValue("desc"), attrs.getValue("cst")));
         }

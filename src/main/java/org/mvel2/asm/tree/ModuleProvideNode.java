@@ -1,5 +1,4 @@
-<html>
-<!--
+/***
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
@@ -27,23 +26,49 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
--->
-<body>
-Provides an implementation for optional class, field and method attributes.
+ */
+package org.mvel2.asm.tree;
 
-<p>
+import java.util.List;
 
-  By default ASM strips optional attributes, in order to keep them in
-  the bytecode that is being readed you should pass an array of required attribute
-  instances to {@link org.mvel2.asm.ClassReader#accept(org.mvel2.asm.ClassVisitor,
-  org.mvel2.asm.Attribute[], boolean) ClassReader.accept()} method.
-  In order to add custom attributes to the manually constructed bytecode concrete
-  subclasses of the {@link org.mvel2.asm.Attribute Attribute} can be passed to
-  the visitAttribute methods of the
-  {@link org.mvel2.asm.ClassVisitor ClassVisitor},
-  {@link org.mvel2.asm.FieldVisitor FieldVisitor} and
-  {@link org.mvel2.asm.MethodVisitor MethodVisitor} interfaces.
+import org.mvel2.asm.ModuleVisitor;
 
-  @since ASM 1.4.1
-</body>
-</html>
+/**
+ * A node that represents a service and its implementation provided by the current module.
+ * 
+ * @author Remi Forax
+ */
+public class ModuleProvideNode {
+    /**
+     * The service name (in its internal form).
+     */
+    public String service;
+
+    /**
+     * The service provider names (in their internal form).
+     */
+    public List<String> providers;
+
+    /**
+     * Constructs a new {@link ModuleProvideNode}.
+     * 
+     * @param service
+     *            the service name (in its internal form).
+     * @param providers
+     *            the service provider names (in their internal form).
+     */
+    public ModuleProvideNode(final String service, final List<String> providers) {
+        this.service = service;
+        this.providers = providers;
+    }
+
+    /**
+     * Makes the given module visitor visit this require declaration.
+     * 
+     * @param mv
+     *            a module visitor.
+     */
+    public void accept(final ModuleVisitor mv) {
+        mv.visitProvide(service, providers.toArray(new String[0]));
+    }
+}

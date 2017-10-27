@@ -44,7 +44,7 @@ import org.mvel2.asm.Type;
  * A {@link MethodVisitor} that keeps track of stack map frame changes between
  * {@link #visitFrame(int, int, Object[], int, Object[]) visitFrame} calls. This
  * adapter must be used with the
- * {@link org.mvel2.asm.ClassReader#EXPAND_FRAMES} option. Each
+ * {@link org.objectweb.asm.ClassReader#EXPAND_FRAMES} option. Each
  * visit<i>X</i> instruction delegates to the next visitor in the chain, if any,
  * and then simulates the effect of this instruction on the stack map frame,
  * represented by {@link #locals} and {@link #stack}. The next visitor in the
@@ -141,7 +141,7 @@ public class AnalyzerAdapter extends MethodVisitor {
      */
     public AnalyzerAdapter(final String owner, final int access,
             final String name, final String desc, final MethodVisitor mv) {
-        this(Opcodes.ASM5, owner, access, name, desc, mv);
+        this(Opcodes.ASM6, owner, access, name, desc, mv);
         if (getClass() != AnalyzerAdapter.class) {
             throw new IllegalStateException();
         }
@@ -152,7 +152,7 @@ public class AnalyzerAdapter extends MethodVisitor {
      * 
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
-     *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
+     *            of {@link Opcodes#ASM4}, {@link Opcodes#ASM5} or {@link Opcodes#ASM6}.
      * @param owner
      *            the owner's class name.
      * @param access
@@ -661,6 +661,8 @@ public class AnalyzerAdapter extends MethodVisitor {
             t1 = pop();
             if (t1 instanceof String) {
                 pushDesc(((String) t1).substring(1));
+            } else if (t1 == Opcodes.NULL) {
+                push(t1);
             } else {
                 push("java/lang/Object");
             }

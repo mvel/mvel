@@ -477,7 +477,7 @@ public class Processor {
 
     /**
      * A {@link ContentHandlerFactory ContentHandlerFactory} is used to create
-     * {@link org.xml.sax.ContentHandler ContentHandler} instances for concrete
+     * {@link ContentHandler ContentHandler} instances for concrete
      * context.
      */
     private static interface ContentHandlerFactory {
@@ -586,9 +586,9 @@ public class Processor {
     }
 
     /**
-     * A {@link org.xml.sax.ContentHandler ContentHandler} and
-     * {@link org.xml.sax.ext.LexicalHandler LexicalHandler} that serializes XML
-     * from SAX 2.0 events into {@link java.io.Writer Writer}.
+     * A {@link ContentHandler ContentHandler} and
+     * {@link LexicalHandler LexicalHandler} that serializes XML
+     * from SAX 2.0 events into {@link Writer Writer}.
      * 
      * <i><blockquote> This implementation does not support namespaces, entity
      * definitions (uncluding DTD), CDATA and text elements. </blockquote></i>
@@ -712,7 +712,7 @@ public class Processor {
 
         private final void writeAttributes(final Attributes atts)
                 throws IOException {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int len = atts.getLength();
             for (int i = 0; i < len; i++) {
                 sb.append(' ').append(atts.getLocalName(i)).append("=\"")
@@ -729,7 +729,7 @@ public class Processor {
          * @return encoded string
          */
         private static final String esc(final String str) {
-            StringBuffer sb = new StringBuffer(str.length());
+            StringBuilder sb = new StringBuilder(str.length());
             for (int i = 0; i < str.length(); i++) {
                 char ch = str.charAt(i);
                 switch (ch) {
@@ -785,9 +785,9 @@ public class Processor {
     }
 
     /**
-     * A {@link org.xml.sax.ContentHandler ContentHandler} that splits XML
+     * A {@link ContentHandler ContentHandler} that splits XML
      * documents into smaller chunks. Each chunk is processed by the nested
-     * {@link org.xml.sax.ContentHandler ContentHandler} obtained from
+     * {@link ContentHandler ContentHandler} obtained from
      * {@link java.net.ContentHandlerFactory ContentHandlerFactory}. This is
      * useful for running XSLT engine against large XML document that will
      * hardly fit into the memory all together.
@@ -888,9 +888,9 @@ public class Processor {
     }
 
     /**
-     * A {@link org.xml.sax.ContentHandler ContentHandler} that splits XML
+     * A {@link ContentHandler ContentHandler} that splits XML
      * documents into smaller chunks. Each chunk is processed by the nested
-     * {@link org.xml.sax.ContentHandler ContentHandler} obtained from
+     * {@link ContentHandler ContentHandler} obtained from
      * {@link java.net.ContentHandlerFactory ContentHandlerFactory}. This is
      * useful for running XSLT engine against large XML document that will
      * hardly fit into the memory all together.
@@ -998,7 +998,7 @@ public class Processor {
 
     private static interface EntryElement {
 
-        OutputStream openEntry(String name) throws IOException;
+        OutputStream openEntry( String name ) throws IOException;
 
         void closeEntry() throws IOException;
 

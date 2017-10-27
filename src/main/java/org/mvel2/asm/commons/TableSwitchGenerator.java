@@ -48,7 +48,7 @@ public interface TableSwitchGenerator {
      * @param end
      *            a label that corresponds to the end of the switch statement.
      */
-    void generateCase(int key, Label end);
+    void generateCase( int key, Label end );
 
     /**
      * Generates the code for the default switch case.

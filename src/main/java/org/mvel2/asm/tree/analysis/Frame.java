@@ -83,6 +83,7 @@ public class Frame<V extends Value> {
      * @param nStack
      *            the maximum stack size of the frame.
      */
+    @SuppressWarnings("unchecked")
     public Frame(final int nLocals, final int nStack) {
         this.values = (V[]) new Value[nLocals + nStack];
         this.locals = nLocals;
@@ -725,14 +726,14 @@ public class Frame<V extends Value> {
      */
     @Override
     public String toString() {
-        StringBuffer b = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < getLocals(); ++i) {
-            b.append(getLocal(i));
+            sb.append(getLocal(i));
         }
-        b.append(' ');
+        sb.append(' ');
         for (int i = 0; i < getStackSize(); ++i) {
-            b.append(getStack(i).toString());
+            sb.append(getStack(i).toString());
         }
-        return b.toString();
+        return sb.toString();
     }
 }
