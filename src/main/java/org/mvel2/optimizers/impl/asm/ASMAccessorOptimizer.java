@@ -204,7 +204,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     synchronized (Runtime.getRuntime()) {
       cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
           + valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) +
-          ((int) Math.random() * 100),
+          ((int) (Math.random() * 100)),
           null, "java/lang/Object", new String[]{NAMESPACE + "compiler/Accessor"});
     }
 
@@ -235,7 +235,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     synchronized (Runtime.getRuntime()) {
       cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
           + valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) +
-          ((int) Math.random() * 100),
+          ((int) (Math.random() * 100)),
           null, "java/lang/Object", new String[]{NAMESPACE + "compiler/Accessor"});
     }
 
