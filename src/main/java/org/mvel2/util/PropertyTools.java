@@ -97,6 +97,13 @@ public class PropertyTools {
     String getter = ReflectionUtil.getGetter(property);
 
     Method candidate = null;
+
+    if (Collection.class.isAssignableFrom(clazz) && "isEmpty".equals(isGet)) {
+      try {
+        return Collection.class.getMethod("isEmpty");
+      } catch (NoSuchMethodException ignore) {}
+    }
+
     for (Method meth : clazz.getMethods()) {
       if ((meth.getModifiers() & PUBLIC) != 0 && (meth.getModifiers() & STATIC) == 0 && meth.getParameterTypes().length == 0
           && (getter.equals(meth.getName()) || property.equals(meth.getName()) || ((isGet.equals(meth.getName()) || simpleIsGet.equals(meth.getName())) && meth.getReturnType() == boolean.class)
