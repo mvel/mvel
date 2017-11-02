@@ -468,6 +468,41 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
 
+  public final class Data {
+
+    private final Collection<Object> list;
+
+    Data(List<Object> list) {
+      this.list = list;
+    }
+
+    public Collection<Object> getList() {
+      return list;
+    }
+  }
+
+  public void testStaleReflectiveCollectionIsEmptyAccessor() {
+    try
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+      Serializable getFooExpression = MVEL.compileExpression("list.empty");
+      Map vars = new HashMap();
+
+      // ArrayList -> Colletions.EmptyList
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(new ArrayList<Object>())));
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(Collections.emptyList())));
+
+      // Colletions.EmptyList -> ArrayList
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(Collections.emptyList())));
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(new ArrayList<Object>())));
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+    finally
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
   public void testMVEL308() {
     String expression = "foreach(field: updates.entrySet()) { ctx._target[field.key] = field.value; }";
     Serializable compiled = MVEL.compileExpression(expression);
