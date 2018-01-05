@@ -19,6 +19,7 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.ast.Function;
+import org.mvel2.ast.FunctionInstance;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -34,7 +35,12 @@ public class DynamicFunctionAccessor extends BaseAccessor {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     Object[] parms = null;
 
-    Function function = (Function) ctx;
+    Function function;
+    if (ctx instanceof FunctionInstance){
+      function = ((FunctionInstance)ctx).getFunction();
+    } else {
+      function = (Function)ctx;
+    }
 
     if (parameters != null && parameters.length != 0) {
       parms = new Object[parameters.length];
