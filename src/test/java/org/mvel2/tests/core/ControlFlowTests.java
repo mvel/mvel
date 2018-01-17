@@ -18,7 +18,7 @@ import static org.mvel2.MVEL.executeExpression;
 public class ControlFlowTests extends AbstractTest {
 
   public void testSimpleIfStatement() {
-    test("if (true) { System.out.println(\"test!\") }  \n");
+    test("if (true) { System.out.println(\"test!\") }     \n");
   }
 
   public void testAnd() {
