@@ -806,17 +806,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
       return ((CharSequence) ctx).charAt((Integer) idx);
     }
-    else {
+    else if (ctx instanceof Class) {
       TypeDescriptor tDescr = new TypeDescriptor(expr, this.start, length, 0);
       if (tDescr.isArray()) {
         Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
         rootNode = new StaticReferenceAccessor(cls);
         return cls;
       }
-
-      throw new CompileException("illegal use of []: unknown type: "
-          + ctx.getClass().getName(), this.expr, this.start);
     }
+    throw new CompileException("illegal use of []: unknown type: "
+            + ctx.getClass().getName(), this.expr, this.start);
   }
 
 
