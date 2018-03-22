@@ -4158,6 +4158,20 @@ public class CoreConfidenceTests extends AbstractTest {
     System.out.println(result);
   }
 
+  public void testPrimitiveNumberCoercionDuringDivision() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", int.class);
+    parserContext.addInput("b", int.class);
+    Serializable expression = MVEL.compileExpression("a / b < 0.99", parserContext);
+    Object result = MVEL.executeExpression(expression, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, result);
+  }
+
   public void testUntypedClone() {
     String expression = "obj.clone();";
     ParserContext context = new ParserContext();
