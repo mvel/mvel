@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -4172,7 +4173,6 @@ public class CoreConfidenceTests extends AbstractTest {
     Object resBoolean = a / b < 0.99;
     System.out.println("Result Boolean: " + resBoolean);
 
-
     Serializable constantDoubleLeft = MVEL.compileExpression("0.99 >= a / b", parserContext);
     Object resultLeft = MVEL.executeExpression(constantDoubleLeft, new HashMap() {{
       put("a", 1);
@@ -4186,6 +4186,15 @@ public class CoreConfidenceTests extends AbstractTest {
       put("b", 2);
     }});
     assertEquals(true, resultRight);
+
+    parserContext.addInput("c", double.class);
+    parserContext.addInput("d", double.class);
+    Serializable constantIntRight = MVEL.compileExpression("c / d > 0", parserContext);
+    Object resultRightInt = MVEL.executeExpression(constantIntRight, new HashMap() {{
+      put("c", 1);
+      put("d", 2);
+    }});
+    assertEquals(true, resultRightInt);
 
   }
 
@@ -4356,6 +4365,9 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap() {{ put("ch", 'a'); }};
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("ch == \"a\"", pctx), vars));
     assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("ch == \"b\"", pctx), vars));
+
+//    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("\"a\" == ch", pctx), vars));
+//    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("\"b\" == ch", pctx), vars));
   }
 
   public void testFieldNameWithUnderscore() {

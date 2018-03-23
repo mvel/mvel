@@ -74,7 +74,7 @@ public class BinaryOperation extends BooleanNode {
         if (!ctx.isStrongTyping()) break;
 
         if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
-          if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
+          if (right.isLiteral() && right.getEgressType() == String.class && canConvert(left.getEgressType(), right.getEgressType())) {
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
           } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
