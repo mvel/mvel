@@ -4158,18 +4158,35 @@ public class CoreConfidenceTests extends AbstractTest {
     System.out.println(result);
   }
 
-  public void testPrimitiveNumberCoercionDuringDivision() {
+  public void testPrimitiveNumberCoercionDuringDivisionShouldWorkOnBothSide() {
     final ParserContext parserContext = new ParserContext();
     parserContext.setStrictTypeEnforcement(true);
     parserContext.setStrongTyping(true);
     parserContext.addInput("a", int.class);
     parserContext.addInput("b", int.class);
-    Serializable expression = MVEL.compileExpression("a / b < 0.99", parserContext);
-    Object result = MVEL.executeExpression(expression, new HashMap() {{
+
+    int a = 1;
+    int b = 2;
+    Object res = a / b;
+    System.out.printf("Result class Java: %s\nResult value: %s\n", res.getClass(), res);
+    Object resBoolean = a / b < 0.99;
+    System.out.println("Result Boolean: " + resBoolean);
+
+
+    Serializable constantDoubleLeft = MVEL.compileExpression("0.99 >= a / b", parserContext);
+    Object resultLeft = MVEL.executeExpression(constantDoubleLeft, new HashMap() {{
       put("a", 1);
       put("b", 2);
     }});
-    assertEquals(true, result);
+    assertEquals(true, resultLeft);
+
+    Serializable constantDoubleRight = MVEL.compileExpression("a / b < 0.99", parserContext);
+    Object resultRight = MVEL.executeExpression(constantDoubleRight, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, resultRight);
+
   }
 
   public void testUntypedClone() {
