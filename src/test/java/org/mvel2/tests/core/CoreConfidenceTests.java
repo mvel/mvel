@@ -4179,7 +4179,6 @@ public class CoreConfidenceTests extends AbstractTest {
       put("b", 2);
     }});
     assertEquals(true, resultLeft);
-
     Serializable constantDoubleRight = MVEL.compileExpression("a / b < 0.99", parserContext);
     Object resultRight = MVEL.executeExpression(constantDoubleRight, new HashMap() {{
       put("a", 1);
