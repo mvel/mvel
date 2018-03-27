@@ -73,8 +73,16 @@ public class BinaryOperation extends BooleanNode {
         egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
         if (!ctx.isStrongTyping()) break;
 
-        if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
-          if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
+        final boolean leftIsAssignableFromRight = left.getEgressType().isAssignableFrom(right.getEgressType());
+        final boolean rightIsAssignableFromLeft = right.getEgressType().isAssignableFrom(left.getEgressType());
+
+        if (!leftIsAssignableFromRight && !rightIsAssignableFromLeft) {
+
+          // Convert literals only when passing from String to Character
+          final boolean requiresConversion = right.getEgressType() == String.class;
+
+          if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
+            System.out.println("Thread.currentThread() = " + Thread.currentThread());
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
           } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||

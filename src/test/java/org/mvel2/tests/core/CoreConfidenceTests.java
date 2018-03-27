@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -4158,6 +4159,44 @@ public class CoreConfidenceTests extends AbstractTest {
     System.out.println(result);
   }
 
+  public void testPrimitiveNumberCoercionDuringDivisionShouldWorkOnBothSide() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", int.class);
+    parserContext.addInput("b", int.class);
+
+    int a = 1;
+    int b = 2;
+    Object res = a / b;
+    System.out.printf("Result class Java: %s\nResult value: %s\n", res.getClass(), res);
+    Object resBoolean = a / b < 0.99;
+    System.out.println("Result Boolean: " + resBoolean);
+
+    Serializable constantDoubleLeft = MVEL.compileExpression("0.99 >= a / b", parserContext);
+    Object resultLeft = MVEL.executeExpression(constantDoubleLeft, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, resultLeft);
+    Serializable constantDoubleRight = MVEL.compileExpression("a / b < 0.99", parserContext);
+    Object resultRight = MVEL.executeExpression(constantDoubleRight, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, resultRight);
+
+    parserContext.addInput("c", double.class);
+    parserContext.addInput("d", double.class);
+    Serializable constantIntRight = MVEL.compileExpression("c / d > 0", parserContext);
+    Object resultRightInt = MVEL.executeExpression(constantIntRight, new HashMap() {{
+      put("c", 1);
+      put("d", 2);
+    }});
+    assertEquals(true, resultRightInt);
+
+  }
+
   public void testUntypedClone() {
     String expression = "obj.clone();";
     ParserContext context = new ParserContext();
@@ -4325,6 +4364,9 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap() {{ put("ch", 'a'); }};
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("ch == \"a\"", pctx), vars));
     assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("ch == \"b\"", pctx), vars));
+
+//    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("\"a\" == ch", pctx), vars));
+//    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("\"b\" == ch", pctx), vars));
   }
 
   public void testFieldNameWithUnderscore() {
