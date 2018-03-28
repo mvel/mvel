@@ -82,7 +82,6 @@ public class BinaryOperation extends BooleanNode {
           final boolean requiresConversion = right.getEgressType() == String.class;
 
           if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
-            System.out.println("Thread.currentThread() = " + Thread.currentThread());
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
           } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
