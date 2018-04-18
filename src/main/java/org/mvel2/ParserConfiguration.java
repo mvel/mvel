@@ -171,7 +171,7 @@ public class ParserConfiguration implements Serializable {
 
   public boolean hasImport(String name) {
     return (imports.containsKey(name)) ||
-        AbstractParser.CLASS_LITERALS.containsKey(name) ||
+        AbstractParser.LITERALS.containsKey(name) ||
         checkForDynamicImport(name);
   }
 
