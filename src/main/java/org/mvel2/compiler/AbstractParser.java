@@ -134,7 +134,7 @@ public class AbstractParser implements Parser, Serializable {
   private static final WeakHashMap<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
 
   public static HashMap<String, Object> LITERALS;
-  public static HashMap<String, Object> CLASS_LITERALS;
+  protected static HashMap<String, Object> CLASS_LITERALS;
   public static HashMap<String, Integer> OPERATORS;
 
   protected ExecutionStack stk;
