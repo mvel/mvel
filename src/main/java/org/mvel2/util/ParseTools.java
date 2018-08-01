@@ -320,7 +320,7 @@ public class ParseTools {
 
       if (arguments[i] == null) {
         if (!actualParamType.isPrimitive()) {
-          score += 6;
+          score += 7;
         }
         else {
           score = 0;
@@ -328,15 +328,18 @@ public class ParseTools {
         }
       }
       else if (actualParamType == arguments[i]) {
-        score += 7;
+        score += 8;
       }
       else if (actualParamType.isPrimitive() && boxPrimitive(actualParamType) == arguments[i]) {
-        score += 6;
+        score += 7;
       }
       else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == actualParamType) {
-        score += 6;
+        score += 7;
       }
       else if (actualParamType.isAssignableFrom(arguments[i])) {
+        score += 6;
+      }
+      else if (isPrimitiveSubtype(arguments[i], actualParamType)) {
         score += 5;
       }
       else if (isNumericallyCoercible(arguments[i], actualParamType)) {
@@ -1063,6 +1066,22 @@ public class ParseTools {
       }
     }
     return code;
+  }
+
+  private static boolean isPrimitiveSubtype( Class argument, Class<?> actualParamType ) {
+    if (!actualParamType.isPrimitive()) {
+      return false;
+    }
+    Class<?> primitiveArgument = unboxPrimitive(argument);
+    if (!primitiveArgument.isPrimitive()) {
+      return false;
+    }
+    return ( actualParamType == double.class && primitiveArgument == float.class ) ||
+           ( actualParamType == float.class && primitiveArgument == long.class ) ||
+           ( actualParamType == long.class && primitiveArgument == int.class ) ||
+           ( actualParamType == int.class && primitiveArgument == char.class ) ||
+           ( actualParamType == int.class && primitiveArgument == short.class ) ||
+           ( actualParamType == short.class && primitiveArgument == byte.class );
   }
 
   public static boolean isNumericallyCoercible(Class target, Class parm) {

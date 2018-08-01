@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import junit.framework.TestCase;
-import org.junit.Ignore;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -83,7 +82,15 @@ import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
 import static java.util.Collections.unmodifiableCollection;
-import static org.mvel2.MVEL.*;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.compileSetExpression;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.MVEL.evalToBoolean;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.executeSetExpression;
+import static org.mvel2.MVEL.parseMacros;
+import static org.mvel2.MVEL.setProperty;
 import static org.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
@@ -4657,5 +4664,14 @@ public class CoreConfidenceTests extends AbstractTest {
       Class<?> clazz = MVEL.analyze( "z = (value = \"ALU\" ? x : y);", parserContext );
       fail("parse of this expression should raise an error");
     } catch (Exception e) { }
+  }
+
+  public void testPrimiiveSubtyping() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    BigDecimal result = (BigDecimal)MVEL.executeExpression(MVEL.compileExpression("java.math.BigDecimal.valueOf(100)", pctx), new HashMap());
+    assertEquals("100", result.toString());
   }
 }
