@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 import org.mvel2.CompileException;
@@ -4666,12 +4667,28 @@ public class CoreConfidenceTests extends AbstractTest {
     } catch (Exception e) { }
   }
 
-  public void testPrimiiveSubtyping() {
+  public void testPrimitiveSubtyping() {
     ParserConfiguration conf = new ParserConfiguration();
     ParserContext pctx = new ParserContext( conf );
     pctx.setStrictTypeEnforcement(true);
     pctx.setStrongTyping(true);
     BigDecimal result = (BigDecimal)MVEL.executeExpression(MVEL.compileExpression("java.math.BigDecimal.valueOf(100)", pctx), new HashMap());
     assertEquals("100", result.toString());
+  }
+
+  public void testUseVariableFactoryWithArithmeticOperation() {
+    AtomicInteger i = new AtomicInteger( 2 );
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("i", i);
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("i", AtomicInteger.class);
+
+    Serializable compiledExpr = MVEL.compileExpression("1 + 2 * 3 + i.get()", pctx);
+    int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
+    assertEquals(9, result);
   }
 }
