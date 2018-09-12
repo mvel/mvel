@@ -2194,7 +2194,7 @@ public class ParseTools {
 
   public static Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
     try {
-      return Class.forName(className, true, classLoader);
+      return classLoader.loadClass( className );
     } catch (ClassNotFoundException cnfe) {
       return findInnerClass( className, classLoader, cnfe );
     }
@@ -2204,7 +2204,7 @@ public class ParseTools {
     for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
       className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
       try {
-        return Class.forName(className, true, classLoader);
+        return classLoader.loadClass( className );
       } catch (ClassNotFoundException e) { /* ignore */ }
     }
     throw cnfe;
