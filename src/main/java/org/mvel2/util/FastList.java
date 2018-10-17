@@ -18,13 +18,17 @@
 
 package org.mvel2.util;
 
-import org.mvel2.ImmutableElementException;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
+import org.mvel2.ImmutableElementException;
 
 public class FastList<E> extends AbstractList<E> implements Externalizable {
   private E[] elements;
@@ -168,14 +172,14 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
 
   public ListIterator<E> listIterator() {
     return new ListIterator<E>() {
-      private int i = 0;
+      private int i = -1;
 
       public boolean hasNext() {
-        return i < size;
+        return i < size-1;
       }
 
       public E next() {
-        return elements[i++];
+        return elements[++i];
       }
 
       public boolean hasPrevious() {
@@ -183,7 +187,7 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
       }
 
       public E previous() {
-        return elements[i--];
+        return elements[--i];
       }
 
       public int nextIndex() {
