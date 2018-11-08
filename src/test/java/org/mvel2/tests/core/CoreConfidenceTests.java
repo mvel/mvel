@@ -4027,17 +4027,6 @@ public class CoreConfidenceTests extends AbstractTest {
     assertFalse(result);
   }
 
-  public void testDhanji2() {
-    String ex =
-        "name = null;\n" +
-            "$_1 = ?name.?toLowerCase();\n";
-
-
-    Serializable s = MVEL.compileExpression(ex);
-
-    MVEL.executeExpression(s, new HashMap());
-  }
-
   public void testPrimitiveNumberCoercion() {
     final ParserContext parserContext = new ParserContext();
     parserContext.setStrictTypeEnforcement(true);

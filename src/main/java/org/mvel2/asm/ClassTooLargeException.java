@@ -25,32 +25,47 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-
 package org.mvel2.asm;
 
 /**
- * Information about the input stack map frame at the "current" instruction of a method. This is
- * implemented as a Frame subclass for a "basic block" containing only one instruction.
+ * Exception thrown when the constant pool of a class produced by a {@link ClassWriter} is too
+ * large.
  *
- * @author Eric Bruneton
+ * @author Jason Zaugg
  */
-final class CurrentFrame extends Frame {
+public final class ClassTooLargeException extends IndexOutOfBoundsException {
+  private static final long serialVersionUID = 160715609518896765L;
 
-  CurrentFrame(final Label owner) {
-    super(owner);
+  private final String className;
+  private final int constantPoolCount;
+
+  /**
+   * Constructs a new {@link ClassTooLargeException}.
+   *
+   * @param className the internal name of the class.
+   * @param constantPoolCount the number of constant pool items of the class.
+   */
+  public ClassTooLargeException(final String className, final int constantPoolCount) {
+    super("Class too large: " + className);
+    this.className = className;
+    this.constantPoolCount = constantPoolCount;
   }
 
   /**
-   * Sets this CurrentFrame to the input stack map frame of the next "current" instruction, i.e. the
-   * instruction just after the given one. It is assumed that the value of this object when this
-   * method is called is the stack map frame status just before the given instruction is executed.
+   * Returns the internal name of the class.
+   *
+   * @return the internal name of the class.
    */
-  @Override
-  void execute(
-      final int opcode, final int arg, final Symbol symbolArg, final SymbolTable symbolTable) {
-    super.execute(opcode, arg, symbolArg, symbolTable);
-    Frame successor = new Frame(null);
-    merge(symbolTable, successor, 0);
-    copyFrom(successor);
+  public String getClassName() {
+    return className;
+  }
+
+  /**
+   * Returns the number of constant pool items of the class.
+   *
+   * @return the number of constant pool items of the class.
+   */
+  public int getConstantPoolCount() {
+    return constantPoolCount;
   }
 }
