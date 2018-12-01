@@ -1,6 +1,7 @@
 package org.mvel2.jsr223;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -14,14 +15,25 @@ public class MvelScriptEngineFactory implements ScriptEngineFactory {
     private static final String           LANGUAGE_NAME      = "mvel";
     private static final String           LANGUAGE_VERSION   = MVEL.VERSION;
 
-    private static final List<String>     NAMES              = new ArrayList<String>();
-    private static final List<String>     EXTENSIONS         = new ArrayList<String>();
-    private static final List<String>     MIME_TYPES         = new ArrayList<String>();
+    private static final List<String> NAMES;
+    private static final List<String> EXTENSIONS;
+    private static final List<String> MIME_TYPES;
+
+    static {
+        List<String> n = new ArrayList<String>(1);
+        n.add(LANGUAGE_NAME);
+        NAMES = Collections.unmodifiableList(n);
+
+        EXTENSIONS = NAMES;
+
+        n = new ArrayList<String>(1);
+        n.add("application/x-"+LANGUAGE_NAME);
+        MIME_TYPES = Collections.unmodifiableList(n);
+    }
 
     private static final MvelScriptEngine MVEL_SCRIPT_ENGINE = new MvelScriptEngine();
 
     public MvelScriptEngineFactory() {
-        NAMES.add(LANGUAGE_NAME);
     }
 
     @Override
