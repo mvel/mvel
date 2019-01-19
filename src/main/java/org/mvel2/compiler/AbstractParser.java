@@ -2408,8 +2408,6 @@ public class AbstractParser implements Parser, Serializable {
          * need to stop if this is not a literal.
          */
         if (compileMode && !tk.isLiteral()) {
-
-
           splitAccumulator.push(tk, new OperatorNode(operator2, expr, st, pCtx));
           return OP_OVERFLOW;
         }
@@ -2417,6 +2415,7 @@ public class AbstractParser implements Parser, Serializable {
         dStack.push(operator = operator2, tk.getReducedValue(ctx, ctx, variableFactory));
 
         while (true) {
+          ASTNode previousToken = tk;
           // look ahead again
           if ((tk = nextToken()) != null && (operator2 = tk.getOperator()) != -1
               && operator2 != END_OF_STMT && PTABLE[operator2] > PTABLE[operator]) {
@@ -2429,7 +2428,12 @@ public class AbstractParser implements Parser, Serializable {
             /**
              * This operator is of higher precedence, or the same level precedence.  push to the RHS.
              */
-            dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+            ASTNode nextToken = nextToken();
+            if (compileMode && !nextToken.isLiteral()) {
+              splitAccumulator.push(previousToken, new OperatorNode(operator, expr, st, pCtx));
+              return OP_OVERFLOW;
+            }
+            dStack.push(operator = operator2, nextToken.getReducedValue(ctx, ctx, variableFactory));
 
             continue;
           }

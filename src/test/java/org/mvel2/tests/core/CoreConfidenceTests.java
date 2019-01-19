@@ -4666,6 +4666,13 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testUseVariableFactoryWithArithmeticOperation() {
+    checkOperation("3 + 4 * i.get()", 11);
+    checkOperation("2 * 3 + 4 * i.get()", 14);
+    checkOperation("1 + 2 * 3 + i.get()", 9);
+    checkOperation("1 + 2 * 3 + 4 * i.get()", 15);
+  }
+
+  private void checkOperation(String expression, int expectedResult) {
     AtomicInteger i = new AtomicInteger( 2 );
     VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
     factory.createVariable("i", i);
@@ -4676,8 +4683,8 @@ public class CoreConfidenceTests extends AbstractTest {
     pctx.setStrongTyping(true);
     pctx.addInput("i", AtomicInteger.class);
 
-    Serializable compiledExpr = MVEL.compileExpression("1 + 2 * 3 + i.get()", pctx);
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
     int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
-    assertEquals(9, result);
+    assertEquals(expectedResult, result);
   }
 }
