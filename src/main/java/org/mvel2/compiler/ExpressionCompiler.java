@@ -359,7 +359,7 @@ public class ExpressionCompiler extends AbstractParser {
         Integer tkOp2 = (Integer) stk.pop();
         astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx));
         astBuild.addTokenNode(new OperatorNode(tkOp2, expr, st, pCtx), verify(pCtx, tkLA2));
-        return true;
+        return false;
     }
     return true;
   }

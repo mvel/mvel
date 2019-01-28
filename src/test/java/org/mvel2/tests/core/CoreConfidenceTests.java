@@ -4670,6 +4670,8 @@ public class CoreConfidenceTests extends AbstractTest {
     checkOperation("2 * 3 + 4 * i.get()", 14);
     checkOperation("1 + 2 * 3 + i.get()", 9);
     checkOperation("1 + 2 * 3 + 4 * i.get()", 15);
+    checkOperation("1 + 2 * 3 + i.get() * 4", 15);
+    checkOperation("1 + 2 * 3 + i.get() + 4", 13);
   }
 
   private void checkOperation(String expression, int expectedResult) {
