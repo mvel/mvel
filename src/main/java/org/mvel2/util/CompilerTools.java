@@ -103,7 +103,7 @@ public class CompilerTools {
             bo = null;
 
             boolean inv = tkOp.isOperator(Operator.SUB);
-            boolean reduc = isReductionOpportunity(tkOp, tk2);
+            boolean reduc = tk.isLiteral() && isReductionOpportunity(tkOp, tk2);
             boolean p_inv = false;
 
             while (reduc) {

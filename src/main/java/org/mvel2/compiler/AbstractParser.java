@@ -2430,7 +2430,7 @@ public class AbstractParser implements Parser, Serializable {
              */
             ASTNode nextToken = nextToken();
             if (compileMode && !nextToken.isLiteral()) {
-              splitAccumulator.push(previousToken, new OperatorNode(operator, expr, st, pCtx));
+              splitAccumulator.push(nextToken, new OperatorNode(operator2, expr, st, pCtx));
               return OP_OVERFLOW;
             }
             dStack.push(operator = operator2, nextToken.getReducedValue(ctx, ctx, variableFactory));

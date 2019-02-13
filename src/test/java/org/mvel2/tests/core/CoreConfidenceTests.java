@@ -4666,16 +4666,23 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testUseVariableFactoryWithArithmeticOperation() {
-    checkOperation("3 + 4 * i.get()", 11);
-    checkOperation("2 * 3 + 4 * i.get()", 14);
-    checkOperation("1 + 2 * 3 + i.get()", 9);
-    checkOperation("1 + 2 * 3 + 4 * i.get()", 15);
-    checkOperation("1 + 2 * 3 + i.get() * 4", 15);
-    checkOperation("1 + 2 * 3 + i.get() + 4", 13);
+    checkOperation("3 + 4 * i.get()", 43);
+    checkOperation("2 * 3 + 4 * i.get()", 46);
+    checkOperation("1 + 2 * 3 + i.get()", 17);
+    checkOperation("2 * 3 + 4 * i.get()", 46);
+    checkOperation("1 + 2 * 3 + 4 * i.get()", 47);
+    checkOperation("1 + 2 * 3 + i.get() * 4", 47);
+    checkOperation("1 + 2 * 3 + i.get() + 4", 21);
+    checkOperation("4 * i.get() + 5", 45);
+    checkOperation("3 + 4 * i.get() + 5", 48);
+    checkOperation("2 * 3 + 4 * i.get() + 5", 51);
+    checkOperation("1 + 2 * 3 + 4 * i.get() + 5", 52);
+    checkOperation("1 + 2 * 3 + 4 * i.get() * 5", 207);
+    checkOperation("i.get() + 1 + 2 * 3 + 4 * i.get()", 57);
   }
 
   private void checkOperation(String expression, int expectedResult) {
-    AtomicInteger i = new AtomicInteger( 2 );
+    AtomicInteger i = new AtomicInteger( 10 );
     VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
     factory.createVariable("i", i);
 
