@@ -1,6 +1,6 @@
 package org.mvel2.tests.core;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +30,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
+
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -83,7 +84,6 @@ import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
 import static java.util.Collections.unmodifiableCollection;
-
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.compileSetExpression;
 import static org.mvel2.MVEL.eval;
@@ -3468,6 +3468,35 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.getMap().put("1", "one");
     Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
     assertTrue(result);
+  }
+
+  public void testMapAccessWithNestedPropertyRepeated() {
+    /*
+     * 181 - Nested property access successful in ReflectiveAccessorOptimizer 
+     *   but fails in ASMAccessorOptimizer
+     */
+    String str = "map[key] == \"one\"";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", POJO.class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    POJO ctx = new POJO();
+    ctx.getMap().put("1", "one");
+    for (int i = 0; i < 500; ++i) {
+      try {
+        Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+        assertTrue(result);
+      }
+      catch (RuntimeException ex) {
+        if (i == 0) {
+          throw ex;
+        }
+        throw new IllegalStateException("Expression failed at iteration " + i, ex);
+      }
+    }
   }
 
   public void testArrays() {
