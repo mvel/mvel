@@ -1976,7 +1976,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
     else {
       m = getWidenedTarget(m);
-
       if (es != null) {
         ExecutableStatement cExpr;
         for (int i = 0; i < es.length; i++) {
@@ -2026,8 +2025,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       }
       else {
         if ((m.getModifiers() & STATIC) == 0) {
-          assert debug("CHECKCAST " + getInternalName(cls));
-          mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+          assert debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
+          mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
         }
 
           Class<?> aClass = m.getParameterTypes()[m.getParameterTypes().length - 1];
