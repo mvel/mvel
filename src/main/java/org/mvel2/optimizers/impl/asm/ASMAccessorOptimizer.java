@@ -1997,24 +1997,25 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         }
       }
 
+      Class<?> declaringClass = m.getDeclaringClass();
       if (m.getParameterTypes().length == 0) {
         if ((m.getModifiers() & STATIC) != 0) {
           assert debug("INVOKESTATIC " + m.getName());
-          mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+          mv.visitMethodInsn(INVOKESTATIC, getInternalName(declaringClass), m.getName(), getMethodDescriptor(m));
         }
         else {
-          assert debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
-          mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
+          assert debug("CHECKCAST " + getInternalName(declaringClass));
+          mv.visitTypeInsn(CHECKCAST, getInternalName(declaringClass));
 
-          if (m.getDeclaringClass().isInterface()) {
+          if (declaringClass.isInterface()) {
             assert debug("INVOKEINTERFACE " + m.getName());
-            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
 
           }
           else {
             assert debug("INVOKEVIRTUAL " + m.getName());
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
         }
@@ -2025,8 +2026,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       }
       else {
         if ((m.getModifiers() & STATIC) == 0) {
-          assert debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
-          mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
+          assert debug("CHECKCAST " + getInternalName(declaringClass));
+          mv.visitTypeInsn(CHECKCAST, getInternalName(declaringClass));
         }
 
           Class<?> aClass = m.getParameterTypes()[m.getParameterTypes().length - 1];
@@ -2168,18 +2169,17 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
 
         if ((m.getModifiers() & STATIC) != 0) {
           assert debug("INVOKESTATIC: " + m.getName());
-          mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+          mv.visitMethodInsn(INVOKESTATIC, getInternalName(declaringClass), m.getName(), getMethodDescriptor(m));
         }
         else {
-          if (m.getDeclaringClass().isInterface() && (m.getDeclaringClass() != cls
-              || (ctx != null && ctx.getClass() != m.getDeclaringClass()))) {
-            assert debug("INVOKEINTERFACE: " + getInternalName(m.getDeclaringClass()) + "." + m.getName());
-            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+          if (declaringClass.isInterface()) {
+            assert debug("INVOKEINTERFACE: " + getInternalName(declaringClass) + "." + m.getName());
+            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
           else {
-            assert debug("INVOKEVIRTUAL: " + getInternalName(cls) + "." + m.getName());
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(cls), m.getName(),
+            assert debug("INVOKEVIRTUAL: " + getInternalName(declaringClass) + "." + m.getName());
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
         }
