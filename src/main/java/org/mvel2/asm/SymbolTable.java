@@ -27,6 +27,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 package org.mvel2.asm;
 
+import org.mvel2.optimizers.OptimizationNotSupported;
+
 /**
  * The constant pool entries, the BootstrapMethods attribute entries and the (ASM specific) type
  * table entries of a class.
@@ -498,7 +500,7 @@ final class SymbolTable {
           constantDynamic.getBootstrapMethod(),
           constantDynamic.getBootstrapMethodArgumentsUnsafe());
     } else {
-      throw new IllegalArgumentException("value " + value);
+      throw new OptimizationNotSupported();
     }
   }
 
