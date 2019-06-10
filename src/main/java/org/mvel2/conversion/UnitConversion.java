@@ -21,17 +21,22 @@ package org.mvel2.conversion;
 import org.mvel2.ConversionHandler;
 import org.mvel2.Unit;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class UnitConversion implements ConversionHandler {
+  private static final Logger LOG = Logger.getLogger(UnitConversion.class.getName());
+
   public Object convertFrom(Object in) {
     try {
       return Unit.class.newInstance().convertFrom(in);
     }
     catch (InstantiationException e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, "", e);
     }
     catch (IllegalAccessException e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, "", e);
     }
     return null;
   }
@@ -42,10 +47,10 @@ public class UnitConversion implements ConversionHandler {
         return Unit.class.newInstance().canConvertFrom(cls);
       }
       catch (InstantiationException e) {
-        e.printStackTrace();
+        LOG.log(Level.SEVERE, "", e);
       }
       catch (IllegalAccessException e) {
-        e.printStackTrace();
+        LOG.log(Level.SEVERE, "", e);
       }
     }
     return false;

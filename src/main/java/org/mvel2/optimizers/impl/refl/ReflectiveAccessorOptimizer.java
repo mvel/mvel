@@ -87,6 +87,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Thread.currentThread;
@@ -106,6 +108,8 @@ import static org.mvel2.util.Varargs.normalizeArgsForVarArgs;
 import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
+  private static final Logger LOG = Logger.getLogger(ReflectiveAccessorOptimizer.class.getName());
+
   private AccessorNode rootNode;
   private AccessorNode currNode;
 
@@ -450,7 +454,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.st, e, pCtx);
     }
     catch (Exception e) {
-      e.printStackTrace();
+      LOG.log(Level.WARNING, "", e);
       throw new CompileException(e.getMessage(), this.expr, st, e);
     }
   }
