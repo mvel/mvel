@@ -18,21 +18,6 @@
 
 package org.mvel2.compiler;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.mvel2.CompileException;
 import org.mvel2.ErrorDetail;
 import org.mvel2.MVEL;
@@ -44,6 +29,9 @@ import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
@@ -465,14 +453,14 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
       else {
         Function f = pCtx.getFunction(name);
-        if (f != null && f.getEgressType() != null) {
+        if (f != null) {
           resolvedExternally = false;
           f.checkArgumentCount(
                   parseParameterList(
                           (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
                            ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
-
-          return f.getEgressType();
+          cursor++;
+          return f.getEgressType() != null ? f.getEgressType() : Object.class;
         }
         else if (pCtx.hasVarOrInput("this")) {
           if (pCtx.isStrictTypeEnforcement()) {

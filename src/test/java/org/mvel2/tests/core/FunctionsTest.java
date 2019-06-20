@@ -1,9 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.executeExpression;
-
+import org.mvel2.ParserContext;
 import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -13,12 +11,13 @@ import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Member;
 import org.mvel2.tests.core.res.SharedFuncLib;
 
-import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
+
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 /**
  * @author Dhanji R. Prasanna (dhanji@gmail com)
@@ -234,5 +233,17 @@ public class FunctionsTest extends AbstractTest {
     } catch (ExecutionException ee) {
       throw new RuntimeException(ee);
     }
+  }
+
+  public void testFunctionInStronglyTypedMode() {
+    final ParserContext context = ParserContext.create().stronglyTyped();
+    final String expression = "def identity(x) { return x; }; identity('test')";
+    final ExpressionCompiler compiler = new ExpressionCompiler(expression, context);
+    compiler.setVerifyOnly(true);
+    compiler.compile();
+    final Serializable compiled = MVEL.compileExpression(expression, context);
+    assertEquals("Identity function must be present in parser context", Function.class, context.getVarOrInputType("identity"));
+    assertEquals("Identity function must be evaluated", "test", MVEL.executeExpression(compiled, new HashMap()));
+
   }
 }
