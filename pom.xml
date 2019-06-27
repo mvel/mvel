@@ -2,14 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mvel</groupId>
+    <groupId>com.axibase</groupId>
     <artifactId>mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.4.6-SNAPSHOT</version>
+    <version>2.4.5</version>
 
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
     <description>
+        A fork of MVEL by Axibase. Original version is hosted here: https://github.com/mvel/mvel.
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
         from the smallest property binding and extraction, to full blown scripts.
@@ -28,9 +29,9 @@
     </organization>
 
     <scm>
-        <connection>scm:git:git@github.com:mvel/mvel.git</connection>
-        <url>scm:git:git@github.com:mvel/mvel.git</url>
-        <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
+        <connection>scm:git:git@github.com:axibase/mvel.git</connection>
+        <url>scm:git:git@github.com:axibase/mvel.git</url>
+        <developerConnection>scm:git:git@github.com:axibase/mvel.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <issueManagement>
@@ -70,6 +71,34 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <activation>
+                <property>
+                    <name>gpg.passphrase</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <extensions>
             <extension>
@@ -220,6 +249,17 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>sonatype</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
 
         <resources>
@@ -264,15 +304,9 @@
 
     <distributionManagement>
         <repository>
-            <id>jboss-releases-repository</id>
-            <name>JBoss Releases Repository</name>
-            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
-        <snapshotRepository>
-            <id>jboss-snapshots-repository</id>
-            <name>JBoss Snapshot Repository</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
     </distributionManagement>
 
 </project>
