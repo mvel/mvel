@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 
@@ -3472,7 +3473,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testMapAccessWithNestedPropertyRepeated() {
     /*
-     * 181 - Nested property access successful in ReflectiveAccessorOptimizer 
+     * 181 - Nested property access successful in ReflectiveAccessorOptimizer
      *   but fails in ASMAccessorOptimizer
      */
     String str = "map[key] == \"one\"";
@@ -4729,9 +4730,23 @@ public class CoreConfidenceTests extends AbstractTest {
     int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
     assertEquals(expectedResult, result);
   }
+
+  public void testVariableMapWithoutNullKeySupportWhenMethodUsed() {
+    final String expr = "var t = identity('test')";
+    final Serializable compiled = MVEL.compileExpression(expr);
+    final Object result = MVEL.executeExpression(compiled, new Functions(), new ConcurrentHashMap());
+    assertEquals("test", result);
+  }
+
+  public static class Functions {
+    public String identity(String s) {
+      return s;
+    }
+  }
+
   public void test_BigDecimal_ASMoptimizerSupport() {
     /* https://github.com/mvel/mvel/issues/89
-     * The following case failed in attempt from the ASM optimizer to 
+     * The following case failed in attempt from the ASM optimizer to
      *  create a numeric constant from the value 30000B.
      */
     Serializable compiled = MVEL.compileExpression("big = new java.math.BigDecimal(\"10000\"); if (big.compareTo(30000B) > 0) then ;");
