@@ -57,6 +57,7 @@ import org.mvel2.compiler.ExecutableAccessor;
 import org.mvel2.compiler.ExecutableAccessorSafe;
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.ClassAccessHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
@@ -2194,7 +2195,7 @@ public class ParseTools {
 
   public static Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
     try {
-      return classLoader.loadClass( className );
+      return loadClass( className , classLoader);
     } catch (ClassNotFoundException cnfe) {
       return findInnerClass( className, classLoader, cnfe );
     }
@@ -2204,9 +2205,13 @@ public class ParseTools {
     for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
       className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
       try {
-        return classLoader.loadClass( className );
+        return loadClass( className , classLoader);
       } catch (ClassNotFoundException e) { /* ignore */ }
     }
     throw cnfe;
+  }
+  
+  public static Class loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
+	  return ClassAccessHandlerFactory.getClassAccessHandler().getClassInstance(className, classLoader);
   }
 }

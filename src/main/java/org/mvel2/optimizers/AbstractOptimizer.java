@@ -80,7 +80,7 @@ public class AbstractOptimizer extends AbstractParser {
                 if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && test.endsWith(".class"))
                     test = test.substring(0, test.length() - 6);
 
-                return Class.forName(test, true, classLoader);
+                return loadClass(test, classLoader);
               } catch (ClassNotFoundException cnfe) {
                 try {
                   return findInnerClass( test, classLoader, cnfe );
