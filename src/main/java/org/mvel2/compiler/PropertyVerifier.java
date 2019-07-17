@@ -178,7 +178,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     st = cursor;
-    boolean switchStateReg;
 
     Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
@@ -229,12 +228,24 @@ public class PropertyVerifier extends AbstractOptimizer {
       if (importedClass != null) return pCtx.getImport(property);
     }
 
-    if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
-        && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
-        || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
-      Type parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
-      pCtx.setLastTypeParameters(null);
-      return parm instanceof ParameterizedType ? Object.class : (Class) parm;
+    if (pCtx != null) {
+      final int typeParamIdx;
+      if (Collection.class.isAssignableFrom(ctx)) {
+        typeParamIdx = 0;
+      } else if (Map.class.isAssignableFrom(ctx)) {
+        typeParamIdx = 1;
+      } else {
+        typeParamIdx = -1;
+      }
+      if (typeParamIdx >= 0) {
+        if (pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0) {
+          Type parm = pCtx.getLastTypeParameters()[typeParamIdx];
+          pCtx.setLastTypeParameters(null);
+          return parm instanceof ParameterizedType ? Object.class : (Class) parm;
+        } else if (typeParamIdx == 1) { // Map
+          return getMapAccessorReturnType(ctx);
+        }
+      }
     }
 
     if (pCtx != null && "length".equals(property) && ctx.isArray()) {
@@ -326,6 +337,14 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
     }
     return returnGenericType(m);
+  }
+
+  private static Class<?> getMapAccessorReturnType(Class<?> context) {
+    try {
+      return context.getMethod("get", Object.class).getReturnType();
+    } catch (Exception e) {
+      return Object.class;
+    }
   }
 
   private void recordParametricReturnedType(Type parametricReturnType) {
