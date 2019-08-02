@@ -1085,8 +1085,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
       // if it is not already using this as context try to access the method this
       if (ctx != this.thisRef && this.thisRef != null) {
-        addAccessorNode(new ThisValueAccessor());
-        return getMethod(this.thisRef, name, args, argTypes, es);
+        try {
+          addAccessorNode(new ThisValueAccessor());
+          return getMethod(this.thisRef, name, args, argTypes, es);
+        } catch (PropertyAccessException e) {
+          // pass
+        }
       }
 
       for (int i = 0; i < args.length; i++) {
