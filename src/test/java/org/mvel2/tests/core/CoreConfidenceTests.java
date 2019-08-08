@@ -1,46 +1,8 @@
 package org.mvel2.tests.core;
 
-import java.awt.Dimension;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ConcurrentHashMap;
-
 import junit.framework.TestCase;
 import org.junit.Test;
-
-import org.mvel2.CompileException;
-import org.mvel2.DataConversion;
-import org.mvel2.MVEL;
-import org.mvel2.Macro;
-import org.mvel2.ParserConfiguration;
-import org.mvel2.ParserContext;
-import org.mvel2.PropertyAccessor;
+import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
@@ -54,31 +16,7 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.Bar;
-import org.mvel2.tests.core.res.Base;
-import org.mvel2.tests.core.res.Cheese;
-import org.mvel2.tests.core.res.Cheesery;
-import org.mvel2.tests.core.res.Column;
-import org.mvel2.tests.core.res.DefaultKnowledgeHelper;
-import org.mvel2.tests.core.res.Foo;
-import org.mvel2.tests.core.res.Grid;
-import org.mvel2.tests.core.res.KnowledgeHelper;
-import org.mvel2.tests.core.res.KnowledgeHelperFixer;
-import org.mvel2.tests.core.res.MapObject;
-import org.mvel2.tests.core.res.MyClass;
-import org.mvel2.tests.core.res.MyInterface;
-import org.mvel2.tests.core.res.OverloadedInterface;
-import org.mvel2.tests.core.res.PojoStatic;
-import org.mvel2.tests.core.res.RuleBase;
-import org.mvel2.tests.core.res.RuleBaseImpl;
-import org.mvel2.tests.core.res.SampleBean;
-import org.mvel2.tests.core.res.SampleBeanAccessor;
-import org.mvel2.tests.core.res.Ship;
-import org.mvel2.tests.core.res.Status;
-import org.mvel2.tests.core.res.TestClass;
-import org.mvel2.tests.core.res.User;
-import org.mvel2.tests.core.res.WorkingMemory;
-import org.mvel2.tests.core.res.WorkingMemoryImpl;
+import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.OverloadedClass;
@@ -86,15 +24,22 @@ import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
+import java.awt.*;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static java.util.Collections.unmodifiableCollection;
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.MVEL.eval;
-import static org.mvel2.MVEL.evalToBoolean;
-import static org.mvel2.MVEL.executeExpression;
-import static org.mvel2.MVEL.executeSetExpression;
-import static org.mvel2.MVEL.parseMacros;
-import static org.mvel2.MVEL.setProperty;
+import static org.mvel2.MVEL.*;
 import static org.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
@@ -3963,7 +3908,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testWrongExpressions() {
-    wrongExpressionMustFail("Field1 == 3");
+//    wrongExpressionMustFail("Field1 == 3");
     wrongExpressionMustFail("Field1 - 3");
     wrongExpressionMustFail("intField == 3 || Field1");
   }
@@ -4761,6 +4706,24 @@ public class CoreConfidenceTests extends AbstractTest {
     public String identity(String s) {
       return s;
     }
+  }
+
+  @Test
+  public void testStringAndNumberComparisonWithStringLhs() {
+    final ParserContext context = ParserContext.create().stronglyTyped();
+    context.addInput("v", String.class);
+    final ExpressionCompiler expressionCompiler = new ExpressionCompiler("v == -1", context);
+    final CompiledExpression compiledExpression = expressionCompiler.compile();
+    assertEquals(Boolean.TRUE, MVEL.executeExpression(compiledExpression, Collections.singletonMap("v", "-1")));
+  }
+
+  @Test
+  public void testStringAndNumberComparisonWithStringRhs() {
+    final ParserContext context = ParserContext.create().stronglyTyped();
+    context.addInput("v", String.class);
+    final ExpressionCompiler expressionCompiler = new ExpressionCompiler("-1 == v", context);
+    final CompiledExpression compiledExpression = expressionCompiler.compile();
+    assertEquals(Boolean.TRUE, MVEL.executeExpression(compiledExpression, Collections.singletonMap("v", "-1")));
   }
 
   public void test_BigDecimal_ASMoptimizerSupport() {

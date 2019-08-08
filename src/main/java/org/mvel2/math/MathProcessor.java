@@ -55,30 +55,22 @@ public strictfp class MathProcessor {
   }
 
   public static Object doOperations(int type1, Object val1, int operation, int type2, Object val2) {
-    if (type1 == -1)
+    if (type1 == DataTypes.NULL)
       type1 = val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass());
 
-    if (type2 == -1)
+    if (type2 == DataTypes.NULL)
       type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-    switch (type1) {
-      case BIG_DECIMAL:
-
-        switch (type2) {
-          case BIG_DECIMAL:
-            return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
-          default:
-            if (type2 > 99) {
-              return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
-            }
-            else {
-              return _doOperations(type1, val1, operation, type2, val2);
-            }
-        }
-      default:
+    if (type1 == BIG_DECIMAL) {
+      if (type2 == BIG_DECIMAL) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
+      } else if (type2 >= DataTypes.SHORT) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
+      } else {
         return _doOperations(type1, val1, operation, type2, val2);
-
+      }
     }
+    return _doOperations(type1, val1, operation, type2, val2);
   }
 
   private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, boolean iNumber, int returnTarget) {
@@ -189,11 +181,11 @@ public strictfp class MathProcessor {
         }
 
       case GTHAN:
-        return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
+        return val1.compareTo(val2) > 0 ? Boolean.TRUE : Boolean.FALSE;
       case GETHAN:
         return val1.compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
       case LTHAN:
-        return val1.compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
+        return val1.compareTo(val2) < 0 ? Boolean.TRUE : Boolean.FALSE;
       case LETHAN:
         return val1.compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
       case EQUAL:
@@ -205,15 +197,15 @@ public strictfp class MathProcessor {
   }
 
   private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
-    if (operation < 20) {
-      if (((type1 > 49 || operation == EQUAL || operation == NEQUAL) && type1 == type2) ||
+    if (operation <= NEQUAL) {
+      if (((type1 >= DataTypes.COLLECTION || operation == EQUAL || operation == NEQUAL) && type1 == type2) ||
               (isIntegerType(type1) && isIntegerType(type2) && operation >= BW_AND && operation <= BW_NOT)) {
         return doOperationsSameType(type1, val1, operation, val2);
       }
       else if (isNumericOperation(type1, val1, operation, type2, val2)) {
         return doPrimWrapperArithmetic(getNumber(val1, type1),
             operation,
-            getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+            getNumber(val2, type2), true, Math.max(box(type2), box(type1)));
       }
       else if (operation != ADD &&
           (type1 == DataTypes.W_BOOLEAN || type2 == DataTypes.W_BOOLEAN) &&
@@ -222,11 +214,10 @@ public strictfp class MathProcessor {
         return doOperationNonNumeric(type1, convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
       }
       // Fix for: MVEL-56
-      else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 112 || type2 == 8 || type2 == 112)) {
-        if (type1 == 1) {
+      else {
+        if (type1 == DataTypes.STRING && (type2 == DataTypes.CHAR || type2 == DataTypes.W_CHAR)) {
           return doOperationNonNumeric(type1, val1, operation, valueOf(val2));
-        }
-        else {
+        } else if (type2 == DataTypes.STRING && (type1 == DataTypes.CHAR || type1 == DataTypes.W_CHAR)) {
           return doOperationNonNumeric(type1, valueOf(val1), operation, val2);
         }
       }
@@ -235,14 +226,15 @@ public strictfp class MathProcessor {
   }
 
   private static boolean isNumericOperation(int type1, Object val1, int operation, int type2, Object val2) {
-    return (type1 > 99 && type2 > 99)
-        || (operation != ADD && (type1 > 99 || type2 > 99 || operation < LTHAN || operation > GETHAN) && isNumber(val1) && isNumber(val2));
+    return (type1 >= DataTypes.SHORT && type2 >= DataTypes.SHORT)
+        || (operation != ADD && (type1 >= DataTypes.SHORT || type2 >= DataTypes.SHORT || operation < LTHAN || operation > GETHAN) && isNumber(val1) && isNumber(val2));
   }
 
   private static boolean isIntegerType(int type) {
     return type == DataTypes.INTEGER || type == DataTypes.W_INTEGER || type == DataTypes.LONG || type == DataTypes.W_LONG;
   }
 
+  @SuppressWarnings("unchecked")
   private static Object doOperationNonNumeric(int type1, final Object val1, final int operation, final Object val2) {
     switch (operation) {
       case ADD:
@@ -281,7 +273,6 @@ public strictfp class MathProcessor {
 
       case GETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
           }
@@ -297,7 +288,6 @@ public strictfp class MathProcessor {
 
       case LTHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
           }
@@ -313,7 +303,6 @@ public strictfp class MathProcessor {
 
       case LETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
           }
@@ -337,7 +326,7 @@ public strictfp class MathProcessor {
     throw new RuntimeException("could not perform numeric operation on non-numeric types: left-type="
         + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
         + (val2 != null ? val2.getClass().getName() : "null")
-        + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
+        + " [vals (" + val1 + ", " + val2 + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
   }
 
   private static Boolean safeEquals(final Object val1, final Object val2) {
@@ -354,6 +343,7 @@ public strictfp class MathProcessor {
     else return (val2 != null && !val2.equals(val1)) ? Boolean.TRUE : Boolean.FALSE;
   }
 
+  @SuppressWarnings("unchecked")
   private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
     switch (type1) {
       case DataTypes.COLLECTION:
@@ -607,11 +597,11 @@ public strictfp class MathProcessor {
           case MOD:
             return ((BigInteger) val1).remainder(((BigInteger) val2));
           case GTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) > 0 ? Boolean.TRUE : Boolean.FALSE;
           case GETHAN:
             return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0 ? Boolean.TRUE : Boolean.FALSE;
           case LTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) < 0 ? Boolean.TRUE : Boolean.FALSE;
           case LETHAN:
             return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0 ? Boolean.TRUE : Boolean.FALSE;
           case EQUAL:
