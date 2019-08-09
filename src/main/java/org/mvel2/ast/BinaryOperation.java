@@ -85,11 +85,11 @@ public class BinaryOperation extends BooleanNode {
           if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
             Class targetType = isArithmeticOperation(operation) ? egressType : left.getEgressType();
             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
-          } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
-                  (( operation == Operator.EQUAL || operation == Operator.NEQUAL) &&
-                          (CompatibilityStrategy.areEqualityCompatible(left.getEgressType(), right.getEgressType()) ||
-                           CompatibilityStrategy.areEqualityCompatible(right.getEgressType(), left.getEgressType()))))) {
-
+          }
+          else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
+                      isValidEqualityCheck(operation, left.getEgressType(), right.getEgressType()) ||
+                      isValidComparison(operation, left.getEgressType(), right.getEgressType()))
+          ) {
             throw new CompileException("incompatible types in statement: " + right.getEgressType()
                     + " (compared from: " + left.getEgressType() + ")",
                     left.getExpr() != null ? left.getExpr() : right.getExpr(),
@@ -113,6 +113,18 @@ public class BinaryOperation extends BooleanNode {
 
   private boolean isArithmeticOperation(int operation) {
     return operation <= Operator.POWER;
+  }
+
+  private boolean isValidComparison(int operation, Class<?> leftClass, Class<?> rightClass) {
+    return (operation >= Operator.LTHAN && operation <= Operator.GETHAN) &&
+            (CompatibilityStrategy.areComparisonCompatible(leftClass, rightClass) ||
+             CompatibilityStrategy.areComparisonCompatible(rightClass, leftClass));
+  }
+
+  private boolean isValidEqualityCheck(int operation,Class<?> leftClass, Class<?> rightClass) {
+    return (operation == Operator.EQUAL || operation == Operator.NEQUAL) &&
+            (CompatibilityStrategy.areEqualityCompatible(leftClass, rightClass) ||
+             CompatibilityStrategy.areEqualityCompatible(rightClass, leftClass));
   }
 
   private boolean areCompatible(Class<?> leftClass, Class<?> rightClass) {

@@ -4710,20 +4710,38 @@ public class CoreConfidenceTests extends AbstractTest {
 
   @Test
   public void testStringAndNumberComparisonWithStringLhs() {
-    final ParserContext context = ParserContext.create().stronglyTyped();
-    context.addInput("v", String.class);
-    final ExpressionCompiler expressionCompiler = new ExpressionCompiler("v == -1", context);
-    final CompiledExpression compiledExpression = expressionCompiler.compile();
-    assertEquals(Boolean.TRUE, MVEL.executeExpression(compiledExpression, Collections.singletonMap("v", "-1")));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v == -1", "-1"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v != 0", "-1"));
   }
 
   @Test
   public void testStringAndNumberComparisonWithStringRhs() {
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("-1 == v", "-1"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("0 != v", "-1"));
+  }
+
+  @Test
+  public void testStringToNumberComparisonStringLhs() {
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v < 100", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v <= 100", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v >= 5", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("v > 5", "19"));
+  }
+
+  @Test
+  public void testStringToNumberComparisonStringRhs() {
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("100 > v", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("100 >= v", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("5 < v", "19"));
+    assertEquals(Boolean.TRUE, executeExpressionWithVariableV("5 <= v", "19"));
+  }
+
+  private Object executeExpressionWithVariableV(String expression, Object variableValue) {
     final ParserContext context = ParserContext.create().stronglyTyped();
-    context.addInput("v", String.class);
-    final ExpressionCompiler expressionCompiler = new ExpressionCompiler("-1 == v", context);
+    context.addInput("v", variableValue == null ? Object.class : variableValue.getClass());
+    final ExpressionCompiler expressionCompiler = new ExpressionCompiler(expression, context);
     final CompiledExpression compiledExpression = expressionCompiler.compile();
-    assertEquals(Boolean.TRUE, MVEL.executeExpression(compiledExpression, Collections.singletonMap("v", "-1")));
+    return MVEL.executeExpression(compiledExpression, Collections.singletonMap("v", variableValue));
   }
 
   public void test_BigDecimal_ASMoptimizerSupport() {
