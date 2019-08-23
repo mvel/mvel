@@ -18,10 +18,7 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.CompileException;
-import org.mvel2.ErrorDetail;
-import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
+import org.mvel2.*;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
@@ -296,8 +293,8 @@ public class PropertyVerifier extends AbstractOptimizer {
       }
     }
 
-    if (pCtx.isStrictTypeEnforcement()) {
-      throw new CompileException("unqualified type in strict mode for: " + property, expr, tkStart);
+    if (pCtx != null && pCtx.isStrictTypeEnforcement()) {
+      throw new PropertyAccessExceptionWithContext("unqualified type in strict mode for: " + property, expr, tkStart, pCtx, ctx);
     }
 
     return Object.class;
