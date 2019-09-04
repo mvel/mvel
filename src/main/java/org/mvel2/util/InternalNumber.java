@@ -18,6 +18,8 @@
 
 package org.mvel2.util;
 
+import org.mvel2.MVEL;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -47,11 +49,15 @@ public class InternalNumber extends BigDecimal {
     super(s, mathContext);
   }
 
-  public InternalNumber(double v) {
-    super(v);
+  public InternalNumber(BigDecimal v) {
+    super(v.doubleValue()); // TODO fix precision
   }
 
-  public InternalNumber(double v, MathContext mathContext) {
+  public static InternalNumber valueOf(double v, MathContext mathContext) {
+    return MVEL.NAN_SUPPORT && Double.isNaN(v) ? BigNan.NaN : new InternalNumber(v, mathContext);
+  }
+
+  private InternalNumber(double v, MathContext mathContext) {
     super(v, mathContext);
   }
 

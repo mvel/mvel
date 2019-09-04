@@ -4771,6 +4771,53 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   @Test
+  public void testBigDecimalNanOperationWithNanSupport() {
+    try {
+      MVEL.NAN_SUPPORT = true;
+      final HashMap<String, Object> vars = new HashMap<String, Object>();
+      vars.put("a", BigDecimal.ZERO);
+      vars.put("b", Double.NaN);
+      final Object res = executeExpression(compileExpression("a < b"), vars);
+      assertEquals(true, res); // Double.NaN object is greater than everything
+    } finally {
+      MVEL.NAN_SUPPORT = false;
+    }
+  }
+
+  @Test
+  public void testBigDecimalNanOperationWithoutNanSupport() {
+      final HashMap<String, Object> vars = new HashMap<String, Object>();
+      vars.put("a", BigDecimal.ZERO);
+      vars.put("b", Double.NaN);
+      try {
+        final Object res = executeExpression(compileExpression("a < b"), vars);
+        fail("Exception must be thrown");
+      } catch (Exception e) {
+        assertEquals("Could not convert b (NaN) to BigDecimal: Infinite or NaN", e.getMessage());
+      }
+  }
+
+  @Test
+  public void testBigDecimalNanOperationWithoutNanSupportGetter() {
+    try {
+      final Object res = executeExpression(compileExpression("decimalValue < doubleValue"), new Values());
+      fail("Exception must be thrown");
+    } catch (Exception e) {
+      assertEquals("Could not convert doubleValue (NaN) to BigDecimal: Infinite or NaN", e.getMessage());
+    }
+  }
+
+  public static class Values {
+    public BigDecimal getDecimalValue() {
+      return BigDecimal.ZERO;
+    }
+
+    public double getDoubleValue() {
+      return Double.NaN;
+    }
+  }
+
+  @Test
   public void test_BigDecimal_ASMoptimizerSupport() {
     /* https://github.com/mvel/mvel/issues/89
      * The following case failed in attempt from the ASM optimizer to

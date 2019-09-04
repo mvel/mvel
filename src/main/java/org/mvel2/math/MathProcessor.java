@@ -21,6 +21,7 @@ import org.mvel2.DataTypes;
 import org.mvel2.Unit;
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.debug.DebugTools;
+import org.mvel2.util.BigNan;
 import org.mvel2.util.InternalNumber;
 
 import java.math.BigDecimal;
@@ -55,6 +56,10 @@ public strictfp class MathProcessor {
   }
 
   public static Object doOperations(int type1, Object val1, int operation, int type2, Object val2) {
+    return doOperations(type1, val1, null, operation, type2, val2, null);
+  }
+
+  public static Object doOperations(int type1, Object val1, String name1, int operation, int type2, Object val2, String name2) {
     if (type1 == DataTypes.NULL)
       type1 = val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass());
 
@@ -65,7 +70,22 @@ public strictfp class MathProcessor {
       if (type2 == BIG_DECIMAL) {
         return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
       } else if (type2 >= DataTypes.SHORT) {
-        return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
+        final InternalNumber internalNumberFromType;
+        try {
+          internalNumberFromType = getInternalNumberFromType(val2, type2);
+        } catch (Exception e) {
+          final String message;
+          if (name2 != null) {
+            message = "Could not convert " + name2 + " (" + val2 + ") to BigDecimal: " + e.getMessage();
+          } else {
+            message = "Could not convert number " + val2 + "to BigDecimal: " + e.getMessage();
+          }
+          throw new RuntimeException(message, e);
+        }
+        if (BigNan.NaN.equals(internalNumberFromType)) {
+          return doBigDecimalArithmeticWithNan((BigDecimal) val1, internalNumberFromType, operation);
+        }
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, internalNumberFromType, false, -1);
       } else {
         return _doOperations(type1, val1, operation, type2, val2);
       }
@@ -130,6 +150,39 @@ public strictfp class MathProcessor {
         return val.doubleValue();
     }
     throw new RuntimeException("internal error: " + returnType);
+  }
+
+  private static Object doBigDecimalArithmeticWithNan(final BigDecimal val1, final BigDecimal val2, final int operation) {
+    switch (operation) {
+      case ADD:
+      case DIV:
+      case SUB:
+      case MULT:
+      case POWER:
+      case MOD:
+        return BigNan.NaN;
+    }
+    final int cmp;
+    if (BigNan.NaN.equals(val1)) {
+      cmp = val1.compareTo(val2);
+    } else {
+      cmp = -val2.compareTo(val1);
+    }
+    switch (operation) {
+      case GTHAN:
+        return cmp > 0 ? Boolean.TRUE : Boolean.FALSE;
+      case GETHAN:
+        return cmp >= 0 ? Boolean.TRUE : Boolean.FALSE;
+      case LTHAN:
+        return cmp < 0 ? Boolean.TRUE : Boolean.FALSE;
+      case LETHAN:
+        return cmp <= 0 ? Boolean.TRUE : Boolean.FALSE;
+      case EQUAL:
+        return cmp == 0 ? Boolean.TRUE : Boolean.FALSE;
+      case NEQUAL:
+        return cmp != 0 ? Boolean.TRUE : Boolean.FALSE;
+    }
+    return null;
   }
 
   private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber, int returnTarget) {
@@ -558,7 +611,7 @@ public strictfp class MathProcessor {
           case MULT:
             return ((Float) val1) * ((Float) val2);
           case POWER:
-            return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).pow(new InternalNumber((Float) val2).intValue(), MATH_CONTEXT), -1);
+            return narrowType(InternalNumber.valueOf((Float) val1, MATH_CONTEXT).pow(((Float)val2).intValue()), -1);
           case MOD:
             return ((Float) val1) % ((Float) val2);
           case GTHAN:
@@ -700,7 +753,7 @@ public strictfp class MathProcessor {
       return new InternalNumber(0, MATH_CONTEXT);
     switch (type) {
       case BIG_DECIMAL:
-        return new InternalNumber(((BigDecimal) in).doubleValue());
+        return new InternalNumber(((BigDecimal) in));
       case DataTypes.BIG_INTEGER:
         return new InternalNumber((BigInteger) in, MathContext.DECIMAL128);
       case DataTypes.INTEGER:
@@ -713,10 +766,10 @@ public strictfp class MathProcessor {
         return new InternalNumber((String) in, MathContext.DECIMAL64);
       case DataTypes.FLOAT:
       case DataTypes.W_FLOAT:
-        return new InternalNumber((Float) in, MathContext.DECIMAL64);
+        return InternalNumber.valueOf((Float) in, MathContext.DECIMAL64);
       case DataTypes.DOUBLE:
       case DataTypes.W_DOUBLE:
-        return new InternalNumber((Double) in, MathContext.DECIMAL64);
+        return InternalNumber.valueOf((Double) in, MathContext.DECIMAL64);
       case DataTypes.SHORT:
       case DataTypes.W_SHORT:
         return new InternalNumber((Short) in, MathContext.DECIMAL32);
@@ -727,12 +780,10 @@ public strictfp class MathProcessor {
       case DataTypes.W_BOOLEAN:
         return new InternalNumber(((Boolean) in) ? 1 : 0);
       case DataTypes.UNIT:
-        return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
+        return InternalNumber.valueOf(((Unit) in).getValue(), MathContext.DECIMAL64);
       case DataTypes.W_BYTE:
       case DataTypes.BYTE:
         return new InternalNumber(((Byte) in).intValue());
-
-
     }
 
     throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");

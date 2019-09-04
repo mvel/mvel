@@ -135,8 +135,8 @@ public class BinaryOperation extends BooleanNode {
   }
 
   public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-    return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), operation, rType,
-        right.getReducedValueAccelerated(ctx, thisValue, factory));
+    return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), left.getName(), operation,
+        rType, right.getReducedValueAccelerated(ctx, thisValue, factory), right.getName());
   }
 
 
