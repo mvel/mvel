@@ -1,0 +1,6 @@
+<code_scheme name="codestyle" version="173">
+  <JavaCodeStyleSettings>
+    <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="10" />
+    <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="10" />
+  </JavaCodeStyleSettings>
+</code_scheme>
