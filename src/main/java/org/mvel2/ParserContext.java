@@ -18,23 +18,6 @@
 
 package org.mvel2;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.ast.Proto;
@@ -45,6 +28,10 @@ import org.mvel2.integration.Interceptor;
 import org.mvel2.util.LineMapper;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
+
+import java.io.Serializable;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * The <tt>ParserContext</tt> is the main environment object used for sharing state throughout the entire
@@ -1076,5 +1063,21 @@ public class ParserContext implements Serializable {
     Collections.addAll(indexedInputs, varNames);
 
     return this;
+  }
+
+  public Set<String> getPossiblyUndeclaredFunctions() {
+    if (parserConfiguration.nonValidImports.isEmpty()) {
+      return Collections.emptySet();
+    }
+    final Set<String> result = new HashSet<String>(parserConfiguration.nonValidImports);
+    final Set<String> inputsSet = inputs != null ? inputs.keySet() : Collections.<String>emptySet();
+    final Iterator<String> iterator = result.iterator();
+    while (iterator.hasNext()) {
+      final String entry = iterator.next();
+      if (entry.startsWith("java.lang.Object") || inputsSet.contains(entry)) {
+        iterator.remove();
+      }
+    }
+    return result;
   }
 }

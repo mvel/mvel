@@ -18,28 +18,22 @@
 
 package org.mvel2;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.mvel2.util.ParseTools.forNameWithInner;
 
 /**
- * The resusable parser configuration object.
+ * The reusable parser configuration object.
  */
 public class ParserConfiguration implements Serializable {
 
@@ -48,7 +42,7 @@ public class ParserConfiguration implements Serializable {
   protected Map<String, Interceptor> interceptors;
   protected transient ClassLoader classLoader;
 
-  private final transient Set<String> nonValidImports = Collections.newSetFromMap( new ConcurrentHashMap<String, Boolean>() );
+  protected final Set<String> nonValidImports = Collections.newSetFromMap( new ConcurrentHashMap<String, Boolean>() );
   
   private boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
 
@@ -143,8 +137,12 @@ public class ParserConfiguration implements Serializable {
   }
 
   private boolean checkForDynamicImport(String className) {
-    if (packageImports == null) return false;
-    if (!Character.isJavaIdentifierStart(className.charAt(0))) return false;
+    if (packageImports == null || !Character.isJavaIdentifierStart(className.charAt(0))) {
+      if (className != null) {
+        cacheNegativeHitForDynamicImport(className);
+      }
+      return false;
+    }
     if (nonValidImports.contains(className)) return false;
 
     int found = 0;

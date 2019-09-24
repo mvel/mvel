@@ -39,13 +39,13 @@ import static org.mvel2.util.ParseTools.loadFromFile;
 import static org.mvel2.util.ParseTools.optimizeTree;
 
 /**
- * The MVEL convienence class is a collection of static methods that provides a set of easy integration points for
+ * The MVEL convenience class is a collection of static methods that provides a set of easy integration points for
  * MVEL.  The vast majority of MVEL's core functionality can be directly accessed through methods in this class.
  */
 public class MVEL {
   public static final String NAME = "MVEL (MVFLEX Expression Language)";
-  public static final String VERSION = "2.3";
-  public static final String VERSION_SUB = "0";
+  public static final String VERSION = "2.4";
+  public static final String VERSION_SUB = "5";
   public static final String CODENAME = "liberty";
   static boolean DEBUG_FILE = getBoolean("mvel2.debug.fileoutput");
   static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel2.debugging.file") == null ? "mvel_debug.txt" : System.getProperty("mvel2.debugging.file");

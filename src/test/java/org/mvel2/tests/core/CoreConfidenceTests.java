@@ -4818,6 +4818,14 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   @Test
+  public void testUndeclaredFunctionsResolution() {
+    ParserContext parserContext = ParserContext.create();
+    String expression = "undeclared(v1, v2).toString()";
+    MVEL.compileExpression(expression, parserContext);
+    assertEquals(Collections.singleton("undeclared"), parserContext.getPossiblyUndeclaredFunctions());
+  }
+
+  @Test
   public void test_BigDecimal_ASMoptimizerSupport() {
     /* https://github.com/mvel/mvel/issues/89
      * The following case failed in attempt from the ASM optimizer to
