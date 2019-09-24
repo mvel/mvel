@@ -18,6 +18,7 @@
 
 package org.mvel2.optimizers;
 
+import org.mvel2.MVEL;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
@@ -61,7 +62,7 @@ public class OptimizerFactory {
       defaultOptimizer = SAFE_REFLECTIVE;
     }
 
-    if (Boolean.getBoolean("mvel2.disable.jit"))
+    if (MVEL.NO_JIT)
       setDefaultOptimizer(SAFE_REFLECTIVE);
     else
       setDefaultOptimizer(DYNAMIC);

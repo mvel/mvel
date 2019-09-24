@@ -20,7 +20,11 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.*;
+import org.mvel2.integration.impl.CachedMapVariableResolverFactory;
+import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 
 import java.io.File;
@@ -51,7 +55,8 @@ public class MVEL {
   static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel2.debugging.file") == null ? "mvel_debug.txt" : System.getProperty("mvel2.debugging.file");
   static boolean ADVANCED_DEBUG = getBoolean("mvel2.advanced_debugging");
   static boolean WEAK_CACHE = getBoolean("mvel2.weak_caching");
-  static boolean NO_JIT = getBoolean("mvel2.disable.jit");
+  public static boolean FUTURE_LANG_SUPPORT = getBoolean("mvel.future.lang.support");
+  public static boolean NO_JIT = getBoolean("mvel2.disable.jit");
   public static boolean INVOKED_METHOD_EXCEPTIONS_BUBBLE = getBoolean("mvel2.invoked_meth_exceptions_bubble");
   public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL = getBoolean("mvel2.compiler.allow_naked_meth_calls");
   public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = getBoolean("mvel2.compiler.allow_override_all_prophandling");
