@@ -1064,4 +1064,11 @@ public class ArithmeticTests extends AbstractTest {
     vars.put("x", 4);
     assertEquals(Math.ceil((double) 4 / 3), MVEL.executeExpression(stmt, vars));
   }
+  
+  public void testBigDecimalAssignmentIncrement() {
+    String str = "s1=0B;s1+=1;s1+=1;s1";
+    Serializable expr = MVEL.compileExpression(str);
+    Object result = MVEL.executeExpression(expr, new HashMap<String, Object>());
+    assertEquals(new BigDecimal(2), result);
+  }
 }
