@@ -138,7 +138,7 @@ public class ASTNode implements Cloneable, Serializable {
     AccessorOptimizer optimizer;
     Object retVal = null;
 
-    if ((fields & NOJIT) != 0 || factory != null && factory.isResolveable(nameCache)) {
+    if ((fields & NOJIT) != 0 || factory != null && factory.isResolveable(getName())) {
       optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
     }
     else {

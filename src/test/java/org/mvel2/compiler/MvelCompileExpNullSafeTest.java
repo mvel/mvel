@@ -2,12 +2,17 @@ package org.mvel2.compiler;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolver;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.integration.impl.SimpleValueResolver;
 
 /**
  * @author Viswa Ramamoorthy (viswaramamoorthy@yahoo.com)
@@ -84,6 +89,35 @@ public class MvelCompileExpNullSafeTest
     	assert result == false;
 
 	}
+	
+    @Test
+    public void testCustomResolverFactory() {
+        String expression = "($ in mylist if $.firstName=='Etnya').size() > 0";
+        
+        Child child = new Child();
+        child.setFirstName("Etnya");
+        
+        List<Child> list = new ArrayList<Child>();
+        list.add(child);
+        
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("mylist", list);
+        
+        Boolean result = (Boolean)MVEL.eval(expression, new MyResolverFactory(map));
+        assert result == true;
+        
+        list.clear();
+        
+        result = (Boolean)MVEL.eval(expression, new MyResolverFactory(map));
+        assert result == false;
+        
+        child.setFirstName("Enjoy");
+        list.add(child);
+        
+        result = (Boolean)MVEL.eval(expression, new MyResolverFactory(map));
+        assert result == false;
+
+    }
 
 	public class Child {
 		private String firstName;
@@ -129,5 +163,33 @@ public class MvelCompileExpNullSafeTest
 			this.parentList = parentList;
 		}
     	
+    }
+    
+    public class MyResolverFactory extends ImmutableDefaultFactory {
+        private static final long serialVersionUID = 1L;
+        private Map<String, Object> tempVariables;
+        
+        public MyResolverFactory(Map<String, Object> tempVariables) {
+            this.tempVariables = tempVariables;
+        }
+        
+        public boolean isResolveable(String name) {
+            if (name instanceof String) {
+                boolean result = tempVariables.containsKey(name);
+                if (result) {
+                    return result;
+                }
+                return super.isResolveable(name);
+            }
+            throw new IllegalArgumentException(
+                  "MyResolverFactory can only resolve String variable names: " + name);
+          }
+        
+         public VariableResolver getVariableResolver(String name) {
+             if (tempVariables.containsKey(name)) {
+                 return new SimpleValueResolver(tempVariables.get(name));
+             }
+             return super.getVariableResolver(name);
+         }
     }
 }
