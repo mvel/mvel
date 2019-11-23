@@ -115,8 +115,10 @@ public class OptimizerFactory {
   }
 
   public static void clearThreadAccessorOptimizer() {
-    threadOptimizer.set(null);
-    threadOptimizer.remove();
+      if (threadOptimizer.get() != null) {
+          threadOptimizer.set(null);
+          threadOptimizer.remove();
+      }
   }
 
   public static boolean isThreadAccessorOptimizerInitialized() {

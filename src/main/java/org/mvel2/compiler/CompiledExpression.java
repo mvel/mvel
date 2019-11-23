@@ -18,7 +18,9 @@
 
 package org.mvel2.compiler;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ast.ASTNode;
@@ -50,6 +52,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
   private ParserConfiguration parserConfiguration;
 
+  private transient ThreadLocal<HashMap> myThreadLocalFactory;
+
   public CompiledExpression(ASTLinkedList astMap, String sourceName, Class egressType, ParserConfiguration parserConfiguration, boolean literalOnly) {
     this.firstNode = astMap.firstNode();
     this.sourceName = sourceName;
@@ -57,8 +61,24 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     this.literalOnly = literalOnly;
     this.parserConfiguration = parserConfiguration;
     this.importInjectionRequired = !parserConfiguration.getImports().isEmpty();
+    init();
   }
 
+
+  private void readObject(java.io.ObjectInputStream in)
+      throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      init();
+  }
+
+  private void init() {
+      myThreadLocalFactory =  new ThreadLocal() {
+          @Override
+          protected Object initialValue() {
+              return new HashMap<String, ClassImportResolverFactory>();
+          }
+      };
+  }
   public ASTNode getFirstNode() {
     return firstNode;
   }
@@ -121,7 +141,24 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
   public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
     return execute(false, this, staticContext,
-        importInjectionRequired ? new ClassImportResolverFactory(parserConfiguration, factory, true) : new StackResetResolverFactory(factory));
+        importInjectionRequired ? getClassImportResolverFactory(staticContext, factory) : new StackResetResolverFactory(factory));
+  }
+
+  private ClassImportResolverFactory getClassImportResolverFactory(Object staticcontext, VariableResolverFactory factory) {
+    ClassImportResolverFactory resolverFactory;
+    if (staticcontext == null) {
+      return new ClassImportResolverFactory(parserConfiguration, factory, true);
+    } else {
+      String key = staticcontext.getClass().getName();
+      resolverFactory = (ClassImportResolverFactory) myThreadLocalFactory.get().get(key);
+      if (resolverFactory == null) {
+        resolverFactory = new ClassImportResolverFactory(parserConfiguration, factory, true);
+        myThreadLocalFactory.get().put(key, resolverFactory);
+      } else {
+        resolverFactory.setNextFactory(factory);
+      }
+    }
+    return resolverFactory;
   }
 
   private void setupOptimizers() {
