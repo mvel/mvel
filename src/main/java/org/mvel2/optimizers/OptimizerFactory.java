@@ -25,7 +25,8 @@ import org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OptimizerFactory {
+public class
+OptimizerFactory {
   public static String DYNAMIC = "dynamic";
   public static String SAFE_REFLECTIVE = "reflective";
 
