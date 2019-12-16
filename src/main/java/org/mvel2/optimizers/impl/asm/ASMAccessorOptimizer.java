@@ -1395,7 +1395,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray(), pCtx);
-    Object item = compiled.getValue(ctx, variableFactory);
+    Object item = compiled.getValue(this.ctx, variableFactory);
 
     ++cursor;
 
@@ -2638,14 +2638,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
 
 
   private Object addSubstatement(ExecutableStatement stmt) {
-    if (stmt instanceof ExecutableAccessor) {
-      ExecutableAccessor ea = (ExecutableAccessor) stmt;
-      if (ea.getNode().isIdentifier() && !ea.getNode().isDeepProperty()) {
-        loadVariableByName(ea.getNode().getName());
-        return null;
-      }
-    }
-
     compiledInputs.add(stmt);
 
     assert debug("ALOAD 0");
