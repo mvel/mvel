@@ -34,6 +34,8 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.lang.reflect.Array.newInstance;
 import static org.mvel2.DataConversion.convert;
@@ -50,6 +52,8 @@ import static org.mvel2.util.ReflectionUtil.toPrimitiveArrayType;
  */
 @SuppressWarnings({"ManualArrayCopy"})
 public class NewObjectNode extends ASTNode {
+  private static final Logger LOG = Logger.getLogger(NewObjectNode.class.getName());
+
   private transient Accessor newObjectOptimizer;
   private TypeDescriptor typeDescr;
   private char[] name;
@@ -97,7 +101,7 @@ public class NewObjectNode extends ASTNode {
                 findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";", pCtx);
           }
           catch (Exception e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING,"", e);
             // for now, don't handle this.
           }
         }
