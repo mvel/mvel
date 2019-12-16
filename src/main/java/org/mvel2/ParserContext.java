@@ -462,7 +462,6 @@ public class ParserContext implements Serializable {
     if (inputs == null) inputs = new LinkedHashMap<String, Class>();
 
     if (variableVisibility == null) {
-      initVariableVisibility();
       pushVariableScope();
 
       Set<String> scope = getVariableScope();

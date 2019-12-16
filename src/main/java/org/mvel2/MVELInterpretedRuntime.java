@@ -18,6 +18,10 @@
 
 package org.mvel2;
 
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.AbstractParser;
@@ -28,11 +32,14 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.mvel2.Operator.*;
+import static org.mvel2.Operator.AND;
+import static org.mvel2.Operator.CHOR;
+import static org.mvel2.Operator.END_OF_STMT;
+import static org.mvel2.Operator.NOOP;
+import static org.mvel2.Operator.OR;
+import static org.mvel2.Operator.RETURN;
+import static org.mvel2.Operator.TERNARY;
+import static org.mvel2.Operator.TERNARY_ELSE;
 
 
 /**
@@ -376,6 +383,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
   MVELInterpretedRuntime(String expression, VariableResolverFactory resolverFactory) {
     setExpression(expression);
     this.variableFactory = resolverFactory;
+    this.pCtx.initializeTables();
   }
 
   MVELInterpretedRuntime(String expression, Object ctx) {
