@@ -4725,4 +4725,20 @@ public class CoreConfidenceTests extends AbstractTest {
     int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
     assertEquals(expectedResult, result);
   }
+  public void test_BigDecimal_ASMoptimizerSupport() {
+    /* https://github.com/mvel/mvel/issues/89
+     * The following case failed in attempt from the ASM optimizer to 
+     *  create a numeric constant from the value 30000B.
+     */
+    Serializable compiled = MVEL.compileExpression("big = new java.math.BigDecimal(\"10000\"); if (big.compareTo(30000B) > 0) then ;");
+    Map<String, Integer> vars = new HashMap<String, Integer>();
+    for (int i = 0; i < 1000; i++) {
+      try {
+        MVEL.executeExpression(compiled, vars);
+      } catch (CompileException e) {
+        e.printStackTrace();
+        fail("Failed after #executions: " + i);
+      }
+    }
+  }
 }
