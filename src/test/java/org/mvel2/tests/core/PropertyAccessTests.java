@@ -548,4 +548,20 @@ public class PropertyAccessTests extends AbstractTest {
   public void testPublicStaticFieldMVEL314(){
     assertEquals(Foo.STATIC_BAR, runSingleTest("org.mvel2.tests.core.res.Foo.STATIC_BAR"));
   }
+  /*
+   * Test fix for https://github.com/mvel/mvel/issues/200
+   */
+  public void testCollectionEmptyASM() {
+    Serializable compiled = MVEL.compileExpression("validationIssues.empty");
+    Map<String, Object> properties = new HashMap<String, Object>();
+    properties.put("validationIssues", new ArrayList<Object>());
+    int trueCount = 0;
+    final int COUNT = 1000;
+    for (int i = 0; i < COUNT; i++) {
+        if (MVEL.executeExpression(compiled, properties, Boolean.class)) {
+            trueCount++;
+        }
+    }
+    assertEquals(COUNT, trueCount);
+  }
 }

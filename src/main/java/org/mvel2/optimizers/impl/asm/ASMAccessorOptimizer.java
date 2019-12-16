@@ -1117,9 +1117,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         returnType = ((Method) member).getReturnType();
 
-        assert debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
-        mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
+        if (member.getDeclaringClass().isInterface()) {
+          assert debug("INVOKEINTERFACE " + member.getName() + ":" + returnType);
+          mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(member.getDeclaringClass()), member.getName(),
+              getMethodDescriptor((Method) member));
+        }
+        else {
+          assert debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
+          mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
             getMethodDescriptor((Method) member));
+        }
       }
       catch (IllegalAccessException e) {
         Method iFaceMeth = determineActualTargetMethod((Method) member);
