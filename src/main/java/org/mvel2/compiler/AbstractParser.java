@@ -1782,7 +1782,7 @@ public class AbstractParser implements Parser, Serializable {
       if (expr[cursor] != ';') cursor--;
       skipWhitespace();
 
-      return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
+      return (cursor + 4) < end && expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
           && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
     }
     return false;
