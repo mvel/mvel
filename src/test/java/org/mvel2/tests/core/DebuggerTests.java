@@ -33,6 +33,12 @@ public class DebuggerTests extends AbstractTest {
   private static int count;
   private static int a1 = 0;
   private static int a4 = 0;
+  
+  @Override
+  protected void setUp() throws Exception {
+      super.setUp();
+      MVELRuntime.clearAllBreakpoints();
+  }
 
   public void testDebuggerInvoke() {
     count = 0;
