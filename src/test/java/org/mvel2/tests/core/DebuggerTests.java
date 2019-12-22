@@ -37,13 +37,12 @@ public class DebuggerTests extends AbstractTest {
   @Override
   protected void setUp() throws Exception {
       super.setUp();
-      MVELRuntime.clearAllBreakpoints();
+      MVELRuntime.resetDebugger();
   }
 
   public void testDebuggerInvoke() {
     count = 0;
 
-    MVELRuntime.resetDebugger();
     MVELRuntime.setThreadDebugger(new Debugger() {
       public int onBreak(Frame frame) {
         if (frame.getFactory().isResolveable("a1")) {
@@ -85,7 +84,6 @@ public class DebuggerTests extends AbstractTest {
   public void testDebuggerInvoke2() {
     count = 0;
 
-    MVELRuntime.resetDebugger();
     MVELRuntime.setThreadDebugger(new Debugger() {
       public int onBreak(Frame frame) {
         count++;
