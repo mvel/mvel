@@ -2592,6 +2592,41 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       wrapPrimitive(byte.class);
     }
   }
+  
+  /**
+   * Gets the ASM instruction operand for the given primitive type.
+   * Will throw IllegalStateException if the type is not primitive.
+   * @param c The class representing the primitive type. 
+   * @return The operand
+   */
+  public static int toPrimitiveTypeOperand(Class<?> c) {
+      if (c == int.class) return Opcodes.T_INT;
+      if (c == long.class) return Opcodes.T_LONG;
+      if (c == double.class) return Opcodes.T_DOUBLE;
+      if (c == float.class) return Opcodes.T_FLOAT;
+      if (c == short.class) return Opcodes.T_SHORT;
+      if (c == byte.class) return Opcodes.T_BYTE;
+      if (c == char.class) return Opcodes.T_CHAR;
+      if (c == boolean.class) return Opcodes.T_BOOLEAN;
+      throw new IllegalStateException("Non-primitive type passed to toPrimitiveTypeOperand: " + c);
+   }
+
+  /**
+   * Create an array of any type (primitive or reference)
+   * @param componentType The type of array elements
+   * @param length The length of the array
+   */
+  private void createArray(Class componentType, int length) {
+      intPush(length);
+      if (componentType.isPrimitive()) {
+         assert debug("NEWARRAY " + getInternalName(componentType) + " (" + length + ")");
+         mv.visitIntInsn(NEWARRAY, toPrimitiveTypeOperand(componentType)); 
+      }
+      else {
+         assert debug("ANEWARRAY " + getInternalName(componentType) + " (" + length + ")");
+         mv.visitTypeInsn(ANEWARRAY, getInternalName(componentType));
+      }
+    }
 
   public void arrayStore(Class cls) {
     if (cls.isPrimitive()) {
@@ -2872,16 +2907,8 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       }
 
       try {
-        intPush(((Object[]) o).length);
         Class componentType = getSubComponentType(type);
-        if (componentType.isPrimitive()) {
-            assert debug("NEWARRAY " + getInternalName(componentType) + " (" + ((Object[]) o).length + ")");
-            mv.visitIntInsn(NEWARRAY, toPrimitiveTypeOperand(componentType)); 
-        }
-        else {
-            assert debug("ANEWARRAY " + getInternalName(componentType) + " (" + ((Object[]) o).length + ")");
-            mv.visitTypeInsn(ANEWARRAY, getInternalName(componentType));
-        }
+        createArray(componentType, ((Object[])o).length);
         Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1)
             + "L" + getBaseComponentType(type).getName() + ";", pCtx)
             : toNonPrimitiveArray(type);
@@ -3140,9 +3167,31 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         }
 
         this.returnType = cns.getDeclaringClass();
+        Class[] parameterTypes = cns.getParameterTypes();
 
         Class tg;
+        Class<?> paramType = null;
+        int vaStart = -1;
         for (i = 0; i < constructorParms.size(); i++) {
+          if (i < cns.getParameterTypes().length) {
+            paramType = cns.getParameterTypes()[i];
+            if (cns.isVarArgs() && i == cns.getParameterTypes().length - 1) {
+              paramType = getBaseComponentType(paramType);
+              vaStart = i;
+              createArray(paramType, constructorParms.size() - vaStart);
+            }
+          }
+          else {
+            if (vaStart < 0 || paramType == null) {
+              throw new IllegalStateException("Incorrect argument count " + i);
+            }
+          }
+          if (vaStart >= 0) {
+              assert debug("DUP");
+              mv.visitInsn(DUP);
+              intPush(i - vaStart);
+          }
+
           assert debug("ALOAD 0");
           mv.visitVarInsn(ALOAD, 0);
           assert debug("GETFIELD p" + i);
@@ -3156,18 +3205,18 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
               + "compiler/ExecutableStatement", "getValue", "(Ljava/lang/Object;L" + NAMESPACE
               + "integration/VariableResolverFactory;)Ljava/lang/Object;");
 
-          tg = cns.getParameterTypes()[i].isPrimitive()
-              ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
+          tg = paramType.isPrimitive()
+              ? getWrapperClass(paramType) : paramType;
 
-          if (parms[i] != null && !parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
+          if (parms[i] != null && !parms[i].getClass().isAssignableFrom(paramType)) {
             ldcClassConstant(tg);
 
             assert debug("INVOKESTATIC " + NAMESPACE + "DataConversion.convert");
             mv.visitMethodInsn(INVOKESTATIC, "" + NAMESPACE + "DataConversion", "convert",
                 "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
-            if (cns.getParameterTypes()[i].isPrimitive()) {
-              unwrapPrimitive(cns.getParameterTypes()[i]);
+            if (paramType.isPrimitive()) {
+              unwrapPrimitive(paramType);
             }
             else {
               assert debug("CHECKCAST " + getInternalName(tg));
@@ -3176,8 +3225,11 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
 
           }
           else {
-            assert debug("CHECKCAST " + getInternalName(cns.getParameterTypes()[i]));
-            mv.visitTypeInsn(CHECKCAST, getInternalName(cns.getParameterTypes()[i]));
+            assert debug("CHECKCAST " + getInternalName(paramType));
+            mv.visitTypeInsn(CHECKCAST, getInternalName(paramType));
+          }
+          if (vaStart >= 0) {
+              arrayStore(paramType);
           }
 
         }
@@ -3329,15 +3381,4 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
   public boolean isLiteralOnly() {
     return literal;
   }
-  public static int toPrimitiveTypeOperand(Class<?> c) {
-      if (c == int.class) return Opcodes.T_INT;
-      if (c == long.class) return Opcodes.T_LONG;
-      if (c == double.class) return Opcodes.T_DOUBLE;
-      if (c == float.class) return Opcodes.T_FLOAT;
-      if (c == short.class) return Opcodes.T_SHORT;
-      if (c == byte.class) return Opcodes.T_BYTE;
-      if (c == char.class) return Opcodes.T_CHAR;
-      if (c == boolean.class) return Opcodes.T_BOOLEAN;
-      throw new IllegalStateException("Non-primitive type passed to toPrimitiveTypeOperand: " + c);
-   }
 }

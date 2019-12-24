@@ -3849,6 +3849,16 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result.contains("s2"));
   }
 
+  public void testTypedVarArgsConstructorASM() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    try {
+	testTypedVarArgsConstructor();
+    }
+    finally {
+	 OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
     return (T) compileAndExecuteWithStrongTyping(expression, new HashMap());
   }
