@@ -4142,6 +4142,11 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression(str, pctx)));
   }
 
+  public void testStaticMethodsInvocationWithNullArgASM() {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      testStaticMethodsInvocationWithNullArg();
+    }
+
   public interface InterfaceA {
     InterfaceB getB();
   }

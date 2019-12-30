@@ -46,6 +46,7 @@ import org.mvel2.optimizers.impl.refl.nodes.Union;
 import org.mvel2.util.JITClassLoader;
 import org.mvel2.util.MVELClassLoader;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.PropertyTools;
 import org.mvel2.util.StringAppender;
@@ -1761,6 +1762,9 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       if (pCtx.isStrictTypeEnforcement()) {
         for (int i = 0; i < args.length; i++) {
           argTypes[i] = es[i].getKnownEgressType();
+          if (es[i] instanceof ExecutableLiteral && ((ExecutableLiteral)es[i]).getLiteral() == null) {
+              argTypes[i] = NullType.class;
+            }
         }
       }
       else {
