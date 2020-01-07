@@ -3955,6 +3955,10 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.class, expressionReturnType("Field1Option.t"));
   }
 
+  public void testModuloReturnType() {
+    assertEquals(Integer.class, expressionReturnType("3 % 2"));
+  }
+
   public void testWrongExpressions() {
     wrongExpressionMustFail("Field1 == 3");
     wrongExpressionMustFail("Field1 - 3");
