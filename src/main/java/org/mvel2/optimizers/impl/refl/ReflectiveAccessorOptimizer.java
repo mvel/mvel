@@ -697,11 +697,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return getMethod(ctx, property);
       }
 
-      // if it is not already using this as context try to read the property value from this
-      if (ctx != this.thisRef && this.thisRef != null) {
-        addAccessorNode(new ThisValueAccessor());
-        return getBeanProperty(this.thisRef, property);
-      }
 
       if (ctx == null) {
         throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start, pCtx);
@@ -759,7 +754,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     if (itemSubExpr) {
       try {
         idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx))
-            .getValue(ctx, thisRef, variableFactory);
+            .getValue(thisRef, thisRef, variableFactory);
       }
       catch (CompileException e) {
         e.setExpr(this.expr);
@@ -860,7 +855,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     ExecutableStatement itemStmt = null;
     if (itemSubExpr) {
       idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx))
-          .getValue(ctx, thisRef, variableFactory);
+          .getValue(thisRef, thisRef, variableFactory);
     }
 
     ++cursor;
@@ -1006,7 +1001,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     return getMethod(ctx, name, args, argTypes, es);
   }
 
-  @SuppressWarnings({"unchecked"})
   private Object getMethod(Object ctx, String name, Object[] args, Class[] argTypes, ExecutableStatement[] es) throws Exception {
     if (first && variableFactory != null && variableFactory.isResolveable(name)) {
       Object ptr = variableFactory.getVariableResolver(name).getValue();
@@ -1081,12 +1075,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       if ("size".equals(name) && args.length == 0 && cls.isArray()) {
         addAccessorNode(new ArrayLength());
         return getLength(ctx);
-      }
-
-      // if it is not already using this as context try to access the method this
-      if (ctx != this.thisRef && this.thisRef != null) {
-        addAccessorNode(new ThisValueAccessor());
-        return getMethod(this.thisRef, name, args, argTypes, es);
       }
 
       for (int i = 0; i < args.length; i++) {

@@ -1555,7 +1555,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     if (ctx == null) return null;
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
-    Object item = compiled.getValue(ctx, variableFactory);
+    Object item = compiled.getValue(this.ctx, variableFactory);
 
     ++cursor;
 
