@@ -4209,6 +4209,7 @@ public class CoreConfidenceTests extends AbstractTest {
       put("b", 2);
     }});
     assertEquals(true, resultLeft);
+
     Serializable constantDoubleRight = MVEL.compileExpression("a / b < 0.99", parserContext);
     Object resultRight = MVEL.executeExpression(constantDoubleRight, new HashMap() {{
       put("a", 1);
@@ -4224,8 +4225,33 @@ public class CoreConfidenceTests extends AbstractTest {
       put("d", 2);
     }});
     assertEquals(true, resultRightInt);
-
   }
+
+  public void testNumberCoercion() {
+      final ParserContext parserContext = new ParserContext();
+      parserContext.setStrictTypeEnforcement(true);
+      parserContext.setStrongTyping(true);
+      parserContext.addInput("a", int.class);
+
+      // Long / Integer to Long / Long
+      Serializable longDivByInt = MVEL.compileExpression("15 * Math.round( new java.math.BigDecimal(\"49.4\") ) / 100", parserContext);
+      Object resultLongDivByInt = MVEL.executeExpression(longDivByInt, new HashMap());
+      assertEquals(7.35, resultLongDivByInt);
+
+      // Don't convert BigDecimal to int
+      Serializable intDivByBigDecimal = MVEL.compileExpression("a / new java.math.BigDecimal(\"0.5\")", parserContext);
+      Object resultIntDivByBigDecimal = MVEL.executeExpression(intDivByBigDecimal, new HashMap() {{
+          put("a", 10);
+      }});
+      assertEquals(20, ((BigDecimal)resultIntDivByBigDecimal).intValue());
+
+      // Don't convert Double to int
+      Serializable intDivByDouble = MVEL.compileExpression("a / 0.5", parserContext);
+      Object resultIntDivByDouble = MVEL.executeExpression(intDivByDouble, new HashMap() {{
+          put("a", 10);
+      }});
+      assertEquals(20, ((Double)resultIntDivByDouble).intValue());
+    }
 
   public void testUntypedClone() {
     String expression = "obj.clone();";
