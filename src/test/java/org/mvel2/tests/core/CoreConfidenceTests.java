@@ -4850,4 +4850,16 @@ public class CoreConfidenceTests extends AbstractTest {
       }
     }
   }
+
+  public void testLiteralToStringWithSpaceASM() throws Throwable {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      testLiteralToStringWithSpace();
+  }
+
+  public void testLiteralToStringWithSpace() throws Throwable {
+      String expr = "'foo'. hashCode()";
+      int hashCode = "foo". hashCode();
+      Serializable s = MVEL.compileExpression(expr);
+      assertEquals(Integer.valueOf(hashCode), MVEL.executeExpression(s));
+  }
 }
