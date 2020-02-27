@@ -189,7 +189,7 @@ public class WithTests extends AbstractTest {
 
     OptimizerFactory.setDefaultOptimizer("reflective");
     assertEquals("ziggy",
-        (((Foo) ((Map) executeExpression(s)).get("foo")).getBar().getName()));
+        (((Foo) ((Map<?, ?>) executeExpression(s)).get("foo")).getBar().getName()));
   }
 
   public void testSataticClassImportViaFactoryAndWithModification() {
@@ -264,7 +264,7 @@ public class WithTests extends AbstractTest {
     recipient2.setName("userName2");
     recipient2.setEmail("user2@domain.com");
 
-    List list = new ArrayList();
+    List<Recipient> list = new ArrayList<Recipient>();
     list.add(recipient1);
     list.add(recipient2);
 
@@ -276,8 +276,8 @@ public class WithTests extends AbstractTest {
 
     ExpressionCompiler compiler = new ExpressionCompiler(text, context);
     Serializable execution = compiler.compile();
-    List result = (List) executeExpression(execution,
-        new HashMap());
+    List<?> result = (List<?>) executeExpression(execution,
+        new HashMap<String, Object>());
     assertEquals(list,
         result);
   }
@@ -345,6 +345,11 @@ public class WithTests extends AbstractTest {
     Serializable s = MVEL.compileExpression(expr);
 
     assertEquals("foo", MVEL.executeExpression(s));
+  }
+
+  public void testInlineWithWithLiteralASM() throws Throwable {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      testInlineWithWithLiteral();
   }
 
   public void testInlineWithWithLiteral2() {
@@ -422,7 +427,7 @@ public class WithTests extends AbstractTest {
   }
 
   public static class Recipients {
-    private List<Recipient> list = Collections.EMPTY_LIST;
+    private List<Recipient> list = Collections.emptyList();
 
     public void setRecipients(List<Recipient> recipients) {
       this.list = recipients;

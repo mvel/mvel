@@ -1949,7 +1949,10 @@ public class AbstractParser implements Parser, Serializable {
           return;
 
         case '.':
+          // Skip spaces after dot but do not consume following character
+          ++cursor;
           skipWhitespace();
+          --cursor;
           break;
 
         case '\'':

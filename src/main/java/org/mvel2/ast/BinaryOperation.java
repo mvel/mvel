@@ -18,6 +18,9 @@
 
 package org.mvel2.ast;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
@@ -78,9 +81,7 @@ public class BinaryOperation extends BooleanNode {
 
         if (!leftIsAssignableFromRight && !rightIsAssignableFromLeft) {
 
-          // Convert literals only when passing from String to Character or from Float to Double
-          final boolean requiresConversion = right.getEgressType() == String.class || (
-                  right.getEgressType() == Double.class && ( left.getEgressType() == Float.class || left.getEgressType() == float.class ) );
+          final boolean requiresConversion = doesRequireConversion(left.getEgressType(), right.getEgressType(), operation);
 
           if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
@@ -97,9 +98,6 @@ public class BinaryOperation extends BooleanNode {
         }
     }
 
-
-    // }
-
     if (this.left.isLiteral() && this.right.isLiteral()) {
       if (this.left.egressType == this.right.egressType) {
         lType = rType = ParseTools.__resolveType(left.egressType);
@@ -108,6 +106,22 @@ public class BinaryOperation extends BooleanNode {
         rType = ParseTools.__resolveType(this.right.egressType);
       }
     }
+  }
+
+  private boolean doesRequireConversion(Class leftType, Class rightType, int op) {
+    // Precision down cast is okay (See PrimitiveTypesTest.testFloatPrimitive()).
+    // But don't convert float/double/BigDecimal to short/int/long/BigInteger
+    if ((leftType == Short.class || leftType == short.class
+            || leftType == Integer.class || leftType == int.class
+            || leftType == Long.class || leftType == long.class
+            || leftType == BigInteger.class)
+        &&
+        (rightType == Float.class || rightType == float.class
+            || rightType == Double.class || rightType == double.class
+            || rightType == BigDecimal.class)) {
+        return false;
+    }
+    return true;
   }
 
   private boolean isAritmeticOperation(int operation) {

@@ -1,9 +1,10 @@
 package org.mvel2.util;
 
-import static org.mvel2.Operator.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.OperatorNode;
+
+import static org.mvel2.Operator.*;
 
 public class ASTBinaryTree {
     private ASTNode root;
@@ -50,6 +51,10 @@ public class ASTBinaryTree {
                 if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
                 return Double.class;
+            case MOD:
+                if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
+                    throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
+                return Integer.class;
             case TERNARY_ELSE:
                 if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
