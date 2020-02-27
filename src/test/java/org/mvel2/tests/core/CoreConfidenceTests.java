@@ -3465,6 +3465,25 @@ public class CoreConfidenceTests extends AbstractTest {
       assertEquals("baz", MVEL.executeExpression(compiledExpression, foo, factory, String.class));
     }
 
+  public void testMapAccessProperty() {
+    String str = "map.key";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", POJO.class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    POJO ctx = new POJO();
+    try {
+      MVEL.executeExpression(stmt, ctx);
+      fail("Expected PropertyAccessException");
+    }
+    catch (PropertyAccessException ex) {
+      assertTrue(ex.getMessage().contains("could not access: key"));
+    }
+  }
+
   public void testMapAccessWithNestedPropertyAO() {
       boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
       MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
@@ -3486,7 +3505,7 @@ public class CoreConfidenceTests extends AbstractTest {
          MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
       }
     }
-  
+
   public void testMapAccessWithNestedPropertyAO_ASM() {
       OptimizerFactory.setDefaultOptimizer("ASM");
       boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
@@ -3509,26 +3528,7 @@ public class CoreConfidenceTests extends AbstractTest {
          MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
       }
   }
-  
-  public void testMapAccessProperty() {
-      String str = "map.key";
 
-      ParserConfiguration pconf = new ParserConfiguration();
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrongTyping(true);
-      pctx.addInput("this", POJO.class);
-      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-
-      POJO ctx = new POJO();
-      try {
-        MVEL.executeExpression(stmt, ctx);
-        fail("Expected PropertyAccessException");
-      }
-      catch (PropertyAccessException ex) {
-	  assertTrue(ex.getMessage().contains("could not access: key"));
-      }      
-  }
-  
   public void testMapAccessWithNestedProperty() {
     String str = "map[key] == \"one\"";
 
