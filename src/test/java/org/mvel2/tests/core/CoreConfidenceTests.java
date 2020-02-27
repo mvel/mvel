@@ -3662,6 +3662,16 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(errors.toString(), errors.isEmpty());
   }
 
+  public void testMethodCallWithSpacesASM() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    try {
+       testMethodCallWithSpaces();
+    }
+    finally {
+       OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }  
+  }
+
   public void testInlineConstructor() {
     String str = "cheese = new Cheese().{ type = $c.type };";
     ParserConfiguration pconf = new ParserConfiguration();
