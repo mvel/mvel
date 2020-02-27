@@ -37,6 +37,7 @@ import org.mvel2.MVEL;
 import org.mvel2.Macro;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -3455,6 +3456,79 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testMVEL226() {
+      Map<String, String> foo = new HashMap();
+      foo.put("bar", "baz");
+      OptimizerFactory.setDefaultOptimizer("reflective");
+      Serializable compiledExpression = MVEL.compileExpression("this.bar");
+      VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+      assertEquals("baz", MVEL.executeExpression(compiledExpression, foo, factory, String.class));
+    }
+
+  public void testMapAccessWithNestedPropertyAO() {
+      boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+      MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+      try {
+         String str = "map[key] == \"one\"";
+         ParserConfiguration pconf = new ParserConfiguration();
+         ParserContext pctx = new ParserContext(pconf);
+         pctx.setStrongTyping(true);
+         pctx.addInput("this", POJO.class);
+         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+         POJO ctx = new POJO();
+         ctx.getMap().put("1", "one");
+         Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+         result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+      } finally {
+         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
+      }
+    }
+  
+  public void testMapAccessWithNestedPropertyAO_ASM() {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+      MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+      try {
+         String str = "map[key] == \"one\"";
+         ParserConfiguration pconf = new ParserConfiguration();
+         ParserContext pctx = new ParserContext(pconf);
+         pctx.setStrongTyping(true);
+         pctx.addInput("this", POJO.class);
+         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+         POJO ctx = new POJO();
+         ctx.getMap().put("1", "one");
+         Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+         result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+      } finally {
+         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
+      }
+  }
+  
+  public void testMapAccessProperty() {
+      String str = "map.key";
+
+      ParserConfiguration pconf = new ParserConfiguration();
+      ParserContext pctx = new ParserContext(pconf);
+      pctx.setStrongTyping(true);
+      pctx.addInput("this", POJO.class);
+      ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+      POJO ctx = new POJO();
+      try {
+        MVEL.executeExpression(stmt, ctx);
+        fail("Expected PropertyAccessException");
+      }
+      catch (PropertyAccessException ex) {
+	  assertTrue(ex.getMessage().contains("could not access: key"));
+      }      
+  }
+  
   public void testMapAccessWithNestedProperty() {
     String str = "map[key] == \"one\"";
 
