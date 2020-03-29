@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -42,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.mvel2.CompileException;
 import org.mvel2.DataTypes;
@@ -78,6 +80,13 @@ import static org.mvel2.integration.ResolverTools.appendFactory;
 public class ParseTools {
   public static final Object[] EMPTY_OBJ_ARR = new Object[0];
   public static final Class[] EMPTY_CLS_ARR = new Class[0];
+
+  private static final Map<String, Class<?>> CLASS_MAP = new ConcurrentHashMap<String, Class<?>>();
+  private static final Map<String, Boolean> CLASS_NOT_FOUND_MAP = new ConcurrentHashMap<String, Boolean>();
+  private static final Map<String, Field> FIELD_MAP = new ConcurrentHashMap<String, Field>();
+  private static final Map<String, Boolean> FIELD_NOT_FOUND_MAP = new ConcurrentHashMap<String, Boolean>();
+  private static final Map<String, Method> METHOD_MAP = new ConcurrentHashMap<String, Method>();
+  private static final Map<String, Boolean> METHOD_NOT_FOUND_MAP = new ConcurrentHashMap<String, Boolean>();
 
   public static List<char[]> parseMethodOrConstructor(char[] parm) {
     int start = -1;
@@ -2201,6 +2210,19 @@ public class ParseTools {
     }
   }
 
+  public static Class forNameWithInnerCached(String className, ClassLoader classLoader) throws ClassNotFoundException {
+    try {
+      Class clazz = CLASS_MAP.get(className);
+      if (clazz == null) {
+        clazz = classLoader.loadClass(className);
+        CLASS_MAP.put(className, clazz);
+      }
+      return clazz;
+    } catch (ClassNotFoundException cnfe) {
+      return findInnerClassCached(className, classLoader, cnfe);
+    }
+  }
+
   public static Class findInnerClass( String className, ClassLoader classLoader, ClassNotFoundException cnfe ) throws ClassNotFoundException {
     for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
       className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
@@ -2209,5 +2231,89 @@ public class ParseTools {
       } catch (ClassNotFoundException e) { /* ignore */ }
     }
     throw cnfe;
+  }
+
+  public static Class findInnerClassCached(String className, ClassLoader classLoader, ClassNotFoundException cnfe) throws ClassNotFoundException {
+    Class clazz;
+    for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
+      className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos + 1);
+      if (CLASS_NOT_FOUND_MAP.containsKey(className)) {
+        continue;
+      }
+      clazz = CLASS_MAP.get(className);
+      if (clazz == null) {
+        try {
+          clazz = classLoader.loadClass(className);
+          CLASS_MAP.put(className, clazz);
+          return clazz;
+        } catch (ClassNotFoundException e) {
+          CLASS_NOT_FOUND_MAP.put(className, Boolean.TRUE);
+        }
+      }
+    }
+    throw cnfe;
+  }
+
+  public static Class forNameCached(String className, ClassLoader classLoader) throws ClassNotFoundException {
+    if(CLASS_NOT_FOUND_MAP.containsKey(className)){
+      throw new ClassNotFoundException(className);
+    }
+    Class<?> clazz = CLASS_MAP.get(className);
+    if (clazz == null) {
+      try{
+        clazz = Class.forName(className, true, classLoader);
+      }catch (ClassNotFoundException e){
+        CLASS_NOT_FOUND_MAP.put(className, Boolean.TRUE);
+        throw e;
+      }
+      CLASS_MAP.put(className, clazz);
+    }
+    return clazz;
+  }
+
+  public static Object getFieldOrMethodCached(Class cls, String className, String name) throws ClassNotFoundException {
+    try {
+      return getFieldCached(cls, className, name);
+    } catch (NoSuchFieldException nfe) {
+      return getMethodCached(cls, className, name);
+    }
+  }
+
+  private static Object getFieldCached(Class cls, String className, String name) throws NoSuchFieldException {
+    String key = className + "#" + name;
+    if(FIELD_NOT_FOUND_MAP.containsKey(key)){
+      throw new NoSuchFieldException(key);
+    }
+    try{
+      Field field = FIELD_MAP.get(key);
+      if (field == null) {
+        field = cls.getField(name);
+        FIELD_MAP.put(key, field);
+      }
+      return field;
+    }catch(NoSuchFieldException e){
+      FIELD_NOT_FOUND_MAP.put(key, Boolean.TRUE);
+      throw e;
+    }
+  }
+
+  private static Object getMethodCached(Class cls, String className, String name) {
+    String key = className + "@" + name;
+    if (METHOD_NOT_FOUND_MAP.containsKey(key)) {
+      return null;
+    }
+    Method method = METHOD_MAP.get(key);
+    if (method == null) {
+      for (Method m : cls.getMethods()) {
+        if (name.equals(m.getName())) {
+          METHOD_MAP.put(key, m);
+          return m;
+        }
+      }
+      METHOD_NOT_FOUND_MAP.put(key, Boolean.TRUE);
+      return null;
+    } else {
+      return method;
+    }
   }
 }

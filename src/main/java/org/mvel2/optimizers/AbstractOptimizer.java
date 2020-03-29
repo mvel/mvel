@@ -22,8 +22,6 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
 
-import java.lang.reflect.Method;
-
 import static java.lang.Thread.currentThread;
 import static org.mvel2.util.ParseTools.*;
 
@@ -80,21 +78,15 @@ public class AbstractOptimizer extends AbstractParser {
                 if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && test.endsWith(".class"))
                     test = test.substring(0, test.length() - 6);
 
-                return Class.forName(test, true, classLoader);
+                return forNameCached(test, classLoader);
               } catch (ClassNotFoundException cnfe) {
                 try {
-                  return findInnerClass( test, classLoader, cnfe );
+                  return findInnerClassCached( test, classLoader, cnfe );
                 } catch (ClassNotFoundException e) { /* ignore */ }
-                Class cls = forNameWithInner(new String(expr, start, i - start), classLoader);
+                String className = new String(expr, start, i - start);
+                Class cls = forNameWithInnerCached(className, classLoader);
                 String name = new String(expr, i + 1, end - i - 1);
-                try {
-                  return cls.getField(name);
-                } catch (NoSuchFieldException nfe) {
-                  for (Method m : cls.getMethods()) {
-                    if (name.equals(m.getName())) return m;
-                  }
-                  return null;
-                }
+                return getFieldOrMethodCached(cls, className, name);
               }
             }
 
