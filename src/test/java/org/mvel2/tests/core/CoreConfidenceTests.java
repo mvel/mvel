@@ -30,7 +30,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
-
+import org.junit.Assert;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -4881,5 +4881,22 @@ public class CoreConfidenceTests extends AbstractTest {
       int hashCode = "foo". hashCode();
       Serializable s = MVEL.compileExpression(expr);
       assertEquals(Integer.valueOf(hashCode), MVEL.executeExpression(s));
+  }
+
+  public void testGetBestCandidateForBigDecimalArg() {
+    Class<?>[] arguments = new Class<?>[] {BigDecimal.class};
+    Method method = ParseTools.getBestCandidate(arguments, "round", Math.class, Math.class.getMethods(), true);
+    assertEquals(long.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class}, method.getParameterTypes());
+
+    arguments = new Class<?>[] {BigDecimal.class, BigDecimal.class};
+    method = ParseTools.getBestCandidate(arguments, "max", Math.class, Math.class.getMethods(), true);
+    assertEquals(double.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class, double.class}, method.getParameterTypes());
+
+    arguments = new Class<?>[] {BigDecimal.class, BigDecimal.class};
+    method = ParseTools.getBestCandidate(arguments, "scalb", Math.class, Math.class.getMethods(), true);
+    assertEquals(double.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class, int.class}, method.getParameterTypes());
   }
 }
