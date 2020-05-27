@@ -29,12 +29,12 @@ public class Make {
       this.mapInstance = mapInstance;
     }
 
-    public Map<K, V> _(K key, V value) {
+    public Map<K, V> _put(K key, V value) {
       mapInstance.put(key, value);
       return this;
     }
 
-    public java.util.Map<K, V> _() {
+    public java.util.Map<K, V> _finish() {
       return finish();
     }
 
@@ -52,7 +52,7 @@ public class Make {
       return new String(new StringBuilder());
     }
 
-    public java.lang.String _() {
+    public java.lang.String _finish() {
       return finish();
     }
 
@@ -66,17 +66,17 @@ public class Make {
       this.stringAppender = stringAppender;
     }
 
-    public String _(char c) {
+    public String _append( char c) {
       stringAppender.append(c);
       return this;
     }
 
-    public String _(CharSequence cs) {
+    public String _append( CharSequence cs) {
       stringAppender.append(cs);
       return this;
     }
 
-    public String _(String s) {
+    public String _append( String s) {
       stringAppender.append(s);
       return this;
     }
@@ -106,12 +106,12 @@ public class Make {
       this.listInstance = listInstance;
     }
 
-    public List<V> _(V value) {
+    public List<V> _add(V value) {
       listInstance.add(value);
       return this;
     }
 
-    public java.util.List<V> _() {
+    public java.util.List<V> _finish() {
       return finish();
     }
 
@@ -149,7 +149,7 @@ public class Make {
       return this;
     }
 
-    public java.util.Set<V> _() {
+    public java.util.Set<V> _finish() {
       return finish();
     }
 
