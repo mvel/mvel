@@ -1314,7 +1314,7 @@ public class ParseTools {
    * <br>
    * For example: ((foo + bar + (bar - foo)) * 20;<br>
    * <br>
-   * <p/>
+   *
    * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
    * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
    * Etc.

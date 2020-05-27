@@ -68,7 +68,7 @@ public interface VariableResolverFactory extends Serializable {
   /**
    * Sets the next factory in the chain. Proper implementation:
    * <code>
-   * <p/>
+   *
    * return this.nextFactory = resolverFactory;
    * </code>
    *

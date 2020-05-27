@@ -17,6 +17,20 @@
  */
 package org.mvel2.optimizers.impl.asm;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -51,31 +65,72 @@ import org.mvel2.util.ParseTools;
 import org.mvel2.util.PropertyTools;
 import org.mvel2.util.StringAppender;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import static java.lang.String.valueOf;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.getLength;
 import static java.lang.reflect.Modifier.FINAL;
 import static java.lang.reflect.Modifier.STATIC;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
-import static org.mvel2.asm.Opcodes.*;
+import static org.mvel2.asm.Opcodes.AALOAD;
+import static org.mvel2.asm.Opcodes.AASTORE;
+import static org.mvel2.asm.Opcodes.ACC_PRIVATE;
+import static org.mvel2.asm.Opcodes.ACC_PUBLIC;
+import static org.mvel2.asm.Opcodes.ACONST_NULL;
+import static org.mvel2.asm.Opcodes.ALOAD;
+import static org.mvel2.asm.Opcodes.ANEWARRAY;
+import static org.mvel2.asm.Opcodes.ARETURN;
+import static org.mvel2.asm.Opcodes.ARRAYLENGTH;
+import static org.mvel2.asm.Opcodes.ASTORE;
+import static org.mvel2.asm.Opcodes.ATHROW;
+import static org.mvel2.asm.Opcodes.BALOAD;
+import static org.mvel2.asm.Opcodes.BASTORE;
+import static org.mvel2.asm.Opcodes.BIPUSH;
+import static org.mvel2.asm.Opcodes.CALOAD;
+import static org.mvel2.asm.Opcodes.CASTORE;
+import static org.mvel2.asm.Opcodes.CHECKCAST;
+import static org.mvel2.asm.Opcodes.DALOAD;
+import static org.mvel2.asm.Opcodes.DASTORE;
+import static org.mvel2.asm.Opcodes.DUP;
+import static org.mvel2.asm.Opcodes.DUP_X1;
+import static org.mvel2.asm.Opcodes.DUP_X2;
+import static org.mvel2.asm.Opcodes.FALOAD;
+import static org.mvel2.asm.Opcodes.FASTORE;
+import static org.mvel2.asm.Opcodes.GETFIELD;
+import static org.mvel2.asm.Opcodes.GETSTATIC;
+import static org.mvel2.asm.Opcodes.GOTO;
+import static org.mvel2.asm.Opcodes.IALOAD;
+import static org.mvel2.asm.Opcodes.IASTORE;
+import static org.mvel2.asm.Opcodes.ICONST_0;
+import static org.mvel2.asm.Opcodes.ICONST_1;
+import static org.mvel2.asm.Opcodes.ICONST_2;
+import static org.mvel2.asm.Opcodes.ICONST_3;
+import static org.mvel2.asm.Opcodes.ICONST_4;
+import static org.mvel2.asm.Opcodes.ICONST_5;
+import static org.mvel2.asm.Opcodes.IFEQ;
+import static org.mvel2.asm.Opcodes.IFNONNULL;
+import static org.mvel2.asm.Opcodes.IF_ICMPLT;
+import static org.mvel2.asm.Opcodes.ILOAD;
+import static org.mvel2.asm.Opcodes.INVOKEINTERFACE;
+import static org.mvel2.asm.Opcodes.INVOKESPECIAL;
+import static org.mvel2.asm.Opcodes.INVOKESTATIC;
+import static org.mvel2.asm.Opcodes.INVOKEVIRTUAL;
+import static org.mvel2.asm.Opcodes.ISTORE;
+import static org.mvel2.asm.Opcodes.LALOAD;
+import static org.mvel2.asm.Opcodes.LASTORE;
+import static org.mvel2.asm.Opcodes.NEW;
+import static org.mvel2.asm.Opcodes.NEWARRAY;
+import static org.mvel2.asm.Opcodes.POP;
+import static org.mvel2.asm.Opcodes.PUTFIELD;
+import static org.mvel2.asm.Opcodes.RETURN;
+import static org.mvel2.asm.Opcodes.SALOAD;
+import static org.mvel2.asm.Opcodes.SASTORE;
+import static org.mvel2.asm.Opcodes.SIPUSH;
+import static org.mvel2.asm.Opcodes.SWAP;
 import static org.mvel2.asm.Type.getConstructorDescriptor;
 import static org.mvel2.asm.Type.getDescriptor;
 import static org.mvel2.asm.Type.getInternalName;
@@ -91,7 +146,23 @@ import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasNullPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.EMPTY_OBJ_ARR;
+import static org.mvel2.util.ParseTools.balancedCapture;
+import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.captureContructorAndResidual;
+import static org.mvel2.util.ParseTools.determineActualTargetMethod;
+import static org.mvel2.util.ParseTools.findClass;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
+import static org.mvel2.util.ParseTools.getSubComponentType;
+import static org.mvel2.util.ParseTools.getWidenedTarget;
+import static org.mvel2.util.ParseTools.isPrimitiveWrapper;
+import static org.mvel2.util.ParseTools.parseMethodOrConstructor;
+import static org.mvel2.util.ParseTools.parseParameterList;
+import static org.mvel2.util.ParseTools.repeatChar;
+import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.ParseTools.subset;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveArray;
@@ -103,7 +174,6 @@ import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
  * engineering library.
- * <p/>
  */
 @SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "unchecked", "UnusedDeclaration"})
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {

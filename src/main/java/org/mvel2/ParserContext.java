@@ -48,14 +48,14 @@ import org.mvel2.util.ReflectionUtil;
 
 /**
  * The <tt>ParserContext</tt> is the main environment object used for sharing state throughout the entire
- * parser/compileShared process.<br/><br/>
+ * parser/compileShared process.
  * The <tt>ParserContext</tt> is used to configure the parser/compiler.  For example:
  * <pre><code>
  * ParserContext parserContext = new ParserContext();
  * parserContext.setStrongTyping(true); // turn on strong typing.
- * <p/>
+ *
  * Serializable comp = MVEL.compileExpression("foo.bar", parserContext);
- * </code</pre>
+ * </code></pre>
  */
 public class ParserContext implements Serializable {
   private String sourceFile;

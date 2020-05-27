@@ -2253,7 +2253,7 @@ public class AbstractParser implements Parser, Serializable {
   /**
    * NOTE: This method assumes that the current position of the cursor is at the end of a logical statement, to
    * begin with.
-   * <p/>
+   *
    * Determines whether or not the logical statement is manually terminated with a statement separator (';').
    *
    * @return -
