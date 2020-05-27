@@ -1,5 +1,13 @@
 package org.mvel2.ast;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.Operator;
@@ -9,16 +17,8 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
- * @author Mike Brock <cbrock@redhat.com>
+ * @author Mike Brock
  */
 public class Stacklang extends BlockNode {
   List<Instruction> instructionList;

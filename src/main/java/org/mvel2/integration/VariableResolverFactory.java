@@ -112,7 +112,7 @@ public interface VariableResolverFactory extends Serializable {
    * Return a list of known variables inside the factory.  This method should not recurse into other factories.
    * But rather return only the variables living inside this factory.
    *
-   * @return
+   * @return variables
    */
   public Set<String> getKnownVariables();
 

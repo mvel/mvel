@@ -27,7 +27,7 @@ public interface Debugger {
   /**
    * When a breakpoint is recached,
    *
-   * @param frame
+   * @param frame frame
    * @return continuation command
    */
   public int onBreak(Frame frame);

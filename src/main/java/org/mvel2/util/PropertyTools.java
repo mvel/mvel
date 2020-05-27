@@ -18,19 +18,20 @@
 
 package org.mvel2.util;
 
-import org.mvel2.ParserContext;
-import org.mvel2.compiler.PropertyVerifier;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import org.mvel2.ParserContext;
+import org.mvel2.compiler.PropertyVerifier;
+
 import static java.lang.String.valueOf;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.lang.reflect.Modifier.isPublic;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
@@ -214,8 +215,6 @@ public class PropertyTools {
   /**
    * Get the JVM version
    * @return first <code>mvel.java.version</code>, then <code>java.version</code>
-   * @see System.getProperty("mvel.java.version");
-   * @see System.getProperty("java.version");
    */
   public static String getJavaVersion() {
     return System.getProperty("mvel.java.version")!=null ?
