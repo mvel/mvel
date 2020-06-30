@@ -195,7 +195,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             || javaVersion.startsWith("9")
             || javaVersion.startsWith("10")
             || javaVersion.startsWith("11")
-            || javaVersion.startsWith("12")) {
+            || javaVersion.startsWith("12")
+            || javaVersion.startsWith("14")) {
       OPCODES_VERSION = Opcodes.V1_6;
     } else {
       OPCODES_VERSION = Opcodes.V1_2;
