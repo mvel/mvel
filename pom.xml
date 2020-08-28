@@ -31,7 +31,7 @@
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
-        <tag>mvel2-2.4.8.Final</tag>
+        <tag>mvel2-2.4.9.Final</tag>
     </scm>
     <issueManagement>
         <system>jira</system>
