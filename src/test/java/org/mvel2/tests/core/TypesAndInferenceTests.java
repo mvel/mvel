@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.mvel2.MVEL.*;
@@ -1595,4 +1596,14 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testOptionalOfGenerics() {
+    String str = "Optional.of(\"mystring\").orElse(\"anotherstring\")";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addImport(Optional.class);
+    Class resultType =  analyze(str, pctx);
+    assertEquals(java.util.Optional.class, resultType);
+  }
 }
