@@ -14,15 +14,6 @@
  */
 package org.mvel2;
 
-import org.mvel2.compiler.CompiledAccExpression;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.integration.Interceptor;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.*;
-import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,8 +22,22 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mvel2.compiler.CompiledAccExpression;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.Interceptor;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.CachedMapVariableResolverFactory;
+import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
+
 import static java.lang.Boolean.getBoolean;
 import static java.lang.String.valueOf;
+
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVELRuntime.execute;
 import static org.mvel2.util.ParseTools.loadFromFile;
@@ -114,17 +119,17 @@ public class MVEL {
    * provides the means by which MVEL can resolve external variables.  MVEL contains a straight-forward implementation
    * for wrapping Maps: {@link MapVariableResolverFactory}, which is used implicitly when calling overloaded methods
    * in this class that use Maps.
-   * <p/>
+   *
    * An example:
    * <pre><code>
    * Map varsMap = new HashMap();
    * varsMap.put("x", 5);
    * varsMap.put("y", 2);
-   * <p/>
+   *
    * VariableResolverFactory factory = new MapVariableResolverFactory(varsMap);
-   * <p/>
+   *
    * Integer i = (Integer) MVEL.eval("x * y", factory);
-   * <p/>
+   *
    * assert i == 10;
    * </code></pre>
    *
@@ -194,11 +199,12 @@ public class MVEL {
    * <pre><code>
    * Float output = MVEL.eval("5 + 5", Float.class);
    * </code></pre>
-   * <p/>
+   *
    * This converts an expression that would otherwise return an <tt>Integer</tt> to a <tt>Float</tt>.
    *
    * @param expression A string containing the expression to be evaluated.
    * @param toType     The target type that the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value.
    */
   public static <T> T eval(String expression, Class<T> toType) {
@@ -212,6 +218,7 @@ public class MVEL {
    * @param expression A string containing the expression to be evaluated.
    * @param ctx        The context object to evaluate against.
    * @param toType     The target type that the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, Class)
    */
@@ -226,6 +233,7 @@ public class MVEL {
    * @param expression A string containing the expression to be evaluated
    * @param vars       The variables to be injected
    * @param toType     The target type that the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, VariableResolverFactory)
    * @see #eval(String, Class)
@@ -241,6 +249,7 @@ public class MVEL {
    * @param expression A string containing the expression to be evaluated.
    * @param vars       A map of vars to be injected
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
    */
@@ -262,6 +271,7 @@ public class MVEL {
    * @param ctx        The context object to evaluate against
    * @param vars       The vars to be injected
    * @param toType     The target type that the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value.
    * @see #eval(String, Object, VariableResolverFactory)
    * @see #eval(String, Class)
@@ -278,6 +288,7 @@ public class MVEL {
    * @param ctx        The context object to evaluate against
    * @param vars       A Map of variables to be injected.
    * @param toType     The target type that the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value.
    * @see #eval(String, Object, VariableResolverFactory)
    * @see #eval(String, Class)
@@ -433,6 +444,7 @@ public class MVEL {
    * @param ctx        The context object to evaluate against
    * @param vars       A Map of variables to be injected
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, Object, Map, Class)
    */
@@ -447,6 +459,7 @@ public class MVEL {
    * @param expression A char[] containing the expression to be evaluated.
    * @param ctx        The context object to evaluate against
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, Object, Class)
    */
@@ -462,6 +475,7 @@ public class MVEL {
    * @param ctx        The context object to evaluate against
    * @param vars       The variables to be injected
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, Object, VariableResolverFactory, Class)
    */
@@ -476,6 +490,7 @@ public class MVEL {
    * @param expression A char[] containing the expression to be evaluated.
    * @param vars       The variables to be injected
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, VariableResolverFactory, Class)
    */
@@ -490,6 +505,7 @@ public class MVEL {
    * @param expression A char[] containing the expression to be evaluated.
    * @param vars       The variables to be injected
    * @param toType     The target type the resultant value will be converted to, if necessary.
+   * @param <T> type
    * @return The resultant value
    * @see #eval(String, Map, Class)
    */
@@ -689,29 +705,29 @@ public class MVEL {
    * Compiles an expression and returns a Serializable object containing the compiled expression.  The returned value
    * can be reused for higher-performance evaluation of the expression.  It is used in a straight forward way:
    * <pre><code>
-   * <p/>
+   *
    * // Compile the expression
    * Serializable compiled = MVEL.compileExpression("x * 10");
-   * <p/>
+   *
    * // Create a Map to hold the variables.
    * Map vars = new HashMap();
-   * <p/>
+   *
    * // Create a factory to envelop the variable map
    * VariableResolverFactory factory = new MapVariableResolverFactory(vars);
-   * <p/>
+   *
    * int total = 0;
-   * for (int i = 0; i < 100; i++) {
+   * for (int i = 0; i &lt; 100; i++) {
    * // Update the 'x' variable.
    * vars.put("x", i);
-   * <p/>
+   *
    * // Execute the expression against the compiled payload and factory, and add the result to the total variable.
    * total += (Integer) MVEL.executeExpression(compiled, factory);
    * }
-   * <p/>
+   *
    * // Total should be 49500
    * assert total == 49500;
    * </code></pre>
-   * <p/>
+   *
    * The above example demonstrates a compiled expression being reused ina tight, closed, loop.  Doing this greatly
    * improves performance as re-parsing of the expression is not required, and the runtime can dynamically compileShared
    * the expression to bytecode of necessary.
@@ -728,19 +744,19 @@ public class MVEL {
    * also accept a Map of imports.  The Map's keys are String's representing the imported, short-form name of the
    * Classes or Methods imported.  An import of a Method is essentially a static import.  This is a substitute for
    * needing to declare <tt>import</tt> statements within the actual script.
-   * <p/>
+   *
    * <pre><code>
    * Map imports = new HashMap();
    * imports.put("HashMap", java.util.HashMap.class); // import a class
    * imports.put("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0])); // import a static method
-   * <p/>
+   *
    * // Compile the expression
    * Serializable compiled = MVEL.compileExpression("map = new HashMap(); map.put('time', time()); map.time");
-   * <p/>
+   *
    * // Execute with a blank Map to allow vars to be declared.
    * Long val = (Long) MVEL.executeExpression(compiled, new HashMap());
-   * <p/>
-   * assert val > 0;
+   *
+   * assert val &gt; 0;
    * </code></pre>
    *
    * @param expression A String contaiing the expression to be compiled.
@@ -755,36 +771,36 @@ public class MVEL {
    * Compiles an expression and returns a Serializable object containing the compiled expression. This method
    * accepts a Map of imports and Interceptors.  See {@link #compileExpression(String, Map)} for information on
    * imports.  The imports parameter in this method is <em>optional</em> and it is safe to pass a <tt>null</tt>
-   * value.<br/>{@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
+   * value. {@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
    * to be tied into the expression.
-   * <p/>
+   *
    * <pre><code>
    * // Create a Map to hold the interceptors.
    * Map interceptors = new HashMap();
-   * <p/>
+   *
    * // Create a simple interceptor.
    * Interceptor logInterceptor = new Interceptor() {
    * public int doBefore(ASTNode node, VariableResolverFactory factory) {
    * System.out.println("Interceptor called before!");
    * }
-   * <p/>
+   *
    * public int doAfter(Object exitValue, ASTNode node, VariableResolverFactory factory) {
    * System.out.println("Interceptor called after!");
    * }
    * };
-   * <p/>
+   *
    * // Add the interceptor to the Map.
    * interceptors.put("log", logInterceptor);
-   * <p/>
+   *
    * // Create an expression
    * String expr = "list = [1,2,3,4,5]; @log for (item : list) { System.out.println(item); };
-   * <p/>
+   *
    * Serializable compiled = MVEL.compileExpression(expr, null, interceptors);
-   * <p/>
+   *
    * // Execute expression with a blank Map to allow vars to be declared.
    * MVEL.executeExpression(compiled, new HashMap());
    * </code></pre>
-   * <p/>
+   *
    * The above example demonstrates inserting an interceptor into a piece of code.  The <tt>@log</tt> interceptor
    * wraps the subsequent statement.  In this case, the interceptor is fired before the <tt>for</tt> loop and
    * after the <tt>for</tt> loop finishes.
@@ -979,6 +995,7 @@ public class MVEL {
    * @param ctx                -
    * @param vars               -
    * @param toType             -
+   * @param <T> type
    * @return -
    */
   @SuppressWarnings({"unchecked"})
@@ -996,6 +1013,7 @@ public class MVEL {
    * @param compiledExpression -
    * @param vars               -
    * @param toType             -
+   * @param <T> type
    * @return -
    */
   @SuppressWarnings({"unchecked"})
@@ -1009,6 +1027,7 @@ public class MVEL {
    * @param compiledExpression -
    * @param ctx                -
    * @param toType             -
+   * @param <T> type
    * @return -
    */
   public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {

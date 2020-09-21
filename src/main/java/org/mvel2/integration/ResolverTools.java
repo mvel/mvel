@@ -28,6 +28,7 @@ public class ResolverTools {
    *
    * @param root       The root factory
    * @param newFactory The new factory
+   * @param <T> type
    * @return An instance of the new factory
    */
   public static <T extends VariableResolverFactory> T appendFactory(VariableResolverFactory root, T newFactory) {
@@ -51,6 +52,7 @@ public class ResolverTools {
    *
    * @param root       The root factory
    * @param newFactory The new factory
+   * @param <T> type
    * @return An instance of the new factory.
    */
   public static <T extends VariableResolverFactory> T insertFactory(VariableResolverFactory root, T newFactory) {

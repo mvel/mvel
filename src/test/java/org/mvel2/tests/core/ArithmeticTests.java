@@ -863,7 +863,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testJIRA1208a() {
-    assertEquals(799, executeExpression(compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._("bal", 999)._()));
+    assertEquals(799, executeExpression(compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._put("bal", 999)._finish()));
   }
 
   public void testJIRA208b() {

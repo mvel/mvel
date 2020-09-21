@@ -265,7 +265,7 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (isMoreSpecialized(meth, bestCandidate) && !isVarArgs) {
+              if ((isMoreSpecialized(meth, bestCandidate) || isMorePreciseForBigDecimal(meth, bestCandidate, arguments))&& !isVarArgs) {
                 bestCandidate = meth;
               }
             }
@@ -307,6 +307,39 @@ public class ParseTools {
   private static boolean isMoreSpecialized( Method newCandidate, Method oldCandidate ) {
     return oldCandidate.getReturnType().isAssignableFrom( newCandidate.getReturnType()) &&
            oldCandidate.getDeclaringClass().isAssignableFrom( newCandidate.getDeclaringClass());
+  }
+
+  private static boolean isMorePreciseForBigDecimal(Method newCandidate, Method oldCandidate, Class[] arguments) {
+    Class<?>[] newParmTypes = newCandidate.getParameterTypes();
+    Class<?>[] oldParmTypes = oldCandidate.getParameterTypes();
+    int score = 0;
+    for (int i = 0; i != arguments.length; i++) {
+      Class<?> newParmType = newParmTypes[i];
+      Class<?> oldParmType = oldParmTypes[i];
+      if (arguments[i] != BigDecimal.class || !isNumeric(oldParmType) || !isNumeric(newParmType)) {
+        continue;
+      }
+      score += comparePrecision(unboxPrimitive(newParmType), unboxPrimitive(oldParmType));
+    }
+    return (score > 0);
+  }
+
+  private static int comparePrecision(Class<?> numeric1, Class<?> numeric2) {
+    if (numeric1 == numeric2) {
+      return 0;
+    }
+    if ((numeric1 == double.class) && (numeric2 == float.class || numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
+      return 1;
+    } else if ((numeric1 == float.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
+      // float is preferred over long assuming users don't want to lose decimal part
+      return 1;
+    } else if ((numeric1 == long.class) && (numeric2 == int.class || numeric2 == short.class)) {
+      return 1;
+    } else if ((numeric1 == int.class) && numeric2 == short.class) {
+      return 1;
+    } else {
+      return -1;
+    }
   }
 
   private static int getMethodScore(Class[] arguments, boolean requireExact, Class<?>[] parmTypes, boolean varArgs) {
@@ -1281,7 +1314,7 @@ public class ParseTools {
    * <br>
    * For example: ((foo + bar + (bar - foo)) * 20;<br>
    * <br>
-   * <p/>
+   *
    * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
    * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
    * Etc.

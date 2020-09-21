@@ -1,5 +1,11 @@
 package org.mvel2.util;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.ASTNode;
@@ -7,9 +13,9 @@ import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.ExecutableStatement;
 
-import java.util.*;
-
-import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.isIdentifierPart;
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class ProtoParser {
   private char[] expr;
@@ -258,9 +264,9 @@ public class ProtoParser {
    * This is such a horrible hack, but it's more performant than any other horrible hack I can think of
    * right now.
    *
-   * @param expr
-   * @param cursor
-   * @param pCtx
+   * @param expr expr
+   * @param cursor cursor
+   * @param pCtx pCtx
    */
   public static void checkForPossibleUnresolvedViolations(char[] expr, int cursor, ParserContext pCtx) {
     if (isUnresolvedWaiting()) {

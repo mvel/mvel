@@ -19,6 +19,7 @@
 package org.mvel2.compiler;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -668,8 +669,21 @@ public class PropertyVerifier extends AbstractOptimizer {
     return getReturnType(ctx, m);
   }
 
-  private static Class type2Class(Type type) {
-    return type instanceof Class ? (Class) type : (Class) ((ParameterizedType) type).getRawType();
+  private static Class<?> type2Class(Type type) {
+    if (type == null) {
+      return null;
+    }
+    if (type instanceof Class<?>) {
+      return (Class) type;
+    }
+    if (type instanceof ParameterizedType) {
+      return type2Class(((ParameterizedType) type).getRawType());
+    }
+    if (type instanceof TypeVariable) { // this is T in Optional<T>
+      GenericDeclaration genericDeclaration = ((TypeVariable) type).getGenericDeclaration();
+      return genericDeclaration instanceof Method ? ((Method) genericDeclaration).getReturnType() : Object.class;
+    }
+    throw new UnsupportedOperationException("Unknown type " + type);
   }
 
   private Class getWithProperty(Class ctx) {

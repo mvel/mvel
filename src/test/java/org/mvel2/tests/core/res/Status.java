@@ -1,7 +1,7 @@
 package org.mvel2.tests.core.res;
 
 /**
-* @author Mike Brock <cbrock@redhat.com>
+* @author Mike Brock
 */
 public class Status {
     public static final int START = 0;

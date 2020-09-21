@@ -366,7 +366,7 @@ public class CompilerTools {
   /**
    * Returns an ordered Map of all functions declared within an compiled script.
    *
-   * @param compile
+   * @param compile compile
    * @return - ordered Map
    */
   public static Map<String, Function> extractAllDeclaredFunctions(CompiledExpression compile) {

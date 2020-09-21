@@ -1,13 +1,13 @@
 package org.mvel2.tests.core;
 
+import java.util.HashMap;
+
 import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.optimizers.OptimizerFactory;
 
-import java.util.HashMap;
-
 /**
- * @author Mike Brock <cbrock@redhat.com>
+ * @author Mike Brock
  */
 public class StacklangTests extends TestCase {
 
