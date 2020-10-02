@@ -4899,4 +4899,18 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(double.class, method.getReturnType());
     Assert.assertArrayEquals(new Class<?>[] {double.class, int.class}, method.getParameterTypes());
   }
+  
+  public void testEmptyVarargConstructor() {
+      String clsName = MySet.class.getName();
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      Serializable s = MVEL.compileExpression("new " + clsName + "()");
+      assertNotNull(MVEL.executeExpression(s));
+  }
+  
+  public void testEmptyVarargMethod() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    Serializable s = MVEL.compileExpression("m.add()");
+    Map<String, MySet> inputs = Collections.singletonMap("m", new MySet());
+    MVEL.executeExpression(s, inputs);
+  }
 }
