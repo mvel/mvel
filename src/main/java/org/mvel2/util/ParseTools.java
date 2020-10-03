@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -309,7 +310,7 @@ public class ParseTools {
            oldCandidate.getDeclaringClass().isAssignableFrom( newCandidate.getDeclaringClass());
   }
 
-  private static boolean isMorePreciseForBigDecimal(Method newCandidate, Method oldCandidate, Class[] arguments) {
+  private static boolean isMorePreciseForBigDecimal(Executable newCandidate, Executable oldCandidate, Class[] arguments) {
     Class<?>[] newParmTypes = newCandidate.getParameterTypes();
     Class<?>[] oldParmTypes = oldCandidate.getParameterTypes();
     int score = 0;
@@ -508,9 +509,14 @@ public class ParseTools {
       }
 
       int score = getMethodScore(arguments, requireExact, parmTypes, isVarArgs);
-      if (score != 0 && score > bestScore) {
-        bestCandidate = construct;
-        bestScore = score;
+      if (score != 0) {
+        if (score > bestScore) {
+          bestCandidate = construct;
+          bestScore = score;
+        }
+        else if (score == bestScore && (isMorePreciseForBigDecimal(construct, bestCandidate, arguments) || !isVarArgs)) {
+          bestCandidate = construct;
+        }
       }
     }
 
