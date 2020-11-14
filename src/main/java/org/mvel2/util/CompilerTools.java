@@ -150,8 +150,14 @@ public class CompilerTools {
               && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
 
             if (PTABLE[op2] > PTABLE[op]) {
-              //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx));
-              bo.setRightMost(boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx));
+               BinaryOperation newRightBo = boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx);
+               if (isIntOptimizationviolation(bo, newRightBo)) {
+                 // Oops! We optimized the node based on the assumed right node type but it gets replaced
+                 bo = new BinaryOperation(bo.getOperation(), bo.getLeft(), newRightBo, pCtx);
+               }
+               else {
+                 bo.setRightMost(newRightBo);
+               }
             }
             else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
               if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
