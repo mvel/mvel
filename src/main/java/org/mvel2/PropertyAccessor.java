@@ -900,7 +900,8 @@ public class PropertyAccessor {
      * If the target object is an instance of java.lang.Class itself then do not
      * adjust the Class scope target.
      */
-    Class cls = currType != null ? currType : ((ctx instanceof Class ? (Class) ctx : ctx.getClass()));
+    boolean classTarget = ctx instanceof Class;
+    Class cls = currType != null ? currType : ((classTarget ? (Class) ctx : ctx.getClass()));
     currType = null;
 
     if (cls == Proto.ProtoInstance.class) {
@@ -936,7 +937,7 @@ public class PropertyAccessor {
         parameterTypes = m.getParameterTypes();
       }
 
-      if (m == null) {
+      if (m == null && classTarget) {
         /**
          * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
          */
