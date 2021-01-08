@@ -33,11 +33,11 @@ import static org.mvel2.util.ParseTools.*;
  * @author Christopher Brock
  */
 public class DeepAssignmentNode extends ASTNode implements Assignment {
-  private String property;
+  protected String property;
   // private char[] stmt;
 
-  private CompiledAccExpression acc;
-  private ExecutableStatement statement;
+  protected CompiledAccExpression acc;
+  protected ExecutableStatement statement;
 
   public DeepAssignmentNode(char[] expr, int start, int offset, int fields, int operation, String name, ParserContext pCtx) {
     super(pCtx);
