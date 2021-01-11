@@ -1,5 +1,6 @@
 package org.mvel2.tests.core;
 
+import org.junit.Assert;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -1070,5 +1071,18 @@ public class ArithmeticTests extends AbstractTest {
     Serializable expr = MVEL.compileExpression(str);
     Object result = MVEL.executeExpression(expr, new HashMap<String, Object>());
     assertEquals(new BigDecimal(2), result);
+  }
+  
+  public void testIssue249() {
+    /* https://github.com/mvel/mvel/issues/249
+     * The following caused a ClassCastException because the compiler optimized for integers
+     */
+    String rule = "70 + 30 *  x1";
+    ParserContext parserContext = new ParserContext();
+    Serializable compileExpression = MVEL.compileExpression(rule, parserContext);
+    Map<String, Object> expressionVars = new HashMap<>();
+    expressionVars.put("x1", 128.33);
+    Object result = MVEL.executeExpression(compileExpression, parserContext, expressionVars);
+    Assert.assertEquals(3919.9, ((Number)result).doubleValue(), 0.01);
   }
 }
