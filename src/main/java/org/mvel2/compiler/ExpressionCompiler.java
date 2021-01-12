@@ -29,6 +29,7 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Assignment;
+import org.mvel2.ast.DeepOperativeAssignmentNode;
 import org.mvel2.ast.LiteralNode;
 import org.mvel2.ast.NewObjectNode;
 import org.mvel2.ast.OperatorNode;
@@ -442,7 +443,10 @@ public class ExpressionCompiler extends AbstractParser {
                  * We convert the literal to the proper type.
                  */
                 try {
-                  a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
+                  // Don't convert to a literal for DeepOperativeAssignmentNode. Coercion will be done by BinaryOperation
+                  if (!(a instanceof DeepOperativeAssignmentNode)) {
+                      a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
+                  }
                   return tk;
                 }
                 catch (Exception e) {
