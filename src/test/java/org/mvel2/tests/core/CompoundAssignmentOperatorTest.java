@@ -8,6 +8,10 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.IndexedVariableResolverFactory;
+import org.mvel2.tests.core.res.DefaultKnowledgeHelper;
 import org.mvel2.tests.core.res.NumberHolder;
 
 public class CompoundAssignmentOperatorTest extends TestCase {
@@ -450,5 +454,105 @@ public class CompoundAssignmentOperatorTest extends TestCase {
 
         assertEquals(new BigDecimal("12"), result);
         assertEquals(new BigDecimal("12"), holder.getBigDecimal());
+    }
+
+    @Test
+    public void testBigDecimalAddNumStrictType() {
+
+        boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
+        boolean allowOverrideAllProphandling = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+        boolean allowResolveInnerclassesWithDotnotation = MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION;
+        boolean supportJavaStyleClassLiterals = MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS;
+
+        try {
+            // mimic drools usage
+            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+            MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+            MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = true;
+            MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
+
+            ParserContext parserContext = ParserContext.create();
+            parserContext.setStrictTypeEnforcement(true);
+            parserContext.setStrongTyping(true);
+            parserContext.setIndexAllocation(true);
+
+            String[] names = {"holder"};
+            parserContext.addIndexedInput(names);
+            parserContext.addInput("holder", NumberHolder.class);
+
+            String str = "holder.bigDecimal += 10";
+
+            // compile test
+            Serializable s = MVEL.compileExpression(str, parserContext);
+
+            DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+
+            NumberHolder holder = new NumberHolder();
+            holder.setBigDecimal(new BigDecimal("120"));
+            Object[] values = {holder};
+
+            VariableResolverFactory variableResolverFactory = new IndexedVariableResolverFactory(names, values);
+
+            Object result = MVEL.executeExpression(s, helper, variableResolverFactory);
+
+            assertEquals(new BigDecimal("130"), result);
+            assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        } finally {
+            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = allowNakedMethCall;
+            MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowOverrideAllProphandling;
+            MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = allowResolveInnerclassesWithDotnotation;
+            MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = supportJavaStyleClassLiterals;
+        }
+    }
+
+    @Test
+    public void testBigDecimalAddVarStrictType() {
+
+        boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
+        boolean allowOverrideAllProphandling = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+        boolean allowResolveInnerclassesWithDotnotation = MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION;
+        boolean supportJavaStyleClassLiterals = MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS;
+
+        try {
+            // mimic drools usage
+            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+            MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+            MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = true;
+            MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
+
+            ParserContext parserContext = ParserContext.create();
+            parserContext.setStrictTypeEnforcement(true);
+            parserContext.setStrongTyping(true);
+            parserContext.setIndexAllocation(true);
+
+            String[] names = {"holder", "myBigDecimalValue"};
+            parserContext.addIndexedInput(names);
+            parserContext.addInput("holder", NumberHolder.class);
+            parserContext.addInput("myBigDecimalValue", BigDecimal.class);
+
+            String str = "holder.bigDecimal += myBigDecimalValue";
+
+            // compile test
+            Serializable s = MVEL.compileExpression(str, parserContext);
+
+            DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+
+            NumberHolder holder = new NumberHolder();
+            holder.setBigDecimal(new BigDecimal("120"));
+
+            BigDecimal myBigDecimalValue = new BigDecimal("10");
+            Object[] values = {holder, myBigDecimalValue};
+            VariableResolverFactory variableResolverFactory = new IndexedVariableResolverFactory(names, values);
+
+            Object result = MVEL.executeExpression(s, helper, variableResolverFactory);
+
+            assertEquals(new BigDecimal("130"), result);
+            assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        } finally {
+            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = allowNakedMethCall;
+            MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowOverrideAllProphandling;
+            MVEL.COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION = allowResolveInnerclassesWithDotnotation;
+            MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = supportJavaStyleClassLiterals;
+        }
     }
 }
