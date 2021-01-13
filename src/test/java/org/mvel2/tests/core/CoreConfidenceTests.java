@@ -4913,4 +4913,23 @@ public class CoreConfidenceTests extends AbstractTest {
     Map<String, MySet> inputs = Collections.singletonMap("m", new MySet());
     MVEL.executeExpression(s, inputs);
   }
+  
+  public void testForLoopWithSpaces() {
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("strings", Arrays.asList( "test" ));
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("strings", List.class);
+
+    String expression =
+            "for (   String   s : strings ) {\n" +
+            "  return s;\n" +
+            "}";
+
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+    assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
+  }
 }
