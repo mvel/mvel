@@ -1,8 +1,10 @@
 package org.mvel2.tests.core;
 
+import org.junit.Assert;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
@@ -564,4 +566,34 @@ public class PropertyAccessTests extends AbstractTest {
     }
     assertEquals(COUNT, trueCount);
   }
+  public class Service {
+      private void hello() {
+        System.out.println("hello world");
+      }
+    }
+
+    public void testPrivateMethod() {
+      Map<String, Object> vars = new HashMap<>();
+      vars.put("service", new Service());
+      try {
+        MVEL.eval("service.hello()", vars);
+        fail("Should have thrown a PropertyAccessException");
+      }
+      catch (PropertyAccessException pae) {
+        Assert.assertTrue(pae.getMessage().contains("Error: unable to resolve method"));
+      }
+    }
+    
+    public void testPrivateMethodCompiled() {
+      Map<String, Object> vars = new HashMap<>();
+      vars.put("service", new Service());
+      Serializable expr = MVEL.compileExpression("service.hello()");
+      try {
+        MVEL.executeExpression(expr, vars);
+        fail("Should have thrown a PropertyAccessException");
+      }
+      catch (PropertyAccessException pae) {
+        Assert.assertTrue(pae.getMessage().contains("Error: unable to resolve method"));
+      }
+    }
 }
