@@ -2104,17 +2104,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
           mv.visitTypeInsn(CHECKCAST, getInternalName(declaringClass));
         }
 
-          Class<?> aClass = m.getParameterTypes()[m.getParameterTypes().length - 1];
-          if(m.isVarArgs()){
-              if(es == null || es.length == (m.getParameterTypes().length - 1) ){
-                  ExecutableStatement[] executableStatements = new ExecutableStatement[m.getParameterTypes().length];
-                  if(es != null){
-                      System.arraycopy(es,0,executableStatements,0,es.length);
-                  }
-                  executableStatements[executableStatements.length -1 ]= new ExecutableLiteral(Array.newInstance(aClass,0));
-                  es = executableStatements;
-              }
-          }
 
         for (int i = 0; es != null && i < es.length; i++) {
           if (es[i] instanceof ExecutableLiteral) {
@@ -2168,7 +2157,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
                 else {
                   assert debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
 
-                  mv.visitLdcInsn(convert(lit, parameterTypes[i]));
+                  mv.visitLdcInsn(c);
 
                   if (isPrimitiveWrapper(parameterTypes[i])) {
                     wrapPrimitive(lit.getClass());
@@ -2241,6 +2230,10 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
           }
         }
 
+        if(m.isVarArgs() && (es == null || es.length == (parameterTypes.length - 1) )){
+            // The last parameter is a vararg and there is no value, create an empty array array
+            createArray(getBaseComponentType(parameterTypes[parameterTypes.length - 1]) ,0);
+        }
         if ((m.getModifiers() & STATIC) != 0) {
           assert debug("INVOKESTATIC: " + m.getName());
           mv.visitMethodInsn(INVOKESTATIC, getInternalName(declaringClass), m.getName(), getMethodDescriptor(m));
@@ -3238,9 +3231,9 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         Class<?> paramType = null;
         int vaStart = -1;
         for (i = 0; i < constructorParms.size(); i++) {
-          if (i < cns.getParameterTypes().length) {
-            paramType = cns.getParameterTypes()[i];
-            if (cns.isVarArgs() && i == cns.getParameterTypes().length - 1) {
+          if (i < parameterTypes.length) {
+            paramType = parameterTypes[i];
+            if (cns.isVarArgs() && i == parameterTypes.length - 1) {
               paramType = getBaseComponentType(paramType);
               vaStart = i;
               createArray(paramType, constructorParms.size() - vaStart);
@@ -3297,6 +3290,10 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
               arrayStore(paramType);
           }
 
+        }
+        if (i < parameterTypes.length && cns.isVarArgs()) {
+            // The last parameter is a vararg and there is no value, create an empty array array
+            createArray(getBaseComponentType(parameterTypes[i]) ,0);
         }
 
         assert debug("INVOKESPECIAL " + getInternalName(cls) + ".<init> : " + getConstructorDescriptor(cns));

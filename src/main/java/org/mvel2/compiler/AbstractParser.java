@@ -32,6 +32,7 @@ import org.mvel2.ast.BooleanNode;
 import org.mvel2.ast.DeclProtoVarNode;
 import org.mvel2.ast.DeclTypedVarNode;
 import org.mvel2.ast.DeepAssignmentNode;
+import org.mvel2.ast.DeepOperativeAssignmentNode;
 import org.mvel2.ast.DoNode;
 import org.mvel2.ast.DoUntilNode;
 import org.mvel2.ast.EndOfStatement;
@@ -588,7 +589,7 @@ public class AbstractParser implements Parser, Serializable {
                     captureToEOS();
 
                     if (union) {
-                      return lastNode = new DeepAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                      return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
                           ADD, name, pCtx);
                     }
                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
@@ -633,8 +634,8 @@ public class AbstractParser implements Parser, Serializable {
                     captureToEOS();
 
                     if (union) {
-                      return lastNode = new DeepAssignmentNode(expr, st, cursor - st, fields,
-                          SUB, t, pCtx);
+                      return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                          SUB, name, pCtx);
                     }
                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                       return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
@@ -683,8 +684,8 @@ public class AbstractParser implements Parser, Serializable {
                   captureToEOS();
 
                   if (union) {
-                    return lastNode = new DeepAssignmentNode(expr, st, cursor - st, fields,
-                        opLookup(op), t, pCtx);
+                    return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                        opLookup(op), name, pCtx);
                   }
                   else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                     return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
