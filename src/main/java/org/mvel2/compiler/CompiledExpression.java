@@ -24,31 +24,24 @@ import org.mvel2.ParserConfiguration;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.integration.impl.StackResetResolverFactory;
-import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ASTLinkedList;
 
 import static org.mvel2.MVELRuntime.execute;
-import static org.mvel2.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-  private ASTNode firstNode;
+  private final ASTNode firstNode;
 
   private Class knownEgressType;
   private Class knownIngressType;
 
   private boolean convertableIngressEgress;
   private boolean optimized = false;
-  private boolean importInjectionRequired = false;
-  private boolean literalOnly;
+  private final boolean literalOnly;
 
-  private Class<? extends AccessorOptimizer> accessorOptimizer;
+  private final String sourceName;
 
-  private String sourceName;
-
-  private ParserConfiguration parserConfiguration;
+  private final ParserConfiguration parserConfiguration;
 
   public CompiledExpression(ASTLinkedList astMap, String sourceName, Class egressType, ParserConfiguration parserConfiguration, boolean literalOnly) {
     this.firstNode = astMap.firstNode();
@@ -56,7 +49,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     this.knownEgressType = astMap.isSingleNode() ? astMap.firstNonSymbol().getEgressType() : egressType;
     this.literalOnly = literalOnly;
     this.parserConfiguration = parserConfiguration;
-    this.importInjectionRequired = !parserConfiguration.getImports().isEmpty();
   }
 
   public ASTNode getFirstNode() {
@@ -120,25 +112,11 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   }
 
   public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
-    return execute(false, this, staticContext,
-        importInjectionRequired ? new ClassImportResolverFactory(parserConfiguration, factory, true) : new StackResetResolverFactory(factory));
+    return execute(false, this, staticContext, parserConfiguration.getVariableFactory(factory));
   }
 
   private void setupOptimizers() {
-    if (accessorOptimizer != null) setThreadAccessorOptimizer(accessorOptimizer);
     optimized = true;
-  }
-
-  public boolean isOptimized() {
-    return optimized;
-  }
-
-  public Class<? extends AccessorOptimizer> getAccessorOptimizer() {
-    return accessorOptimizer;
-  }
-
-  public String getSourceName() {
-    return sourceName;
   }
 
   public boolean intOptimized() {
@@ -150,7 +128,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   }
 
   public boolean isImportInjectionRequired() {
-    return importInjectionRequired;
+    return parserConfiguration.hasImports();
   }
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
@@ -173,7 +151,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     StringBuilder appender = new StringBuilder();
     ASTNode node = firstNode;
     while (node != null) {
-      appender.append(node.toString()).append(";\n");
+      appender.append(node).append(";\n");
       node = node.nextASTNode;
     }
     return appender.toString();
