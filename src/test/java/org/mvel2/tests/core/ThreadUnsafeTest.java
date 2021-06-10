@@ -9,7 +9,7 @@ import org.mvel2.ParserContext;
 
 public class ThreadUnsafeTest extends AbstractTest {
 
-    public void test() {
+    public void testClassImportResolver() {
         MVEL.RUNTIME_OPT_THREAD_UNSAFE = true;
 
         try {
@@ -43,6 +43,39 @@ public class ThreadUnsafeTest extends AbstractTest {
         }
     }
 
+    public void testStackResolver() {
+        MVEL.RUNTIME_OPT_THREAD_UNSAFE = true;
+
+        try {
+            ParserContext pCtx = new ParserContext();
+
+            AlgoContext ctx = new AlgoContext();
+            ExpressionContext expressionContext = new ExpressionContext();
+            ctx.setExpressionContext(expressionContext);
+            expressionContext.setContext(ctx);
+
+            Order order = new Order(1, 10,100.49);
+            OrderHelper helper = new OrderHelper();
+            helper.setOrder(order);
+            expressionContext.setHelper(helper);
+
+            Object compiledExpression = MVEL.compileExpression( "total" );
+            double total = (Double) MVEL.executeExpression(compiledExpression, expressionContext, expressionContext.getVariableMap());
+            System.out.println(total);
+
+            Object compiledExpression1 = MVEL.compileExpression( "leavesQty <10 ? 1.0 : (RemainSecond <30? 2.0 : 0.66)" );
+            double remaining = (Double) MVEL.executeExpression(compiledExpression1, expressionContext, expressionContext.getVariableMap());
+            System.out.println(remaining);
+
+            order = new Order(2, 20,101.49);
+            helper.setOrder(order);
+            total = MVEL.executeExpression(compiledExpression, expressionContext, expressionContext.getVariableMap(), Double.class);
+            System.out.println(total);
+        } finally {
+            MVEL.RUNTIME_OPT_THREAD_UNSAFE = false;
+        }
+    }
+
     public static class AlgoContext {
 
         ExpressionContext expressionContext;
@@ -61,7 +94,7 @@ public class ThreadUnsafeTest extends AbstractTest {
         }
     }
 
-    public static class ExpressionContext {
+    public class ExpressionContext {
         AlgoContext context;
 
         OrderHelper helper;
@@ -84,8 +117,7 @@ public class ThreadUnsafeTest extends AbstractTest {
             this.helper = helper;
         }
 
-        public double getTotal()
-        {
+        public double getTotal() {
             return helper.getQty() * helper.getPrice();
         }
 
@@ -93,8 +125,7 @@ public class ThreadUnsafeTest extends AbstractTest {
             return variableMap;
         }
 
-        public double getFarTouchPrice()
-        {
+        public double getFarTouchPrice() {
             return context.getFarTouchPrice();
         }
 
@@ -102,19 +133,24 @@ public class ThreadUnsafeTest extends AbstractTest {
             this.variableMap = variableMap;
         }
 
-        public boolean HAS(String key)
-        {
+        public boolean HAS(String key) {
             return variableMap.containsKey(key);
         }
 
-        public Object GET(String key)
-        {
+        public Object GET(String key) {
             return variableMap.get(key);
         }
 
-        public void SET(String key, Object obj)
-        {
+        public void SET(String key, Object obj) {
             variableMap.put(key, obj);
+        }
+
+        public double getleavesQty() {
+            return helper.getQty();
+        }
+
+        public int getRemainSecond() {
+            return 30;
         }
     }
 
@@ -126,8 +162,7 @@ public class ThreadUnsafeTest extends AbstractTest {
 
         double price;
 
-        public Order(long id, int qty, double price)
-        {
+        public Order(long id, int qty, double price) {
             this.orderId = id;
             this.qty = qty;
             this.price = price;
