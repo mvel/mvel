@@ -29,7 +29,7 @@ public class ThreadUnsafeTest extends AbstractTest {
             Object compiledExpression1 = MVEL.compileExpression("import java.util.List; farTouchPrice", pCtx);
 
             double total = (Double) MVEL.executeExpression(compiledExpression, expressionContext, expressionContext.getVariableMap());
-            assertEquals(1004.9, total);
+            assertEquals(1004.9, total, 0.1);
 
             double farrouchprice = (Double) MVEL.executeExpression(compiledExpression1, expressionContext, expressionContext.getVariableMap());
             assertEquals(101.4, farrouchprice);
@@ -59,18 +59,22 @@ public class ThreadUnsafeTest extends AbstractTest {
             helper.setOrder(order);
             expressionContext.setHelper(helper);
 
-            Object compiledExpression = MVEL.compileExpression( "total" );
+            Object compiledExpression = MVEL.compileExpression( "total", pCtx );
             double total = (Double) MVEL.executeExpression(compiledExpression, expressionContext, expressionContext.getVariableMap());
-            System.out.println(total);
+            assertEquals(1004.9, total, 0.1);
 
-            Object compiledExpression1 = MVEL.compileExpression( "leavesQty <10 ? 1.0 : (RemainSecond <30? 2.0 : 0.66)" );
+            Object compiledExpression1 = MVEL.compileExpression( "leavesQty <10 ? 1.0 : (RemainSecond <30? 2.0 : 0.66)", pCtx );
             double remaining = (Double) MVEL.executeExpression(compiledExpression1, expressionContext, expressionContext.getVariableMap());
-            System.out.println(remaining);
+            assertEquals(0.66, remaining, 0.1);
 
             order = new Order(2, 20,101.49);
             helper.setOrder(order);
             total = MVEL.executeExpression(compiledExpression, expressionContext, expressionContext.getVariableMap(), Double.class);
-            System.out.println(total);
+            assertEquals(2029.8, total, 0.1);
+
+            Object compiledExpression2 = MVEL.compileExpression( "LeavesUnreservedQty<10 ? 1 : (RemainingSeconds<30?2:0.66)", pCtx );
+            int remainingSeconds = (int) MVEL.executeExpression(compiledExpression2, expressionContext, expressionContext.getVariableMap());
+            assertEquals(2, remainingSeconds);
         } finally {
             MVEL.RUNTIME_OPT_THREAD_UNSAFE = false;
         }
@@ -151,6 +155,14 @@ public class ThreadUnsafeTest extends AbstractTest {
 
         public int getRemainSecond() {
             return 30;
+        }
+
+        public long getLeavesUnreservedQty() {
+            return (long) helper.getQty();
+        }
+
+        public int getRemainingSeconds() {
+            return 5;
         }
     }
 
