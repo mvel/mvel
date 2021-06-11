@@ -46,7 +46,10 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
   }
 
   public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
-    return nextFactory = resolverFactory;
+    if (resolverFactory != this) {
+      nextFactory = resolverFactory;
+    }
+    return nextFactory;
   }
 
   public VariableResolver getVariableResolver(String name) {

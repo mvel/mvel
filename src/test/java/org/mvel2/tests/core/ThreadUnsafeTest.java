@@ -80,6 +80,30 @@ public class ThreadUnsafeTest extends AbstractTest {
         }
     }
 
+    public void testClassImportResolver2() {
+        MVEL.RUNTIME_OPT_THREAD_UNSAFE = true;
+
+        try {
+            ParserContext pCtx = new ParserContext();
+
+            AlgoContext ctx = new AlgoContext();
+            ExpressionContext expressionContext = new ExpressionContext();
+            ctx.setExpressionContext(expressionContext);
+            expressionContext.setContext(ctx);
+
+            Order order = new Order(1, 10,100.49);
+            OrderHelper helper = new OrderHelper();
+            helper.setOrder(order);
+            expressionContext.setHelper(helper);
+
+            Object compiledExpression3 = MVEL.compileExpression( "import java.util.List; LeavesUnreservedQty<10 ? 1 : (RemainingSeconds<30?2:0.66)", pCtx );
+            int remainingSeconds = (int) MVEL.executeExpression(compiledExpression3, expressionContext, expressionContext.getVariableMap());
+            assertEquals(2, remainingSeconds);
+        } finally {
+            MVEL.RUNTIME_OPT_THREAD_UNSAFE = false;
+        }
+    }
+
     public static class AlgoContext {
 
         ExpressionContext expressionContext;
