@@ -19,6 +19,7 @@
 package org.mvel2.compiler;
 
 import java.io.Serializable;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ast.ASTNode;
@@ -36,7 +37,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   private Class knownIngressType;
 
   private boolean convertableIngressEgress;
-  private boolean optimized = false;
+  private final ReentrantLock lock = new ReentrantLock();
+  private volatile boolean optimizationCompleted = false;
   private final boolean literalOnly;
 
   private final String sourceName;
@@ -86,37 +88,26 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-    if (!optimized) {
-      setupOptimizers();
-      try {
-        return getValue(ctx, variableFactory);
-      }
-      finally {
-        OptimizerFactory.clearThreadAccessorOptimizer();
-      }
-    }
     return getValue(ctx, variableFactory);
   }
 
   public Object getValue(Object staticContext, VariableResolverFactory factory) {
-    if (!optimized) {
-      setupOptimizers();
+      if (optimizationCompleted) {
+          return getDirectValue(staticContext, factory);
+      }
+
+      lock.lock();
       try {
-        return getValue(staticContext, factory);
+          return getDirectValue(staticContext, factory);
+      } finally {
+          OptimizerFactory.clearThreadAccessorOptimizer();
+          optimizationCompleted = true;
+          lock.unlock();
       }
-      finally {
-        OptimizerFactory.clearThreadAccessorOptimizer();
-      }
-    }
-    return getDirectValue(staticContext, factory);
   }
 
   public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
     return execute(false, this, staticContext, parserConfiguration.getVariableFactory(factory));
-  }
-
-  private void setupOptimizers() {
-    optimized = true;
   }
 
   public boolean intOptimized() {
