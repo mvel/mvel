@@ -29,7 +29,7 @@ public class ConcurrentEvaluationWithContextTests extends TestCase {
 
     private Serializable expression;
 
-    private void compileExpression() {
+    private void compileExpression() throws Exception {
 
         boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
         boolean allowOverrideAllProphandling = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
@@ -54,9 +54,6 @@ public class ConcurrentEvaluationWithContextTests extends TestCase {
             parserContext.addInput("$title", String.class);
 
             expression = MVEL.compileExpression("result.add($bus.karaoke.dvd[$title].artist);", parserContext);
-
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = allowNakedMethCall;
             MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowOverrideAllProphandling;
