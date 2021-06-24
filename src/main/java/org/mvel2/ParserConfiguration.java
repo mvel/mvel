@@ -34,6 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.integration.impl.StackResetResolverFactory;
 import org.mvel2.util.MethodStub;
 
 import static org.mvel2.util.ParseTools.forNameWithInner;
@@ -53,6 +56,8 @@ public class ParserConfiguration implements Serializable {
   private boolean allowNakedMethCall = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
 
   private boolean allowBootstrapBypass = true;
+
+  private VariableResolverFactory threadUnsafeVariableResolverFactory;
 
   public ParserConfiguration() {
   }
@@ -275,5 +280,26 @@ public class ParserConfiguration implements Serializable {
 
   public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
     this.allowBootstrapBypass = allowBootstrapBypass;
+  }
+
+  public VariableResolverFactory getVariableFactory(VariableResolverFactory factory) {
+    if (MVEL.RUNTIME_OPT_THREAD_UNSAFE) {
+      if (threadUnsafeVariableResolverFactory == null) {
+        threadUnsafeVariableResolverFactory = createVariableResolverFactory(factory);
+      } else {
+        if (threadUnsafeVariableResolverFactory instanceof StackResetResolverFactory) {
+          ((StackResetResolverFactory) threadUnsafeVariableResolverFactory).setDelegate(factory);
+        } else {
+          threadUnsafeVariableResolverFactory.setNextFactory(factory);
+        }
+      }
+      return threadUnsafeVariableResolverFactory;
+    }
+
+    return createVariableResolverFactory(factory);
+  }
+
+  private VariableResolverFactory createVariableResolverFactory(VariableResolverFactory factory) {
+    return hasImports() ? new ClassImportResolverFactory(this, factory, true) : new StackResetResolverFactory(factory);
   }
 }

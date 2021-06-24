@@ -85,4 +85,10 @@ public class StackResetResolverFactory implements VariableResolverFactory {
   public VariableResolverFactory getDelegate() {
     return delegate;
   }
+
+  public void setDelegate(VariableResolverFactory delegate) {
+    if (this != delegate) {
+      this.delegate = delegate;
+    }
+  }
 }
