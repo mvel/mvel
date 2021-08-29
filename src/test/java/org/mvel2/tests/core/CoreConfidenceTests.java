@@ -4932,4 +4932,9 @@ public class CoreConfidenceTests extends AbstractTest {
     Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
     assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
   }
+  
+  public void testLooseTypeConversion() {
+     int [] result = MVEL.eval("3.0", int [].class);
+     assertEquals(3, result[0]);
+  }
 }

@@ -69,7 +69,7 @@ public class ArrayHandler implements ConversionHandler {
     if (!input.getClass().isArray()) {
       // if the input isn't an array converts it in an array with lenght = 1 having has its single item the input itself
       Object target = newInstance(targType, 1);
-      set(target, 0, input);
+      set(target, 0, convert(input, targType));
       return target;
     }
 
