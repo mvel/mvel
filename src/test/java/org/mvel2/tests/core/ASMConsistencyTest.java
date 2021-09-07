@@ -54,6 +54,12 @@ public class ASMConsistencyTest extends AbstractTest {
   }
 
   public void testNullArgConvert() {
+    // change DynamicOptimizer props，make sure of using asm optimize
+    int oldThreashold = DynamicOptimizer.tenuringThreshold;
+    long oldTimeSpan = DynamicOptimizer.timeSpan;
+    DynamicOptimizer.tenuringThreshold = 1;
+    DynamicOptimizer.timeSpan = 1000 * 60 * 60L;
+    
     Map<String, Object> imports = new HashMap<>(2);
     imports.put("isNull", new MethodStub(TestFunction.class, "isNull"));
     Serializable expr = MVEL.compileExpression("isNull(var1)", imports);
@@ -67,5 +73,9 @@ public class ASMConsistencyTest extends AbstractTest {
     // use AsmAccessor
     inputVars.put("var1", null);
     assertTrue((boolean) MVEL.executeExpression(expr, inputVars));
+    
+    // revert the props
+    DynamicOptimizer.tenuringThreshold = oldThreashold;
+    DynamicOptimizer.timeSpan = oldTimeSpan;
   }
 }
