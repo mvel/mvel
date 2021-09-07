@@ -41,5 +41,31 @@ public class ASMConsistencyTest extends AbstractTest {
       throw new IllegalStateException("Exception occurred " + rex.size() + " time(s)", rex.get(0));
     }
   }
+  
+  /**
+   * used for asm optimize test
+   */
+  public static class TestFunction {
 
+    public static boolean isNull(String str) {
+      return str == null;
+    }
+
+  }
+
+  public void testNullArgConvert() {
+    Map<String, Object> imports = new HashMap<>(2);
+    imports.put("isNull", new MethodStub(TestFunction.class, "isNull"));
+    Serializable expr = MVEL.compileExpression("isNull(var1)", imports);
+
+    Map<String, Object> inputVars = new HashMap<>(2);
+    inputVars.put("var1", "someStr");
+    // trigger asm optimize,tenuringThreshold is 1
+    for (int i = 0;i < 3;i++) {
+      MVEL.executeExpression(expr, inputVars);
+    }
+    // use AsmAccessor
+    inputVars.put("var1", null);
+    assertTrue((boolean) MVEL.executeExpression(expr, inputVars));
+  }
 }
