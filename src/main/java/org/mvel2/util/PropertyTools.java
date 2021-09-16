@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.mvel2.ParserContext;
@@ -31,7 +32,6 @@ import static java.lang.String.valueOf;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.lang.reflect.Modifier.isPublic;
-
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
@@ -97,6 +97,13 @@ public class PropertyTools {
     String isGet = ReflectionUtil.getIsGetter(property);
     String getter = ReflectionUtil.getGetter(property);
 
+    Map<String, Integer> getterPriorityMap = new HashMap<>();
+    getterPriorityMap.put(isGet, 4);
+    getterPriorityMap.put(simpleIsGet, 3);
+    getterPriorityMap.put(getter, 2);
+    getterPriorityMap.put(simple, 1);
+    getterPriorityMap.put(property, 0);
+
     Method candidate = null;
 
     if (Collection.class.isAssignableFrom(clazz) && "isEmpty".equals(isGet)) {
@@ -109,12 +116,24 @@ public class PropertyTools {
       if ((meth.getModifiers() & PUBLIC) != 0 && (meth.getModifiers() & STATIC) == 0 && meth.getParameterTypes().length == 0
           && (getter.equals(meth.getName()) || property.equals(meth.getName()) || ((isGet.equals(meth.getName()) || simpleIsGet.equals(meth.getName())) && meth.getReturnType() == boolean.class)
           || simple.equals(meth.getName()))) {
-        if (candidate == null || candidate.getReturnType().isAssignableFrom(meth.getReturnType())) {
+        if (candidate == null || isPreferredGetter(candidate, meth, getterPriorityMap)) {
           candidate = meth;
         }
       }
     }
     return candidate;
+  }
+
+  private static boolean isPreferredGetter(Method oldMethod, Method newMethod, Map<String, Integer> getterPriorityMap) {
+      Class<?> oldReturnType = oldMethod.getReturnType();
+      Class<?> newReturnType = newMethod.getReturnType();
+      if (oldReturnType.equals(newReturnType)) {
+          return getterPriorityMap.get(newMethod.getName()) > getterPriorityMap.get(oldMethod.getName());
+      } else if (oldReturnType.isAssignableFrom(newReturnType)) {
+          return true;
+      } else {
+          return false;
+      }
   }
 
   public static Class getReturnType(Class clazz, String property, ParserContext ctx) {
