@@ -665,6 +665,7 @@ public class AbstractParser implements Parser, Serializable {
               case '\'':
               case ';':
               case ':':
+              case '#':
                 break CaptureLoop;
 
               case '\u00AB': // special compact code for recursive parses
@@ -2570,6 +2571,7 @@ public class AbstractParser implements Parser, Serializable {
         case GETHAN:
         case LETHAN:
         case POWER:
+        case STR_APPEND:
           stk.op(operator);
           break;
 
