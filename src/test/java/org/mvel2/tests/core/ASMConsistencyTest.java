@@ -3,10 +3,14 @@ package org.mvel2.tests.core;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.mvel2.MVEL;
+import org.mvel2.optimizers.dynamic.DynamicOptimizer;
+import org.mvel2.util.MethodStub;
 
 public class ASMConsistencyTest extends AbstractTest {
   public void testInSetRepeated() throws InterruptedException {
