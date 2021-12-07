@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -4931,5 +4932,27 @@ public class CoreConfidenceTests extends AbstractTest {
 
     Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
     assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
+  }
+
+  public void testGetBestConstructorCandidateOfBigDecimal() {
+      Class<?>[] arguments = new Class<?>[] {BigDecimal.class}; // new BigDecimal(BigDecimal bd) doesn't exist. But want to get a constant candidate
+      Constructor constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[] {double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[] {BigInteger.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[] {BigInteger.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[] {int.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[] {int.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[] {double.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[] {double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[] {String.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[] {String.class}, constructor.getParameterTypes());
   }
 }
