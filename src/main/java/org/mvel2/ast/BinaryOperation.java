@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.mvel2.CompileException;
+import org.mvel2.DataTypes;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ScriptRuntimeException;
@@ -85,7 +86,7 @@ public class BinaryOperation extends BooleanNode {
 
           if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
-            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
+            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), targetType, pCtx);
           } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
                   (( operation == Operator.EQUAL || operation == Operator.NEQUAL) &&
                      CompatibilityStrategy.areEqualityCompatible(left.getEgressType(), right.getEgressType()))) ) {
@@ -98,14 +99,19 @@ public class BinaryOperation extends BooleanNode {
         }
     }
 
-    if (this.left.isLiteral() && this.right.isLiteral()) {
       if (this.left.egressType == this.right.egressType) {
-        lType = rType = ParseTools.__resolveType(left.egressType);
+        lType = rType = getOperandType(this.left);
       } else {
-        lType = ParseTools.__resolveType(this.left.egressType);
-        rType = ParseTools.__resolveType(this.right.egressType);
+        lType = getOperandType(this.left);
+        rType = getOperandType(this.right);
       }
+  }
+
+  private int getOperandType(ASTNode node) {
+    if (node.egressType == null || node.egressType == Object.class) {
+      return DataTypes.NULL;
     }
+    return ParseTools.__resolveType(node.egressType);
   }
 
   private boolean doesRequireConversion(Class leftType, Class rightType, int op) {
@@ -149,10 +155,6 @@ public class BinaryOperation extends BooleanNode {
     return operation;
   }
 
-  public BinaryOperation getRightBinary() {
-    return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
-  }
-
   public void setRightMost(ASTNode right) {
     BinaryOperation n = this;
     while (n.right != null && n.right instanceof BinaryOperation) {
@@ -171,14 +173,6 @@ public class BinaryOperation extends BooleanNode {
       n = (BinaryOperation) n.right;
     }
     return n.right;
-  }
-
-  public int getPrecedence() {
-    return PTABLE[operation];
-  }
-
-  public boolean isGreaterPrecedence(BinaryOperation o) {
-    return o.getPrecedence() > PTABLE[operation];
   }
 
   @Override

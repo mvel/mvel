@@ -1089,7 +1089,6 @@ public class ParseTools {
 
     typeCodes.put(BigDecimal.class, DataTypes.BIG_DECIMAL);
     typeCodes.put(BigInteger.class, DataTypes.BIG_INTEGER);
-    typeCodes.put(InternalNumber.class, DataTypes.BIG_DECIMAL);
 
     typeCodes.put(int.class, DataTypes.INTEGER);
     typeCodes.put(double.class, DataTypes.DOUBLE);
