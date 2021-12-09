@@ -4933,6 +4933,11 @@ public class CoreConfidenceTests extends AbstractTest {
     Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
     assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
   }
+  
+  public void testLooseTypeConversion() {
+     int [] result = MVEL.eval("3.0", int [].class);
+     assertEquals(3, result[0]);
+  }
 
   public void testGetBestConstructorCandidateOfBigDecimal() {
       Class<?>[] arguments = new Class<?>[]{BigDecimal.class}; // new BigDecimal(BigDecimal bd) doesn't exist. But want to get a constant candidate
