@@ -10,8 +10,8 @@ import org.mvel2.integration.impl.SimpleValueResolver;
  * @author Mike Brock .
  */
 public class SimpleVariableSpaceModel extends VariableSpaceModel {
-  public SimpleVariableSpaceModel(String[] varNames) {
-    this.allVars = varNames;
+  public SimpleVariableSpaceModel(String[] allVars) {
+    super(allVars);
   }
 
   public VariableResolverFactory createFactory(Object[] vals) {

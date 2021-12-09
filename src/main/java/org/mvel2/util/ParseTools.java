@@ -329,10 +329,14 @@ public class ParseTools {
     if (numeric1 == numeric2) {
       return 0;
     }
-    if ((numeric1 == double.class) && (numeric2 == float.class || numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
+    if (numeric1 == BigDecimal.class) {
+        return 1;
+    } else if ((numeric1 == double.class) && (numeric2 == float.class || numeric2 == long.class || numeric2 == int.class || numeric2 == short.class || numeric2 == BigInteger.class)) {
       return 1;
-    } else if ((numeric1 == float.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
-      // float is preferred over long assuming users don't want to lose decimal part
+    } else if ((numeric1 == float.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class || numeric2 == BigInteger.class)) {
+      // float is preferred over long/BigInteger assuming users don't want to lose decimal part
+      return 1;
+    } else if ((numeric1 == BigInteger.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
       return 1;
     } else if ((numeric1 == long.class) && (numeric2 == int.class || numeric2 == short.class)) {
       return 1;
@@ -497,6 +501,7 @@ public class ParseTools {
     Class[] parmTypes;
     Constructor bestCandidate = null;
     int bestScore = 0;
+    boolean bestCandidateIsVarArgs = false;
 
     for (Constructor construct : getConstructors(cls)) {
       boolean isVarArgs = construct.isVarArgs();
@@ -509,13 +514,16 @@ public class ParseTools {
       }
 
       int score = getMethodScore(arguments, requireExact, parmTypes, isVarArgs);
+
       if (score != 0) {
         if (score > bestScore) {
           bestCandidate = construct;
           bestScore = score;
+          bestCandidateIsVarArgs = isVarArgs;
         }
-        else if (score == bestScore && (isMorePreciseForBigDecimal(construct, bestCandidate, arguments) || !isVarArgs)) {
+        else if (score == bestScore && (isMorePreciseForBigDecimal(construct, bestCandidate, arguments) || (bestCandidateIsVarArgs && !isVarArgs))) {
           bestCandidate = construct;
+          bestCandidateIsVarArgs = isVarArgs;
         }
       }
     }
@@ -1081,7 +1089,6 @@ public class ParseTools {
 
     typeCodes.put(BigDecimal.class, DataTypes.BIG_DECIMAL);
     typeCodes.put(BigInteger.class, DataTypes.BIG_INTEGER);
-    typeCodes.put(InternalNumber.class, DataTypes.BIG_DECIMAL);
 
     typeCodes.put(int.class, DataTypes.INTEGER);
     typeCodes.put(double.class, DataTypes.DOUBLE);

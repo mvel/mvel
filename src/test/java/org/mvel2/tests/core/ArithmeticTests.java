@@ -996,7 +996,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testMathCeil() {
-    String str = "Math.ceil( x/3 ) == 2";
+    String str = "Math.ceil( x/3.0 ) == 2";
 
     ParserConfiguration pconf = new ParserConfiguration();
     pconf.addImport("Math", Math.class);
@@ -1014,9 +1014,9 @@ public class ArithmeticTests extends AbstractTest {
   
   public void testStaticMathCeil() {      
     int x = 4;
-    int m = (int) java.lang.Math.ceil( x/3 ); // demonstrating it's perfectly valid java
+    int m = (int) java.lang.Math.ceil( x/3.0 ); // demonstrating it's perfectly valid java
 
-    String str = "int m = (int) java.lang.Math.ceil( x/3 ); return m;";
+    String str = "int m = (int) java.lang.Math.ceil( x/3.0 ); return m;";
 
     ParserConfiguration pconf = new ParserConfiguration();
     ParserContext pctx = new ParserContext(pconf);
@@ -1033,7 +1033,7 @@ public class ArithmeticTests extends AbstractTest {
   public void testStaticMathCeilWithJavaClassStyleLiterals() {            
     MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
     try {
-      String str = "java.lang.Math.ceil( x/3 )";
+      String str = "java.lang.Math.ceil( x/3.0 )";
 
       ParserConfiguration pconf = new ParserConfiguration();
       ParserContext pctx = new ParserContext(pconf);
