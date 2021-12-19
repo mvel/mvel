@@ -99,9 +99,12 @@ public class MVELRuntime {
 
           case TERNARY:
             if (!stk.popBoolean()) {
-              //noinspection StatementWithEmptyBody
-              while (tk.nextASTNode != null && !(tk = tk.nextASTNode).isOperator(TERNARY_ELSE)) ;
-            }
+                for (int embeddedLevel = 1; embeddedLevel > 0;) {
+              	  tk = tk.nextASTNode;
+              	  if (tk == null) break;
+              	  if (tk.isOperator(TERNARY_ELSE)) --embeddedLevel;
+              	  else if (tk.isOperator(TERNARY)) ++embeddedLevel;
+                }            }
             stk.clear();
             continue;
 
