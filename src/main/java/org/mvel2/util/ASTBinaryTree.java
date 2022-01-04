@@ -7,7 +7,7 @@ import org.mvel2.ast.OperatorNode;
 import static org.mvel2.Operator.*;
 
 public class ASTBinaryTree {
-    private ASTNode root;
+    private final ASTNode root;
     private ASTBinaryTree left;
     private ASTBinaryTree right;
 
@@ -36,7 +36,7 @@ public class ASTBinaryTree {
         if (left == null || right == null) throw new RuntimeException("Malformed expression");
         Class<?> leftType = left.getReturnType(strongTyping);
         Class<?> rightType = right.getReturnType(strongTyping);
-        switch (((OperatorNode)root).getOperator()) {
+        switch (root.getOperator()) {
             case CONTAINS:
             case SOUNDEX:
             case INSTANCEOF:
@@ -50,7 +50,7 @@ public class ASTBinaryTree {
             case DIV:
                 if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
-                return Double.class;
+                return leftType == rightType && (leftType.isPrimitive() || Number.class.isAssignableFrom(leftType)) ? leftType : Double.class;
             case MOD:
                 if (strongTyping && !CompatibilityStrategy.areEqualityCompatible(leftType, rightType))
                     throw new RuntimeException("Associative operation requires compatible types. Found " + leftType + " and " + rightType);
@@ -93,7 +93,7 @@ public class ASTBinaryTree {
     private int comparePrecedence(ASTNode node1, ASTNode node2) {
         if (!(node1 instanceof OperatorNode) && !(node2 instanceof OperatorNode)) return 0;
         if (node1 instanceof OperatorNode && node2 instanceof OperatorNode) {
-            return PTABLE[((OperatorNode)node1).getOperator()] - PTABLE[((OperatorNode)node2).getOperator()];
+            return PTABLE[node1.getOperator()] - PTABLE[node2.getOperator()];
         }
         return node1 instanceof OperatorNode ? -1 : 1;
     }

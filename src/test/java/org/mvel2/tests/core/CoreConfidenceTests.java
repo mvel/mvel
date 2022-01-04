@@ -5009,4 +5009,13 @@ public class CoreConfidenceTests extends AbstractTest {
       assertEquals(expected, result);
     }
   }
+
+  public void testAnalyzeMathAbs() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    assertEquals(int.class, MVEL.analyze( "Math.abs(x - y);", parserContext ));
+  }
 }

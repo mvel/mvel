@@ -60,27 +60,20 @@ public strictfp class MathProcessor {
     if (type2 < 1)
       type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-    switch (type1) {
-      case BIG_DECIMAL:
-
-        switch (type2) {
-          case BIG_DECIMAL:
-            return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
-          default:
-            if (type2 > 99) {
-              return doBigDecimalArithmetic((BigDecimal) val1, operation, asBigDecimal(val2), false, -1);
-            }
-            else {
-              return _doOperations(type1, val1, operation, type2, val2);
-            }
-        }
-      default:
+    if (type1 == BIG_DECIMAL) {
+      if (type2 == BIG_DECIMAL) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
+      }
+      if (type2 > 99) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, asBigDecimal(val2), false, -1);
+      } else {
         return _doOperations(type1, val1, operation, type2, val2);
-
+      }
     }
+    return _doOperations(type1, val1, operation, type2, val2);
   }
 
-  private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, boolean iNumber, int returnTarget) {
+  private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, int returnTarget) {
     switch (operation) {
       case ADD:
         return toType(val1.doubleValue() + val2.doubleValue(), returnTarget);
@@ -188,13 +181,13 @@ public strictfp class MathProcessor {
         }
 
       case GTHAN:
-        return val1 != null && val2 != null ? val1.compareTo(val2) > 0 : false;
+        return val1 != null && val2 != null && val1.compareTo(val2) > 0;
       case GETHAN:
-        return val1 != null && val2 != null ? val1.compareTo(val2) >= 0 : false;
+        return val1 != null && val2 != null && val1.compareTo(val2) >= 0;
       case LTHAN:
-        return val1 != null && val2 != null ? val1.compareTo(val2) < 0 : false;
+        return val1 != null && val2 != null && val1.compareTo(val2) < 0;
       case LETHAN:
-        return val1 != null && val2 != null ? val1.compareTo(val2) <= 0 : false;
+        return val1 != null && val2 != null && val1.compareTo(val2) <= 0;
       case EQUAL:
         return val1 == null ? val2 == null : val2 != null && val1.compareTo(val2) == 0;
       case NEQUAL:
@@ -210,9 +203,8 @@ public strictfp class MathProcessor {
         return doOperationsSameType(type1, val1, operation, val2);
       }
       else if (val2 != null && isNumericOperation(type1, val1, operation, type2, val2)) {
-        return doPrimWrapperArithmetic(getNumber(val1, type1),
-            operation,
-            getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+        return doPrimWrapperArithmetic(getNumber(val1, type1), operation,
+            getNumber(val2, type2), Math.max(box(type2), box(type1)));
       }
       else if (operation != ADD &&
           (type1 == DataTypes.W_BOOLEAN || type2 == DataTypes.W_BOOLEAN) &&
@@ -281,7 +273,6 @@ public strictfp class MathProcessor {
 
       case GETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) >= 0;
           }
@@ -313,7 +304,6 @@ public strictfp class MathProcessor {
 
       case LETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
             return val2 != null && ((Comparable) val1).compareTo(val2) <= 0;
           }
@@ -344,14 +334,14 @@ public strictfp class MathProcessor {
     if (val1 != null) {
       return val1.equals(val2);
     }
-    else return val2 == null || (val2.equals(val1));
+    else return val2 == null;
   }
 
   private static Boolean safeNotEquals(final Object val1, final Object val2) {
     if (val1 != null) {
       return !val1.equals(val2);
     }
-    else return (val2 != null && !val2.equals(val1));
+    else return val2 != null;
   }
 
   private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
@@ -607,11 +597,11 @@ public strictfp class MathProcessor {
           case MOD:
             return ((BigInteger) val1).remainder(((BigInteger) val2));
           case GTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) > 0;
           case GETHAN:
             return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
           case LTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) < 0;
           case LETHAN:
             return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
           case EQUAL:
@@ -650,7 +640,7 @@ public strictfp class MathProcessor {
   }
 
   private static long toLong(Object val) {
-    return val instanceof Long ? (Long) val : ((Long) val).longValue();
+    return val instanceof Long ? (Long) val : ((Number) val).longValue();
   }
 
   private static double toDouble(Object val) {
@@ -697,10 +687,9 @@ public strictfp class MathProcessor {
       case DataTypes.W_FLOAT:
       case DataTypes.SHORT:
       case DataTypes.W_SHORT:
-        return ((Number) in).doubleValue();
       case DataTypes.DOUBLE:
       case DataTypes.W_DOUBLE:
-        return (Double) in;
+        return ((Number) in).doubleValue();
       case DataTypes.CHAR:
       case DataTypes.W_CHAR:
         return Double.parseDouble(String.valueOf(in));
