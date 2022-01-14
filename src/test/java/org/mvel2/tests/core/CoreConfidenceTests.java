@@ -1189,35 +1189,51 @@ public class CoreConfidenceTests extends AbstractTest {
     Foo foo = new Foo();
 
     Map map = new HashMap();
-    map.put("foo",
-        foo);
+    map.put("foo", foo);
 
     String expression = "foo.?bar.name == null";
     Serializable compiled = compileExpression(expression);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
     OptimizerFactory.setDefaultOptimizer("ASM");
     compiled = compileExpression(expression);
     foo.setBar(new Bar());
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
-    assertEquals(true,
-        eval(expression,
-            map));
+    assertEquals(true, eval(expression, map));
+  }
+
+  public void testNullSafe2() {
+    Foo foo = new Foo();
+    Bar bar = new Bar();
+    foo.setBar(bar);
+    bar.setName(null);
+
+    Map map = new HashMap();
+    map.put("foo", foo);
+
+    String expression = "x = foo.bar.?name.length == null";
+    Serializable compiled = compileExpression(expression);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    compiled = compileExpression(expression);
+    bar.setName(null);
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    assertEquals(false, eval(expression, map));
   }
 
   /**
