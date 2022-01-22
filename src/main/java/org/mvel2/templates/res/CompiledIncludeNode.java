@@ -97,15 +97,15 @@ public class CompiledIncludeNode extends Node {
       
       String currentLine;
       boolean onFirstLine = true;
-	  while ((currentLine = in.readLine()) != null) {
-		if (onFirstLine) {
-			onFirstLine = false;
-		}
-		else {
-			appender.append('\n');
-		}
-		appender.append(currentLine);
-	  }
+      while ((currentLine = in.readLine()) != null) {
+        if (onFirstLine) {
+          onFirstLine = false;
+        }
+        else {
+          appender.append('\n');
+        }
+        appender.append(currentLine);
+      }
       
       runtime.getRelPath().pop();
       return appender.toString();
