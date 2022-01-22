@@ -99,12 +99,13 @@ public class BinaryOperation extends BooleanNode {
         }
     }
 
-      if (this.left.egressType == this.right.egressType) {
+    if (this.left.egressType == this.right.egressType) {
         lType = rType = getOperandType(this.left);
-      } else {
-        lType = getOperandType(this.left);
-        rType = getOperandType(this.right);
-      }
+    }
+    else {
+    	if (this.left.isLiteral()) lType = getOperandType(this.left);
+    	if (this.right.isLiteral()) rType = getOperandType(this.right);
+    }
   }
 
   private int getOperandType(ASTNode node) {
