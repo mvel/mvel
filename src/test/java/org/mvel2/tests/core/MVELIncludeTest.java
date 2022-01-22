@@ -1,6 +1,8 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
+
+import org.mvel2.MVEL;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateCompiler;
@@ -35,4 +37,17 @@ public class MVELIncludeTest extends TestCase {
     assertEquals("Hello mister Gaël Périé", tr);
   }
 
+  /**
+   * evalFile with sub template in utf-8 encoding
+   *
+   * @throws IOException
+   */
+  public void testIncludeFileWithNewline() throws IOException {
+	    final CompiledTemplate template = TemplateCompiler.compileTemplate(new File("samples/scripts/lineTopLevel.mvel"));
+	    
+	    String tr = (String) new TemplateRuntime(template.getTemplate(), null, template.getRoot(), "./samples/scripts/")
+	    	.execute(new StringAppender(), new HashMap<String, String>(), new ImmutableDefaultFactory());
+	    tr = tr.replaceAll("\\r", ""); // Make it consistent across OS's
+	    assertEquals("The question is 21 + 21\nThe answer is 42", tr);
+  }
 }
