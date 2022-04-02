@@ -2218,8 +2218,18 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
           }
           else if (parameterTypes[i] == String.class) {
             assert debug("<<<DYNAMIC TYPE OPTIMIZATION STRING>>");
+            mv.visitVarInsn(ASTORE, 4);
+            Label jmp = new Label();
+            mv.visitVarInsn(ALOAD, 4);
+            mv.visitJumpInsn(IFNONNULL, jmp);
+            mv.visitInsn(ACONST_NULL);
+            Label jmp2 = new Label();
+            mv.visitJumpInsn(GOTO, jmp2);
+            mv.visitLabel(jmp);
+            mv.visitVarInsn(ALOAD,4);
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/String", "valueOf",
                 "(Ljava/lang/Object;)Ljava/lang/String;");
+            mv.visitLabel(jmp2);
           }
           else {
             assert debug("<<<DYNAMIC TYPING BYPASS>>>");

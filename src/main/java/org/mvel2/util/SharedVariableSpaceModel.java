@@ -13,7 +13,7 @@ public class SharedVariableSpaceModel extends VariableSpaceModel {
   private VariableResolver[] cachedGlobalResolvers;
 
   public SharedVariableSpaceModel(String[] allVars, Object[] vals) {
-    this.allVars = allVars;
+    super(allVars);
 
     cachedGlobalResolvers = new VariableResolver[vals.length];
     for (int i = 0; i < vals.length; i++) {

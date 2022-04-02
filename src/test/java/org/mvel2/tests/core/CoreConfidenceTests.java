@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -1188,35 +1189,51 @@ public class CoreConfidenceTests extends AbstractTest {
     Foo foo = new Foo();
 
     Map map = new HashMap();
-    map.put("foo",
-        foo);
+    map.put("foo", foo);
 
     String expression = "foo.?bar.name == null";
     Serializable compiled = compileExpression(expression);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
     OptimizerFactory.setDefaultOptimizer("ASM");
     compiled = compileExpression(expression);
     foo.setBar(new Bar());
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
-    assertEquals(true,
-        eval(expression,
-            map));
+    assertEquals(true, eval(expression, map));
+  }
+
+  public void testNullSafe2() {
+    Foo foo = new Foo();
+    Bar bar = new Bar();
+    foo.setBar(bar);
+    bar.setName(null);
+
+    Map map = new HashMap();
+    map.put("foo", foo);
+
+    String expression = "x = foo.bar.?name.length == null";
+    Serializable compiled = compileExpression(expression);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    compiled = compileExpression(expression);
+    bar.setName(null);
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    assertEquals(false, eval(expression, map));
   }
 
   /**
@@ -4333,7 +4350,7 @@ public class CoreConfidenceTests extends AbstractTest {
       parserContext.addInput("a", int.class);
 
       // Long / Integer to Long / Long
-      Serializable longDivByInt = MVEL.compileExpression("15 * Math.round( new java.math.BigDecimal(\"49.4\") ) / 100", parserContext);
+      Serializable longDivByInt = MVEL.compileExpression("15 * Math.round( new java.math.BigDecimal(\"49.4\") ) / 100.0", parserContext);
       Object resultLongDivByInt = MVEL.executeExpression(longDivByInt, new HashMap());
       assertEquals(7.35, resultLongDivByInt);
 
@@ -4931,5 +4948,90 @@ public class CoreConfidenceTests extends AbstractTest {
 
     Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
     assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
+  }
+  
+  public void testLooseTypeConversion() {
+     int [] result = MVEL.eval("3.0", int [].class);
+     assertEquals(3, result[0]);
+  }
+
+  public void testGetBestConstructorCandidateOfBigDecimal() {
+      Class<?>[] arguments = new Class<?>[]{BigDecimal.class}; // new BigDecimal(BigDecimal bd) doesn't exist. But want to get a constant candidate
+      Constructor constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{BigInteger.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{BigInteger.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{int.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{int.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{double.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{String.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{String.class}, constructor.getParameterTypes());
+  }
+
+  public void testNullBigDecimal() {
+    analyzeBigDecimalOperation("a + b", new BigDecimal("1"), new BigDecimal("2"), new BigDecimal("3"));
+    analyzeBigDecimalOperation("a + b", new BigDecimal("1"), null, null);
+    analyzeBigDecimalOperation("a + b", null, new BigDecimal("2"), null);
+    analyzeBigDecimalOperation("a + b", null, null, null);
+
+    analyzeBigDecimalOperation("a - b", new BigDecimal("5"), new BigDecimal("3"), new BigDecimal("2"));
+    analyzeBigDecimalOperation("a - b", new BigDecimal("5"), null, null);
+    analyzeBigDecimalOperation("a - b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a - b", null, null, null);
+
+    analyzeBigDecimalOperation("a * b", new BigDecimal("2"), new BigDecimal("3"), new BigDecimal("6"));
+    analyzeBigDecimalOperation("a * b", new BigDecimal("2"), null, null);
+    analyzeBigDecimalOperation("a * b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a * b", null, null, null);
+
+    analyzeBigDecimalOperation("a / b", new BigDecimal("6"), new BigDecimal("3"), new BigDecimal("2"));
+    analyzeBigDecimalOperation("a / b", new BigDecimal("6"), null, null);
+    analyzeBigDecimalOperation("a / b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a / b", null, null, null);
+  }
+
+  private void analyzeBigDecimalOperation(String expression, BigDecimal a, BigDecimal b, BigDecimal expected) {
+    ParserContext pctx = new ParserContext();
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("a", BigDecimal.class);
+    pctx.addInput("b", BigDecimal.class);
+
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+
+    AtomicInteger i = new AtomicInteger( 10 );
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("a", a);
+    factory.createVariable("b", b);
+
+    if (a == null || b == null) {
+      try {
+        MVEL.executeExpression(compiledExpr, null, factory);
+        fail("should throw a NPE");
+      } catch (NullPointerException npe) {
+        // expected
+      }
+    } else {
+      Object result = MVEL.executeExpression(compiledExpr, null, factory);
+      assertEquals(expected, result);
+    }
+  }
+
+  public void testAnalyzeMathAbs() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    assertEquals(int.class, MVEL.analyze( "Math.abs(x - y);", parserContext ));
   }
 }
