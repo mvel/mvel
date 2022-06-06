@@ -28,6 +28,8 @@ import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 
@@ -35,8 +37,8 @@ public class CompiledIncludeNode extends Node {
 
   private Serializable cIncludeExpression;
   private Serializable cPreExpression;
-  private long fileDateStamp;
-  private CompiledTemplate cFileCache;
+  private Map<String, Long> fileDateStamp = new HashMap<>();
+  private Map<String, CompiledTemplate> cFileCache = new HashMap<>();
 
   private ParserContext context;
 
@@ -73,11 +75,15 @@ public class CompiledIncludeNode extends Node {
 
   private String readFile(TemplateRuntime runtime, String fileName, Object ctx, VariableResolverFactory factory) {
     File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
-    if (fileDateStamp == 0 || fileDateStamp != file.lastModified()) {
-      fileDateStamp = file.lastModified();
-      cFileCache = TemplateCompiler.compileTemplate(readInFile(runtime, file), context);
+    CompiledTemplate cFileCacheItem = cFileCache.get(fileName);
+    Long fileDateStampItem = fileDateStamp.get(fileName);
+    if (fileDateStampItem == null || fileDateStampItem != file.lastModified()) {
+      fileDateStampItem = file.lastModified();
+      cFileCacheItem = TemplateCompiler.compileTemplate(readInFile(runtime, file), context);
+      fileDateStamp.put(fileName, fileDateStampItem);
+      cFileCache.put(fileName, cFileCacheItem);
     }
-    return String.valueOf(TemplateRuntime.execute(cFileCache, ctx, factory));
+    return String.valueOf(TemplateRuntime.execute(cFileCacheItem, ctx, factory, String.valueOf(runtime.getRelPath().peek())));
   }
 
   public boolean demarcate(Node terminatingNode, char[] template) {
