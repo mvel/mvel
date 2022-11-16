@@ -1358,6 +1358,7 @@ public class ParseTools {
 
     if (type == term) {
       for (start++; start < end; start++) {
+        if (chars[start] == '\\') start = skipStringEscape(start);
         if (chars[start] == type) {
           return start;
         }
@@ -2255,5 +2256,9 @@ public class ParseTools {
       } catch (ClassNotFoundException e) { /* ignore */ }
     }
     throw cnfe;
+  }
+
+  private static int skipStringEscape(int cur) {
+    return cur + 2;
   }
 }
