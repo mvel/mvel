@@ -389,9 +389,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return val1 != null && val2 != null && toInteger(val1) <= toInteger(val2);
           case EQUAL:
-            return val1 == null ? val2 == null : toInteger(val1) == toInteger(val2);
+            return val1 != null && val2 != null ? toInteger(val1) == toInteger(val2) : val1 == val2;
           case NEQUAL:
-            return val1 == null ? val2 != null : toInteger(val1) != toInteger(val2);
+            return val1 != null && val2 != null ? toInteger(val1) != toInteger(val2) : val1 != val2;
           case BW_AND:
             if (val2 instanceof Long) return (Integer) val1 & (Long) val2;
             return (Integer) val1 & (Integer) val2;
@@ -438,9 +438,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return val1 != null && val2 != null && toShort(val1) <= toShort(val2);
           case EQUAL:
-            return val1 == null ? val2 == null : toShort(val1) == toShort(val2);
+            return val1 != null && val2 != null ? toShort(val1) == toShort(val2) : val1 == val2;
           case NEQUAL:
-            return val1 == null ? val2 != null : toShort(val1) != toShort(val2);
+            return val1 != null && val2 != null ? toShort(val1) != toShort(val2) : val1 != val2;
           case BW_AND:
             return (Short) val1 & (Short) val2;
           case BW_OR:
@@ -481,9 +481,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return val1 != null && val2 != null && toLong(val1) <= toLong(val2);
           case EQUAL:
-            return val1 == null ? val2 == null : toLong(val1) == toLong(val2);
+            return val1 != null && val2 != null ? toLong(val1) == toLong(val2) : val1 == val2;
           case NEQUAL:
-            return val1 == null ? val2 != null : toLong(val1) != toLong(val2);
+            return val1 != null && val2 != null ? toLong(val1) != toLong(val2) : val1 != val2;
           case BW_AND:
             if (val2 instanceof Integer) return (Long) val1 & (Integer) val2;
             return (Long) val1 & (Long) val2;
@@ -534,9 +534,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return val1 != null && val2 != null && toDouble(val1) <= toDouble(val2);
           case EQUAL:
-            return val1 == null ? val2 == null : toDouble(val1) == toDouble(val2);
+            return val1 != null && val2 != null ? toDouble(val1) == toDouble(val2) : val1 == val2;
           case NEQUAL:
-            return val1 == null ? val2 != null : toDouble(val1) != toDouble(val2);
+            return val1 != null && val2 != null ? toDouble(val1) != toDouble(val2) : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
@@ -570,9 +570,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return val1 != null && val2 != null && toFloat(val1) <= toFloat(val2);
           case EQUAL:
-            return val1 == null ? val2 == null : toFloat(val1) == toFloat(val2);
+            return val1 != null && val2 != null ? toFloat(val1) == toFloat(val2) : val1 == val2;
           case NEQUAL:
-            return val1 == null ? val2 != null : toFloat(val1) != toFloat(val2);
+            return val1 != null && val2 != null ? toFloat(val1) != toFloat(val2) : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
@@ -605,9 +605,9 @@ public strictfp class MathProcessor {
           case LETHAN:
             return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
           case EQUAL:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0;
+            return val1 != null && val2 != null ? ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 : val1 == val2;
           case NEQUAL:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0;
+            return val1 != null && val2 != null ? ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
