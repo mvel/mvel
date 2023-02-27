@@ -1865,6 +1865,12 @@ public class CoreConfidenceTests extends AbstractTest {
             map));
   }
 
+  public void testIssue286() {
+	    Serializable s = compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+	    Map<String, Object> map = new HashMap<>();
+	    map.put("name", "Adam");
+	    assertEquals(true, executeExpression(s, map));
+	  }
 
   public void testJIRA103() {
     MvelContext mvelContext = new MvelContext();
