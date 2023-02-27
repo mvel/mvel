@@ -506,7 +506,7 @@ public class PropertyAccessTests extends AbstractTest {
   }
 
   public void testMVEL308() {
-    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.key] = field.value; }";
+    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.getKey()] = field.value; }";
     Serializable compiled = MVEL.compileExpression(expression);
 
     Map<String, Object> target = new HashMap<String, Object>();
