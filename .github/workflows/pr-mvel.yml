@@ -1,7 +1,6 @@
 name: Mvel PR
 
-on:
-  pull_request:
+on: [pull_request]
 
 jobs:
   mvel-build:
