@@ -20,12 +20,13 @@ jobs:
     name: ${{ matrix.os }} / Java-${{ matrix.java-version }} / Maven-${{ matrix.maven-version }}
     steps:
       - name: Checkout
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
       - name: Java and Maven Setup
         uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
           maven-version: ${{ matrix.maven-version }}
 
       - name: Build with Maven
