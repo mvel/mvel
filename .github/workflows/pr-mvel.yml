@@ -1,6 +1,8 @@
 name: Mvel PR
 
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   mvel-build:
