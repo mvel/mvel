@@ -592,17 +592,23 @@ public class PropertyAccessor {
       }
 
       if (member instanceof Method) {
-        try {
-          return ((Method) member).invoke(ctx, EMPTYARG);
+        Method method = (Method) member;
+		try {
+          return method.invoke(ctx, EMPTYARG);
         }
         catch (IllegalAccessException e) {
+          // Try method from interface, this might be a public method from a private implementation
+          Method itfMethod = ParseTools.determineActualTargetMethod(method);
+          if (itfMethod != null) {
+            return itfMethod.invoke(ctx, EMPTYARG);
+          }
           synchronized (member) {
             try {
-              ((Method) member).setAccessible(true);
-              return ((Method) member).invoke(ctx, EMPTYARG);
+              method.setAccessible(true);
+              return method.invoke(ctx, EMPTYARG);
             }
             finally {
-              ((Method) member).setAccessible(false);
+              method.setAccessible(false);
             }
           }
         }
