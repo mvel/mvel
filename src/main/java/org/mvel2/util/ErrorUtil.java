@@ -13,6 +13,9 @@ public class ErrorUtil {
   private static final Logger LOG = Logger.getLogger(ErrorUtil.class.getName());
 
   public static CompileException rewriteIfNeeded(CompileException caught, char[] outer, int outerCursor) {
+    if (caught.getExpr() == null) {
+        return caught;
+    }
     if (outer != caught.getExpr()) {
       if (caught.getExpr().length <= caught.getCursor()) {
         caught.setCursor(caught.getExpr().length - 1);
