@@ -212,7 +212,11 @@ public class AbstractParser implements Parser, Serializable {
       CLASS_LITERALS.put("ClassLoader", ClassLoader.class);
       CLASS_LITERALS.put("Runtime", Runtime.class);
       CLASS_LITERALS.put("Thread", Thread.class);
-      CLASS_LITERALS.put("Compiler", Compiler.class);
+      try {
+        CLASS_LITERALS.put("Compiler", Class.forName("java.lang.Compiler"));
+      } catch (ClassNotFoundException e) {
+        // java.lang.Compiler was removed in JDK 21
+      }
       CLASS_LITERALS.put("StringBuffer", StringBuffer.class);
       CLASS_LITERALS.put("ThreadLocal", ThreadLocal.class);
       CLASS_LITERALS.put("SecurityManager", SecurityManager.class);
