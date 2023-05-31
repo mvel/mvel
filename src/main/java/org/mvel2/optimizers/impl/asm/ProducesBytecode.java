@@ -18,7 +18,7 @@
 
 package org.mvel2.optimizers.impl.asm;
 
-import org.mvel2.asm.MethodVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.mvel2.integration.VariableResolverFactory;
 
 /**
