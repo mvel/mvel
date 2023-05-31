@@ -212,16 +212,9 @@ public class AbstractParser implements Parser, Serializable {
       CLASS_LITERALS.put("ClassLoader", ClassLoader.class);
       CLASS_LITERALS.put("Runtime", Runtime.class);
       CLASS_LITERALS.put("Thread", Thread.class);
-      CLASS_LITERALS.put("Compiler", Compiler.class);
-      CLASS_LITERALS.put("StringBuffer", StringBuffer.class);
-      CLASS_LITERALS.put("ThreadLocal", ThreadLocal.class);
-      CLASS_LITERALS.put("SecurityManager", SecurityManager.class);
-      CLASS_LITERALS.put("StrictMath", StrictMath.class);
 
       CLASS_LITERALS.put("Exception", Exception.class);
-
       CLASS_LITERALS.put("Array", java.lang.reflect.Array.class);
-
       CLASS_LITERALS.put("StringBuilder", StringBuilder.class);
 
       // Setup LITERALS
