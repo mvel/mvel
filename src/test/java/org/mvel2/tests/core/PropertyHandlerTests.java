@@ -3,9 +3,9 @@ package org.mvel2.tests.core;
 import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.PropertyAccessor;
-import org.mvel2.asm.MethodVisitor;
+import org.objectweb.asm.MethodVisitor;
 
-import static org.mvel2.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
 
 import org.mvel2.integration.*;
 import org.mvel2.optimizers.OptimizerFactory;
