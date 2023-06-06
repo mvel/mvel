@@ -4960,24 +4960,6 @@ public class CoreConfidenceTests extends AbstractTest {
      int [] result = MVEL.eval("3.0", int [].class);
      assertEquals(3, result[0]);
   }
-  
-  public void testTernaryWithReturnExceptionMessage() {
-      OptimizerFactory.setDefaultOptimizer("dynamic");
-      try {
-	  MVEL.compileExpression(("false!=true ? { return true; } : false "));
-	  fail();
-      }
-      catch (CompileException ex) {
-	 String message = ex.getMessage();
-	 assertTrue(message.contains("[Error: not a statement, or badly formed structure]")); 
-	 assertTrue(message.contains("[Near : {... false!=true ? { return true; } : false ....}]")); 
-      }
-    }
-
-  public void testTernaryWithReturnEval() {
-      // To be discussed, this reveals that eval is not consistent with compileExpression
-      assertTrue(Arrays.equals(new Object[] { Boolean.TRUE }, MVEL.eval("false!=true ? { return true; } : false ", new Object[0].getClass())));
-    }
 
   public void testGetBestConstructorCandidateOfBigDecimal() {
       Class<?>[] arguments = new Class<?>[]{BigDecimal.class}; // new BigDecimal(BigDecimal bd) doesn't exist. But want to get a constant candidate

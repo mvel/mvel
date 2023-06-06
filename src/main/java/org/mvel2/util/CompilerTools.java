@@ -395,12 +395,12 @@ public class CompilerTools {
       if ((retType == null || !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) && (!Object.class.equals(retType)
           || pCtx.isStrictTypeEnforcement())) {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-            + (retType != null ? retType.getName() : "<Unknown>"), null, 0);
+            + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
     }
     else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-          + (retType != null ? retType.getName() : "<Unknown>"), null, 0);
+          + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
   }
 
@@ -409,12 +409,12 @@ public class CompilerTools {
     if (compileMode) {
       if ((retType == null || !boxPrimitive(type).isAssignableFrom(retType)) && (!Object.class.equals(retType) && pCtx.isStrictTypeEnforcement())) {
         throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-            + (retType != null ? retType.getName() : "<Unknown>"), null, 0);
+            + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
       }
     }
     else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
       throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-          + (retType != null ? retType.getName() : "<Unknown>"), null, 0);
+          + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
     }
   }
 
@@ -492,7 +492,7 @@ public class CompilerTools {
       return -((Short) number);
     }
     else {
-      throw new CompileException("expected a numeric type but found: " + number.getClass().getName(), null, 0);
+      throw new CompileException("expected a numeric type but found: " + number.getClass().getName(), new char[0], 0);
     }
   }
 
