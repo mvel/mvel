@@ -5040,4 +5040,12 @@ public class CoreConfidenceTests extends AbstractTest {
     parserContext.addInput("y", Integer.class);
     assertEquals(int.class, MVEL.analyze( "Math.abs(x - y);", parserContext ));
   }
+
+  public void testStringEscape() {
+    String expression = "[\"a\\\"b\"]";
+    Serializable compiledExpression = MVEL.compileExpression(expression);
+    List result = (List) MVEL.executeExpression(compiledExpression);
+    assertEquals(1, result.size());
+    assertEquals("a\"b", result.get(0));
+  }
 }
