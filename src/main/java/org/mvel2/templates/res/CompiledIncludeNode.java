@@ -96,10 +96,16 @@ public class CompiledIncludeNode extends Node {
       in = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
       
       String currentLine;
-
-	  while ((currentLine = in.readLine()) != null) {
-		appender.append(currentLine);
-	  }
+      boolean onFirstLine = true;
+      while ((currentLine = in.readLine()) != null) {
+        if (onFirstLine) {
+          onFirstLine = false;
+        }
+        else {
+          appender.append('\n');
+        }
+        appender.append(currentLine);
+      }
       
       runtime.getRelPath().pop();
       return appender.toString();
