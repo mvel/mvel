@@ -240,12 +240,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
       case TERNARY:
         if (!stk.popBoolean()) {
           stk.clear();
-
-          ASTNode tk;
-
-          for (; ; ) {
-            if ((tk = nextToken()) == null || tk.isOperator(Operator.TERNARY_ELSE))
-              break;
+          for (int embeddedLevel = 1; embeddedLevel > 0; ) {
+        	  ASTNode tk = nextToken();
+        	  if (tk == null) break;
+              if (tk.isOperator(Operator.TERNARY_ELSE)) --embeddedLevel;
+              if (tk.isOperator(Operator.TERNARY)) ++embeddedLevel;
           }
         }
 
