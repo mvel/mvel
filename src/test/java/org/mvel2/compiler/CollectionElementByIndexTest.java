@@ -11,7 +11,7 @@ import org.junit.rules.ExpectedException;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 
-import static org.junit.internal.matchers.StringContains.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * @author Anton Rybochkin (anton.rybochkin@axibase.com)
