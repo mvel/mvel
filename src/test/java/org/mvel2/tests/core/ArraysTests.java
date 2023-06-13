@@ -1,19 +1,12 @@
 package org.mvel2.tests.core;
 
-import org.mvel2.MVEL;
-import org.mvel2.ParserConfiguration;
-import org.mvel2.ParserContext;
-import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Cheese;
 import org.mvel2.tests.core.res.Foo;
 
-import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
-import static org.mvel2.MVEL.*;
+import java.util.Set;
 
 /**
  * @author Mike Brock .
@@ -24,14 +17,13 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testArrayConstructionSupport2() {
-    assertTrue((Boolean) test("xStr = new String[5]; xStr.size() == 5"));
+    assertTrue((Boolean) test("var xStr = new String[5]; return xStr.length == 5;"));
   }
 
   public void testArrayConstructionSupport3() {
-    String exp = "xStr = new String[5][5]; xStr[4][0] = 'foo'; xStr[4][0]";
-    Serializable s = MVEL.compileExpression(exp);
+    String exp = "var xStr = new String[5][5]; xStr[4][0] = \"foo\"; xStr[4][0];";
 
-    assertEquals("foo", MVEL.executeExpression(s, new HashMap()));
+    assertEquals("foo", eval(exp));
 
     assertEquals("foo",
         test(exp));
@@ -39,12 +31,12 @@ public class ArraysTests extends AbstractTest {
 
   public void testArrayConstructionSupport4() {
     assertEquals(10,
-        test("xStr = new String[5][10]; xStr[4][0] = 'foo'; xStr[4].length"));
+        test("var xStr = new String[5][10]; xStr[4][0] = \"foo\"; xStr[4].length;"));
   }
 
   public void testArrayDefinitionWithInitializer() {
     String[] compareTo = new String[]{"foo", "bar"};
-    String[] results = (String[]) MVEL.eval("new String[] { 'foo', 'bar' }");
+    String[] results = (String[]) eval("new String[] { \"foo\", \"bar\" }");
 
     for (int i = 0; i < compareTo.length; i++) {
       if (!compareTo[i].equals(results[i])) throw new AssertionError("arrays do not match.");
@@ -52,150 +44,85 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testArrayDefinitionWithCoercion() {
-    Serializable expr = MVEL.compileExpression("new double[] { 1,2,3,4 }");
-    double[] d = (double[]) MVEL.executeExpression(expr);
-    assertEquals(2d,
-        d[1]);
-    assertEquals(2d, ((double[]) MVEL.executeExpression(expr))[1]);
+    String expr = "new double[] { 1,2,3,4 }";
+    double[] d = (double[]) eval(expr);
+    assertEquals(2d, d[1]);
+    assertEquals(2d, ((double[]) eval(expr))[1]);
   }
 
   public void testArrayDefinitionWithCoercion2() {
-    Serializable expr = MVEL.compileExpression( "new float[] { 1,2,3,4 }" );
-    float[] d = (float[]) MVEL.executeExpression( expr );
-    assertEquals(2f,
-        d[1]);
-    assertEquals(2f, ((float[]) MVEL.executeExpression(expr))[1]);
+    String expr = "new float[] { 1,2,3,4 }";
+    float[] d = (float[]) eval( expr );
+
+    assertEquals(2f, d[1]);
+    assertEquals(2f, ((float[]) eval(expr))[1]);
   }
 
   public void testArrayDefinitionWithCoercionBoolean() {
-      Serializable expr = MVEL.compileExpression( "new boolean[] { false, true, false }" );
-      assertFalse(((boolean[]) MVEL.executeExpression(expr))[0]);
-      assertTrue(((boolean[]) MVEL.executeExpression(expr))[1]);
+      String expr = "new boolean[] { false, true, false }";
+      assertFalse(((boolean[]) eval(expr))[0]);
+      assertTrue(((boolean[]) eval(expr))[1]);
   }
 
   public void testArrayDefinitionWithAutoBoxing() {
-      Serializable expr = MVEL.compileExpression( "new Boolean[] { !true, true, !!false }" );
-      assertFalse(((Boolean[]) MVEL.executeExpression(expr))[0]);
-      assertTrue(((Boolean[]) MVEL.executeExpression(expr))[1]);
-      assertFalse(((Boolean[]) MVEL.executeExpression(expr))[2]);
+      String expr = "new Boolean[] { !true, true, !!false }";
+      assertFalse(((Boolean[]) eval(expr))[0]);
+      assertTrue(((Boolean[]) eval(expr))[1]);
+      assertFalse(((Boolean[]) eval(expr))[2]);
   }
 
   public void testArrayDefinitionWithCoercionInt() {
-      Serializable expr = MVEL.compileExpression( "new int[] { 0, 1, 2 }" );
-      assertEquals(0, ((int[]) MVEL.executeExpression(expr))[0]);
-      assertEquals(1, ((int[]) MVEL.executeExpression(expr))[1]);
+      String expr = "new int[] { 0, 1, 2 }";
+      assertEquals(0, ((int[]) eval(expr))[0]);
+      assertEquals(1, ((int[]) eval(expr))[1]);
   }
   
   public void testArrayDefinitionWithCoercionShort() {
-      Serializable expr = MVEL.compileExpression( "new short[] { 0, 1, 2 }" );
-      assertEquals(0, ((short[]) MVEL.executeExpression(expr))[0]);
-      assertEquals(1, ((short[]) MVEL.executeExpression(expr))[1]);
+      String expr = "new short[] { 0, 1, 2 }";
+      assertEquals(0, ((short[]) eval(expr))[0]);
+      assertEquals(1, ((short[]) eval(expr))[1]);
   }
 
-  public void testArrayCreation2() {
-    String[][] s = (String[][]) test("new String[][] {{\"2008-04-01\", \"2008-05-10\"}," +
-        " {\"2007-03-01\", \"2007-02-12\"}}");
-    assertEquals("2007-03-01",
-        s[1][0]);
-  }
-
-  public void testArrayCreation3() {
-    OptimizerFactory.setDefaultOptimizer("ASM");
-
-    Serializable ce = compileExpression("new String[][] {{\"2008-04-01\", \"2008-05-10\"}," +
-        " {\"2007-03-01\", \"2007-02-12\"}}");
-
-    String[][] s = (String[][]) executeExpression(ce);
-
-    assertEquals("2007-03-01",
-        s[1][0]);
-  }
-
-  public void testArrayCreation4() {
-    String[][] s = (String[][]) test("new String[][]{{\"2008-04-01\", \"2008-05-10\"}," +
-        " {\"2007-03-01\", \"2007-02-12\"}}");
-    assertEquals("2007-03-01",
-        s[1][0]);
+  public void testArrayCreation() {
+    String[][] s = (String[][]) test("new String[][]{{\"2008-04-01\", \"2008-05-10\"}, {\"2007-03-01\", \"2007-02-12\"}}");
+    assertEquals("2007-03-01", s[1][0]);
   }
 
   public void testArrayCoercion1() {
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.addInput("bar",
-        Bar.class);
-
-    Serializable s = compileSetExpression("bar.intarray[0]",
-        ctx);
-
     Foo foo = new Foo();
 
-    executeSetExpression(s,
-        foo,
-        "12");
+    eval("bar.intarray[0] = \"12\"", foo, null);
 
     assertEquals(12,
         foo.getBar().getIntarray()[0].intValue());
 
-    foo = new Foo();
-
-    executeSetExpression(s,
-        foo,
-        "13");
-
-    assertEquals(13,
-        foo.getBar().getIntarray()[0].intValue());
-
-    OptimizerFactory.setDefaultOptimizer("ASM");
-
-    ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.addInput("bar",
-        Bar.class);
-
-    s = compileSetExpression("bar.intarray[0]",
-        ctx);
-
-    foo = new Foo();
-
-    executeSetExpression(s,
-        foo,
-        "12");
-
-    assertEquals(12,
-        foo.getBar().getIntarray()[0].intValue());
-
-    executeSetExpression(s,
-        foo,
-        "13");
+    eval("bar.intarray[0] = \"13\"", foo, null);
 
     assertEquals(13,
         foo.getBar().getIntarray()[0].intValue());
   }
 
   public void testArrayLength() {
-    ParserContext context = new ParserContext();
-    context.setStrongTyping(true);
-    context.addInput("x",
-        String[].class);
-    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
+    String[] x = new String[] {"11111", "2222"};
+    Map<String, Object> vars = new HashMap<>();
+    vars.put("x", x);
+
+    assertEquals(2, eval("x.length;", null, vars));
   }
 
   public void testMultiDimensionalArrayType() {
-    String str = "$c.cheeses[0][0] = new Cheese('brie', 15)";
+    String str = "$c#Column#.cheeses[0][0] = new Cheese(\"brie\", 15);";
 
-    ParserConfiguration pconf = new ParserConfiguration();
-    pconf.addImport(Cheese.class);
+    Set<String> imports = new HashSet<>();
+    imports.add(Cheese.class.getCanonicalName());
+    imports.add(Column.class.getCanonicalName());
 
-    ParserContext pctx = new ParserContext(pconf);
-    pctx.addInput( "$c", Column.class );
-    pctx.setStrongTyping(true);
-
-    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
     Map<String,Object> vars = new HashMap<String, Object>();
     Column c = new Column("x", 1);
     c.setCheeses( new Cheese[5][5] );
     vars.put( "$c", c );
-    MVEL.executeExpression(stmt, null, vars);
+
+    eval(str, null, vars, imports);
     assertEquals( new Cheese("brie", 15), c.getCheeses()[0][0]);
   }
 
@@ -236,14 +163,7 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testAssignmentOnTwoDimensionalArrayUsingIndexedInput() {
-    ParserConfiguration conf = new ParserConfiguration();
-    ParserContext pctx = new ParserContext( conf );
-    pctx.setIndexAllocation( true );
-    pctx.setStrictTypeEnforcement(true);
-    pctx.setStrongTyping(true);
-    pctx.addInput("array", Double[][].class);
-    pctx.addIndexedInput("array");
     Map vars = new HashMap() {{ put("array", new Double[2][2]); }};
-    assertEquals(42.0, MVEL.executeExpression(MVEL.compileExpression("array[1][1] = 42.0;\narray[1][1]", pctx), vars));
+    assertEquals(42.0, eval("array[1][1] = 42.0;\narray[1][1];", null, vars));
   }
 }

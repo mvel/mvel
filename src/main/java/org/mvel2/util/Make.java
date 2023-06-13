@@ -144,7 +144,7 @@ public class Make {
       this.listInstance = listInstance;
     }
 
-    public Set<V> _(V value) {
+    public Set<V> add(V value) {
       listInstance.add(value);
       return this;
     }

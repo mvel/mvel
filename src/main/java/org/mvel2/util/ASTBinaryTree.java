@@ -34,6 +34,9 @@ public class ASTBinaryTree {
     public Class<?> getReturnType(boolean strongTyping) {
         if (!(root instanceof OperatorNode)) return root.getEgressType();
         if (left == null || right == null) throw new RuntimeException("Malformed expression");
+
+        //left.root.getEgressType()
+
         Class<?> leftType = left.getReturnType(strongTyping);
         Class<?> rightType = right.getReturnType(strongTyping);
         switch (root.getOperator()) {

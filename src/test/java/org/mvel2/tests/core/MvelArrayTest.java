@@ -27,10 +27,10 @@ import org.mvel2.optimizers.OptimizerFactory;
 
 import static org.mvel2.MVEL.executeExpression;
 
-public class MvelArrayTest extends TestCase {
+public class MvelArrayTest extends AbstractTest {
 
     private final String biglistTestScript =
-            "list = [];\n" +
+            "var list = [];\n" +
             "list.add(1);\n" +
             "list.add(2);\n" +
             "list.add(3);\n" +
@@ -45,6 +45,11 @@ public class MvelArrayTest extends TestCase {
             "list.add(12);\n" +
             "java.util.Collections.replaceAll( list, null, 25 );\n" + // replace nulls, with a big value
             "java.util.Collections.max( list );\n";  // return
+
+    public void test1() {
+        int actual = (Integer) eval(biglistTestScript);
+        assertEquals( actual, 25);
+    }
 
     public void testAsmOptimizerDiesWithBigList() {
 

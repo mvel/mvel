@@ -53,6 +53,7 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.core.res.AStatic;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Cheese;
@@ -88,7 +89,6 @@ import org.mvel2.util.ReflectionUtil;
 import static java.util.Collections.unmodifiableCollection;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.evalToBoolean;
 import static org.mvel2.MVEL.executeExpression;
 import static org.mvel2.MVEL.executeSetExpression;
@@ -430,7 +430,7 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testBracketInString() {
-    test("System.out.println('1)your guess was:');");
+    assertEquals("1)your guess was:", test("System.out.println(\"1)your guess was:\"); return \"1)your guess was:\";"));
   }
 
   public void testNesting() {
@@ -444,12 +444,12 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testTypeCast2() {
-    String ex = "map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
-        " ((java.util.ArrayList) map['doggie']).size()";
+    String ex = "var map = new java.util.HashMap(); map.put(\"doggie\", new java.util.ArrayList());" +
+        "return ((java.util.ArrayList) map[\"doggie\"]).size();";
 
     Map map = createTestMap();
 
-    assertEquals(0, MVEL.eval(ex, map));
+    assertEquals(0, eval(ex, null, map));
 
     assertEquals(0,
         test(ex));
@@ -695,12 +695,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testTypedAssignment() {
     assertEquals("foobar",
-        test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
+        test("java.util.Map map = new java.util.HashMap(); map.put(\"conan\", \"foobar\"); map[\"conan\"];"));
   }
 
   public void testFQCNwithStaticInList() {
     assertEquals(Integer.MIN_VALUE,
-        test("list = [java.lang.Integer.MIN_VALUE]; list[0]"));
+        test("var list = [java.lang.Integer.MIN_VALUE]; list[0];"));
   }
 
   public void testPrecedenceOrder() {
@@ -808,7 +808,6 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals("foobar",
         executeExpression(parser.compile()));
   }
-
 
   /**
    * Provided by: Alex Roytman
@@ -1146,23 +1145,21 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testStaticWithExplicitParam() {
     PojoStatic pojo = new PojoStatic("10");
-    eval("org.mvel2.tests.core.res.AStatic.Process('10')",
-        pojo,
-        new HashMap());
+    Map<String, Object> vars = new HashMap<>();
+    vars.put("pojo", pojo);
+
+    assertEquals("10", testCompiledSimple("org.mvel2.tests.core.res.AStatic.Process(\"10\");"));
+    assertEquals(pojo.getValue(), testCompiledSimple("org.mvel2.tests.core.res.AStatic.Process(pojo.value);", vars));
   }
 
   public void testSimpleExpression() {
     PojoStatic pojo = new PojoStatic("10");
-    eval("value!= null",
-        pojo,
-        new HashMap());
+    assertEquals( true, eval("value != null", pojo));
   }
 
   public void testStaticWithExpressionParam() {
     PojoStatic pojo = new PojoStatic("10");
-    assertEquals("java.lang.String",
-        eval("org.mvel2.tests.core.res.AStatic.Process(value.getClass().getName().toString())",
-            pojo));
+    assertEquals("java.lang.String", eval("org.mvel2.tests.core.res.AStatic.Process(value.getClass().getName().toString())",pojo));
   }
 
   public void testStringIndex() {
@@ -1303,7 +1300,6 @@ public class CoreConfidenceTests extends AbstractTest {
         vectorB);
 
     testCompiledSimple("vecB.add(vecA.remove(0)); vecA.add('Foo244');",
-        null,
         map);
 
     assertEquals("Foo244",
@@ -1317,12 +1313,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testUseOfVarKeyword() {
     assertEquals("FOO_BAR",
-        test("var barfoo = 'FOO_BAR'; return barfoo;"));
+        test("var barfoo = \"FOO_BAR\"; return barfoo;"));
   }
 
   public void testAssignment5() {
     assertEquals(15,
-        test("x = (10) + (5); x"));
+        test("var x = (10) + (5); x;"));
   }
 
   public void testSetExpressions1() {
@@ -1927,12 +1923,9 @@ public class CoreConfidenceTests extends AbstractTest {
   public void testSetExpressions2() {
     Foo foo = new Foo();
     Collection col = new ArrayList();
-    final Serializable fooExpr = compileSetExpression("collectionTest");
-    executeSetExpression(fooExpr,
-        foo,
-        col);
-    assertEquals(col,
-        foo.getCollectionTest());
+    //final Serializable fooExpr = compileSetExpression("collectionTest");
+    executeSetExpression("collectionTest", foo, col);
+    assertEquals(col, foo.getCollectionTest());
   }
 
   public class Fruit {
@@ -1942,29 +1935,32 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testInnerClassReference() {
+    Set<String> imports = new HashSet<>();
+    imports.add(CoreConfidenceTests.class.getCanonicalName());
+
     assertEquals(Fruit.Apple.class,
-        test("import " + CoreConfidenceTests.class.getName() + "; CoreConfidenceTests.Fruit.Apple"));
+        eval("CoreConfidenceTests.Fruit.Apple.class;", null, null, imports));
   }
 
   public void testEdson() {
     assertEquals("foo",
-        test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
+        test("var list = new java.util.ArrayList(); list.add(new String(\"foo\")); list[0];"));
   }
 
   public void testEnumSupport() {
     MyInterface myInterface = new MyClass();
-    myInterface.setType(MyInterface.MY_ENUM.TWO,
-        true);
-    boolean isType = MVEL.eval("isType(org.mvel2.tests.core.res.MyInterface$MY_ENUM.ONE)",
-        myInterface,
-        Boolean.class);
-    System.out.println(isType);
+    myInterface.setType(MyInterface.MY_ENUM.TWO, true);
+    assertFalse((boolean) eval("isType(org.mvel2.tests.core.res.MyInterface.MY_ENUM.ONE)", myInterface));
+    assertTrue((boolean) eval("isType(org.mvel2.tests.core.res.MyInterface.MY_ENUM.TWO)", myInterface));
 
+    myInterface.setType(MyInterface.MY_ENUM.TWO, false);
+    myInterface.setType(MyInterface.MY_ENUM.ONE, true);
+    assertTrue((boolean) eval("isType(org.mvel2.tests.core.res.MyInterface.MY_ENUM.ONE)", myInterface));
+    assertFalse((boolean) eval("isType(org.mvel2.tests.core.res.MyInterface.MY_ENUM.TWO)", myInterface));
   }
 
   public void testOperatorPrecedenceOrder() {
-    Serializable compiled =
-        compileExpression("bean1.successful && bean2.failed || bean1.failed && bean2.successful");
+    String expression = "bean1.successful && bean2.failed || bean1.failed && bean2.successful";
     Map context = new HashMap();
 
     BeanB bean1 = new BeanB(true);
@@ -1975,14 +1971,8 @@ public class CoreConfidenceTests extends AbstractTest {
     context.put("bean2",
         bean2);
 
-    System.out.println("interpreted: "
-        + MVEL.eval("bean1.successful && bean2.failed || bean1.failed && bean2.successful",
-        context));
-
     assertEquals(bean1.isSuccessful() && bean2.isFailed() || bean1.isFailed() && bean2.isSuccessful(),
-        (boolean) executeExpression(compiled,
-            context,
-            Boolean.class));
+                 (boolean) eval(expression, null, context));
   }
 
   public static class BeanB {
@@ -2002,24 +1992,21 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testJIRA139() {
-    ParserContext ctx = new ParserContext();
-    ctx.addImport("ReflectionUtil",
-        ReflectionUtil.class);
-    Serializable s = compileExpression("ReflectionUtil.getGetter('foo')",
-        ctx);
+    Set<String> imports = new HashSet<>();
+    imports.add(ReflectionUtil.class.getCanonicalName());
+
     assertEquals(ReflectionUtil.getGetter("foo"),
-        executeExpression(s));
+        eval("ReflectionUtil.getGetter(\"foo\")", null, null, imports));
   }
 
   public void testJIRA140() {
-    ParserContext ctx = new ParserContext();
-    Serializable s = compileExpression("import org.mvel2.tests.core.res.*;"
-        + "cols = new Column[] { new Column('name', 20), new Column('age', 2) };"
-        + "grid = new Grid(new Model(cols));",
-        ctx);
+    Set<String> imports = new HashSet<>();
+    imports.add("org.mvel2.tests.core.res.*");
 
-    Grid g = (Grid) executeExpression(s,
-        new HashMap());
+    String s = "var cols = new Column[] { new Column(\"name\", 20), new Column(\"age\", 2) };"
+               + "var grid = new Grid(new Model(cols));";
+
+    Grid g = (Grid) eval(s, null, new HashMap(), imports);
 
     assertEquals(g.getModel().getColumns()[0].getName(),
         "name");
@@ -2032,20 +2019,11 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testVerifierWithIndexedProperties() {
-    ParserContext ctx = new ParserContext();
-    ctx.setStrictTypeEnforcement(true);
-    ctx.addInput("base",
-        Base.class);
-
-    Serializable s = compileExpression("base.fooMap['foo'].setName('coffee')",
-        ctx);
-
     Map vars = new HashMap();
     vars.put("base",
         new Base());
 
-    executeExpression(s,
-        vars);
+    testCompiledSimpleVoid("base.fooMap[\"foo\"].setName(\"coffee\");", vars);
 
     assertEquals("coffee",
         ((Base) vars.get("base")).fooMap.get("foo").getName());
@@ -2069,67 +2047,23 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testMapsAndLists() {
-    OptimizerFactory.setDefaultOptimizer("ASM");
+    Set<String> imports = new HashSet<>();
+    imports.add(HashMap.class.getCanonicalName());
+    imports.add(ArrayList.class.getCanonicalName());
 
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.addImport(HashMap.class);
-    ctx.addImport(ArrayList.class);
-    ctx.addInput("list",
-        List.class);
-
-    String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
+    String expression = "var m = new HashMap();\n" + "var l = new ArrayList();\n" + "l.add(\"first\");\n" +
         "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
-
-    Serializable s = compileExpression(expression,
-        ctx);
 
     Map vars = new HashMap();
     List list = new ArrayList();
-    vars.put("list",
-        list);
+    vars.put("list", list);
 
-    Boolean result = (Boolean) executeExpression(s,
-        vars);
+    Boolean result = (Boolean) eval(expression, null, vars, imports);//executeExpression(s,
 
     assertNotNull(result);
     assertTrue(result);
-    assertEquals(1,
-        list.size());
-    assertEquals("first",
-        list.get(0));
-  }
-
-  public void testMapsAndLists2() {
-    OptimizerFactory.setDefaultOptimizer("reflective");
-
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.addImport(HashMap.class);
-    ctx.addImport(ArrayList.class);
-    ctx.addInput("list",
-        List.class);
-
-    String expression = "m = new HashMap();\n" + "l = new ArrayList();\n" + "l.add(\"first\");\n" +
-        "m.put(\"content\", l);\n" + "list.add(((ArrayList)m[\"content\"])[0]);";
-
-    Serializable s = compileExpression(expression,
-        ctx);
-
-    Map vars = new HashMap();
-    List list = new ArrayList();
-    vars.put("list",
-        list);
-
-    Boolean result = (Boolean) executeExpression(s,
-        vars);
-
-    assertNotNull(result);
-    assertTrue(result);
-    assertEquals(1,
-        list.size());
-    assertEquals("first",
-        list.get(0));
+    assertEquals(1, list.size());
+    assertEquals("first", list.get(0));
   }
 
   public void testReturnBoolean() {
@@ -2253,19 +2187,21 @@ public class CoreConfidenceTests extends AbstractTest {
     }
   }
 
-  public void testMapsWithVariableAsKey() {
-    String ex = "aMap[aKey] == 'aValue'";
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(false);
-
-    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
-    compiler.setVerifyOnly(true);
-    compiler.compile();
-
-    Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
-    assertTrue(requiredInputs.contains("aMap"));
-    assertTrue(requiredInputs.contains("aKey"));
-  }
+  // @TODO maybe delete (mdp)
+//  public void testMapsWithVariableAsKey() {
+//    String ex = "aMap[aKey] == 'aValue'";
+//    ParserContext ctx = new ParserContext();
+//    ctx.setStrongTyping(false);
+//
+//    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
+//    compiler.setVerifyOnly(true);
+//    compiler.compile();
+//
+//    Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
+//
+//    assertTrue(requiredInputs.contains("aMap"));
+//    assertTrue(requiredInputs.contains("aKey"));
+//  }
 
   public void testMapsWithVariableAsKey2() {
     String ex = "objectKeyMaptributes[$aPerson] == foo";
@@ -2277,16 +2213,12 @@ public class CoreConfidenceTests extends AbstractTest {
     inputs.put("this", Person.class);
     inputs.put("foo", Foo.class);
     inputs.put("$aPerson", Person.class);
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.setInputs(inputs);
 
-    Serializable expression = MVEL.compileExpression(ex, ctx);
     Map<String, Object> variables = new HashMap<String, Object>();
     variables.put("foo", foo);
     variables.put("$aPerson", person);
 
-    Boolean result = (Boolean) MVEL.executeExpression(expression, person, variables);
+    Boolean result = (Boolean) eval(ex, person, variables);
     assertTrue(result);
   }
 
@@ -2329,70 +2261,41 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public class Az {
-    public void foo(String s) {
+    public String foo(String s) {
+      return s;
     }
   }
 
   public class Bz extends Az {
   }
 
+
   public void testJIRA151() {
-    OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
-    Bz b = new Bz();
-    ParserContext context = new ParserContext();
-    Object expression = MVEL.compileExpression("a.foo(value)",
-        context);
+    String expression = "a.foo(value)";
     Map<String, Object> variables = new HashMap<String, Object>();
-
-    variables.put("a",
-        b);
-    variables.put("value",
-        123);
-    for (int i = 0; i < 100; i++) {
-      System.out.println("i: " + i);
-      System.out.flush();
-      executeExpression(expression,
-          variables);
-    }
-  }
-
-  public void testJIRA151b() {
-    OptimizerFactory.setDefaultOptimizer("ASM");
     Bz b = new Bz();
-    ParserContext context = new ParserContext();
-    Object expression = MVEL.compileExpression("a.foo(value)",
-        context);
-    Map<String, Object> variables = new HashMap<String, Object>();
-
-    variables.put("a",
-        b);
-    variables.put("value",
-        123);
+    variables.put("a", b);
+    variables.put("value", 123);
     for (int i = 0; i < 100; i++) {
-      System.out.println("i: " + i);
-      System.out.flush();
-      executeExpression(expression,
-          variables);
+      assertEquals("123", eval(expression,null, variables));
     }
   }
 
 
   public void testJIRA153() {
     assertEquals(false,
-        MVEL.eval("!(true)"));
-    assertEquals(false,
-        executeExpression(MVEL.compileExpression("!(true)")));
+        test("!(true)"));
   }
 
   public void testMultipleNegations() {
     assertEquals(true,
-        executeExpression(MVEL.compileExpression("!false")));
+        test("!false"));
     assertEquals(false,
-        executeExpression(MVEL.compileExpression("!!false")));
+        test("!!false"));
     assertEquals(true,
-        executeExpression(MVEL.compileExpression("!!!false")));
+        test("!!!false"));
     assertEquals(false,
-        executeExpression(MVEL.compileExpression("!!!!false")));
+        test("!!!!false"));
   }
 
   public void testJIRA154() {
@@ -2445,62 +2348,32 @@ public class CoreConfidenceTests extends AbstractTest {
 
   public void testJIRA156() throws Throwable {
     ClassProvider provider = new ClassProvider();
-    provider.getPrivate().foo();
-
-    PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
 
     String script = "provider.getPrivate().foo()";
     HashMap<String, Object> vars = new HashMap<String, Object>();
-    vars.put("provider",
-        provider);
-    MVEL.eval(script,
-        vars);
+    vars.put("provider", provider);
+
+    assertEquals("private!", testCompiledSimple(script, vars));
   }
 
   public void testJIRA156b() throws Throwable {
     ClassProvider provider = new ClassProvider();
-    provider.getPrivate().foo();
-
-    PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
-
     String script = "provider.getPrivate().foo()";
 
-    Serializable s = MVEL.compileExpression(script);
-
     HashMap<String, Object> vars = new HashMap<String, Object>();
-    vars.put("provider",
-        provider);
+    vars.put("provider", provider);
 
-    OptimizerFactory.setDefaultOptimizer("reflective");
-    executeExpression(s,
-        vars);
-    OptimizerFactory.setDefaultOptimizer("ASM");
-    executeExpression(s,
-        vars);
+    assertEquals("private!", testCompiledSimple(script, vars));
   }
 
   public void testJIRA156c() throws Throwable {
     ClassProvider provider = new ClassProvider();
-    provider.getPublic().foo();
-
-    PublicClass.class.getMethod("foo").invoke(provider.getPublic());
-
     String script = "provider.getPublic().foo()";
 
-    Serializable s = MVEL.compileExpression(script);
-
     HashMap<String, Object> vars = new HashMap<String, Object>();
-    vars.put("provider",
-        provider);
+    vars.put("provider", provider);
 
-    MVEL.eval(script,
-        vars);
-    OptimizerFactory.setDefaultOptimizer("reflective");
-    executeExpression(s,
-        vars);
-    OptimizerFactory.setDefaultOptimizer("ASM");
-    executeExpression(s,
-        vars);
+    assertEquals("public!", testCompiledSimple(script, vars));
   }
 
   public static boolean returnTrue() {
@@ -2508,9 +2381,10 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public static class TestHelper {
-    public static void method(int id,
+    public static String method(int id,
                               Object[] arr) {
       System.out.println(id + " -> " + arr.length);
+      return id + " -> " + arr.length;
     }
 
     public static void method(Object obj1, Object obj2) {
@@ -2535,19 +2409,11 @@ public class CoreConfidenceTests extends AbstractTest {
     String ex = " TestHelper.method(1, new String[]{\"a\", \"b\"});\n"
         + " TestHelper.method(2, new String[]{new String(\"a\"), new String(\"b\")});\n"
         + " TestHelper.method(3, new Fooz[]{new Fooz(\"a\"), new Fooz(\"b\")});";
-    ParserContext ctx = new ParserContext();
-    ctx.setStrongTyping(true);
-    ctx.addImport(TestHelper.class);
-    ctx.addImport(Fooz.class);
-    ExpressionCompiler compiler = new ExpressionCompiler(ex, ctx);
-
-    OptimizerFactory.setDefaultOptimizer("ASM");
-    CompiledExpression expr = compiler.compile();
-    executeExpression(expr);
-
-    OptimizerFactory.setDefaultOptimizer("reflective");
-    expr = compiler.compile();
-    executeExpression(expr);
+    Set<String> imports = new HashSet<>();
+    imports.add(TestHelper.class.getCanonicalName());
+    imports.add(Fooz.class.getCanonicalName());
+    assertEquals("3 -> 2",
+                 _test(ex, imports));
   }
 
   public void testArray2() {
@@ -3426,7 +3292,7 @@ public class CoreConfidenceTests extends AbstractTest {
         getClass().getClassLoader());
 
     // loading the class to prove it works
-    Class<?> er = loader.loadClass("org.drools.examples.eventing.EventRequest");
+    Class<?> er = loader.loadClass("org.mvel3.examples.eventing.EventRequest");
     assertNotNull(er);
     assertEquals("org.drools.examples.eventing.EventRequest",
         er.getCanonicalName());
@@ -3834,42 +3700,42 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testVarArgsParams() {
+    Set<String> imports = new HashSet<>();
+    imports.add(AStatic.class.getCanonicalName());
 
-    assertEquals(String.format("null"),
-                   runSingleTest("import org.mvel2.tests.core.res.AStatic; a = null; AStatic.process(a)"));
+    assertEquals(String.format("null,"),
+                   runSingleTest("a = null; AStatic.process(a);", imports));
     assertEquals(String.format("hello,world,"),
-                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(\"hello\",\"world\")"));
+                   runSingleTest("AStatic.process(\"hello\",\"world\");", imports));
 
       assertEquals(String.format(""),
-                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process()"));
+                   runSingleTest("AStatic.process();", imports));
       assertEquals(String.format("null"),
-                   runSingleTest("import org.mvel2.tests.core.res.AStatic; AStatic.process(null)"));
-
-
+                   runSingleTest("AStatic.process(null);", imports));
 
     assertEquals(String.format("xxx"),
-        runSingleTest("String.format(\"xxx\")"));
+        runSingleTest("String.format(\"xxx\")", imports));
 
     assertEquals(String.format("%010d", 123),
-        runSingleTest("String.format(\"%010d\", 123)"));
+        runSingleTest("String.format(\"%010d\", 123)", imports));
 
     assertEquals(String.format("%010d", 123),
-        runSingleTest("a = new Object[1]; a[0] = 123; String.format(\"%010d\", a)"));
+        runSingleTest("var o = new Object[1]; o[0] = 123; String.format(\"%010d\", o);", imports));
 
     assertEquals(String.format("%010d", 123),
-        runSingleTest("a = 123; String.format(\"%010d\", a)"));
+        runSingleTest("a = 123; String.format(\"%010d\", a);", imports));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", {a, b})"));
+        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", new Object[] {a, b});", imports));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-        runSingleTest("a = new Object[2]; a[0] = 123; a[1] = 456; String.format(\"%010d -- %010d\", a)"));
+        runSingleTest("var o = new Object[2]; o[0] = 123; o[1] = 456; String.format(\"%010d -- %010d\", o);", imports));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-        runSingleTest("String.format(\"%010d -- %010d\", 123, 456)"));
+        runSingleTest("String.format(\"%010d -- %010d\", 123, 456);", imports));
 
     assertEquals(String.format("%010d -- %010d", 123, 456),
-        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b)"));
+        runSingleTest("a = 123; b = 456; String.format(\"%010d -- %010d\", a, b);", imports));
   }
 
   public static class A {
@@ -3925,58 +3791,74 @@ public class CoreConfidenceTests extends AbstractTest {
   }
 
   public void testTypedVarArgsParams() {
-    String imports = "import org.mvel2.tests.core.CoreConfidenceTests.A;\nimport org.mvel2.tests.core.CoreConfidenceTests.B;\n";
+    Set<String> imports = new HashSet<>();
+    imports.add(MySet.class.getCanonicalName());
+    imports.add(A.class.getCanonicalName());
+    imports.add(B.class.getCanonicalName());
 
-    String invoke0 = imports + "new A().invoke(\"s1\", \"s2\")";
-    int result = (Integer) compileAndExecuteWithStrongTyping(invoke0);
+    String invoke0 = "new A().invoke(\"s1\", \"s2\");";
+    int result = (Integer) compileAndExecuteWithStrongTyping(invoke0, imports);
     assertEquals(0, result);
-    assertEquals(0, runSingleTest(invoke0));
+    assertEquals(0, runSingleTest(invoke0, imports));
 
-    String invokeSum0 = imports + "A.invokeSum(3)";
-    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum0);
+    String invokeSum0 = "A.invokeSum(3);";
+    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum0, imports);
     assertEquals(3, result);
-    assertEquals(3, runSingleTest(invokeSum0));
+    assertEquals(3, runSingleTest(invokeSum0, imports));
 
-    String invoke3 = imports + "new A().invoke(\"s1\", \"s2\", new B(), new B(), new B())";
-    result = (Integer) compileAndExecuteWithStrongTyping(invoke3);
+    String invoke3 = "new A().invoke(\"s1\", \"s2\", new B(), new B(), new B());";
+    result = (Integer) compileAndExecuteWithStrongTyping(invoke3, imports);
     assertEquals(3, result);
-    assertEquals(3, runSingleTest(invoke3));
+    assertEquals(3, runSingleTest(invoke3, imports));
 
-    String invokeSum2 = imports + "A.invokeSum(3, new B(4), new B(5))";
-    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum2);
+    String invokeSum2 = "A.invokeSum(3, new B(4), new B(5))";
+    result = (Integer) compileAndExecuteWithStrongTyping(invokeSum2, imports);
     assertEquals(12, result);
-    assertEquals(12, runSingleTest(invokeSum2));
+    assertEquals(12, runSingleTest(invokeSum2, imports));
   }
 
   public void testTypedVarArgsConstructor() {
-    String imports = "import org.mvel2.tests.core.CoreConfidenceTests.MySet;\n";
-    String constructor = imports + "new MySet(\"s1\", \"s2\")";
-    MySet result = (MySet) compileAndExecuteWithStrongTyping(constructor);
+    Set<String> imports = new HashSet<>();
+    imports.add("org.mvel2.tests.core.CoreConfidenceTests.MySet\n");
+
+    MySet result = (MySet) compileAndExecuteWithStrongTyping("new MySet(\"s1\", \"s2\");", imports);
     assertTrue(result.contains("s1"));
     assertTrue(result.contains("s2"));
   }
 
   public void testTypedVarArgsConstructorASM() {
-    OptimizerFactory.setDefaultOptimizer("ASM");
-    try {
-	testTypedVarArgsConstructor();
-    }
-    finally {
-	 OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
-    }
+    testTypedVarArgsConstructor();
+
+//    OptimizerFactory.setDefaultOptimizer("ASM");
+//    try {
+//
+//    }
+//    finally {
+//	 OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+//    }
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
-    return (T) compileAndExecuteWithStrongTyping(expression, new HashMap());
+    return compileAndExecuteWithStrongTyping(expression, Collections.emptySet(), new HashMap());
+  }
+
+  private <T> T compileAndExecuteWithStrongTyping(String expression, Set<String> imports) {
+    return compileAndExecuteWithStrongTyping(expression, imports, new HashMap());
   }
 
   private <T> T compileAndExecuteWithStrongTyping(String expression, Map vars) {
-    ParserContext context = new ParserContext();
-    context.setStrongTyping(true);
-    context.setStrictTypeEnforcement(true);
-    Serializable compiled = MVEL.compileExpression(expression, context);
-    return (T) MVEL.executeExpression(compiled, vars);
+    return compileAndExecuteWithStrongTyping(expression, Collections.emptySet(), vars);
   }
+
+  private <T> T compileAndExecuteWithStrongTyping(String expression, Set<String> imports, Map vars) {
+//    ParserContext context = new ParserContext();
+//    context.setStrongTyping(true);
+//    context.setStrictTypeEnforcement(true);
+//    Serializable compiled = MVEL.compileExpression(expression, context);
+//    return (T) MVEL.executeExpression(compiled, vars);
+    return (T) new org.mvel3.MVEL().executeExpression(expression, imports, vars);
+  }
+
 
   public void testArrayCreation() {
     assertTrue(Arrays.deepEquals(new Object[0], (Object[]) compileAndExecuteWithStrongTyping("{}")));

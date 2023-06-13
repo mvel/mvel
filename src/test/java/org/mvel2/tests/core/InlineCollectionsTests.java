@@ -181,11 +181,9 @@ public class InlineCollectionsTests extends AbstractTest {
 
     assertEquals(1,
         ((List) testCompiledSimple(expressionString1,
-            null,
             vars)).size());
     assertEquals(1,
         ((List) testCompiledSimple(expressionString2,
-            null,
             vars)).size());
   }
 

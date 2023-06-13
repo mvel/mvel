@@ -34,11 +34,11 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testMath3() {
-    assertEquals((10d * 5d) * 2d / 3d, test("(10 * 5) * 2 / 3"));
+    assertEquals((10 * 5) * 2 / 3, test("(10 * 5) * 2 / 3"));
   }
 
   public void testMath4() {
-    double val = ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+    var val = ((100 % 3) * 2 - 1 / 1 + 8 + (5 * 2));
     assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
   }
 
@@ -72,7 +72,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testMath7() {
-    double val = ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+    var val = ((100 % 3) * 2 - 1 / 1 + 8 + (5 * 2));
     assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
   }
 
@@ -129,34 +129,27 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testMath19() {
-    String ex = "a = 100; b = 500; c = 200; d = 150; e = 500; f = 800; g = 400; a-b*c*d + e*f-g";
-    System.out.println("Expression: " + ex);
+    String ex = "var a = 100; var b = 500; var c = 200; var d = 150; var e = 500; var f = 800; var g = 400; return a-b*c*d + e*f-g;";
     assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
   }
 
   public void testMath32() {
-    String ex = "x = 20; y = 10; z = 5; x-y-z";
-    System.out.println("Expression: " + ex);
-    assertEquals(20 - 10 - 5, testCompiledSimple(ex, new HashMap()));
+    String ex = "var x = 20; var y = 10; var z = 5; return x-y-z;";
+    assertEquals(20 - 10 - 5, test(ex));
   }
 
   public void testMath33() {
-    String ex = "x = 20; y = 2; z = 2; x/y/z";
-    System.out.println("Expression: " + ex);
-    Serializable s = MVEL.compileExpression(ex);
-
-    assertEquals(20 / 2 / 2, MVEL.executeExpression(s, new HashMap()));
+    String ex = "var x = 20; var y = 2; var z = 2; return x/y/z;";
+    assertEquals(20 / 2 / 2, test(ex));
   }
 
   public void testMath20() {
     String ex = "10-5*7-3*8-6";
-    System.out.println("Expression: " + ex);
     assertEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
   }
 
   public void testMath21() {
     String expression = "100-50*70-30*80-60";
-    System.out.println("Expression: " + expression);
     assertEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
   }
 
@@ -180,7 +173,7 @@ public class ArithmeticTests extends AbstractTest {
 
   public void testMath24() {
     String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
-    double val = 51d * 52d * 33d / 24d / 15d + 45d * 66d * 47d * 28d + 19d;
+    var val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
     System.out.println("Expression: " + expression);
     System.out.println("Expected Result: " + val);
 
@@ -189,7 +182,7 @@ public class ArithmeticTests extends AbstractTest {
 
   public void testMath25() {
     String expression = "51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80";
-    double val = 51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80;
+    var val = 51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80;
     System.out.println("Expression: " + expression);
     System.out.println("Expected Result: " + val);
     assertEquals(val, test(expression));
@@ -426,22 +419,22 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testOperatorPrecedence() {
-    String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1";
+    String ex = "var _x_001 = 500.2; var _x_002 = 200.8; var _r_001 = 701; return _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1;";
     assertEquals(true, test(ex));
   }
 
   public void testOperatorPrecedence2() {
-    String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+    String ex = "var _x_001 = 500.2; var _x_002 = 200.8; var _r_001 = 701; return _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2;";
     assertEquals(true, test(ex));
   }
 
   public void testOperatorPrecedence3() {
-    String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+    String ex = "var _x_001 = 500.2; var _x_002 = 200.9;var _r_001 = 701; return _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2;";
     assertEquals(false, test(ex));
   }
 
   public void testOperatorPrecedence4() {
-    String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2";
+    String ex = "var _x_001 = 500.2; var _x_002 = 200.9; var _r_001 = 701; return _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2;";
     assertEquals(true, test(ex));
   }
 
@@ -493,10 +486,6 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals(5 << 1, test("five << 1"));
   }
 
-  public void testUnsignedShiftLeft() {
-    assertEquals(2, test("-2 <<< 0"));
-  }
-
   public void testShiftRight() {
     assertEquals(128, test("256 >> 1"));
   }
@@ -514,11 +503,11 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testShiftRightAssign() {
-    assertEquals(5 >> 2, test("_zZz = 5; _zZz >>= 2"));
+    assertEquals(5 >> 2, test("var _zZz = 5; _zZz >>= 2;"));
   }
 
   public void testShiftLeftAssign() {
-    assertEquals(10 << 2, test("_yYy = 10; _yYy <<= 2"));
+    assertEquals(10 << 2, test("var _yYy = 10; _yYy <<= 2;"));
   }
 
   public void testUnsignedShiftRightAssign() {
@@ -578,51 +567,47 @@ public class ArithmeticTests extends AbstractTest {
 
   public void testOperativeAssignMod() {
     int val = 5;
-    assertEquals(val %= 2, test("int val = 5; val %= 2; val"));
+    assertEquals(val %= 2, test("int val = 5; val %= 2; val;"));
   }
 
   public void testOperativeAssignDiv() {
     int val = 10;
-    assertEquals(val /= 2, test("int val = 10; val /= 2; val"));
+    assertEquals(val /= 2, test("int val = 10; val /= 2; val;"));
   }
 
   public void testOperativeAssignShift1() {
     int val = 5;
-    assertEquals(val <<= 2, test("int val = 5; val <<= 2; val"));
+    assertEquals(val <<= 2, test("int val = 5; val <<= 2; val;"));
   }
 
   public void testOperativeAssignShift2() {
     int val = 5;
-    assertEquals(val >>= 2, test("int val = 5; val >>= 2; val"));
+    assertEquals(val >>= 2, test("int val = 5; val >>= 2; val;"));
   }
 
   public void testOperativeAssignShift3() {
     int val = -5;
-    assertEquals(val >>>= 2, test("int val = -5; val >>>= 2; val"));
+    assertEquals(val >>>= 2, test("int val = -5; val >>>= 2; val;"));
   }
 
   public void testAssignPlus() {
-    assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
-  }
-
-  public void testAssignPlus2() {
-    assertEquals(10, test("xx0 = 5; xx0 =+ 4; xx0 + 1"));
+    assertEquals(10, test("var xx0 = 5; xx0 += 4; return xx0 + 1;"));
   }
 
   public void testAssignDiv() {
-    assertEquals(2.0, test("xx0 = 20; xx0 /= 10; xx0"));
+    assertEquals(2, test("var xx0 = 20; xx0 /= 10; xx0;"));
   }
 
   public void testAssignMult() {
-    assertEquals(36, test("xx0 = 6; xx0 *= 6; xx0"));
+    assertEquals(36, test("var xx0 = 6; xx0 *= 6; xx0;"));
   }
 
   public void testAssignSub() {
-    assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
+    assertEquals(11, test("var xx0 = 15; xx0 -= 4; xx0;"));
   }
 
   public void testAssignSub2() {
-    assertEquals(-95, test("xx0 = 5; xx0 =- 100"));
+    assertEquals(-95, test("var xx0 = 5; xx0 -= 100;"));
   }
 
   public void testBooleanStrAppend() {
@@ -939,17 +924,15 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   public void testJIRA99_Compiled() {
+    var x = 20;
+    var y = 10;
+    var z = 5;
     Map map = new HashMap();
-    map.put("x",
-        20);
-    map.put("y",
-        10);
-    map.put("z",
-        5);
+    map.put("x", x);
+    map.put("y", y);
+    map.put("z", z);
 
-    assertEquals(20 - 10 - 5,
-        testCompiledSimple("x - y - z",
-            map));
+    assertEquals(20 - 10 - 5, testCompiledSimple("x - y - z", map));
   }
 
 

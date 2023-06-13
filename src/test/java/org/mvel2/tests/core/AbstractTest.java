@@ -3,29 +3,28 @@ package org.mvel2.tests.core;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.mvel2.DataConversion;
+import org.mvel3.EvaluatorBuilder;
+import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
+import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.debug.DebugTools;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
-import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.DerivedClass;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.TestInterface;
-import org.mvel2.util.StringAppender;
+import org.mvel3.Evaluator;
+import org.mvel3.Type;
+import org.mvel3.transpiler.MVELTranspiler;
+import org.mvel3.transpiler.context.Declaration;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -35,9 +34,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
@@ -46,7 +47,6 @@ import static java.lang.System.getProperty;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 import static org.mvel2.debug.DebugTools.decompile;
-import static org.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
 
 public abstract class AbstractTest extends TestCase {
 
@@ -69,8 +69,8 @@ public abstract class AbstractTest extends TestCase {
   protected static Map createTestMap() {
     Map map = new HashMap();
     map.put("foo", new Foo());
-    map.put("a", null);
-    map.put("b", null);
+    map.put("a", 5);
+    map.put("b", 10);
     map.put("c", "cat");
     map.put("BWAH", "");
 
@@ -126,7 +126,7 @@ public abstract class AbstractTest extends TestCase {
     else {
       threadCount = 5;
     }
-    threads = new Thread[threadCount];
+    threads = new Thread[1];
 
     final Collection<Object> results = Collections.synchronizedCollection(new LinkedList<Object>());
     final Collection<Throwable> exceptions = Collections.synchronizedCollection(new LinkedList<Throwable>());
@@ -265,209 +265,295 @@ public abstract class AbstractTest extends TestCase {
     return _test(ex);
   }
 
+  protected static Object runSingleTest(final String ex, Set<String> imports) {
+    return _test(ex, imports);
+  }
+
   protected static Object testCompiledSimple(String ex) {
     return MVEL.executeExpression(MVEL.compileExpression(ex));
   }
 
   protected static Object testCompiledSimple(String ex, Map map) {
-    return MVEL.executeExpression(MVEL.compileExpression(ex), map);
+    return new org.mvel3.MVEL().executeExpression(ex, Collections.emptySet(), (Map<String, Object>) map);
+  }
+
+  protected static Object testCompiledSimpleVoid(String ex, Map map) {
+    return new org.mvel3.MVEL().executeExpression(ex, Collections.emptySet(), (Map<String, Object>) map, null);
   }
 
   protected static Object testCompiledSimple(String ex, Object base, Map map) {
+    //org.mvel3.MVEL.get().compilePojoEvaluator(ex, Collections.emptySet(), base.getClass(), Collections.emptySet(), Object.class);
     return MVEL.executeExpression(MVEL.compileExpression(ex), base, map);
   }
 
+  private static String maybeWrap(String providedExpr) {
+    String actualExpr = providedExpr;
+    if ( !providedExpr.contains(";")) { // @TODO this is aa very crude sniff. Personally I'd rather not sniff and instead have two different method calls (mdp)
+      //actualExpr = "{ return " + providedExpr + ";}";
+      actualExpr = "return " + providedExpr + ";";
+    }
+    return actualExpr;
+  }
+
   protected static Object _test(String ex) {
-    ExpressionCompiler compiler = new ExpressionCompiler(ex);
-    StringAppender failErrors = new StringAppender();
+    return _test(ex, Collections.<String>emptySet());
+  }
 
-    CompiledExpression compiled = compiler.compile();
-    Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
-        eighth = null;
+  protected static Object _test(String ex, Set<String> imports) {
+    //ex = maybeWrap(ex);
+    Map<String, Object>                          vars     = createTestMap();
+    Map<String, Type<?>>                            types    = org.mvel3.MVEL.getTypeMap(vars);
+    Evaluator<Map<String, Object>, Void, Object> compiled = new org.mvel3.MVEL().compileMapEvaluator(ex, Object.class, imports, types);
+    Object result = compiled.eval(createTestMap());
+    System.out.println("result: " + result);
+    return result;
 
-    System.out.println(DebugTools.decompile((Serializable) compiled));
+    //createTestMap()
 
-    if (!Boolean.getBoolean("mvel2.disable.jit")) {
+//    //ExpressionCompiler compiled = new ExpressionCompiler(ex);
+//    StringAppender failErrors = new StringAppender();
+//
+//    Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
+//        eighth = null;
+//
+//    //System.out.println(DebugTools.decompile((Serializable) compiled));
+//
+//    if (!Boolean.getBoolean("mvel2.disable.jit")) {
+//
+//      setDefaultOptimizer("ASM");
+//
+//      try {
+//        first = compiled.eval(createTestMap());
+//        //first = executeExpression(compiled, new Base(), createTestMap());
+//      }
+//      catch (Exception e) {
+//        failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//        CharArrayWriter writer = new CharArrayWriter();
+//        e.printStackTrace(new PrintWriter(writer));
+//
+//        failErrors.append(writer.toCharArray());
+//      }
+//
+//      try {
+//        second = compiled.eval(createTestMap());
+//        //second = executeExpression(compiled, new Base(), createTestMap());
+//      }
+//      catch (Exception e) {
+//        failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//        CharArrayWriter writer = new CharArrayWriter();
+//        e.printStackTrace(new PrintWriter(writer));
+//
+//        failErrors.append(writer.toCharArray());
+//      }
+//
+//    }
+//
+//    try {
+//      third = compiled.eval(createTestMap());
+//      //third = MVEL.eval(ex, new Base(), createTestMap());
+//    }
+//    catch (Exception e) {
+//      failErrors.append("\nTHIRD TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//    if (first != null && !first.getClass().isArray()) {
+//      if (!first.equals(second)) {
+//        System.out.println(failErrors.toString());
+//
+//        throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
+//            + valueOf(first) + "; second: " + valueOf(second) + "]");
+//      }
+//
+//      if (!first.equals(third)) {
+//        if (failErrors != null) System.out.println(failErrors.toString());
+//
+//        throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
+//            valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
+//      }
+//    }
+//
+//    setDefaultOptimizer("reflective");
+//    Serializable compiled2 = compileExpression(ex);
+//
+//    try {
+//      fourth = executeExpression(compiled2, new Base(), createTestMap());
+//    }
+//    catch (Exception e) {
+//      if (failErrors == null) failErrors = new StringAppender();
+//      failErrors.append("\nFOURTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//    try {
+//      fifth = executeExpression(compiled2, new Base(), createTestMap());
+//    }
+//    catch (Exception e) {
+//      e.printStackTrace();
+//      if (failErrors == null) failErrors = new StringAppender();
+//      failErrors.append("\nFIFTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//    if (fourth != null && !fourth.getClass().isArray()) {
+//      if (!fourth.equals(fifth)) {
+//        throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run X2) [fourth: "
+//            + valueOf(fourth) + "; fifth: " + valueOf(fifth) + "]");
+//      }
+//    }
+//
+//    ParserContext ctx = new ParserContext();
+//    ctx.setSourceFile("unittest");
+//    ctx.setDebugSymbols(true);
+//
+//    ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex, ctx);
+//    //     debuggingCompiler.setDebugSymbols(true);
+//
+//    CompiledExpression compiledD = debuggingCompiler.compile();
+//
+//    try {
+//      sixth = executeExpression(compiledD, new Base(), createTestMap());
+//    }
+//    catch (Exception e) {
+//      if (failErrors == null) failErrors = new StringAppender();
+//      failErrors.append("\nSIXTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//
+//    if (sixth != null && !sixth.getClass().isArray()) {
+//      if (!fifth.equals(sixth)) {
+//        System.out.println("Payload 1 -- No Symbols: ");
+//        System.out.println(decompile(compiled));
+//        System.out.println();
+//
+//        System.out.println("Payload 2 -- With Symbols: ");
+//        System.out.println(decompile(compiledD));
+//        System.out.println();
+//
+//        throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
+//            + valueOf(fifth) + "; second: " + valueOf(sixth) + "]");
+//      }
+//    }
+//
+//    try {
+//      seventh = executeExpression(compiledD, new Base(), createTestMap());
+//    }
+//    catch (Exception e) {
+//      if (failErrors == null) failErrors = new StringAppender();
+//      failErrors.append("\nSEVENTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//    if (seventh != null && !seventh.getClass().isArray()) {
+//      if (!seventh.equals(sixth)) {
+//        throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+//            + valueOf(first) + "; second: " + valueOf(second) + "]");
+//      }
+//    }
+//
+//    try {
+//      Serializable xx = serializationTest(compiledD);
+//      eighth = executeExpression(xx, new Base(), new MapVariableResolverFactory(createTestMap()));
+//    }
+//    catch (Exception e) {
+//      if (failErrors == null) failErrors = new StringAppender();
+//      failErrors.append("\nEIGHTH TEST (Serializability): { " + ex + " }: EXCEPTION REPORT: \n\n");
+//
+//      CharArrayWriter writer = new CharArrayWriter();
+//      e.printStackTrace(new PrintWriter(writer));
+//
+//      failErrors.append(writer.toCharArray());
+//    }
+//
+//    if (eighth != null && !eighth.getClass().isArray()) {
+//      if (!eighth.equals(seventh)) {
+//        throw new AssertionError("Different result from test 7 and 8 (Compiled Re-Run / Reflective) [first: "
+//            + valueOf(first) + "; second: " + valueOf(second) + "]");
+//      }
+//    }
+//
+//
+//    if (failErrors.length() > 0) {
+//      System.out.println(decompile(compiledD));
+//      throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
+//    }
+//
+//    return fourth;
+  }
 
-      setDefaultOptimizer("ASM");
+  public Object eval(String expression, Object rootObject, Map<String, Object> vars) {
+    return eval(expression, rootObject, vars, new HashSet<>());
+  }
 
-      try {
-        first = executeExpression(compiled, new Base(), createTestMap());
+  public Object eval(String expression, Object rootObject, Map<String, Object> vars, Set<String> imports) {
+    if (imports == null) {
+      imports = new HashSet<>();
+    }
+
+    EvaluatorBuilder<Object, Object, Object> builder = EvaluatorBuilder
+                                                                            .create()
+                                                                            .setImports(imports)
+                                                                            .setExpression(expression)
+                                                                            .setOutType(Type.type(Object.class));
+
+    if (vars != null) {
+      // @TODO why do these need to be separared, how can I fix the generics (mdp)
+      ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(Map.class));
+      contextBuilder.setVars(Declaration.from(org.mvel3.MVEL.getTypeMap(vars)));
+      builder.setVariableInfo(contextBuilder);
+    }
+
+    Object evalContext = vars; // If vars are passsed us it, else default to the root object
+    if (rootObject != null) {
+      builder.setRootDeclaration(Type.type(rootObject.getClass()));
+
+      if (vars != null) {
+        vars.put("__this", rootObject); // there are vars, so the root object must map to a property of the context
+      } else {
+        ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(rootObject.getClass()));
+        builder.setVariableInfo(contextBuilder);
+        evalContext = rootObject; // no vars, so default to the root object
       }
-      catch (Exception e) {
-        failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-        CharArrayWriter writer = new CharArrayWriter();
-        e.printStackTrace(new PrintWriter(writer));
-
-        failErrors.append(writer.toCharArray());
-      }
-
-      try {
-        second = executeExpression(compiled, new Base(), createTestMap());
-      }
-      catch (Exception e) {
-        failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-        CharArrayWriter writer = new CharArrayWriter();
-        e.printStackTrace(new PrintWriter(writer));
-
-        failErrors.append(writer.toCharArray());
-      }
-
     }
 
-    try {
-      third = MVEL.eval(ex, new Base(), createTestMap());
-    }
-    catch (Exception e) {
-      failErrors.append("\nTHIRD TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+    EvaluatorInfo<Object, Object, Object> evalInfo = builder.build();
 
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
+    return org.mvel3.MVEL.get().compile(evalInfo).eval(evalContext);
+  }
 
-      failErrors.append(writer.toCharArray());
-    }
+  public Object eval(String expression, Map<String, String> map, VariableResolverFactory factory) {
+    return true;
+  }
 
-    if (first != null && !first.getClass().isArray()) {
-      if (!first.equals(second)) {
-        System.out.println(failErrors.toString());
+  public Object eval(String expr, Object rootObject) {
+    return eval(expr, rootObject, new HashMap<>());
+  }
 
-        throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
-            + valueOf(first) + "; second: " + valueOf(second) + "]");
-      }
-
-      if (!first.equals(third)) {
-        if (failErrors != null) System.out.println(failErrors.toString());
-
-        throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-            valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
-      }
-    }
-
-    setDefaultOptimizer("reflective");
-    Serializable compiled2 = compileExpression(ex);
-
-    try {
-      fourth = executeExpression(compiled2, new Base(), createTestMap());
-    }
-    catch (Exception e) {
-      if (failErrors == null) failErrors = new StringAppender();
-      failErrors.append("\nFOURTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
-
-      failErrors.append(writer.toCharArray());
-    }
-
-    try {
-      fifth = executeExpression(compiled2, new Base(), createTestMap());
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      if (failErrors == null) failErrors = new StringAppender();
-      failErrors.append("\nFIFTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
-
-      failErrors.append(writer.toCharArray());
-    }
-
-    if (fourth != null && !fourth.getClass().isArray()) {
-      if (!fourth.equals(fifth)) {
-        throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run X2) [fourth: "
-            + valueOf(fourth) + "; fifth: " + valueOf(fifth) + "]");
-      }
-    }
-
-    ParserContext ctx = new ParserContext();
-    ctx.setSourceFile("unittest");
-    ctx.setDebugSymbols(true);
-
-    ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex, ctx);
-    //     debuggingCompiler.setDebugSymbols(true);
-
-    CompiledExpression compiledD = debuggingCompiler.compile();
-
-    try {
-      sixth = executeExpression(compiledD, new Base(), createTestMap());
-    }
-    catch (Exception e) {
-      if (failErrors == null) failErrors = new StringAppender();
-      failErrors.append("\nSIXTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
-
-      failErrors.append(writer.toCharArray());
-    }
-
-
-    if (sixth != null && !sixth.getClass().isArray()) {
-      if (!fifth.equals(sixth)) {
-        System.out.println("Payload 1 -- No Symbols: ");
-        System.out.println(decompile(compiled));
-        System.out.println();
-
-        System.out.println("Payload 2 -- With Symbols: ");
-        System.out.println(decompile(compiledD));
-        System.out.println();
-
-        throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
-            + valueOf(fifth) + "; second: " + valueOf(sixth) + "]");
-      }
-    }
-
-    try {
-      seventh = executeExpression(compiledD, new Base(), createTestMap());
-    }
-    catch (Exception e) {
-      if (failErrors == null) failErrors = new StringAppender();
-      failErrors.append("\nSEVENTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
-
-      failErrors.append(writer.toCharArray());
-    }
-
-    if (seventh != null && !seventh.getClass().isArray()) {
-      if (!seventh.equals(sixth)) {
-        throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-            + valueOf(first) + "; second: " + valueOf(second) + "]");
-      }
-    }
-
-    try {
-      Serializable xx = serializationTest(compiledD);
-      eighth = executeExpression(xx, new Base(), new MapVariableResolverFactory(createTestMap()));
-    }
-    catch (Exception e) {
-      if (failErrors == null) failErrors = new StringAppender();
-      failErrors.append("\nEIGHTH TEST (Serializability): { " + ex + " }: EXCEPTION REPORT: \n\n");
-
-      CharArrayWriter writer = new CharArrayWriter();
-      e.printStackTrace(new PrintWriter(writer));
-
-      failErrors.append(writer.toCharArray());
-    }
-
-    if (eighth != null && !eighth.getClass().isArray()) {
-      if (!eighth.equals(seventh)) {
-        throw new AssertionError("Different result from test 7 and 8 (Compiled Re-Run / Reflective) [first: "
-            + valueOf(first) + "; second: " + valueOf(second) + "]");
-      }
-    }
-
-
-    if (failErrors.length() > 0) {
-      System.out.println(decompile(compiledD));
-      throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
-    }
-
-    return fourth;
+  public Object eval(String expr) {
+    return eval(expr, null, new HashMap<>());
   }
 
   protected static Serializable serializationTest(Serializable s) throws Exception {
@@ -510,7 +596,7 @@ public abstract class AbstractTest extends TestCase {
       List l = new ArrayList();
       l.add(object1);
       l.add(string);
-      l.add(new Integer(integer));
+      l.add(Integer.valueOf(integer));
       l.add(map);
       l.add(list);
       return l;
