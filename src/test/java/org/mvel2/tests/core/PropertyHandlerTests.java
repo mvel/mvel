@@ -1,19 +1,5 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.PropertyAccessor;
-import org.objectweb.asm.MethodVisitor;
-
-import static org.objectweb.asm.Opcodes.*;
-
-import org.mvel2.integration.*;
-import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.optimizers.impl.asm.ProducesBytecode;
-import org.mvel2.tests.core.res.Bar;
-import org.mvel2.tests.core.res.Base;
-import org.mvel2.tests.core.res.Foo;
-
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -21,8 +7,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mvel2.MVEL;
+import org.mvel2.PropertyAccessor;
+import org.mvel2.integration.GlobalListenerFactory;
+import org.mvel2.integration.Listener;
+import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.PropertyHandlerFactory;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.optimizers.impl.asm.ProducesBytecode;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Foo;
+import org.objectweb.asm.MethodVisitor;
 
-public class PropertyHandlerTests extends TestCase {
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static org.objectweb.asm.Opcodes.POP;
+
+
+public class PropertyHandlerTests extends BaseMvelTestCase {
   Base base = new Base();
 
   public class TestPropertyHandler implements PropertyHandler, ProducesBytecode {

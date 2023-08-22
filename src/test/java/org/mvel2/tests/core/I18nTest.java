@@ -3,11 +3,10 @@ package org.mvel2.tests.core;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTestCase;
 
-public class I18nTest extends TestCase {
+public class I18nTest extends BaseMvelTestCase {
     
   public void testI18nProperties() {
     I18nPerson p = new I18nPerson();

@@ -1,15 +1,15 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.util.FastList;
-import org.mvel2.util.StringAppender;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UtilsTests extends TestCase {
+import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.util.FastList;
+import org.mvel2.util.StringAppender;
+
+public class UtilsTests extends BaseMvelTestCase {
 
   public void testMain() {
     assertEquals("foobarfoobar", new StringAppender().append("foo").append('b').append('a').append('r').append("foobar").toString());

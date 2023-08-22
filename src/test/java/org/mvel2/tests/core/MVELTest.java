@@ -1,16 +1,15 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.util.StringAppender;
-
 import java.io.File;
 import java.io.IOException;
+
+import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTestCase;
 
 /**
  * @author yone098
  */
-public class MVELTest extends TestCase {
+public class MVELTest extends BaseMvelTestCase {
 
   private File file;
 

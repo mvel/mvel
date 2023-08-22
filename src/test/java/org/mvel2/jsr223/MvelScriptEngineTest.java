@@ -7,10 +7,11 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import org.junit.Test;
+import org.mvel2.tests.BaseMvelTest;
 
 import static org.junit.Assert.assertEquals;
 
-public class MvelScriptEngineTest {
+public class MvelScriptEngineTest extends BaseMvelTest {
 
     @Test
     public void testScriptEngine() throws ScriptException {

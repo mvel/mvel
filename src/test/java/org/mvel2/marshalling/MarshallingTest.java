@@ -20,10 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import junit.framework.TestCase;
-
 import org.mvel2.MVEL;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.util.StringAppender;
 
 // import com.thoughtworks.xstream.XStream;
@@ -38,7 +37,7 @@ import org.mvel2.util.StringAppender;
  * -Support optional generated imports, to reduce verbosity
  * -some issue related to values allowed in a Map
  */
-public class MarshallingTest extends TestCase {
+public class MarshallingTest extends BaseMvelTestCase {
 
   public static enum Type {
     PRIMITIVE, CHAR, STRING, DATE, CALENDAR, BIG_INTEGER, BIG_DECIMAL, ARRAY, MAP, COLLECTION, OBJECT;

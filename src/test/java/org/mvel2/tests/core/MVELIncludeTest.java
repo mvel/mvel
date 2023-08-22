@@ -1,22 +1,20 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-
-import org.mvel2.MVEL;
-import org.mvel2.integration.impl.ImmutableDefaultFactory;
-import org.mvel2.templates.CompiledTemplate;
-import org.mvel2.templates.TemplateCompiler;
-import org.mvel2.templates.TemplateRuntime;
-import org.mvel2.util.StringAppender;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.templates.CompiledTemplate;
+import org.mvel2.templates.TemplateCompiler;
+import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.util.StringAppender;
+
 /**
  * @author PÉRIÉ Fabien
  */
-public class MVELIncludeTest extends TestCase {
+public class MVELIncludeTest extends BaseMvelTestCase {
 
   private File file;
 

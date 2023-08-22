@@ -1,18 +1,18 @@
 package org.mvel2.tests.perftests;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.mvel2.MVEL;
-import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.tests.core.res.PojoStatic;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SetterAccessorConcurrencyTest extends TestCase {
+import org.junit.Test;
+import org.mvel2.MVEL;
+import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.tests.core.res.PojoStatic;
+
+public class SetterAccessorConcurrencyTest extends BaseMvelTestCase {
 
 	private static final Serializable EXPRESSION = MVEL.compileExpression("pojo.value = 2");
 

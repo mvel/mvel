@@ -9,6 +9,7 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
 import static org.junit.Assert.*;
+import org.mvel2.tests.BaseMvelTest;
 import static org.mvel2.tests.core.StaticMethodImportTests.MatcherAssert.assertThat;
 import static org.mvel2.tests.core.StaticMethodImportTests.IsEqual.equalTo;
 import static org.mvel2.tests.core.StaticMethodImportTests.IsInstanceOf.instanceOf;
@@ -20,7 +21,7 @@ import static org.mvel2.tests.core.StaticMethodImportTests.CoreMatcher.is;
  * hamcrest is licensed under "New BDS License"
  *
  */
-public class StaticMethodImportTests {
+public class StaticMethodImportTests extends BaseMvelTest {
 
     private static final String IMPORTS =
             "import_static org.mvel2.tests.core.StaticMethodImportTests$MatcherAssert.assertThat;\n" +

@@ -1,21 +1,20 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.util.SharedVariableSpaceModel;
-import org.mvel2.util.SimpleVariableSpaceModel;
-import org.mvel2.util.VariableSpaceCompiler;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.util.SharedVariableSpaceModel;
+import org.mvel2.util.SimpleVariableSpaceModel;
+import org.mvel2.util.VariableSpaceCompiler;
+
 /**
  * @author Mike Brock .
  */
-public class IndexedVariablesTests extends TestCase {
+public class IndexedVariablesTests extends BaseMvelTestCase {
   public void testVariableInjection1() {
     String[] varNames = {"x", "y", "z"};
     Object[] values = {10, 20, 30};

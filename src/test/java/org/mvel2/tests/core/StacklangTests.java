@@ -2,14 +2,14 @@ package org.mvel2.tests.core;
 
 import java.util.HashMap;
 
-import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 
 /**
  * @author Mike Brock
  */
-public class StacklangTests extends TestCase {
+public class StacklangTests extends BaseMvelTestCase {
 
   public void testSimple1() {
     assertEquals("foobar",

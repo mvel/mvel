@@ -1,10 +1,9 @@
 package org.mvel2.tests.perftests;
 
-import junit.framework.TestCase;
-
 import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTestCase;
 
-public class NestedSubstatementTests extends TestCase {
+public class NestedSubstatementTests extends BaseMvelTestCase {
 
   public static final int MAX = 25;
 

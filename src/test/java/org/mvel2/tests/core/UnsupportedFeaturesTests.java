@@ -1,14 +1,14 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 
 /**
  * @author Mike Brock .
  */
-public class UnsupportedFeaturesTests extends TestCase {
+public class UnsupportedFeaturesTests extends BaseMvelTestCase {
   public void testJavaStyleClassLiterals() {
     MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS = true;
 
