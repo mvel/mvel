@@ -1,14 +1,14 @@
 package org.mvel2.tests.core.osgi;
 
-import junit.framework.TestCase;
+import java.io.Serializable;
+
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
+import org.mvel2.tests.BaseMvelTestCase;
 
-import java.io.Serializable;
-
-public class AsmOptimizerOsgiTest extends TestCase {
+public class AsmOptimizerOsgiTest extends BaseMvelTestCase {
 
     private static ClassLoader NO_MVEL_CL = new NoMvelClassLoader();
 

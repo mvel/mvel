@@ -1,11 +1,11 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
 import org.mvel2.PropertyAccessor;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
 
-public class PropertyAccessUnitTest extends TestCase {
+public class PropertyAccessUnitTest extends BaseMvelTestCase {
   Base base = new Base();
 
   public void testPropertyRead() {

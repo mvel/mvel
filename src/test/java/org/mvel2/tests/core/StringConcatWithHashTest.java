@@ -2,13 +2,14 @@ package org.mvel2.tests.core;
 
 import org.junit.Test;
 import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTest;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class StringConcatWithHashTest {
+public class StringConcatWithHashTest extends BaseMvelTest {
 
     @Test
     public void testConcatWithHash() throws Exception {

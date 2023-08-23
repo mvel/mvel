@@ -4,7 +4,9 @@ import java.beans.Introspector;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public class BaseOperatorsTest {
+import org.mvel2.tests.BaseMvelTest;
+
+public class BaseOperatorsTest extends BaseMvelTest {
 
     protected static final Class[] TYPES = new Class[]{Integer.class, Long.class, Byte.class, Character.class, Short.class, Float.class, Double.class, BigInteger.class, BigDecimal.class};
     protected static final boolean[] NULL_PROPERTY_ON_LEFT = new boolean[]{true, false};

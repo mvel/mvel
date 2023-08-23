@@ -5,13 +5,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 
-public class ConcurrentEvaluationTests extends TestCase {
+public class ConcurrentEvaluationTests extends BaseMvelTestCase {
 
 	Serializable expression = MVEL.compileExpression("Thread.sleep(2000)");
 

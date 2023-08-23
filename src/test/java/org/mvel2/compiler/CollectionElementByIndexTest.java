@@ -10,13 +10,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTest;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * @author Anton Rybochkin (anton.rybochkin@axibase.com)
  */
-public class CollectionElementByIndexTest {
+public class CollectionElementByIndexTest extends BaseMvelTest {
 	@Rule
 	public ExpectedException expectException = ExpectedException.none();
 

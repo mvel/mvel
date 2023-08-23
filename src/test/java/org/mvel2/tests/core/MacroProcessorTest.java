@@ -1,7 +1,9 @@
 package org.mvel2.tests.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Assert;
-import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.MVELRuntime;
 import org.mvel2.Macro;
@@ -17,15 +19,13 @@ import org.mvel2.debug.Frame;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.res.Foo;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.mvel2.MVEL.executeExpression;
 import static org.mvel2.MVEL.parseMacros;
 
-public class MacroProcessorTest extends TestCase {
+public class MacroProcessorTest extends BaseMvelTestCase {
 
   private MacroProcessor macroProcessor;
 

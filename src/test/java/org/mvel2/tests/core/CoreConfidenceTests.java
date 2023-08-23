@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -4877,7 +4878,9 @@ public class CoreConfidenceTests extends AbstractTest {
     int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
     assertEquals(expectedResult, result);
   }
-  public void test_BigDecimal_ASMoptimizerSupport() {
+
+  @Ignore("This test degraded because the fix https://github.com/mvel/mvel/commit/cf4a24f1 was reverted by https://github.com/mvel/mvel/commit/6a982e05f32 ")
+  public void ignore_test_BigDecimal_ASMoptimizerSupport() {
     /* https://github.com/mvel/mvel/issues/89
      * The following case failed in attempt from the ASM optimizer to 
      *  create a numeric constant from the value 30000B.

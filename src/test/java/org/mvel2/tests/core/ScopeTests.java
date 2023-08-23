@@ -1,17 +1,15 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
+import java.util.HashMap;
+
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.integration.VariableResolver;
-import org.mvel2.integration.impl.IndexVariableResolver;
-
-import java.util.HashMap;
+import org.mvel2.tests.BaseMvelTestCase;
 
 /**
  * @author Mike Brock .
  */
-public class ScopeTests extends TestCase {
+public class ScopeTests extends BaseMvelTestCase {
   public void testNoScopeLeakageInterpreted() {
     String ex = "if (true) { var i = 0 }; i";
 

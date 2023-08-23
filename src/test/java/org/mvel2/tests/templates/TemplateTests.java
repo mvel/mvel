@@ -1,6 +1,18 @@
 package org.mvel2.tests.templates;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -11,6 +23,7 @@ import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateCompiler;
 import org.mvel2.templates.TemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.CoreConfidenceTests;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Base;
@@ -18,18 +31,11 @@ import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.TestMVEL197;
 import org.mvel2.tests.templates.tests.res.TestPluginNode;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.*;
-
 import static org.mvel2.templates.TemplateCompiler.compileTemplate;
 
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
-public class TemplateTests extends TestCase {
+public class TemplateTests extends BaseMvelTestCase {
     private Map<String, Object> map = new HashMap<String, Object>();
     private VariableResolverFactory vrf = new MapVariableResolverFactory(map);
     private Foo foo = new Foo();

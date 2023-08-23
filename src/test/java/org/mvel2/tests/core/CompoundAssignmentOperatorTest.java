@@ -5,16 +5,16 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.res.DefaultKnowledgeHelper;
 import org.mvel2.tests.core.res.NumberHolder;
 
-public class CompoundAssignmentOperatorTest extends TestCase {
+public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
     private static final String HOLDER = "holder";
 

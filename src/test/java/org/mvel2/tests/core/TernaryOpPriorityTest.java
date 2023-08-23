@@ -2,14 +2,12 @@ package org.mvel2.tests.core;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
-
-import org.mvel2.MVEL;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.mvel2.MVEL;
+import org.mvel2.tests.BaseMvelTestCase;
 
-public class TernaryOpPriorityTest extends TestCase {
+public class TernaryOpPriorityTest extends BaseMvelTestCase {
 	public void testTernaryOperatorPriority_Interpreted () {
 		@SuppressWarnings("unused")
 		int javaResult = false ? true ? 9 : 5 : 1;

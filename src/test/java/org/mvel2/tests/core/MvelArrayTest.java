@@ -19,15 +19,15 @@ package org.mvel2.tests.core;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.tests.BaseMvelTestCase;
 
 import static org.mvel2.MVEL.executeExpression;
 
-public class MvelArrayTest extends TestCase {
+public class MvelArrayTest extends BaseMvelTestCase {
 
     private final String biglistTestScript =
             "list = [];\n" +
