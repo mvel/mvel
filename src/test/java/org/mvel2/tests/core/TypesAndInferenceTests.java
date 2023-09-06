@@ -1,5 +1,23 @@
 package org.mvel2.tests.core;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import org.mvel2.CompileException;
 import org.mvel2.ConversionHandler;
 import org.mvel2.DataConversion;
@@ -9,6 +27,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -20,23 +39,14 @@ import org.mvel2.tests.core.res.MyInterface2;
 import org.mvel2.tests.core.res.MyInterface3;
 import org.mvel2.tests.core.res.SampleBean;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.SimpleVariableSpaceModel;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.mvel2.MVEL.*;
+import static org.mvel2.MVEL.analyze;
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.compileSetExpression;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.executeSetExpression;
+import static org.mvel2.MVEL.setProperty;
 
 /**
  * @author Mike Brock .
@@ -1606,4 +1616,91 @@ public class TypesAndInferenceTests extends AbstractTest {
     Class resultType =  analyze(str, pctx);
     assertEquals(java.util.Optional.class, resultType);
   }
+
+    public void testBigDecimalVariableCoercionWithSimpleSTValueResolver_shouldCoerce() {
+        String expression = "BigDecimal $bdValue = 5;";
+
+        ParserContext ctx = createParserContext();
+        Serializable compileExpression = MVEL.compileExpression(expression, ctx);
+
+        String[] varNames = new String[]{"$bdValue"};
+        SimpleVariableSpaceModel simpleVariableSpaceModel = new SimpleVariableSpaceModel(varNames);
+        VariableResolverFactory factory = simpleVariableSpaceModel.createFactory(new Object[]{}); // $bdValue is a local variable. Use SimpleSTValueResolver
+        MVEL.executeExpression(compileExpression, ctx, factory);
+        Object value = factory.getVariableResolver("$bdValue").getValue();
+        assertEquals(BigDecimal.class, value.getClass()); // coercion
+    }
+
+    private ParserContext createParserContext() {
+        ParserConfiguration conf = new ParserConfiguration();
+        conf.addImport(BigDecimal.class);
+        conf.addImport(Collection.class);
+        conf.addImport(ArrayList.class);
+        conf.addImport(HashSet.class);
+        ParserContext ctx = new ParserContext(conf);
+        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping(true);
+        ctx.setIndexAllocation(true);
+        return ctx;
+    }
+
+    public void testBigDecimalVariableCoercionTwiceWithSimpleSTValueResolver_shouldCoerce() {
+        String expression = "BigDecimal $bdValue = 0; $bdValue = 5;";
+
+        ParserContext ctx = createParserContext();
+        Serializable compileExpression = MVEL.compileExpression(expression, ctx);
+
+        String[] varNames = new String[]{"$bdValue"};
+        SimpleVariableSpaceModel simpleVariableSpaceModel = new SimpleVariableSpaceModel(varNames);
+        VariableResolverFactory factory = simpleVariableSpaceModel.createFactory(new Object[]{}); // $bdValue is a local variable. Use SimpleSTValueResolver
+        MVEL.executeExpression(compileExpression, ctx, factory);
+        Object value = factory.getVariableResolver("$bdValue").getValue();
+        assertEquals(BigDecimal.class, value.getClass()); // coercion
+    }
+
+    public void testCollectionVariableAssignmentTwiceWithSimpleSTValueResolver_shouldReplace() {
+        String expression = "Collection $collection = new ArrayList(); $collection = new HashSet();";
+
+        ParserContext ctx = createParserContext();
+        Serializable compileExpression = MVEL.compileExpression(expression, ctx);
+
+        String[] varNames = new String[]{"$collection"};
+        SimpleVariableSpaceModel simpleVariableSpaceModel = new SimpleVariableSpaceModel(varNames);
+        VariableResolverFactory factory = simpleVariableSpaceModel.createFactory(new Object[]{}); // $collection is a local variable. Use SimpleSTValueResolver
+        MVEL.executeExpression(compileExpression, ctx, factory);
+        Object value = factory.getVariableResolver("$collection").getValue();
+        assertEquals(HashSet.class, value.getClass()); // replaced
+    }
+
+    public void testBigDecimalBindVariableCoercionWithIndexVariableResolver_shouldCoerce() {
+        String expression = "$bdValue = 5;";
+
+        ParserContext ctx = createParserContext();
+        String[] varNames = new String[]{"$bdValue"};
+        ctx.addIndexedInput(varNames);
+        ctx.addInput("$bdValue", BigDecimal.class); // bind variable
+        Serializable compileExpression = MVEL.compileExpression(expression, ctx);
+
+        SimpleVariableSpaceModel simpleVariableSpaceModel = new SimpleVariableSpaceModel(varNames);
+        VariableResolverFactory factory = simpleVariableSpaceModel.createFactory(new Object[]{new BigDecimal("0")}); // $bdValue has a value. Use IndexVariableResolver
+        MVEL.executeExpression(compileExpression, ctx, factory);
+        Object value = factory.getVariableResolver("$bdValue").getValue();
+        assertEquals(BigDecimal.class, value.getClass()); // coercion
+    }
+
+    public void testCollectionBindVariableAssignmentWithIndexVariableResolver_shouldReplace() {
+        String expression = "$collection = new HashSet();";
+
+        ParserContext ctx = createParserContext();
+        String[] varNames = new String[]{"$collection"};
+        ctx.addIndexedInput(varNames);
+        ctx.addInput("$collection", Collection.class); // bind variable
+        Serializable compileExpression = MVEL.compileExpression(expression, ctx);
+
+        SimpleVariableSpaceModel simpleVariableSpaceModel = new SimpleVariableSpaceModel(varNames);
+        VariableResolverFactory factory = simpleVariableSpaceModel.createFactory(new Object[]{new ArrayList()}); // $collection has a value. Use IndexVariableResolver
+        MVEL.executeExpression(compileExpression, ctx, factory);
+        Object value = factory.getVariableResolver("$collection").getValue();
+        assertEquals(HashSet.class, value.getClass()); // replaced
+    }
 }
