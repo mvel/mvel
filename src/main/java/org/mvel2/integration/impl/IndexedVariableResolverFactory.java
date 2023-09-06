@@ -75,6 +75,9 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
   public VariableResolver createVariable(String name, Object value, Class<?> type) {
     VariableResolver vr = getResolver(name);
     if (vr != null) {
+      if (vr instanceof SimpleSTValueResolver) {
+          ((SimpleSTValueResolver) vr).setStaticType(type);
+      }
       vr.setValue(value);
     }
     return vr;

@@ -59,7 +59,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
       nextFactory = new MapVariableResolverFactory(new HashMap());
     }
 
-    return nextFactory.createVariable(name, value);
+    return nextFactory.createVariable(name, value, type);
   }
 
   public Class addClass(Class clazz) {
