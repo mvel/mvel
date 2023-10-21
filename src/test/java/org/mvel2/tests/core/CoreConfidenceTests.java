@@ -5051,4 +5051,12 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(1, result.size());
     assertEquals("a\"b", result.get(0));
   }
+
+  public void testOrConditionIfPropertyNotExist() {
+    String expression = "name == 'joy' || age > 10";
+    Map<String,Object> paramMap =new HashMap<>();
+    paramMap.put("age", 15);
+    CompiledExpression compiledExpression = new ExpressionCompiler(expression).compile();
+    assertEquals(true, MVEL.executeExpression(compiledExpression, paramMap));
+  }
 }

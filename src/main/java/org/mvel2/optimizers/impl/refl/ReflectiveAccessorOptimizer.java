@@ -699,7 +699,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
       if (ctx == null) {
-        throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start, pCtx);
+        LOG.log(Level.WARNING, String.format("unresolvable property or identifier: " + property));
+        return null;
       }
       else {
         throw new PropertyAccessException("could not access: " + property + "; in class: "
