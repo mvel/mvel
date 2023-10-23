@@ -5059,4 +5059,34 @@ public class CoreConfidenceTests extends AbstractTest {
     CompiledExpression compiledExpression = new ExpressionCompiler(expression).compile();
     assertEquals(true, MVEL.executeExpression(compiledExpression, paramMap));
   }
+
+  public void testOrConditionIfPropertyNotExistNested1() {
+    String expression = "name.first == 'joy' || age.num > 10";
+    Map<String,Object> numMap =new HashMap<>();
+    numMap.put("num", 15);
+    Map<String,Object> paramMap =new HashMap<>();
+    paramMap.put("age",numMap);
+    CompiledExpression compiledExpression = new ExpressionCompiler(expression).compile();
+    assertEquals(true, MVEL.executeExpression(compiledExpression, paramMap));
+  }
+
+  public void testOrConditionIfPropertyNotExistNested2() {
+    String expression = "name.first.ab.ad.ajh == 'joy' || age.num > 10";
+    Map<String,Object> numMap =new HashMap<>();
+    numMap.put("num1", 15);
+    Map<String,Object> paramMap =new HashMap<>();
+    paramMap.put("age",numMap);
+    CompiledExpression compiledExpression = new ExpressionCompiler(expression).compile();
+    assertEquals(false, MVEL.executeExpression(compiledExpression, paramMap));
+  }
+
+  public void testReturnNullIfPropertyNotExist() {
+    String expression = "age.name.first.ab.ad.ajh";
+    Map<String,Object> numMap =new HashMap<>();
+    numMap.put("name", "joy");
+    Map<String,Object> paramMap =new HashMap<>();
+    paramMap.put("age",numMap);
+    CompiledExpression compiledExpression = new ExpressionCompiler(expression).compile();
+    assertEquals(null, MVEL.executeExpression(compiledExpression, paramMap));
+  }
 }
