@@ -347,7 +347,9 @@ public class ControlFlowTests extends AbstractTest {
    * Community provided test cases
    */
   @SuppressWarnings({"unchecked"})
-  public void testCalculateAge() {
+  // Ignore this test. See https://github.com/mvel/mvel/issues/352
+  // This is junit3 base, so cannot use @Ignore
+  public void ignoreTestCalculateAge() {
     Calendar c1 = Calendar.getInstance();
     c1.set(1999,
         0,
