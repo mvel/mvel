@@ -347,13 +347,13 @@ public class ControlFlowTests extends AbstractTest {
    * Community provided test cases
    */
   @SuppressWarnings({"unchecked"})
-  // Ignore this test. See https://github.com/mvel/mvel/issues/352
-  // This is junit3 base, so cannot use @Ignore
-  public void ignoreTestCalculateAge() {
+  public void testCalculateAge() {
+    // calculate age of a person who was born in 1999 jan 10, on 2023 dec 25
+    // 2023 dec 25 - 1999 jan 10 = 24 years
     Calendar c1 = Calendar.getInstance();
     c1.set(1999,
         0,
-        10); // 1999 jan 20
+        10); // 1999 jan 10
     Map objectMap = new HashMap(1);
     Map propertyMap = new HashMap(1);
     propertyMap.put("GEBDAT",
