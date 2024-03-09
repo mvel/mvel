@@ -84,7 +84,11 @@ import org.mvel2.ast.UntilNode;
 import org.mvel2.ast.WhileNode;
 import org.mvel2.ast.WithNode;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.*;
+import org.mvel2.util.ErrorUtil;
+import org.mvel2.util.ExecutionStack;
+import org.mvel2.util.FunctionParser;
+import org.mvel2.util.ParseTools;
+import org.mvel2.util.ProtoParser;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
