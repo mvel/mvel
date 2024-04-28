@@ -451,7 +451,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
       throw e;
     }
     catch (NullPointerException e) {
-      throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.st, e, pCtx);
+      LOG.log(Level.WARNING, String.format("null pointer: %s", new String(expr, start, length)));
+      return null;
     }
     catch (Exception e) {
       LOG.log(Level.WARNING, "", e);
@@ -699,12 +700,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
       if (ctx == null) {
-        throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start, pCtx);
+        LOG.log(Level.WARNING, String.format("unresolvable property or identifier: " + property));
       }
       else {
-        throw new PropertyAccessException("could not access: " + property + "; in class: "
-            + ctx.getClass().getName(), expr, start, pCtx);
+        LOG.log(Level.WARNING, String.format("could not access property: " + property));
       }
+      return null;
     }
   }
 
