@@ -1,12 +1,12 @@
 package org.mvel2.util;
 
-import org.mvel2.integration.VariableResolverFactory;
-
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 
+import org.mvel2.integration.VariableResolverFactory;
+
 /**
- * @author Mike Brock <cbrock@redhat.com>
+ * @author Mike Brock
  */
 public interface StaticStub extends Serializable {
   public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parameters)

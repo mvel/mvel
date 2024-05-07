@@ -1,19 +1,5 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.PropertyAccessor;
-import org.mvel2.asm.MethodVisitor;
-
-import static org.mvel2.asm.Opcodes.*;
-
-import org.mvel2.integration.*;
-import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.optimizers.impl.asm.ProducesBytecode;
-import org.mvel2.tests.core.res.Bar;
-import org.mvel2.tests.core.res.Base;
-import org.mvel2.tests.core.res.Foo;
-
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -21,8 +7,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mvel2.MVEL;
+import org.mvel2.PropertyAccessor;
+import org.mvel2.integration.GlobalListenerFactory;
+import org.mvel2.integration.Listener;
+import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.PropertyHandlerFactory;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.optimizers.impl.asm.ProducesBytecode;
+import org.mvel2.tests.BaseMvelTestCase;
+import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Foo;
+import org.objectweb.asm.MethodVisitor;
 
-public class PropertyHandlerTests extends TestCase {
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static org.objectweb.asm.Opcodes.POP;
+
+
+public class PropertyHandlerTests extends BaseMvelTestCase {
   Base base = new Base();
 
   public class TestPropertyHandler implements PropertyHandler, ProducesBytecode {
@@ -388,5 +395,32 @@ public class PropertyHandlerTests extends TestCase {
     MVEL.setProperty(vars, "wobj.foo", "foobie");
 
     assertEquals("foobie", wo.getFieldValue("foo"));
+  }
+
+  public class A {}
+
+  public class B extends A implements Cloneable {
+  }
+
+  public class C extends A implements Cloneable {
+    public String prop = "Property";
+  }
+
+  public void testPropertyHandlerPreCompile() {
+    MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+    PropertyHandlerFactory.registerPropertyHandler(B.class, new PropertyHandler() {
+      @Override
+      public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+        return "Handled property";
+      }
+      @Override
+      public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory,
+          Object value) {
+        return null;
+      }
+    });
+
+    Serializable compiled = MVEL.compileExpression("prop");
+    assertEquals("Property", MVEL.executeExpression(compiled, new C()));
   }
 }

@@ -1,12 +1,45 @@
 package org.mvel2.tests.core;
 
+import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
 import org.mvel2.Macro;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -53,36 +86,15 @@ import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.ReflectionUtil;
 
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
 import static java.util.Collections.unmodifiableCollection;
-import static org.mvel2.MVEL.*;
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.compileSetExpression;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.MVEL.evalToBoolean;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.executeSetExpression;
+import static org.mvel2.MVEL.parseMacros;
+import static org.mvel2.MVEL.setProperty;
 import static org.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
@@ -1178,35 +1190,51 @@ public class CoreConfidenceTests extends AbstractTest {
     Foo foo = new Foo();
 
     Map map = new HashMap();
-    map.put("foo",
-        foo);
+    map.put("foo", foo);
 
     String expression = "foo.?bar.name == null";
     Serializable compiled = compileExpression(expression);
 
     OptimizerFactory.setDefaultOptimizer("reflective");
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
     OptimizerFactory.setDefaultOptimizer("ASM");
     compiled = compileExpression(expression);
     foo.setBar(new Bar());
-    assertEquals(false,
-        executeExpression(compiled,
-            map));
+    assertEquals(false, executeExpression(compiled, map));
     foo.setBar(null);
-    assertEquals(true,
-        executeExpression(compiled,
-            map)); // execute a second time (to search for optimizer problems)
+    assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
-    assertEquals(true,
-        eval(expression,
-            map));
+    assertEquals(true, eval(expression, map));
+  }
+
+  public void testNullSafe2() {
+    Foo foo = new Foo();
+    Bar bar = new Bar();
+    foo.setBar(bar);
+    bar.setName(null);
+
+    Map map = new HashMap();
+    map.put("foo", foo);
+
+    String expression = "x = foo.bar.?name.length == null";
+    Serializable compiled = compileExpression(expression);
+
+    OptimizerFactory.setDefaultOptimizer("reflective");
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    compiled = compileExpression(expression);
+    bar.setName(null);
+    assertEquals(true, executeExpression(compiled, map));
+    bar.setName("x");
+    assertEquals(false, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+    assertEquals(false, eval(expression, map));
   }
 
   /**
@@ -1838,6 +1866,12 @@ public class CoreConfidenceTests extends AbstractTest {
             map));
   }
 
+  public void testIssue286() {
+	    Serializable s = compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+	    Map<String, Object> map = new HashMap<>();
+	    map.put("name", "Adam");
+	    assertEquals(true, executeExpression(s, map));
+	  }
 
   public void testJIRA103() {
     MvelContext mvelContext = new MvelContext();
@@ -3446,6 +3480,79 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result);
   }
 
+  public void testMVEL226() {
+      Map<String, String> foo = new HashMap();
+      foo.put("bar", "baz");
+      OptimizerFactory.setDefaultOptimizer("reflective");
+      Serializable compiledExpression = MVEL.compileExpression("this.bar");
+      VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+      assertEquals("baz", MVEL.executeExpression(compiledExpression, foo, factory, String.class));
+    }
+
+  public void testMapAccessProperty() {
+    String str = "map.key";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", POJO.class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    POJO ctx = new POJO();
+    try {
+      MVEL.executeExpression(stmt, ctx);
+      fail("Expected PropertyAccessException");
+    }
+    catch (PropertyAccessException ex) {
+      assertTrue(ex.getMessage().contains("could not access: key"));
+    }
+  }
+
+  public void testMapAccessWithNestedPropertyAO() {
+      boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+      MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+      try {
+         String str = "map[key] == \"one\"";
+         ParserConfiguration pconf = new ParserConfiguration();
+         ParserContext pctx = new ParserContext(pconf);
+         pctx.setStrongTyping(true);
+         pctx.addInput("this", POJO.class);
+         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+         POJO ctx = new POJO();
+         ctx.getMap().put("1", "one");
+         Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+         result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+      } finally {
+         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
+      }
+    }
+
+  public void testMapAccessWithNestedPropertyAO_ASM() {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      boolean allowCompilerOverride = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING;
+      MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+      try {
+         String str = "map[key] == \"one\"";
+         ParserConfiguration pconf = new ParserConfiguration();
+         ParserContext pctx = new ParserContext(pconf);
+         pctx.setStrongTyping(true);
+         pctx.addInput("this", POJO.class);
+         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+         POJO ctx = new POJO();
+         ctx.getMap().put("1", "one");
+         Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+         result = (Boolean) MVEL.executeExpression(stmt, ctx);
+         assertTrue(result);
+      } finally {
+         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowCompilerOverride;
+      }
+  }
+
   public void testMapAccessWithNestedProperty() {
     String str = "map[key] == \"one\"";
 
@@ -3459,6 +3566,35 @@ public class CoreConfidenceTests extends AbstractTest {
     ctx.getMap().put("1", "one");
     Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
     assertTrue(result);
+  }
+
+  public void testMapAccessWithNestedPropertyRepeated() {
+    /*
+     * 181 - Nested property access successful in ReflectiveAccessorOptimizer 
+     *   but fails in ASMAccessorOptimizer
+     */
+    String str = "map[key] == \"one\"";
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrongTyping(true);
+    pctx.addInput("this", POJO.class);
+    ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+
+    POJO ctx = new POJO();
+    ctx.getMap().put("1", "one");
+    for (int i = 0; i < 500; ++i) {
+      try {
+        Boolean result = (Boolean) MVEL.executeExpression(stmt, ctx);
+        assertTrue(result);
+      }
+      catch (RuntimeException ex) {
+        if (i == 0) {
+          throw ex;
+        }
+        throw new IllegalStateException("Expression failed at iteration " + i, ex);
+      }
+    }
   }
 
   public void testArrays() {
@@ -3548,6 +3684,16 @@ public class CoreConfidenceTests extends AbstractTest {
       }
     }
     assertTrue(errors.toString(), errors.isEmpty());
+  }
+
+  public void testMethodCallWithSpacesASM() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    try {
+       testMethodCallWithSpaces();
+    }
+    finally {
+       OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }  
   }
 
   public void testInlineConstructor() {
@@ -3811,6 +3957,16 @@ public class CoreConfidenceTests extends AbstractTest {
     assertTrue(result.contains("s2"));
   }
 
+  public void testTypedVarArgsConstructorASM() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    try {
+	testTypedVarArgsConstructor();
+    }
+    finally {
+	 OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
   private <T> T compileAndExecuteWithStrongTyping(String expression) {
     return (T) compileAndExecuteWithStrongTyping(expression, new HashMap());
   }
@@ -3917,6 +4073,10 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(String.class, expressionReturnType("Field1Option.t"));
   }
 
+  public void testModuloReturnType() {
+    assertEquals(Integer.class, expressionReturnType("3 % 2"));
+  }
+
   public void testWrongExpressions() {
     wrongExpressionMustFail("Field1 == 3");
     wrongExpressionMustFail("Field1 - 3");
@@ -4018,17 +4178,6 @@ public class CoreConfidenceTests extends AbstractTest {
     assertFalse(result);
   }
 
-  public void testDhanji2() {
-    String ex =
-        "name = null;\n" +
-            "$_1 = ?name.?toLowerCase();\n";
-
-
-    Serializable s = MVEL.compileExpression(ex);
-
-    MVEL.executeExpression(s, new HashMap());
-  }
-
   public void testPrimitiveNumberCoercion() {
     final ParserContext parserContext = new ParserContext();
     parserContext.setStrictTypeEnforcement(true);
@@ -4115,6 +4264,11 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(null + "abc", MVEL.executeExpression(MVEL.compileExpression(str, pctx)));
   }
 
+  public void testStaticMethodsInvocationWithNullArgASM() {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      testStaticMethodsInvocationWithNullArg();
+    }
+
   public interface InterfaceA {
     InterfaceB getB();
   }
@@ -4157,6 +4311,70 @@ public class CoreConfidenceTests extends AbstractTest {
     }});
     System.out.println(result);
   }
+
+  public void testPrimitiveNumberCoercionDuringDivisionShouldWorkOnBothSide() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", int.class);
+    parserContext.addInput("b", int.class);
+
+    int a = 1;
+    int b = 2;
+    Object res = a / b;
+    System.out.printf("Result class Java: %s\nResult value: %s\n", res.getClass(), res);
+    Object resBoolean = a / b < 0.99;
+    System.out.println("Result Boolean: " + resBoolean);
+
+    Serializable constantDoubleLeft = MVEL.compileExpression("0.99 >= a / b", parserContext);
+    Object resultLeft = MVEL.executeExpression(constantDoubleLeft, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, resultLeft);
+
+    Serializable constantDoubleRight = MVEL.compileExpression("a / b < 0.99", parserContext);
+    Object resultRight = MVEL.executeExpression(constantDoubleRight, new HashMap() {{
+      put("a", 1);
+      put("b", 2);
+    }});
+    assertEquals(true, resultRight);
+
+    parserContext.addInput("c", double.class);
+    parserContext.addInput("d", double.class);
+    Serializable constantIntRight = MVEL.compileExpression("c / d > 0", parserContext);
+    Object resultRightInt = MVEL.executeExpression(constantIntRight, new HashMap() {{
+      put("c", 1);
+      put("d", 2);
+    }});
+    assertEquals(true, resultRightInt);
+  }
+
+  public void testNumberCoercion() {
+      final ParserContext parserContext = new ParserContext();
+      parserContext.setStrictTypeEnforcement(true);
+      parserContext.setStrongTyping(true);
+      parserContext.addInput("a", int.class);
+
+      // Long / Integer to Long / Long
+      Serializable longDivByInt = MVEL.compileExpression("15 * Math.round( new java.math.BigDecimal(\"49.4\") ) / 100.0", parserContext);
+      Object resultLongDivByInt = MVEL.executeExpression(longDivByInt, new HashMap());
+      assertEquals(7.35, resultLongDivByInt);
+
+      // Don't convert BigDecimal to int
+      Serializable intDivByBigDecimal = MVEL.compileExpression("a / new java.math.BigDecimal(\"0.5\")", parserContext);
+      Object resultIntDivByBigDecimal = MVEL.executeExpression(intDivByBigDecimal, new HashMap() {{
+          put("a", 10);
+      }});
+      assertEquals(20, ((BigDecimal)resultIntDivByBigDecimal).intValue());
+
+      // Don't convert Double to int
+      Serializable intDivByDouble = MVEL.compileExpression("a / 0.5", parserContext);
+      Object resultIntDivByDouble = MVEL.executeExpression(intDivByDouble, new HashMap() {{
+          put("a", 10);
+      }});
+      assertEquals(20, ((Double)resultIntDivByDouble).intValue());
+    }
 
   public void testUntypedClone() {
     String expression = "obj.clone();";
@@ -4325,6 +4543,9 @@ public class CoreConfidenceTests extends AbstractTest {
     Map vars = new HashMap() {{ put("ch", 'a'); }};
     assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("ch == \"a\"", pctx), vars));
     assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("ch == \"b\"", pctx), vars));
+
+//    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("\"a\" == ch", pctx), vars));
+//    assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("\"b\" == ch", pctx), vars));
   }
 
   public void testFieldNameWithUnderscore() {
@@ -4492,5 +4713,342 @@ public class CoreConfidenceTests extends AbstractTest {
 	  Method correct = OverloadedInterface.class.getMethod("putXX", new Class[]{int.class, String.class});
 	  assertEquals(correct, found);
   }
+
+  public static class O1 {
+    public O2 getObj() {
+      return new O2();
+    }
+  }
+  public static class O2 extends O3 { }
+  public abstract static class O3  {
+    public String getValue() {
+      return "value";
+    }
+  }
+
+  public void testInvokeMethodInAbstractClass() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("a", O1.class);
+    assertEquals(String.class, MVEL.analyze("a.getObj().getValue()", parserContext));
+
+    Map vars = new HashMap() {{ put("a", new O1()); }};
+    assertEquals("value", MVEL.executeExpression(MVEL.compileExpression("a.getObj().getValue()", parserContext), vars));
+  }
+
+  public class Convention {
+    private final Map<String, List<String>> comms;
+    public Convention( Map<String, List<String>> comms ) {
+      this.comms = comms;
+    }
+    public Map<String, List<String>> getComms(){
+      return comms;
+    }
+  }
+
+  public void testParseGenericMap() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("conv", Convention.class);
+    assertEquals(List.class, MVEL.analyze("conv.getComms().get(\"test\")", parserContext));
+  }
+
+  public static class Thingy implements Serializable {
+    private String name;
+    private String version;
+    private Object[] items;
+
+    public Thingy(String name, String version, Object... items) {
+      this.name = name;
+      this.version = version;
+      this.items = items;
+    }
+
+    public Thingy(String name) {
+      this.name = name;
+      this.version = null;
+      this.items = null;
+    }
+
+    public void print() {
+      System.out.println("Printing rule " + name);
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
+
+  public void testInvokeVarargConstructor() {
+    ParserConfiguration conf = new ParserConfiguration();
+    conf.addImport( Thingy.class );
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("name", String.class);
+    Map vars = new HashMap() {{ put("name", "test"); }};
+    Thingy result = (Thingy) MVEL.executeExpression(MVEL.compileExpression("new Thingy(name)", pctx), vars);
+    assertEquals( "test", result.getName() );
+  }
+
+  public void testGenericsWithOr() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("o", OrderLine.class);
+    parserContext.addInput("p", Product.class);
+    Class<?> clazz = MVEL.analyze("p.id == o.product.id || p.category == o.product.category", parserContext);
+    assertEquals(Boolean.class, clazz);
+  }
+
+  public interface OrderLine<T extends Product> {
+    T getProduct();
+  }
+
+  public interface Product {
+    String getId();
+    String getCategory();
+  }
+
+  public void testAnalyzeTernary() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("value", String.class);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    parserContext.addInput("z", Integer.class);
+    Class<?> clazz = MVEL.analyze("z = (value == \"ALU\" ? x : y);", parserContext);
+    assertEquals(Integer.class, clazz);
+  }
+
+  public void testAnalyzeWrongTernary() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("value", String.class);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    parserContext.addInput("z", Integer.class);
+    try {
+      Class<?> clazz = MVEL.analyze( "z = (value = \"ALU\" ? x : y);", parserContext );
+      fail("parse of this expression should raise an error");
+    } catch (Exception e) { }
+  }
+
+  public void testPrimitiveSubtyping() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    BigDecimal result = (BigDecimal)MVEL.executeExpression(MVEL.compileExpression("java.math.BigDecimal.valueOf(100)", pctx), new HashMap());
+    assertEquals("100", result.toString());
+  }
+
+  public void testUseVariableFactoryWithArithmeticOperation() {
+    checkOperation("3 + 4 * i.get()", 43);
+    checkOperation("2 * 3 + 4 * i.get()", 46);
+    checkOperation("1 + 2 * 3 + i.get()", 17);
+    checkOperation("2 * 3 + 4 * i.get()", 46);
+    checkOperation("1 + 2 * 3 + 4 * i.get()", 47);
+    checkOperation("1 + 2 * 3 + i.get() * 4", 47);
+    checkOperation("1 + 2 * 3 + i.get() + 4", 21);
+    checkOperation("4 * i.get() + 5", 45);
+    checkOperation("3 + 4 * i.get() + 5", 48);
+    checkOperation("2 * 3 + 4 * i.get() + 5", 51);
+    checkOperation("1 + 2 * 3 + 4 * i.get() + 5", 52);
+    checkOperation("1 + 2 * 3 + 4 * i.get() * 5", 207);
+    checkOperation("i.get() + 1 + 2 * 3 + 4 * i.get()", 57);
+  }
+
+  private void checkOperation(String expression, int expectedResult) {
+    AtomicInteger i = new AtomicInteger( 10 );
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("i", i);
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("i", AtomicInteger.class);
+
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+    int result = (Integer)MVEL.executeExpression(compiledExpr, null, factory);
+    assertEquals(expectedResult, result);
+  }
+
+  @Ignore("This test degraded because the fix https://github.com/mvel/mvel/commit/cf4a24f1 was reverted by https://github.com/mvel/mvel/commit/6a982e05f32 ")
+  public void ignore_test_BigDecimal_ASMoptimizerSupport() {
+    /* https://github.com/mvel/mvel/issues/89
+     * The following case failed in attempt from the ASM optimizer to 
+     *  create a numeric constant from the value 30000B.
+     */
+    Serializable compiled = MVEL.compileExpression("big = new java.math.BigDecimal(\"10000\"); if (big.compareTo(30000B) > 0) then ;");
+    Map<String, Integer> vars = new HashMap<String, Integer>();
+    for (int i = 0; i < 1000; i++) {
+      try {
+        MVEL.executeExpression(compiled, vars);
+      } catch (CompileException e) {
+        e.printStackTrace();
+        fail("Failed after #executions: " + i);
+      }
+    }
+  }
+
+  public void testLiteralToStringWithSpaceASM() throws Throwable {
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      testLiteralToStringWithSpace();
+  }
+
+  public void testLiteralToStringWithSpace() throws Throwable {
+      String expr = "'foo'. hashCode()";
+      int hashCode = "foo". hashCode();
+      Serializable s = MVEL.compileExpression(expr);
+      assertEquals(Integer.valueOf(hashCode), MVEL.executeExpression(s));
+  }
+
+  public void testGetBestCandidateForBigDecimalArg() {
+    Class<?>[] arguments = new Class<?>[] {BigDecimal.class};
+    Method method = ParseTools.getBestCandidate(arguments, "round", Math.class, Math.class.getMethods(), true);
+    assertEquals(long.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class}, method.getParameterTypes());
+
+    arguments = new Class<?>[] {BigDecimal.class, BigDecimal.class};
+    method = ParseTools.getBestCandidate(arguments, "max", Math.class, Math.class.getMethods(), true);
+    assertEquals(double.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class, double.class}, method.getParameterTypes());
+
+    arguments = new Class<?>[] {BigDecimal.class, BigDecimal.class};
+    method = ParseTools.getBestCandidate(arguments, "scalb", Math.class, Math.class.getMethods(), true);
+    assertEquals(double.class, method.getReturnType());
+    Assert.assertArrayEquals(new Class<?>[] {double.class, int.class}, method.getParameterTypes());
+  }
   
+  public void testEmptyVarargConstructor() {
+      String clsName = MySet.class.getName();
+      OptimizerFactory.setDefaultOptimizer("ASM");
+      Serializable s = MVEL.compileExpression("new " + clsName + "()");
+      assertNotNull(MVEL.executeExpression(s));
+  }
+  
+  public void testEmptyVarargMethod() {
+    OptimizerFactory.setDefaultOptimizer("ASM");
+    Serializable s = MVEL.compileExpression("m.add()");
+    Map<String, MySet> inputs = Collections.singletonMap("m", new MySet());
+    MVEL.executeExpression(s, inputs);
+  }
+  
+  public void testForLoopWithSpaces() {
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("strings", Arrays.asList( "test" ));
+
+    ParserConfiguration pconf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext(pconf);
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("strings", List.class);
+
+    String expression =
+            "for (   String   s : strings ) {\n" +
+            "  return s;\n" +
+            "}";
+
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+    assertEquals( "test", MVEL.executeExpression(compiledExpr, null, factory));
+  }
+  
+  public void testLooseTypeConversion() {
+     int [] result = MVEL.eval("3.0", int [].class);
+     assertEquals(3, result[0]);
+  }
+
+  public void testGetBestConstructorCandidateOfBigDecimal() {
+      Class<?>[] arguments = new Class<?>[]{BigDecimal.class}; // new BigDecimal(BigDecimal bd) doesn't exist. But want to get a constant candidate
+      Constructor constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{BigInteger.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{BigInteger.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{int.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{int.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{double.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{double.class}, constructor.getParameterTypes());
+
+      arguments = new Class<?>[]{String.class};
+      constructor = ParseTools.getBestConstructorCandidate(arguments, BigDecimal.class, true);
+      Assert.assertArrayEquals(new Class<?>[]{String.class}, constructor.getParameterTypes());
+  }
+
+  public void testNullBigDecimal() {
+    analyzeBigDecimalOperation("a + b", new BigDecimal("1"), new BigDecimal("2"), new BigDecimal("3"));
+    analyzeBigDecimalOperation("a + b", new BigDecimal("1"), null, null);
+    analyzeBigDecimalOperation("a + b", null, new BigDecimal("2"), null);
+    analyzeBigDecimalOperation("a + b", null, null, null);
+
+    analyzeBigDecimalOperation("a - b", new BigDecimal("5"), new BigDecimal("3"), new BigDecimal("2"));
+    analyzeBigDecimalOperation("a - b", new BigDecimal("5"), null, null);
+    analyzeBigDecimalOperation("a - b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a - b", null, null, null);
+
+    analyzeBigDecimalOperation("a * b", new BigDecimal("2"), new BigDecimal("3"), new BigDecimal("6"));
+    analyzeBigDecimalOperation("a * b", new BigDecimal("2"), null, null);
+    analyzeBigDecimalOperation("a * b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a * b", null, null, null);
+
+    analyzeBigDecimalOperation("a / b", new BigDecimal("6"), new BigDecimal("3"), new BigDecimal("2"));
+    analyzeBigDecimalOperation("a / b", new BigDecimal("6"), null, null);
+    analyzeBigDecimalOperation("a / b", null, new BigDecimal("3"), null);
+    analyzeBigDecimalOperation("a / b", null, null, null);
+  }
+
+  private void analyzeBigDecimalOperation(String expression, BigDecimal a, BigDecimal b, BigDecimal expected) {
+    ParserContext pctx = new ParserContext();
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+    pctx.addInput("a", BigDecimal.class);
+    pctx.addInput("b", BigDecimal.class);
+
+    Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+
+    AtomicInteger i = new AtomicInteger( 10 );
+    VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+    factory.createVariable("a", a);
+    factory.createVariable("b", b);
+
+    if (a == null || b == null) {
+      try {
+        MVEL.executeExpression(compiledExpr, null, factory);
+        fail("should throw a NPE");
+      } catch (NullPointerException npe) {
+        // expected
+      }
+    } else {
+      Object result = MVEL.executeExpression(compiledExpr, null, factory);
+      assertEquals(expected, result);
+    }
+  }
+
+  public void testAnalyzeMathAbs() {
+    final ParserContext parserContext = new ParserContext();
+    parserContext.setStrictTypeEnforcement(true);
+    parserContext.setStrongTyping(true);
+    parserContext.addInput("x", Integer.class);
+    parserContext.addInput("y", Integer.class);
+    assertEquals(int.class, MVEL.analyze( "Math.abs(x - y);", parserContext ));
+  }
+
+  public void testStringEscape() {
+    String expression = "[\"a\\\"b\"]";
+    Serializable compiledExpression = MVEL.compileExpression(expression);
+    List result = (List) MVEL.executeExpression(compiledExpression);
+    assertEquals(1, result.size());
+    assertEquals("a\"b", result.get(0));
+  }
 }

@@ -85,31 +85,30 @@ public class CompiledIncludeNode extends Node {
   }
 
   public static String readInFile(TemplateRuntime runtime, File file) {
+	FileInputStream instream = null;
+	BufferedReader in = null;
+	final StringBuilder appender = new StringBuilder();
+	
     try {
-      FileInputStream instream = new FileInputStream(file);
-      BufferedInputStream bufstream = new BufferedInputStream(instream);
-
+      instream = openInputStream(file);
       runtime.getRelPath().push(file.getParent());
 
-      byte[] buf = new byte[10];
-      int read;
-      int i;
-
-      StringBuilder appender = new StringBuilder();
-
-      while ((read = bufstream.read(buf)) != -1) {
-        for (i = 0; i < read; i++) {
-          appender.append((char) buf[i]);
+      in = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
+      
+      String currentLine;
+      boolean onFirstLine = true;
+      while ((currentLine = in.readLine()) != null) {
+        if (onFirstLine) {
+          onFirstLine = false;
         }
+        else {
+          appender.append('\n');
+        }
+        appender.append(currentLine);
       }
-
-      bufstream.close();
-      instream.close();
-
+      
       runtime.getRelPath().pop();
-
       return appender.toString();
-
     }
     catch (FileNotFoundException e) {
       throw new TemplateError("cannot include template '" + file.getPath() + "': file not found.");
@@ -117,5 +116,56 @@ public class CompiledIncludeNode extends Node {
     catch (IOException e) {
       throw new TemplateError("unknown I/O exception while including '" + file.getPath() + "' (stacktrace nested)", e);
     }
+    finally
+    {
+      if (in != null) {
+        try {
+		  in.close();
+		} catch (IOException e) {
+		  throw new TemplateError("cannot close the reader on template file '" + file.getPath() + "'.");
+		}
+      }
+      if (instream != null) {
+    	try {
+    	  instream.close();
+    	} catch (IOException e) {
+    	  throw new TemplateError("cannot close the stream on template file '" + file.getPath() + "'.");
+    	}
+      }
+    }
+  }
+  
+  /**
+   * Opens a {@link FileInputStream} for the specified file, else providing a
+   * detail error message than simply calling <code>new FileInputStream(file)</code>.
+   * 
+   * <p>
+   * An exception is thrown if 
+   * <ul>
+   * <li>the file parameter is null,
+   * <li>the file does not exist,
+   * <li>the file object exists but is a directory,
+   * <li>the file exists but cannot be read.
+   * </ul>
+   *
+   * @param file the file to open for input, can be {@code null}
+   * @return a new {@link FileInputStream} for the specified file
+   * @throws FileNotFoundException if the file is null or does not exist
+   * @throws IOException           if the file object is a directory or cannot be read
+   */
+  private static FileInputStream openInputStream(final File file) throws IOException {
+	if (file == null) {
+	  throw new FileNotFoundException("file parameter is null");
+	} else if (file.exists()) {
+      if (file.isDirectory()) {
+        throw new IOException("File '" + file + "' exists but is a directory");
+      }
+      if (file.canRead() == false) {
+        throw new IOException("File '" + file + "' cannot be read");
+      }
+    } else {
+      throw new FileNotFoundException("File '" + file + "' does not exist");
+    }
+    return new FileInputStream(file);
   }
 }

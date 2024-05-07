@@ -21,7 +21,6 @@ import org.mvel2.DataTypes;
 import org.mvel2.Unit;
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.debug.DebugTools;
-import org.mvel2.util.InternalNumber;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -55,33 +54,26 @@ public strictfp class MathProcessor {
   }
 
   public static Object doOperations(int type1, Object val1, int operation, int type2, Object val2) {
-    if (type1 == -1)
+    if (type1 < 1)
       type1 = val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass());
 
-    if (type2 == -1)
+    if (type2 < 1)
       type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-    switch (type1) {
-      case BIG_DECIMAL:
-
-        switch (type2) {
-          case BIG_DECIMAL:
-            return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
-          default:
-            if (type2 > 99) {
-              return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
-            }
-            else {
-              return _doOperations(type1, val1, operation, type2, val2);
-            }
-        }
-      default:
+    if (type1 == BIG_DECIMAL) {
+      if (type2 == BIG_DECIMAL) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
+      }
+      if (type2 > 99) {
+        return doBigDecimalArithmetic((BigDecimal) val1, operation, asBigDecimal(val2), false, -1);
+      } else {
         return _doOperations(type1, val1, operation, type2, val2);
-
+      }
     }
+    return _doOperations(type1, val1, operation, type2, val2);
   }
 
-  private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, boolean iNumber, int returnTarget) {
+  private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, int returnTarget) {
     switch (operation) {
       case ADD:
         return toType(val1.doubleValue() + val2.doubleValue(), returnTarget);
@@ -96,17 +88,17 @@ public strictfp class MathProcessor {
       case MOD:
         return toType(val1.doubleValue() % val2.doubleValue(), returnTarget);
       case GTHAN:
-        return val1.doubleValue() > val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() > val2.doubleValue();
       case GETHAN:
-        return val1.doubleValue() >= val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() >= val2.doubleValue();
       case LTHAN:
-        return val1.doubleValue() < val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() < val2.doubleValue();
       case LETHAN:
-        return val1.doubleValue() <= val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() <= val2.doubleValue();
       case EQUAL:
-        return val1.doubleValue() == val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() == val2.doubleValue();
       case NEQUAL:
-        return val1.doubleValue() != val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        return val1.doubleValue() != val2.doubleValue();
     }
     return null;
 
@@ -189,17 +181,17 @@ public strictfp class MathProcessor {
         }
 
       case GTHAN:
-        return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 != null && val2 != null && val1.compareTo(val2) > 0;
       case GETHAN:
-        return val1.compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 != null && val2 != null && val1.compareTo(val2) >= 0;
       case LTHAN:
-        return val1.compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 != null && val2 != null && val1.compareTo(val2) < 0;
       case LETHAN:
-        return val1.compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 != null && val2 != null && val1.compareTo(val2) <= 0;
       case EQUAL:
-        return val1.compareTo(val2) == 0 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 == null ? val2 == null : val2 != null && val1.compareTo(val2) == 0;
       case NEQUAL:
-        return val1.compareTo(val2) != 0 ? Boolean.TRUE : Boolean.FALSE;
+        return val1 == null ? val2 != null : val2 == null || val1.compareTo(val2) != 0;
     }
     return null;
   }
@@ -210,10 +202,9 @@ public strictfp class MathProcessor {
               (isIntegerType(type1) && isIntegerType(type2) && operation >= BW_AND && operation <= BW_NOT)) {
         return doOperationsSameType(type1, val1, operation, val2);
       }
-      else if (isNumericOperation(type1, val1, operation, type2, val2)) {
-        return doPrimWrapperArithmetic(getNumber(val1, type1),
-            operation,
-            getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+      else if (val2 != null && isNumericOperation(type1, val1, operation, type2, val2)) {
+        return doPrimWrapperArithmetic(getNumber(val1, type1), operation,
+            getNumber(val2, type2), Math.max(box(type2), box(type1)));
       }
       else if (operation != ADD &&
           (type1 == DataTypes.W_BOOLEAN || type2 == DataTypes.W_BOOLEAN) &&
@@ -256,19 +247,20 @@ public strictfp class MathProcessor {
         }
 
       case EQUAL:
-        return safeEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
+        return safeEquals(val2, val1);
 
       case NEQUAL:
-        return safeNotEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
+        return safeNotEquals(val2, val1);
 
       case SUB:
       case DIV:
       case MULT:
       case MOD:
+        return null;
       case GTHAN:
         if (val1 instanceof Comparable) {
           try {
-            return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
+            return val2 != null && (((Comparable) val1).compareTo(val2) >= 1);
           }
           catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
@@ -281,9 +273,8 @@ public strictfp class MathProcessor {
 
       case GETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
-            return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+            return val2 != null && ((Comparable) val1).compareTo(val2) >= 0;
           }
           catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
@@ -299,7 +290,7 @@ public strictfp class MathProcessor {
         if (val1 instanceof Comparable) {
           //noinspection unchecked
           try {
-            return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+            return val2 != null && ((Comparable) val1).compareTo(val2) <= -1;
           }
           catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
@@ -313,9 +304,8 @@ public strictfp class MathProcessor {
 
       case LETHAN:
         if (val1 instanceof Comparable) {
-          //noinspection unchecked
           try {
-            return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+            return val2 != null && ((Comparable) val1).compareTo(val2) <= 0;
           }
           catch (ClassCastException e) {
             throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
@@ -342,16 +332,16 @@ public strictfp class MathProcessor {
 
   private static Boolean safeEquals(final Object val1, final Object val2) {
     if (val1 != null) {
-      return val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
+      return val1.equals(val2);
     }
-    else return val2 == null || (val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE);
+    else return val2 == null;
   }
 
   private static Boolean safeNotEquals(final Object val1, final Object val2) {
     if (val1 != null) {
-      return !val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
+      return !val1.equals(val2);
     }
-    else return (val2 != null && !val2.equals(val1)) ? Boolean.TRUE : Boolean.FALSE;
+    else return val2 != null;
   }
 
   private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
@@ -377,31 +367,31 @@ public strictfp class MathProcessor {
       case DataTypes.W_INTEGER:
         switch (operation) {
           case ADD:
-            return ((Integer) val1) + ((Integer) val2);
+            return toInteger(val1) + toInteger(val2);
           case SUB:
-            return ((Integer) val1) - ((Integer) val2);
+            return toInteger(val1) - toInteger(val2);
           case DIV:
-            return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
+            return toDouble(val1) / toInteger(val2);
           case MULT:
-            return ((Integer) val1) * ((Integer) val2);
+            return toInteger(val1) * toInteger(val2);
           case POWER:
-            double d = Math.pow((Integer) val1, (Integer) val2);
+            double d = Math.pow(toInteger(val1), toInteger(val2));
             if (d > Integer.MAX_VALUE) return d;
             else return (int) d;
           case MOD:
-            return ((Integer) val1) % ((Integer) val2);
+            return toInteger(val1) % toInteger(val2);
           case GTHAN:
-            return ((Integer) val1) > ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toInteger(val1) > toInteger(val2);
           case GETHAN:
-            return ((Integer) val1) >= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toInteger(val1) >= toInteger(val2);
           case LTHAN:
-            return ((Integer) val1) < ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toInteger(val1) < toInteger(val2);
           case LETHAN:
-            return ((Integer) val1) <= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toInteger(val1) <= toInteger(val2);
           case EQUAL:
-            return ((Integer) val1).intValue() == ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toInteger(val1) == toInteger(val2) : val1 == val2;
           case NEQUAL:
-            return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toInteger(val1) != toInteger(val2) : val1 != val2;
           case BW_AND:
             if (val2 instanceof Long) return (Integer) val1 & (Long) val2;
             return (Integer) val1 & (Integer) val2;
@@ -426,31 +416,31 @@ public strictfp class MathProcessor {
       case DataTypes.W_SHORT:
         switch (operation) {
           case ADD:
-            return ((Short) val1) + ((Short) val2);
+            return toShort(val1) + toShort(val2);
           case SUB:
-            return ((Short) val1) - ((Short) val2);
+            return toShort(val1) - toShort(val2);
           case DIV:
-            return ((Short) val1).doubleValue() / ((Short) val2).doubleValue();
+            return toDouble(val1) / toDouble(val2);
           case MULT:
-            return ((Short) val1) * ((Short) val2);
+            return toShort(val1) * toShort(val2);
           case POWER:
-            double d = Math.pow((Short) val1, (Short) val2);
+            double d = Math.pow(toShort(val1), toShort(val2));
             if (d > Short.MAX_VALUE) return d;
             else return (short) d;
           case MOD:
-            return ((Short) val1) % ((Short) val2);
+            return toShort(val1) % toShort(val2);
           case GTHAN:
-            return ((Short) val1) > ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toShort(val1) > toShort(val2);
           case GETHAN:
-            return ((Short) val1) >= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toShort(val1) >= toShort(val2);
           case LTHAN:
-            return ((Short) val1) < ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toShort(val1) < toShort(val2);
           case LETHAN:
-            return ((Short) val1) <= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toShort(val1) <= toShort(val2);
           case EQUAL:
-            return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toShort(val1) == toShort(val2) : val1 == val2;
           case NEQUAL:
-            return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toShort(val1) != toShort(val2) : val1 != val2;
           case BW_AND:
             return (Short) val1 & (Short) val2;
           case BW_OR:
@@ -469,31 +459,31 @@ public strictfp class MathProcessor {
       case DataTypes.W_LONG:
         switch (operation) {
           case ADD:
-            return ((Long) val1) + ((Long) val2);
+            return toLong(val1) + toLong(val2);
           case SUB:
-            return ((Long) val1) - ((Long) val2);
+            return toLong(val1) - toLong(val2);
           case DIV:
-            return ((Long) val1).doubleValue() / ((Long) val2).doubleValue();
+            return toDouble(val1) / toDouble(val2);
           case MULT:
-            return ((Long) val1) * ((Long) val2);
+            return toLong(val1) * toLong(val2);
           case POWER:
-            double d = Math.pow((Long) val1, (Long) val2);
+            double d = Math.pow(toLong(val1), toLong(val2));
             if (d > Long.MAX_VALUE) return d;
             else return (long) d;
           case MOD:
-            return ((Long) val1) % ((Long) val2);
+            return toLong(val1) % toLong(val2);
           case GTHAN:
-            return ((Long) val1) > ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toLong(val1) > toLong(val2);
           case GETHAN:
-            return ((Long) val1) >= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toLong(val1) >= toLong(val2);
           case LTHAN:
-            return ((Long) val1) < ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toLong(val1) < toLong(val2);
           case LETHAN:
-            return ((Long) val1) <= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toLong(val1) <= toLong(val2);
           case EQUAL:
-            return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toLong(val1) == toLong(val2) : val1 == val2;
           case NEQUAL:
-            return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toLong(val1) != toLong(val2) : val1 != val2;
           case BW_AND:
             if (val2 instanceof Integer) return (Long) val1 & (Integer) val2;
             return (Long) val1 & (Long) val2;
@@ -524,29 +514,29 @@ public strictfp class MathProcessor {
       case DataTypes.W_DOUBLE:
         switch (operation) {
           case ADD:
-            return ((Double) val1) + ((Double) val2);
+            return toDouble(val1) + toDouble(val2);
           case SUB:
-            return ((Double) val1) - ((Double) val2);
+            return toDouble(val1) - toDouble(val2);
           case DIV:
-            return ((Double) val1) / ((Double) val2);
+            return toDouble(val1) / toDouble(val2);
           case MULT:
-            return ((Double) val1) * ((Double) val2);
+            return toDouble(val1) * toDouble(val2);
           case POWER:
-            return Math.pow((Double) val1, (Double) val2);
+            return Math.pow(toDouble(val1), toDouble(val2));
           case MOD:
-            return ((Double) val1) % ((Double) val2);
+            return toDouble(val1) % toDouble(val2);
           case GTHAN:
-            return ((Double) val1) > ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toDouble(val1) > toDouble(val2);
           case GETHAN:
-            return ((Double) val1) >= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toDouble(val1) >= toDouble(val2);
           case LTHAN:
-            return ((Double) val1) < ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toDouble(val1) < toDouble(val2);
           case LETHAN:
-            return ((Double) val1) <= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toDouble(val1) <= toDouble(val2);
           case EQUAL:
-            return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toDouble(val1) == toDouble(val2) : val1 == val2;
           case NEQUAL:
-            return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toDouble(val1) != toDouble(val2) : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
@@ -560,29 +550,29 @@ public strictfp class MathProcessor {
       case DataTypes.W_FLOAT:
         switch (operation) {
           case ADD:
-            return ((Float) val1) + ((Float) val2);
+            return toFloat(val1) + toFloat(val2);
           case SUB:
-            return ((Float) val1) - ((Float) val2);
+            return toFloat(val1) - toFloat(val2);
           case DIV:
-            return ((Float) val1).doubleValue() / ((Float) val2).doubleValue();
+            return toDouble(val1) / toDouble(val2);
           case MULT:
-            return ((Float) val1) * ((Float) val2);
+            return toFloat(val1) * toFloat(val2);
           case POWER:
-            return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).pow(new InternalNumber((Float) val2).intValue(), MATH_CONTEXT), -1);
+            return narrowType(asBigDecimal(val1).pow(((Number) val2).intValue(), MATH_CONTEXT), -1);
           case MOD:
-            return ((Float) val1) % ((Float) val2);
+            return toFloat(val1) % toFloat(val2);
           case GTHAN:
-            return ((Float) val1) > ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toFloat(val1) > toFloat(val2);
           case GETHAN:
-            return ((Float) val1) >= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toFloat(val1) >= toFloat(val2);
           case LTHAN:
-            return ((Float) val1) < ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toFloat(val1) < toFloat(val2);
           case LETHAN:
-            return ((Float) val1) <= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null && toFloat(val1) <= toFloat(val2);
           case EQUAL:
-            return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toFloat(val1) == toFloat(val2) : val1 == val2;
           case NEQUAL:
-            return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? toFloat(val1) != toFloat(val2) : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
@@ -607,17 +597,17 @@ public strictfp class MathProcessor {
           case MOD:
             return ((BigInteger) val1).remainder(((BigInteger) val2));
           case GTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) > 0;
           case GETHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
           case LTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) < 0;
           case LETHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+            return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
           case EQUAL:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 : val1 == val2;
           case NEQUAL:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
+            return val1 != null && val2 != null ? ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 : val1 != val2;
           case BW_AND:
           case BW_OR:
           case BW_SHIFT_LEFT:
@@ -639,6 +629,26 @@ public strictfp class MathProcessor {
         }
     }
     return null;
+  }
+
+  private static short toShort(Object val) {
+    return val instanceof Short? (Short) val : ((Number) val).shortValue();
+  }
+
+  private static int toInteger(Object val) {
+    return val instanceof Integer ? (Integer) val : ((Number) val).intValue();
+  }
+
+  private static long toLong(Object val) {
+    return val instanceof Long ? (Long) val : ((Number) val).longValue();
+  }
+
+  private static double toDouble(Object val) {
+    return val instanceof Double ? (Double) val : ((Number) val).doubleValue();
+  }
+
+  private static float toFloat(Object val) {
+    return val instanceof Float ? (Float) val : ((Number) val).floatValue();
   }
 
   private static int box(int type) {
@@ -667,36 +677,32 @@ public strictfp class MathProcessor {
     if (in == null || in == BlankLiteral.INSTANCE)
       return 0d;
     switch (type) {
-      case BIG_DECIMAL:
-        return ((Number) in).doubleValue();
+      case DataTypes.BIG_DECIMAL:
       case DataTypes.BIG_INTEGER:
-        return ((Number) in).doubleValue();
       case DataTypes.INTEGER:
       case DataTypes.W_INTEGER:
-        return ((Number) in).doubleValue();
       case DataTypes.LONG:
       case DataTypes.W_LONG:
-        return ((Number) in).doubleValue();
-      case DataTypes.STRING:
-        return Double.parseDouble((String) in);
       case DataTypes.FLOAT:
       case DataTypes.W_FLOAT:
-        return ((Number) in).doubleValue();
-      case DataTypes.DOUBLE:
-      case DataTypes.W_DOUBLE:
-        return (Double) in;
       case DataTypes.SHORT:
       case DataTypes.W_SHORT:
+      case DataTypes.DOUBLE:
+      case DataTypes.W_DOUBLE:
         return ((Number) in).doubleValue();
       case DataTypes.CHAR:
       case DataTypes.W_CHAR:
-        return Double.parseDouble(String.valueOf((Character) in));
+        return Double.parseDouble(String.valueOf(in));
       case DataTypes.BOOLEAN:
       case DataTypes.W_BOOLEAN:
         return ((Boolean) in) ? 1d : 0d;
       case DataTypes.W_BYTE:
       case DataTypes.BYTE:
         return ((Byte) in).doubleValue();
+      case DataTypes.STRING:
+        return Double.parseDouble((String) in);
+      case DataTypes.OBJECT:
+        return in instanceof Number ? ((Number) in).doubleValue() : Double.parseDouble((String) in);
     }
 
     throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
@@ -705,46 +711,20 @@ public strictfp class MathProcessor {
   }
 
 
-  private static InternalNumber getInternalNumberFromType(Object in, int type) {
-    if (in == null || in == BlankLiteral.INSTANCE)
-      return new InternalNumber(0, MATH_CONTEXT);
-    switch (type) {
-      case BIG_DECIMAL:
-        return new InternalNumber(((BigDecimal) in).doubleValue());
-      case DataTypes.BIG_INTEGER:
-        return new InternalNumber((BigInteger) in, MathContext.DECIMAL128);
-      case DataTypes.INTEGER:
-      case DataTypes.W_INTEGER:
-        return new InternalNumber((Integer) in, MathContext.DECIMAL32);
-      case DataTypes.LONG:
-      case DataTypes.W_LONG:
-        return new InternalNumber((Long) in, MathContext.DECIMAL64);
-      case DataTypes.STRING:
-        return new InternalNumber((String) in, MathContext.DECIMAL64);
-      case DataTypes.FLOAT:
-      case DataTypes.W_FLOAT:
-        return new InternalNumber((Float) in, MathContext.DECIMAL64);
-      case DataTypes.DOUBLE:
-      case DataTypes.W_DOUBLE:
-        return new InternalNumber((Double) in, MathContext.DECIMAL64);
-      case DataTypes.SHORT:
-      case DataTypes.W_SHORT:
-        return new InternalNumber((Short) in, MathContext.DECIMAL32);
-      case DataTypes.CHAR:
-      case DataTypes.W_CHAR:
-        return new InternalNumber((Character) in, MathContext.DECIMAL32);
-      case DataTypes.BOOLEAN:
-      case DataTypes.W_BOOLEAN:
-        return new InternalNumber(((Boolean) in) ? 1 : 0);
-      case DataTypes.UNIT:
-        return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
-      case DataTypes.W_BYTE:
-      case DataTypes.BYTE:
-        return new InternalNumber(((Byte) in).intValue());
-
-
+  private static BigDecimal asBigDecimal(Object in) {
+    if (in == null || in == BlankLiteral.INSTANCE) {
+      return null;
+    }
+    if (in instanceof BigDecimal) {
+      return (BigDecimal) in;
+    }
+    if (in instanceof String) {
+      return new BigDecimal((String) in);
+    }
+    if (in instanceof Number) {
+      return new BigDecimal(((Number) in).doubleValue());
     }
 
-    throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
+    throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass());
   }
 }

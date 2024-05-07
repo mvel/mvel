@@ -1,8 +1,10 @@
 package org.mvel2.tests.core;
 
+import org.junit.Assert;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
+import org.mvel2.PropertyAccessException;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
@@ -468,8 +470,43 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
 
+  public final class Data {
+
+    private final Collection<Object> list;
+
+    Data(List<Object> list) {
+      this.list = list;
+    }
+
+    public Collection<Object> getList() {
+      return list;
+    }
+  }
+
+  public void testStaleReflectiveCollectionIsEmptyAccessor() {
+    try
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+      Serializable getFooExpression = MVEL.compileExpression("list.empty");
+      Map vars = new HashMap();
+
+      // ArrayList -> Colletions.EmptyList
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(new ArrayList<Object>())));
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(Collections.emptyList())));
+
+      // Colletions.EmptyList -> ArrayList
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(Collections.emptyList())));
+      assertEquals(true, MVEL.executeExpression(getFooExpression, new Data(new ArrayList<Object>())));
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+    finally
+    {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
   public void testMVEL308() {
-    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.key] = field.value; }";
+    String expression = "foreach(field: updates.entrySet()) { ctx._target[field.getKey()] = field.value; }";
     Serializable compiled = MVEL.compileExpression(expression);
 
     Map<String, Object> target = new HashMap<String, Object>();
@@ -513,4 +550,50 @@ public class PropertyAccessTests extends AbstractTest {
   public void testPublicStaticFieldMVEL314(){
     assertEquals(Foo.STATIC_BAR, runSingleTest("org.mvel2.tests.core.res.Foo.STATIC_BAR"));
   }
+  /*
+   * Test fix for https://github.com/mvel/mvel/issues/200
+   */
+  public void testCollectionEmptyASM() {
+    Serializable compiled = MVEL.compileExpression("validationIssues.empty");
+    Map<String, Object> properties = new HashMap<String, Object>();
+    properties.put("validationIssues", new ArrayList<Object>());
+    int trueCount = 0;
+    final int COUNT = 1000;
+    for (int i = 0; i < COUNT; i++) {
+        if (MVEL.executeExpression(compiled, properties, Boolean.class)) {
+            trueCount++;
+        }
+    }
+    assertEquals(COUNT, trueCount);
+  }
+  public class Service {
+      private void hello() {
+        System.out.println("hello world");
+      }
+    }
+
+    public void testPrivateMethod() {
+      Map<String, Object> vars = new HashMap<>();
+      vars.put("service", new Service());
+      try {
+        MVEL.eval("service.hello()", vars);
+        fail("Should have thrown a PropertyAccessException");
+      }
+      catch (PropertyAccessException pae) {
+        Assert.assertTrue(pae.getMessage().contains("Error: unable to resolve method"));
+      }
+    }
+    
+    public void testPrivateMethodCompiled() {
+      Map<String, Object> vars = new HashMap<>();
+      vars.put("service", new Service());
+      Serializable expr = MVEL.compileExpression("service.hello()");
+      try {
+        MVEL.executeExpression(expr, vars);
+        fail("Should have thrown a PropertyAccessException");
+      }
+      catch (PropertyAccessException pae) {
+        Assert.assertTrue(pae.getMessage().contains("Error: unable to resolve method"));
+      }
+    }
 }

@@ -51,10 +51,10 @@ public class MapAccessorNest implements AccessorNode {
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
     if (nextNode != null) {
-      return nextNode.getValue(((Map) ctx).get(property.getValue(ctx, elCtx, vrf)), elCtx, vrf);
+      return nextNode.getValue(((Map) ctx).get(property.getValue(elCtx, elCtx, vrf)), elCtx, vrf);
     }
     else {
-      return ((Map) ctx).get(property.getValue(ctx, elCtx, vrf));
+      return ((Map) ctx).get(property.getValue(elCtx, elCtx, vrf));
     }
   }
 

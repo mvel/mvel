@@ -1,14 +1,14 @@
 package org.mvel2.compiler;
 
-import junit.framework.TestCase;
-import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.tests.BaseMvelTestCase;
 
 /**
  * Asserts that the element at the end of the parse chain has its type parameter correctly inferred
@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author Dhanji R. Prasanna (dhanji@gmail com)
  */
-public class GenericsTypeInferenceTest extends TestCase {
+public class GenericsTypeInferenceTest extends BaseMvelTestCase {
   private static final List<String> STRINGS = Arrays.asList("hi", "there", "dude");
 
   public final void testInferLastTypeParametersFromProperty() {

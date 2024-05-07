@@ -592,17 +592,23 @@ public class PropertyAccessor {
       }
 
       if (member instanceof Method) {
-        try {
-          return ((Method) member).invoke(ctx, EMPTYARG);
+        Method method = (Method) member;
+		try {
+          return method.invoke(ctx, EMPTYARG);
         }
         catch (IllegalAccessException e) {
+          // Try method from interface, this might be a public method from a private implementation
+          Method itfMethod = ParseTools.determineActualTargetMethod(method);
+          if (itfMethod != null) {
+            return itfMethod.invoke(ctx, EMPTYARG);
+          }
           synchronized (member) {
             try {
-              ((Method) member).setAccessible(true);
-              return ((Method) member).invoke(ctx, EMPTYARG);
+              method.setAccessible(true);
+              return method.invoke(ctx, EMPTYARG);
             }
             finally {
-              ((Method) member).setAccessible(false);
+              method.setAccessible(false);
             }
           }
         }
@@ -900,7 +906,8 @@ public class PropertyAccessor {
      * If the target object is an instance of java.lang.Class itself then do not
      * adjust the Class scope target.
      */
-    Class cls = currType != null ? currType : ((ctx instanceof Class ? (Class) ctx : ctx.getClass()));
+    boolean classTarget = ctx instanceof Class;
+    Class cls = currType != null ? currType : ((classTarget ? (Class) ctx : ctx.getClass()));
     currType = null;
 
     if (cls == Proto.ProtoInstance.class) {
@@ -936,7 +943,7 @@ public class PropertyAccessor {
         parameterTypes = m.getParameterTypes();
       }
 
-      if (m == null) {
+      if (m == null && classTarget) {
         /**
          * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
          */

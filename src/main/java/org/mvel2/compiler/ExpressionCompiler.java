@@ -18,13 +18,29 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.*;
-import org.mvel2.ast.*;
-import org.mvel2.util.*;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.mvel2.CompileException;
+import org.mvel2.ErrorDetail;
+import org.mvel2.MVEL;
+import org.mvel2.Operator;
+import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.Assignment;
+import org.mvel2.ast.DeepOperativeAssignmentNode;
+import org.mvel2.ast.LiteralNode;
+import org.mvel2.ast.NewObjectNode;
+import org.mvel2.ast.OperatorNode;
+import org.mvel2.ast.Substatement;
+import org.mvel2.ast.Union;
+import org.mvel2.util.ASTLinkedList;
+import org.mvel2.util.CompilerTools;
+import org.mvel2.util.ErrorUtil;
+import org.mvel2.util.ExecutionStack;
+import org.mvel2.util.ParseTools;
+import org.mvel2.util.StringAppender;
 
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
@@ -108,7 +124,7 @@ public class ExpressionCompiler extends AbstractParser {
 
       fields |= COMPILE_IMMEDIATE;
 
-      while ((tk = nextToken()) != null) {
+      main_loop: while ((tk = nextToken()) != null) {
         /**
          * If this is a debug symbol, just add it and continue.
          */
@@ -184,7 +200,7 @@ public class ExpressionCompiler extends AbstractParser {
                     stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
                     if (isArithmeticOperator(op)) {
-                      compileReduce(op, astBuild);
+                      if (!compileReduce(op, astBuild)) continue main_loop;
                     }
                     else {
                       reduce();
@@ -277,7 +293,11 @@ public class ExpressionCompiler extends AbstractParser {
       }
 
       if (!verifyOnly) {
-        return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx.getParserConfiguration(), literalOnly == 1);
+        try {
+          return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx.getParserConfiguration(), literalOnly == 1);
+        } catch (RuntimeException e) {
+          throw new CompileException(e.getMessage(), expr, st, e);
+        }
       }
       else {
         try {
@@ -308,7 +328,7 @@ public class ExpressionCompiler extends AbstractParser {
 
   private boolean compileReduce(int opCode, ASTLinkedList astBuild) {
     switch (arithmeticFunctionReduction(opCode)) {
-      case -1:
+      case OP_TERMINATE:
         /**
          * The reduction failed because we encountered a non-literal,
          * so we must now back out and cleanup.
@@ -322,7 +342,7 @@ public class ExpressionCompiler extends AbstractParser {
             verify(pCtx, (ASTNode) splitAccumulator.pop())
         );
         return false;
-      case -2:
+      case OP_OVERFLOW:
         /**
          * Back out completely, pull everything back off the stack and add the instructions
          * to the output payload as they are.
@@ -334,6 +354,13 @@ public class ExpressionCompiler extends AbstractParser {
         astBuild.addTokenNode(new LiteralNode(stk.pop(), pCtx), operator);
         astBuild.addTokenNode(rightValue, (OperatorNode) splitAccumulator.pop());
         astBuild.addTokenNode(verify(pCtx, (ASTNode) splitAccumulator.pop()));
+        return false;
+      case OP_NOT_LITERAL:
+        ASTNode tkLA2 = (ASTNode) stk.pop();
+        Integer tkOp2 = (Integer) stk.pop();
+        astBuild.addTokenNode(new LiteralNode(getStackValueResult(), pCtx));
+        astBuild.addTokenNode(new OperatorNode(tkOp2, expr, st, pCtx), verify(pCtx, tkLA2));
+        return false;
     }
     return true;
   }
@@ -416,7 +443,10 @@ public class ExpressionCompiler extends AbstractParser {
                  * We convert the literal to the proper type.
                  */
                 try {
-                  a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
+                  // Don't convert to a literal for DeepOperativeAssignmentNode. Coercion will be done by BinaryOperation
+                  if (!(a instanceof DeepOperativeAssignmentNode)) {
+                      a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
+                  }
                   return tk;
                 }
                 catch (Exception e) {

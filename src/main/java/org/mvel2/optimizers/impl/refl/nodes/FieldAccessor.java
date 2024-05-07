@@ -64,6 +64,9 @@ public class FieldAccessor implements AccessorNode {
       }
     }
 
+    // this local field is required to make sure exception block works with the same coercionRequired value
+    // and it is not changed by another thread while setter is invoked 
+    boolean attemptedCoercion = coercionRequired;
     try {
 
       if (coercionRequired) {
@@ -76,7 +79,7 @@ public class FieldAccessor implements AccessorNode {
       }
     }
     catch (IllegalArgumentException e) {
-      if (!coercionRequired) {
+      if (!attemptedCoercion) {
         coercionRequired = true;
         return setValue(ctx, elCtx, variableFactory, value);
       }

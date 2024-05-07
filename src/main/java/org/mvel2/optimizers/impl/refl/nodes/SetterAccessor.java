@@ -20,6 +20,9 @@ public class SetterAccessor implements AccessorNode {
   public static final Object[] EMPTY = new Object[0];
 
   public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    // this local field is required to make sure exception block works with the same coercionRequired value
+    // and it is not changed by another thread while setter is invoked 
+    boolean attemptedCoercion = coercionRequired;
     try {
       if (coercionRequired) {
         return method.invoke(ctx, convert(value, targetType));
@@ -36,7 +39,7 @@ public class SetterAccessor implements AccessorNode {
         }
       }
 
-      if (!coercionRequired) {
+      if (!attemptedCoercion) {
         coercionRequired = true;
         return setValue(ctx, elCtx, variableFactory, value);
       }

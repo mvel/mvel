@@ -18,6 +18,23 @@
 
 package org.mvel2;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.ast.Proto;
@@ -29,20 +46,16 @@ import org.mvel2.util.LineMapper;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
-import java.io.Serializable;
-import java.lang.reflect.*;
-import java.util.*;
-
 /**
  * The <tt>ParserContext</tt> is the main environment object used for sharing state throughout the entire
- * parser/compileShared process.<br/><br/>
+ * parser/compileShared process.
  * The <tt>ParserContext</tt> is used to configure the parser/compiler.  For example:
  * <pre><code>
  * ParserContext parserContext = new ParserContext();
  * parserContext.setStrongTyping(true); // turn on strong typing.
- * <p/>
+ *
  * Serializable comp = MVEL.compileExpression("foo.bar", parserContext);
- * </code</pre>
+ * </code></pre>
  */
 public class ParserContext implements Serializable {
   private String sourceFile;
@@ -374,7 +387,6 @@ public class ParserContext implements Serializable {
   }
 
   public boolean hasProtoImport(String name) {
-    if (parserConfiguration.getImports() == null) return false;
     Object o = parserConfiguration.getImports().get(name);
     return o != null && o instanceof Proto;
   }
@@ -450,7 +462,6 @@ public class ParserContext implements Serializable {
     if (inputs == null) inputs = new LinkedHashMap<String, Class>();
 
     if (variableVisibility == null) {
-      initVariableVisibility();
       pushVariableScope();
 
       Set<String> scope = getVariableScope();
@@ -458,8 +469,7 @@ public class ParserContext implements Serializable {
       scope.addAll(variables.keySet());
       scope.addAll(inputs.keySet());
 
-      if (parserConfiguration.getImports() != null)
-        scope.addAll(parserConfiguration.getImports().keySet());
+      scope.addAll( parserConfiguration.getImports().keySet() );
 
       if (inputs.containsKey("this")) {
         Class<?> ctxType = inputs.get("this");
@@ -833,18 +843,6 @@ public class ParserContext implements Serializable {
     return globalFunctions != null && globalFunctions.size() != 0;
   }
 
-  public void addTypeParameters(String name, Class type) {
-    if (typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
-
-    Map<String, Type> newPkg = new HashMap<String, Type>();
-
-    for (Type t : type.getTypeParameters()) {
-      newPkg.put(t.toString(), Object.class);
-    }
-
-    typeParameters.put(name, newPkg);
-  }
-
   public void addTypeParameters(Map<String, Map<String, Type>> typeParameters) {
     if (typeParameters == null) return;
     if (this.typeParameters == null) typeParameters = new HashMap<String, Map<String, Type>>();
@@ -1060,11 +1058,6 @@ public class ParserContext implements Serializable {
 
   public ParserContext withInputs(Map<String, Class> inputs) {
     setInputs(inputs);
-    return this;
-  }
-
-  public ParserContext withTypeParameter(String name, Class type) {
-    addTypeParameters(name, type);
     return this;
   }
 

@@ -24,11 +24,14 @@ import org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class OptimizerFactory {
   public static String DYNAMIC = "dynamic";
   public static String SAFE_REFLECTIVE = "reflective";
 
+  private static final Logger LOG = Logger.getLogger(OptimizerFactory.class.getName());
   private static String defaultOptimizer;
   private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
@@ -43,9 +46,9 @@ public class OptimizerFactory {
      */
     try {
       if (OptimizerFactory.class.getClassLoader() != null) {
-          OptimizerFactory.class.getClassLoader().loadClass("org.mvel2.asm.ClassWriter");
+          OptimizerFactory.class.getClassLoader().loadClass("org.objectweb.asm.ClassWriter");
       } else {
-          ClassLoader.getSystemClassLoader().loadClass("org.mvel2.asm.ClassWriter");
+          ClassLoader.getSystemClassLoader().loadClass("org.objectweb.asm.ClassWriter");
       }
       accessorCompilers.put("ASM", new ASMAccessorOptimizer());
     }
@@ -53,9 +56,8 @@ public class OptimizerFactory {
       defaultOptimizer = SAFE_REFLECTIVE;
     }
     catch (Throwable e) {
-      e.printStackTrace();
-      System.err.println("[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
-          "Disabling JIT compiler.  Reflective Optimizer will be used.");
+      LOG.log(Level.WARNING, "[MVEL] Notice: Possible incorrect version of ASM present (3.0 required).  " +
+          "Disabling JIT compiler.  Reflective Optimizer will be used.", e);
       defaultOptimizer = SAFE_REFLECTIVE;
     }
 

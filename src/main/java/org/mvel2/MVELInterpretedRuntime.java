@@ -18,6 +18,10 @@
 
 package org.mvel2;
 
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.AbstractParser;
@@ -28,9 +32,14 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
-import java.util.Map;
-
-import static org.mvel2.Operator.*;
+import static org.mvel2.Operator.AND;
+import static org.mvel2.Operator.CHOR;
+import static org.mvel2.Operator.END_OF_STMT;
+import static org.mvel2.Operator.NOOP;
+import static org.mvel2.Operator.OR;
+import static org.mvel2.Operator.RETURN;
+import static org.mvel2.Operator.TERNARY;
+import static org.mvel2.Operator.TERNARY_ELSE;
 
 
 /**
@@ -38,6 +47,8 @@ import static org.mvel2.Operator.*;
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {
+  private static final Logger LOG = Logger.getLogger(MVELInterpretedRuntime.class.getName());
+
   public Object parse() {
     try {
       stk = new ExecutionStack();
@@ -47,11 +58,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
       return parseAndExecuteInterpreted();
     }
     catch (ArrayIndexOutOfBoundsException e) {
-      e.printStackTrace();
+      LOG.log(Level.WARNING, "", e);
       throw new CompileException("unexpected end of statement", expr, length);
     }
     catch (NullPointerException e) {
-      e.printStackTrace();
+      LOG.log(Level.WARNING, "", e);
 
       if (cursor >= length) {
         throw new CompileException("unexpected end of statement", expr, length);
@@ -229,12 +240,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
       case TERNARY:
         if (!stk.popBoolean()) {
           stk.clear();
-
-          ASTNode tk;
-
-          for (; ; ) {
-            if ((tk = nextToken()) == null || tk.isOperator(Operator.TERNARY_ELSE))
-              break;
+          for (int embeddedLevel = 1; embeddedLevel > 0; ) {
+        	  ASTNode tk = nextToken();
+        	  if (tk == null) break;
+              if (tk.isOperator(Operator.TERNARY_ELSE)) --embeddedLevel;
+              if (tk.isOperator(Operator.TERNARY)) ++embeddedLevel;
           }
         }
 
@@ -372,6 +382,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
   MVELInterpretedRuntime(String expression, VariableResolverFactory resolverFactory) {
     setExpression(expression);
     this.variableFactory = resolverFactory;
+    this.pCtx.initializeTables();
   }
 
   MVELInterpretedRuntime(String expression, Object ctx) {

@@ -10,6 +10,8 @@ import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
+import org.mvel2.tests.BaseMvelTest;
+import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.DerivedClass;
 import org.mvel2.tests.core.res.Foo;
@@ -48,22 +50,17 @@ import static org.mvel2.MVEL.executeExpression;
 import static org.mvel2.debug.DebugTools.decompile;
 import static org.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
 
-public abstract class AbstractTest extends TestCase {
+public abstract class AbstractTest extends BaseMvelTestCase {
 
   static {
     // Modify the dynamic optimizer to ensure it always engages the JIT
     DynamicOptimizer.tenuringThreshold = 1;
   }
 
-
   private boolean silentTests = Boolean.getBoolean("mvel.tests.silent");
 
   public void testNothing() {
     // to satify Eclipse and Surefire.
-  }
-
-  protected void setUp() throws Exception {
-
   }
 
   protected static Map createTestMap() {

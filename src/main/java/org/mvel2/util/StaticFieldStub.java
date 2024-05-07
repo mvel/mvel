@@ -1,12 +1,12 @@
 package org.mvel2.util;
 
-import org.mvel2.integration.VariableResolverFactory;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import org.mvel2.integration.VariableResolverFactory;
+
 /**
- * @author Mike Brock <cbrock@redhat.com>
+ * @author Mike Brock
  */
 public class StaticFieldStub implements StaticStub {
   private final Field field;

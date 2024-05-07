@@ -65,7 +65,6 @@ public interface VariableResolver extends Serializable {
    * Sets the value of the physical target value.
    *
    * @param value The new value.
-   * @return value after any conversion
    */
   public void setValue(Object value);
 }

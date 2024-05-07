@@ -18,6 +18,32 @@
 
 package org.mvel2.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.mvel2.CompileException;
 import org.mvel2.DataTypes;
 import org.mvel2.MVEL;
@@ -35,31 +61,6 @@ import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.MathContext;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
@@ -254,7 +255,7 @@ public class ParseTools {
           }
 
           boolean isVarArgs = meth.isVarArgs();
-          if (parmTypes.length != arguments.length && !isVarArgs) {
+          if ( isArgsNumberNotCompatible( arguments, parmTypes, isVarArgs ) ) {
             continue;
           }
 
@@ -265,7 +266,7 @@ public class ParseTools {
               bestScore = score;
             }
             else if (score == bestScore) {
-              if (isMoreSpecialized(meth, bestCandidate) && !isVarArgs) {
+              if ((isMoreSpecialized(meth, bestCandidate) || isMorePreciseForBigDecimal(meth, bestCandidate, arguments))&& !isVarArgs) {
                 bestCandidate = meth;
               }
             }
@@ -300,9 +301,50 @@ public class ParseTools {
     return bestCandidate;
   }
 
+  private static boolean isArgsNumberNotCompatible( Class[] arguments, Class<?>[] parmTypes, boolean isVarArgs ) {
+    return ( isVarArgs && parmTypes.length-1 > arguments.length ) || ( !isVarArgs && parmTypes.length != arguments.length );
+  }
+
   private static boolean isMoreSpecialized( Method newCandidate, Method oldCandidate ) {
     return oldCandidate.getReturnType().isAssignableFrom( newCandidate.getReturnType()) &&
            oldCandidate.getDeclaringClass().isAssignableFrom( newCandidate.getDeclaringClass());
+  }
+
+  private static boolean isMorePreciseForBigDecimal(Executable newCandidate, Executable oldCandidate, Class[] arguments) {
+    Class<?>[] newParmTypes = newCandidate.getParameterTypes();
+    Class<?>[] oldParmTypes = oldCandidate.getParameterTypes();
+    int score = 0;
+    for (int i = 0; i != arguments.length; i++) {
+      Class<?> newParmType = newParmTypes[i];
+      Class<?> oldParmType = oldParmTypes[i];
+      if (arguments[i] != BigDecimal.class || !isNumeric(oldParmType) || !isNumeric(newParmType)) {
+        continue;
+      }
+      score += comparePrecision(unboxPrimitive(newParmType), unboxPrimitive(oldParmType));
+    }
+    return (score > 0);
+  }
+
+  private static int comparePrecision(Class<?> numeric1, Class<?> numeric2) {
+    if (numeric1 == numeric2) {
+      return 0;
+    }
+    if (numeric1 == BigDecimal.class) {
+        return 1;
+    } else if ((numeric1 == double.class) && (numeric2 == float.class || numeric2 == long.class || numeric2 == int.class || numeric2 == short.class || numeric2 == BigInteger.class)) {
+      return 1;
+    } else if ((numeric1 == float.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class || numeric2 == BigInteger.class)) {
+      // float is preferred over long/BigInteger assuming users don't want to lose decimal part
+      return 1;
+    } else if ((numeric1 == BigInteger.class) && (numeric2 == long.class || numeric2 == int.class || numeric2 == short.class)) {
+      return 1;
+    } else if ((numeric1 == long.class) && (numeric2 == int.class || numeric2 == short.class)) {
+      return 1;
+    } else if ((numeric1 == int.class) && numeric2 == short.class) {
+      return 1;
+    } else {
+      return -1;
+    }
   }
 
   private static int getMethodScore(Class[] arguments, boolean requireExact, Class<?>[] parmTypes, boolean varArgs) {
@@ -316,7 +358,7 @@ public class ParseTools {
 
       if (arguments[i] == null) {
         if (!actualParamType.isPrimitive()) {
-          score += 6;
+          score += 7;
         }
         else {
           score = 0;
@@ -324,15 +366,18 @@ public class ParseTools {
         }
       }
       else if (actualParamType == arguments[i]) {
-        score += 7;
+        score += 8;
       }
       else if (actualParamType.isPrimitive() && boxPrimitive(actualParamType) == arguments[i]) {
-        score += 6;
+        score += 7;
       }
       else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == actualParamType) {
-        score += 6;
+        score += 7;
       }
       else if (actualParamType.isAssignableFrom(arguments[i])) {
+        score += 6;
+      }
+      else if (isPrimitiveSubtype(arguments[i], actualParamType)) {
         score += 5;
       }
       else if (isNumericallyCoercible(arguments[i], actualParamType)) {
@@ -456,10 +501,12 @@ public class ParseTools {
     Class[] parmTypes;
     Constructor bestCandidate = null;
     int bestScore = 0;
+    boolean bestCandidateIsVarArgs = false;
 
     for (Constructor construct : getConstructors(cls)) {
       boolean isVarArgs = construct.isVarArgs();
-      if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
+      parmTypes = getConstructors(construct);
+      if ( isArgsNumberNotCompatible( arguments, parmTypes, isVarArgs ) ) {
         continue;
       }
       else if (arguments.length == 0 && parmTypes.length == 0) {
@@ -467,9 +514,17 @@ public class ParseTools {
       }
 
       int score = getMethodScore(arguments, requireExact, parmTypes, isVarArgs);
-      if (score != 0 && score > bestScore) {
-        bestCandidate = construct;
-        bestScore = score;
+
+      if (score != 0) {
+        if (score > bestScore) {
+          bestCandidate = construct;
+          bestScore = score;
+          bestCandidateIsVarArgs = isVarArgs;
+        }
+        else if (score == bestScore && (isMorePreciseForBigDecimal(construct, bestCandidate, arguments) || (bestCandidateIsVarArgs && !isVarArgs))) {
+          bestCandidate = construct;
+          bestCandidateIsVarArgs = isVarArgs;
+        }
       }
     }
 
@@ -1060,6 +1115,22 @@ public class ParseTools {
     return code;
   }
 
+  private static boolean isPrimitiveSubtype( Class argument, Class<?> actualParamType ) {
+    if (!actualParamType.isPrimitive()) {
+      return false;
+    }
+    Class<?> primitiveArgument = unboxPrimitive(argument);
+    if (!primitiveArgument.isPrimitive()) {
+      return false;
+    }
+    return ( actualParamType == double.class && primitiveArgument == float.class ) ||
+           ( actualParamType == float.class && primitiveArgument == long.class ) ||
+           ( actualParamType == long.class && primitiveArgument == int.class ) ||
+           ( actualParamType == int.class && primitiveArgument == char.class ) ||
+           ( actualParamType == int.class && primitiveArgument == short.class ) ||
+           ( actualParamType == short.class && primitiveArgument == byte.class );
+  }
+
   public static boolean isNumericallyCoercible(Class target, Class parm) {
     Class boxedTarget = target.isPrimitive() ? boxPrimitive(target) : target;
 
@@ -1256,7 +1327,7 @@ public class ParseTools {
    * <br>
    * For example: ((foo + bar + (bar - foo)) * 20;<br>
    * <br>
-   * <p/>
+   *
    * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
    * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
    * Etc.
@@ -1287,6 +1358,7 @@ public class ParseTools {
 
     if (type == term) {
       for (start++; start < end; start++) {
+        if (chars[start] == '\\') start = skipStringEscape(start);
         if (chars[start] == type) {
           return start;
         }
@@ -2170,7 +2242,7 @@ public class ParseTools {
 
   public static Class forNameWithInner(String className, ClassLoader classLoader) throws ClassNotFoundException {
     try {
-      return Class.forName(className, true, classLoader);
+      return classLoader.loadClass( className );
     } catch (ClassNotFoundException cnfe) {
       return findInnerClass( className, classLoader, cnfe );
     }
@@ -2180,9 +2252,13 @@ public class ParseTools {
     for (int lastDotPos = className.lastIndexOf('.'); lastDotPos > 0; lastDotPos = className.lastIndexOf('.')) {
       className = className.substring(0, lastDotPos) + "$" + className.substring(lastDotPos+1);
       try {
-        return Class.forName(className, true, classLoader);
+        return classLoader.loadClass( className );
       } catch (ClassNotFoundException e) { /* ignore */ }
     }
     throw cnfe;
+  }
+
+  private static int skipStringEscape(int cur) {
+    return cur + 2;
   }
 }

@@ -10,13 +10,15 @@ import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.util.CompilerTools;
-import org.mvel2.util.MVELClassLoader;
+import org.mvel2.tests.core.res.Member;
+import org.mvel2.tests.core.res.SharedFuncLib;
 
 import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @author Dhanji R. Prasanna (dhanji@gmail com)
@@ -200,4 +202,37 @@ public class FunctionsTest extends AbstractTest {
     assertEquals("foobar", MVEL.executeExpression(s, myVarFactory));
   }
 
+
+
+  public void testFunctionReuseMultiThread(){
+    ExecutorService executor = Executors.newFixedThreadPool(4);
+    List<Callable<BigDecimal>> tasks = new ArrayList<Callable<BigDecimal>>();
+    for (int i=0;i<30;i++){
+      tasks.add(new Callable<BigDecimal>() {
+        @Override
+        public BigDecimal call() throws Exception {
+          List<Member> lst = new ArrayList<Member>();
+          lst.add(new Member("a", 18));
+          lst.add(new Member("b", 12));
+          lst.add(new Member("c", 40));
+          lst.add(new Member("d", 66));
+          lst.add(new Member("e", 72));
+          HashMap<String, Object> map = new HashMap<String,Object>();
+          map.put("members",lst);
+          return new SharedFuncLib().eval("round( sum(members,0B, def(p){ return 2B*p.age; }) ,2)", map, BigDecimal.class);
+        }
+      });
+    }
+
+    try {
+      List<Future<BigDecimal>> futures = executor.invokeAll(tasks);
+      for (Future<BigDecimal> future : futures){
+        System.out.println("res=" + future.get().toString());
+      }
+    } catch (InterruptedException ie){
+      throw new RuntimeException(ie);
+    } catch (ExecutionException ee) {
+      throw new RuntimeException(ee);
+    }
+  }
 }

@@ -17,16 +17,30 @@
  */
 package org.mvel2.optimizers.impl.asm;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
 import org.mvel2.OptimizationFailure;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessException;
-import org.mvel2.asm.ClassWriter;
-import org.mvel2.asm.Label;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Opcodes;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.mvel2.ast.FunctionInstance;
 import org.mvel2.ast.TypeDescriptor;
 import org.mvel2.ast.WithNode;
@@ -46,23 +60,10 @@ import org.mvel2.optimizers.impl.refl.nodes.Union;
 import org.mvel2.util.JITClassLoader;
 import org.mvel2.util.MVELClassLoader;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.PropertyTools;
 import org.mvel2.util.StringAppender;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static java.lang.System.getProperty;
@@ -70,18 +71,98 @@ import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.getLength;
 import static java.lang.reflect.Modifier.FINAL;
 import static java.lang.reflect.Modifier.STATIC;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
-import static org.mvel2.asm.Opcodes.*;
-import static org.mvel2.asm.Type.*;
+import static org.objectweb.asm.Opcodes.AALOAD;
+import static org.objectweb.asm.Opcodes.AASTORE;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ANEWARRAY;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ARRAYLENGTH;
+import static org.objectweb.asm.Opcodes.ASTORE;
+import static org.objectweb.asm.Opcodes.ATHROW;
+import static org.objectweb.asm.Opcodes.BALOAD;
+import static org.objectweb.asm.Opcodes.BASTORE;
+import static org.objectweb.asm.Opcodes.BIPUSH;
+import static org.objectweb.asm.Opcodes.CALOAD;
+import static org.objectweb.asm.Opcodes.CASTORE;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.DALOAD;
+import static org.objectweb.asm.Opcodes.DASTORE;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.DUP_X1;
+import static org.objectweb.asm.Opcodes.DUP_X2;
+import static org.objectweb.asm.Opcodes.FALOAD;
+import static org.objectweb.asm.Opcodes.FASTORE;
+import static org.objectweb.asm.Opcodes.GETFIELD;
+import static org.objectweb.asm.Opcodes.GETSTATIC;
+import static org.objectweb.asm.Opcodes.GOTO;
+import static org.objectweb.asm.Opcodes.IALOAD;
+import static org.objectweb.asm.Opcodes.IASTORE;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.ICONST_1;
+import static org.objectweb.asm.Opcodes.ICONST_2;
+import static org.objectweb.asm.Opcodes.ICONST_3;
+import static org.objectweb.asm.Opcodes.ICONST_4;
+import static org.objectweb.asm.Opcodes.ICONST_5;
+import static org.objectweb.asm.Opcodes.IFEQ;
+import static org.objectweb.asm.Opcodes.IFNONNULL;
+import static org.objectweb.asm.Opcodes.IF_ICMPLT;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.ISTORE;
+import static org.objectweb.asm.Opcodes.LALOAD;
+import static org.objectweb.asm.Opcodes.LASTORE;
+import static org.objectweb.asm.Opcodes.NEW;
+import static org.objectweb.asm.Opcodes.NEWARRAY;
+import static org.objectweb.asm.Opcodes.POP;
+import static org.objectweb.asm.Opcodes.PUTFIELD;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.SALOAD;
+import static org.objectweb.asm.Opcodes.SASTORE;
+import static org.objectweb.asm.Opcodes.SIPUSH;
+import static org.objectweb.asm.Opcodes.SWAP;
+import static org.objectweb.asm.Type.getConstructorDescriptor;
+import static org.objectweb.asm.Type.getDescriptor;
+import static org.objectweb.asm.Type.getInternalName;
+import static org.objectweb.asm.Type.getMethodDescriptor;
+import static org.objectweb.asm.Type.getType;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
-import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.EMPTY_OBJ_ARR;
+import static org.mvel2.util.ParseTools.balancedCapture;
+import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.captureContructorAndResidual;
+import static org.mvel2.util.ParseTools.determineActualTargetMethod;
+import static org.mvel2.util.ParseTools.findClass;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
+import static org.mvel2.util.ParseTools.getSubComponentType;
+import static org.mvel2.util.ParseTools.getWidenedTarget;
+import static org.mvel2.util.ParseTools.isPrimitiveWrapper;
+import static org.mvel2.util.ParseTools.parseMethodOrConstructor;
+import static org.mvel2.util.ParseTools.parseParameterList;
+import static org.mvel2.util.ParseTools.repeatChar;
+import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.ParseTools.subset;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveArray;
@@ -93,7 +174,6 @@ import static org.mvel2.util.Varargs.paramTypeVarArgsSafe;
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
  * engineering library.
- * <p/>
  */
 @SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "unchecked", "UnusedDeclaration"})
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
@@ -105,16 +185,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
   static {
     final String javaVersion = PropertyTools.getJavaVersion();
-    if (javaVersion.startsWith("1.4"))
+    if (javaVersion.startsWith("1.4")) {
       OPCODES_VERSION = Opcodes.V1_4;
-    else if (javaVersion.startsWith("1.5"))
+    } else if (javaVersion.startsWith("1.5")) {
       OPCODES_VERSION = Opcodes.V1_5;
-    else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7") || javaVersion.startsWith("1.8"))
+    } else {
       OPCODES_VERSION = Opcodes.V1_6;
-    else if (javaVersion.startsWith("1.8"))
-      OPCODES_VERSION = Opcodes.V1_8;
-    else
-      OPCODES_VERSION = Opcodes.V1_2;
+    }
 
     String defaultNameSapce = getProperty("mvel2.namespace");
     if (defaultNameSapce == null) NAMESPACE = "org/mvel2/";
@@ -193,7 +270,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     synchronized (Runtime.getRuntime()) {
       cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
           + valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) +
-          ((int) Math.random() * 100),
+          ((int) (Math.random() * 100)),
           null, "java/lang/Object", new String[]{NAMESPACE + "compiler/Accessor"});
     }
 
@@ -224,7 +301,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     synchronized (Runtime.getRuntime()) {
       cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
           + valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) +
-          ((int) Math.random() * 100),
+          ((int) (Math.random() * 100)),
           null, "java/lang/Object", new String[]{NAMESPACE + "compiler/Accessor"});
     }
 
@@ -455,7 +532,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
       }
 
-      String tk = new String(expr, this.cursor, this.length);
+      String tk = new String(expr, this.cursor, end - cursor);
       Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, value == null ? null : ingressType);
 
       if (GlobalListenerFactory.hasSetListeners()) {
@@ -723,7 +800,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     if (clazz.isPrimitive()) {
         mv.visitFieldInsn(GETSTATIC, toNonPrimitiveType(clazz).getName().replace(".", "/"), "TYPE", "Ljava/lang/Class;");
     } else {
-        mv.visitLdcInsn(org.mvel2.asm.Type.getType(clazz));
+        mv.visitLdcInsn(org.objectweb.asm.Type.getType(clazz));
     }
   }
 
@@ -1103,9 +1180,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         returnType = ((Method) member).getReturnType();
 
-        assert debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
-        mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
+        if (member.getDeclaringClass().isInterface()) {
+          assert debug("INVOKEINTERFACE " + member.getName() + ":" + returnType);
+          mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(member.getDeclaringClass()), member.getName(),
+              getMethodDescriptor((Method) member));
+        }
+        else {
+          assert debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
+          mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
             getMethodDescriptor((Method) member));
+        }
       }
       catch (IllegalAccessException e) {
         Method iFaceMeth = determineActualTargetMethod((Method) member);
@@ -1381,7 +1465,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray(), pCtx);
-    Object item = compiled.getValue(ctx, variableFactory);
+    Object item = compiled.getValue(this.ctx, variableFactory);
 
     ++cursor;
 
@@ -1534,7 +1618,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     if (ctx == null) return null;
 
     ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
-    Object item = compiled.getValue(ctx, variableFactory);
+    Object item = compiled.getValue(this.ctx, variableFactory);
 
     ++cursor;
 
@@ -1740,6 +1824,9 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       if (pCtx.isStrictTypeEnforcement()) {
         for (int i = 0; i < args.length; i++) {
           argTypes[i] = es[i].getKnownEgressType();
+          if (es[i] instanceof ExecutableLiteral && ((ExecutableLiteral)es[i]).getLiteral() == null) {
+              argTypes[i] = NullType.class;
+            }
         }
       }
       else {
@@ -1963,7 +2050,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     }
     else {
       m = getWidenedTarget(m);
-
       if (es != null) {
         ExecutableStatement cExpr;
         for (int i = 0; i < es.length; i++) {
@@ -1985,24 +2071,25 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         }
       }
 
+      Class<?> declaringClass = m.getDeclaringClass();
       if (m.getParameterTypes().length == 0) {
         if ((m.getModifiers() & STATIC) != 0) {
           assert debug("INVOKESTATIC " + m.getName());
-          mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+          mv.visitMethodInsn(INVOKESTATIC, getInternalName(declaringClass), m.getName(), getMethodDescriptor(m));
         }
         else {
-          assert debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
-          mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
+          assert debug("CHECKCAST " + getInternalName(declaringClass));
+          mv.visitTypeInsn(CHECKCAST, getInternalName(declaringClass));
 
-          if (m.getDeclaringClass().isInterface()) {
+          if (declaringClass.isInterface()) {
             assert debug("INVOKEINTERFACE " + m.getName());
-            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
 
           }
           else {
             assert debug("INVOKEVIRTUAL " + m.getName());
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
         }
@@ -2013,21 +2100,10 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       }
       else {
         if ((m.getModifiers() & STATIC) == 0) {
-          assert debug("CHECKCAST " + getInternalName(cls));
-          mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+          assert debug("CHECKCAST " + getInternalName(declaringClass));
+          mv.visitTypeInsn(CHECKCAST, getInternalName(declaringClass));
         }
 
-          Class<?> aClass = m.getParameterTypes()[m.getParameterTypes().length - 1];
-          if(m.isVarArgs()){
-              if(es == null || es.length == (m.getParameterTypes().length - 1) ){
-                  ExecutableStatement[] executableStatements = new ExecutableStatement[m.getParameterTypes().length];
-                  if(es != null){
-                      System.arraycopy(es,0,executableStatements,0,es.length);
-                  }
-                  executableStatements[executableStatements.length -1 ]= new ExecutableLiteral(Array.newInstance(aClass,0));
-                  es = executableStatements;
-              }
-          }
 
         for (int i = 0; es != null && i < es.length; i++) {
           if (es[i] instanceof ExecutableLiteral) {
@@ -2081,7 +2157,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
                 else {
                   assert debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
 
-                  mv.visitLdcInsn(convert(lit, parameterTypes[i]));
+                  mv.visitLdcInsn(c);
 
                   if (isPrimitiveWrapper(parameterTypes[i])) {
                     wrapPrimitive(lit.getClass());
@@ -2142,8 +2218,18 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
           }
           else if (parameterTypes[i] == String.class) {
             assert debug("<<<DYNAMIC TYPE OPTIMIZATION STRING>>");
+            mv.visitVarInsn(ASTORE, 4);
+            Label jmp = new Label();
+            mv.visitVarInsn(ALOAD, 4);
+            mv.visitJumpInsn(IFNONNULL, jmp);
+            mv.visitInsn(ACONST_NULL);
+            Label jmp2 = new Label();
+            mv.visitJumpInsn(GOTO, jmp2);
+            mv.visitLabel(jmp);
+            mv.visitVarInsn(ALOAD,4);
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/String", "valueOf",
                 "(Ljava/lang/Object;)Ljava/lang/String;");
+            mv.visitLabel(jmp2);
           }
           else {
             assert debug("<<<DYNAMIC TYPING BYPASS>>>");
@@ -2154,20 +2240,23 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
           }
         }
 
+        if(m.isVarArgs() && (es == null || es.length == (parameterTypes.length - 1) )){
+            // The last parameter is a vararg and there is no value, create an empty array array
+            createArray(getBaseComponentType(parameterTypes[parameterTypes.length - 1]) ,0);
+        }
         if ((m.getModifiers() & STATIC) != 0) {
           assert debug("INVOKESTATIC: " + m.getName());
-          mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+          mv.visitMethodInsn(INVOKESTATIC, getInternalName(declaringClass), m.getName(), getMethodDescriptor(m));
         }
         else {
-          if (m.getDeclaringClass().isInterface() && (m.getDeclaringClass() != cls
-              || (ctx != null && ctx.getClass() != m.getDeclaringClass()))) {
-            assert debug("INVOKEINTERFACE: " + getInternalName(m.getDeclaringClass()) + "." + m.getName());
-            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+          if (declaringClass.isInterface()) {
+            assert debug("INVOKEINTERFACE: " + getInternalName(declaringClass) + "." + m.getName());
+            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
           else {
-            assert debug("INVOKEVIRTUAL: " + getInternalName(cls) + "." + m.getName());
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(cls), m.getName(),
+            assert debug("INVOKEVIRTUAL: " + getInternalName(declaringClass) + "." + m.getName());
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(declaringClass), m.getName(),
                 getMethodDescriptor(m));
           }
         }
@@ -2571,6 +2660,41 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       wrapPrimitive(byte.class);
     }
   }
+  
+  /**
+   * Gets the ASM instruction operand for the given primitive type.
+   * Will throw IllegalStateException if the type is not primitive.
+   * @param c The class representing the primitive type. 
+   * @return The operand
+   */
+  public static int toPrimitiveTypeOperand(Class<?> c) {
+      if (c == int.class) return Opcodes.T_INT;
+      if (c == long.class) return Opcodes.T_LONG;
+      if (c == double.class) return Opcodes.T_DOUBLE;
+      if (c == float.class) return Opcodes.T_FLOAT;
+      if (c == short.class) return Opcodes.T_SHORT;
+      if (c == byte.class) return Opcodes.T_BYTE;
+      if (c == char.class) return Opcodes.T_CHAR;
+      if (c == boolean.class) return Opcodes.T_BOOLEAN;
+      throw new IllegalStateException("Non-primitive type passed to toPrimitiveTypeOperand: " + c);
+   }
+
+  /**
+   * Create an array of any type (primitive or reference)
+   * @param componentType The type of array elements
+   * @param length The length of the array
+   */
+  private void createArray(Class componentType, int length) {
+      intPush(length);
+      if (componentType.isPrimitive()) {
+         assert debug("NEWARRAY " + getInternalName(componentType) + " (" + length + ")");
+         mv.visitIntInsn(NEWARRAY, toPrimitiveTypeOperand(componentType)); 
+      }
+      else {
+         assert debug("ANEWARRAY " + getInternalName(componentType) + " (" + length + ")");
+         mv.visitTypeInsn(ANEWARRAY, getInternalName(componentType));
+      }
+    }
 
   public void arrayStore(Class cls) {
     if (cls.isPrimitive()) {
@@ -2624,14 +2748,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
 
 
   private Object addSubstatement(ExecutableStatement stmt) {
-    if (stmt instanceof ExecutableAccessor) {
-      ExecutableAccessor ea = (ExecutableAccessor) stmt;
-      if (ea.getNode().isIdentifier() && !ea.getNode().isDeepProperty()) {
-        loadVariableByName(ea.getNode().getName());
-        return null;
-      }
-    }
-
     compiledInputs.add(stmt);
 
     assert debug("ALOAD 0");
@@ -2859,13 +2975,11 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       }
 
       try {
-        intPush(((Object[]) o).length);
-        assert debug("ANEWARRAY " + getInternalName(getSubComponentType(type)) + " (" + ((Object[]) o).length + ")");
-        mv.visitTypeInsn(ANEWARRAY, getInternalName(getSubComponentType(type)));
-
+        Class componentType = getSubComponentType(type);
+        createArray(componentType, ((Object[])o).length);
         Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1)
             + "L" + getBaseComponentType(type).getName() + ";", pCtx)
-            : type;
+            : toNonPrimitiveArray(type);
 
 
         assert debug("DUP");
@@ -2878,9 +2992,10 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
             assert debug("POP");
             mv.visitInsn(POP);
           }
-
-          assert debug("AASTORE (" + o.hashCode() + ")");
-          mv.visitInsn(AASTORE);
+          if (componentType.isPrimitive()) {
+              unwrapPrimitive(componentType);
+          }
+          arrayStore(componentType);
 
           assert debug("DUP");
           mv.visitInsn(DUP);
@@ -2989,7 +3104,6 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     this.end = start + offset;
     this.length = offset;
 
-    type = toNonPrimitiveArray(type);
     this.returnType = type;
 
     this.compiledInputs = new ArrayList<ExecutableStatement>();
@@ -2997,6 +3111,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
     this.ctx = ctx;
     this.thisRef = thisRef;
     this.variableFactory = factory;
+    this.pCtx = pCtx;
 
     _initJIT();
 
@@ -3120,9 +3235,31 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         }
 
         this.returnType = cns.getDeclaringClass();
+        Class[] parameterTypes = cns.getParameterTypes();
 
         Class tg;
+        Class<?> paramType = null;
+        int vaStart = -1;
         for (i = 0; i < constructorParms.size(); i++) {
+          if (i < parameterTypes.length) {
+            paramType = parameterTypes[i];
+            if (cns.isVarArgs() && i == parameterTypes.length - 1) {
+              paramType = getBaseComponentType(paramType);
+              vaStart = i;
+              createArray(paramType, constructorParms.size() - vaStart);
+            }
+          }
+          else {
+            if (vaStart < 0 || paramType == null) {
+              throw new IllegalStateException("Incorrect argument count " + i);
+            }
+          }
+          if (vaStart >= 0) {
+              assert debug("DUP");
+              mv.visitInsn(DUP);
+              intPush(i - vaStart);
+          }
+
           assert debug("ALOAD 0");
           mv.visitVarInsn(ALOAD, 0);
           assert debug("GETFIELD p" + i);
@@ -3136,18 +3273,18 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
               + "compiler/ExecutableStatement", "getValue", "(Ljava/lang/Object;L" + NAMESPACE
               + "integration/VariableResolverFactory;)Ljava/lang/Object;");
 
-          tg = cns.getParameterTypes()[i].isPrimitive()
-              ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
+          tg = paramType.isPrimitive()
+              ? getWrapperClass(paramType) : paramType;
 
-          if (parms[i] != null && !parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
+          if (parms[i] != null && !parms[i].getClass().isAssignableFrom(paramType)) {
             ldcClassConstant(tg);
 
             assert debug("INVOKESTATIC " + NAMESPACE + "DataConversion.convert");
             mv.visitMethodInsn(INVOKESTATIC, "" + NAMESPACE + "DataConversion", "convert",
                 "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
-            if (cns.getParameterTypes()[i].isPrimitive()) {
-              unwrapPrimitive(cns.getParameterTypes()[i]);
+            if (paramType.isPrimitive()) {
+              unwrapPrimitive(paramType);
             }
             else {
               assert debug("CHECKCAST " + getInternalName(tg));
@@ -3156,10 +3293,17 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
 
           }
           else {
-            assert debug("CHECKCAST " + getInternalName(cns.getParameterTypes()[i]));
-            mv.visitTypeInsn(CHECKCAST, getInternalName(cns.getParameterTypes()[i]));
+            assert debug("CHECKCAST " + getInternalName(paramType));
+            mv.visitTypeInsn(CHECKCAST, getInternalName(paramType));
+          }
+          if (vaStart >= 0) {
+              arrayStore(paramType);
           }
 
+        }
+        if (i < parameterTypes.length && cns.isVarArgs()) {
+            // The last parameter is a vararg and there is no value, create an empty array array
+            createArray(getBaseComponentType(parameterTypes[i]) ,0);
         }
 
         assert debug("INVOKESPECIAL " + getInternalName(cls) + ".<init> : " + getConstructorDescriptor(cns));

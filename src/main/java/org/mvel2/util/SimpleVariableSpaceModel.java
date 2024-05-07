@@ -4,21 +4,21 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.IndexVariableResolver;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
-import org.mvel2.integration.impl.SimpleValueResolver;
+import org.mvel2.integration.impl.SimpleSTValueResolver;
 
 /**
  * @author Mike Brock .
  */
 public class SimpleVariableSpaceModel extends VariableSpaceModel {
-  public SimpleVariableSpaceModel(String[] varNames) {
-    this.allVars = varNames;
+  public SimpleVariableSpaceModel(String[] allVars) {
+    super(allVars);
   }
 
   public VariableResolverFactory createFactory(Object[] vals) {
     VariableResolver[] resolvers = new VariableResolver[allVars.length];
     for (int i = 0; i < resolvers.length; i++) {
       if (i >= vals.length) {
-        resolvers[i] = new SimpleValueResolver(null);
+        resolvers[i] = new SimpleSTValueResolver(null, null);
       }
       else {
         resolvers[i] = new IndexVariableResolver(i, vals);

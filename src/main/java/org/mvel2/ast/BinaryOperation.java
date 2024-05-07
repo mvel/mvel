@@ -18,7 +18,11 @@
 
 package org.mvel2.ast;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.mvel2.CompileException;
+import org.mvel2.DataTypes;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.ScriptRuntimeException;
@@ -73,10 +77,16 @@ public class BinaryOperation extends BooleanNode {
         egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
         if (!ctx.isStrongTyping()) break;
 
-        if (!left.getEgressType().isAssignableFrom(right.getEgressType()) && !right.getEgressType().isAssignableFrom(left.getEgressType())) {
-          if (right.isLiteral() && canConvert(left.getEgressType(), right.getEgressType())) {
+        final boolean leftIsAssignableFromRight = left.getEgressType().isAssignableFrom(right.getEgressType());
+        final boolean rightIsAssignableFromLeft = right.getEgressType().isAssignableFrom(left.getEgressType());
+
+        if (!leftIsAssignableFromRight && !rightIsAssignableFromLeft) {
+
+          final boolean requiresConversion = doesRequireConversion(left.getEgressType(), right.getEgressType(), operation);
+
+          if (right.isLiteral() && requiresConversion && canConvert(left.getEgressType(), right.getEgressType())) {
             Class targetType = isAritmeticOperation(operation) ? egressType : left.getEgressType();
-            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), pCtx);
+            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), targetType), targetType, pCtx);
           } else if ( !(areCompatible(left.getEgressType(), right.getEgressType()) ||
                   (( operation == Operator.EQUAL || operation == Operator.NEQUAL) &&
                      CompatibilityStrategy.areEqualityCompatible(left.getEgressType(), right.getEgressType()))) ) {
@@ -89,17 +99,36 @@ public class BinaryOperation extends BooleanNode {
         }
     }
 
-
-    // }
-
-    if (this.left.isLiteral() && this.right.isLiteral()) {
-      if (this.left.egressType == this.right.egressType) {
-        lType = rType = ParseTools.__resolveType(left.egressType);
-      } else {
-        lType = ParseTools.__resolveType(this.left.egressType);
-        rType = ParseTools.__resolveType(this.right.egressType);
-      }
+    if (this.left.egressType == this.right.egressType) {
+        lType = rType = getOperandType(this.left);
     }
+    else {
+    	if (this.left.isLiteral()) lType = getOperandType(this.left);
+    	if (this.right.isLiteral()) rType = getOperandType(this.right);
+    }
+  }
+
+  private int getOperandType(ASTNode node) {
+    if (node.egressType == null || node.egressType == Object.class) {
+      return DataTypes.NULL;
+    }
+    return ParseTools.__resolveType(node.egressType);
+  }
+
+  private boolean doesRequireConversion(Class leftType, Class rightType, int op) {
+    // Precision down cast is okay (See PrimitiveTypesTest.testFloatPrimitive()).
+    // But don't convert float/double/BigDecimal to short/int/long/BigInteger
+    if ((leftType == Short.class || leftType == short.class
+            || leftType == Integer.class || leftType == int.class
+            || leftType == Long.class || leftType == long.class
+            || leftType == BigInteger.class)
+        &&
+        (rightType == Float.class || rightType == float.class
+            || rightType == Double.class || rightType == double.class
+            || rightType == BigDecimal.class)) {
+        return false;
+    }
+    return true;
   }
 
   private boolean isAritmeticOperation(int operation) {
@@ -127,10 +156,6 @@ public class BinaryOperation extends BooleanNode {
     return operation;
   }
 
-  public BinaryOperation getRightBinary() {
-    return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
-  }
-
   public void setRightMost(ASTNode right) {
     BinaryOperation n = this;
     while (n.right != null && n.right instanceof BinaryOperation) {
@@ -149,14 +174,6 @@ public class BinaryOperation extends BooleanNode {
       n = (BinaryOperation) n.right;
     }
     return n.right;
-  }
-
-  public int getPrecedence() {
-    return PTABLE[operation];
-  }
-
-  public boolean isGreaterPrecedence(BinaryOperation o) {
-    return o.getPrecedence() > PTABLE[operation];
   }
 
   @Override

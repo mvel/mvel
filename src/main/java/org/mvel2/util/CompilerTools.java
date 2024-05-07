@@ -18,6 +18,9 @@
 
 package org.mvel2.util;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
@@ -48,10 +51,8 @@ import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import static org.mvel2.Operator.PTABLE;
+import static org.mvel2.Operator.TERNARY;
 import static org.mvel2.util.ASTBinaryTree.buildTree;
 import static org.mvel2.util.ParseTools.__resolveType;
 import static org.mvel2.util.ParseTools.boxPrimitive;
@@ -102,7 +103,7 @@ public class CompilerTools {
             bo = null;
 
             boolean inv = tkOp.isOperator(Operator.SUB);
-            boolean reduc = isReductionOpportunity(tkOp, tk2);
+            boolean reduc = tk.isLiteral() && isReductionOpportunity(tkOp, tk2);
             boolean p_inv = false;
 
             while (reduc) {
@@ -149,8 +150,14 @@ public class CompilerTools {
               && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
 
             if (PTABLE[op2] > PTABLE[op]) {
-              //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx));
-              bo.setRightMost(boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx));
+               BinaryOperation newRightBo = boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), pCtx);
+               if (isIntOptimizationviolation(bo, newRightBo)) {
+                 // Oops! We optimized the node based on the assumed right node type but it gets replaced
+                 bo = new BinaryOperation(bo.getOperation(), bo.getLeft(), newRightBo, pCtx);
+               }
+               else {
+                 bo.setRightMost(newRightBo);
+               }
             }
             else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
               if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
@@ -342,6 +349,10 @@ public class CompilerTools {
         optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode(), pCtx));
         break;
 
+      case TERNARY:
+        if ( pCtx.isStrongTyping() && tk.getEgressType() != Boolean.class && tk.getEgressType() != Boolean.TYPE )
+            throw new RuntimeException( "Condition of ternary operator is not of type boolean. Found " + tk.getEgressType() );
+
       default:
         optimizedAst.addTokenNode(tk, tkOp);
     }
@@ -361,7 +372,7 @@ public class CompilerTools {
   /**
    * Returns an ordered Map of all functions declared within an compiled script.
    *
-   * @param compile
+   * @param compile compile
    * @return - ordered Map
    */
   public static Map<String, Function> extractAllDeclaredFunctions(CompiledExpression compile) {

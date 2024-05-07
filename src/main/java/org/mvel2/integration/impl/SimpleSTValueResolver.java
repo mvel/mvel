@@ -64,7 +64,7 @@ public class SimpleSTValueResolver implements VariableResolver {
     this.value = handleTypeCoercion(type, value);
   }
 
-  private static Object handleTypeCoercion(Class type, Object value) {
+  public static Object handleTypeCoercion(Class type, Object value) {
     if (type != null && value != null && value.getClass() != type) {
       if (!canConvert(type, value.getClass())) {
         throw new RuntimeException("cannot assign " + value.getClass().getName() + " to type: "

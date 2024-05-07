@@ -18,7 +18,26 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.mvel2.CompileException;
+import org.mvel2.ErrorDetail;
+import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
@@ -26,9 +45,6 @@ import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
-
-import java.lang.reflect.*;
-import java.util.*;
 
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
@@ -138,9 +154,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
   private void recordTypeParmsForProperty(String property) {
     if (pCtx.isStrictTypeEnforcement()) {
-      if ((paramTypes = pCtx.getTypeParameters(property)) == null) {
-        pCtx.addTypeParameters(property, pCtx.getVarOrInputType(property));
-      }
       pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
     }
   }
@@ -198,7 +211,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             pCtx.setLastTypeParameters(pt.getActualTypeArguments());
 
             Type[] gpt = pt.getActualTypeArguments();
-            Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
+            Type[] classArgs = type2Class(pt.getRawType()).getTypeParameters();
 
             if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Type>();
             for (int i = 0; i < gpt.length; i++) {
@@ -234,13 +247,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
       Type parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
       pCtx.setLastTypeParameters(null);
-
-      if (parm instanceof ParameterizedType) {
-        return Object.class;
-      }
-      else {
-        return (Class) parm;
-      }
+      return parm instanceof ParameterizedType ? Object.class : (Class) parm;
     }
 
     if (pCtx != null && "length".equals(property) && ctx.isArray()) {
@@ -341,7 +348,7 @@ public class PropertyVerifier extends AbstractOptimizer {
       ParameterizedType pt = (ParameterizedType) parametricReturnType;
 
       Type[] gpt = pt.getActualTypeArguments();
-      Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
+      Type[] classArgs = type2Class(pt.getRawType()).getTypeParameters();
 
       if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Type>();
       for (int i = 0; i < gpt.length; i++) {
@@ -364,7 +371,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If the paramTypes Map contains the known type, return that type.
          */
-        return (Class) paramTypes.get(returnTypeArg);
+        return type2Class( paramTypes.get(returnTypeArg) );
     }
 
     return m.getReturnType();
@@ -393,16 +400,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     if (pCtx.isStrictTypeEnforcement()) {
       if (Map.class.isAssignableFrom(property.length() != 0 ? ctx = getBeanProperty(ctx, property) : ctx)) {
-        ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
+        ctx = type2Class(pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
       }
       else if (Collection.class.isAssignableFrom(ctx)) {
-        if (pCtx.getLastTypeParameters().length == 0 ) {
-          ctx = Object.class;
-        } else {
-          Type type = pCtx.getLastTypeParameters()[0];
-          if (type instanceof Class) ctx = (Class)type;
-          else ctx = (Class)((ParameterizedType)type).getRawType();
-        }
+        ctx = pCtx.getLastTypeParameters() == null || pCtx.getLastTypeParameters().length == 0 ? Object.class : type2Class(pCtx.getLastTypeParameters()[0]);
       }
       else if (ctx.isArray()) {
         ctx = ctx.getComponentType();
@@ -620,7 +621,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         TypeVariable[] typeVariables = ctx.getTypeParameters();
         for (int i = 0; i < typeVariables.length; i++) {
           Type typeArg = pCtx.getLastTypeParameters()[i];
-          typeArgs.put(typeVariables[i].getName(), typeArg instanceof Class ? (Class) pCtx.getLastTypeParameters()[i] : Object.class);
+          typeArgs.put(typeVariables[i].getName(), typeArg instanceof Class ? type2Class( pCtx.getLastTypeParameters()[i] ) : Object.class);
         }
       }
 
@@ -639,7 +640,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If the paramTypes Map contains the known type, return that type.
          */
-        return (Class) paramTypes.get(returnTypeArg);
+        return type2Class(paramTypes.get(returnTypeArg));
       }
       else if (typeArgs.containsKey(returnTypeArg)) {
         /**
@@ -666,6 +667,23 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     return getReturnType(ctx, m);
+  }
+
+  private static Class<?> type2Class(Type type) {
+    if (type == null) {
+      return null;
+    }
+    if (type instanceof Class<?>) {
+      return (Class) type;
+    }
+    if (type instanceof ParameterizedType) {
+      return type2Class(((ParameterizedType) type).getRawType());
+    }
+    if (type instanceof TypeVariable) { // this is T in Optional<T>
+      GenericDeclaration genericDeclaration = ((TypeVariable) type).getGenericDeclaration();
+      return genericDeclaration instanceof Method ? ((Method) genericDeclaration).getReturnType() : Object.class;
+    }
+    throw new UnsupportedOperationException("Unknown type " + type);
   }
 
   private Class getWithProperty(Class ctx) {

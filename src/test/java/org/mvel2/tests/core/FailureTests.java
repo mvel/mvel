@@ -1,10 +1,12 @@
 package org.mvel2.tests.core;
 
+import java.io.Serializable;
+import java.util.HashMap;
+
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-
-import java.util.HashMap;
+import org.mvel2.optimizers.OptimizerFactory;
 
 /**
  * Tests to ensure MVEL fails when it should.
@@ -191,4 +193,30 @@ public class FailureTests extends AbstractTest {
 
   }
 
+  public void testErrorUtilShouldNotThrowNPE() {
+    try {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+      Serializable compiledExpression = MVEL.compileExpression("new org.mvel2.tests.core.FailureTests$Person()");
+      MVEL.executeExpression(compiledExpression);
+
+      fail("Should throw CompileException");
+    } catch (CompileException ce) {
+      assertTrue(ce.getMessage().contains("unable to find constructor"));
+    } catch (NullPointerException npe) {
+      fail("Should not throw NullPointerException");
+    } finally {
+      OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+    }
+  }
+
+  public static class Person {
+
+      private String name;
+
+      public Person(String name) {
+          super();
+          this.name = name;
+      }
+
+  }
 }

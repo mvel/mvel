@@ -52,15 +52,44 @@ public class ArraysTests extends AbstractTest {
   }
 
   public void testArrayDefinitionWithCoercion() {
-    double[] d = (double[]) MVEL.executeExpression(MVEL.compileExpression("new double[] { 1,2,3,4 }"));
+    Serializable expr = MVEL.compileExpression("new double[] { 1,2,3,4 }");
+    double[] d = (double[]) MVEL.executeExpression(expr);
     assertEquals(2d,
         d[1]);
+    assertEquals(2d, ((double[]) MVEL.executeExpression(expr))[1]);
   }
 
   public void testArrayDefinitionWithCoercion2() {
-    float[] d = (float[]) MVEL.executeExpression( MVEL.compileExpression( "new float[] { 1,2,3,4 }" ) );
+    Serializable expr = MVEL.compileExpression( "new float[] { 1,2,3,4 }" );
+    float[] d = (float[]) MVEL.executeExpression( expr );
     assertEquals(2f,
         d[1]);
+    assertEquals(2f, ((float[]) MVEL.executeExpression(expr))[1]);
+  }
+
+  public void testArrayDefinitionWithCoercionBoolean() {
+      Serializable expr = MVEL.compileExpression( "new boolean[] { false, true, false }" );
+      assertFalse(((boolean[]) MVEL.executeExpression(expr))[0]);
+      assertTrue(((boolean[]) MVEL.executeExpression(expr))[1]);
+  }
+
+  public void testArrayDefinitionWithAutoBoxing() {
+      Serializable expr = MVEL.compileExpression( "new Boolean[] { !true, true, !!false }" );
+      assertFalse(((Boolean[]) MVEL.executeExpression(expr))[0]);
+      assertTrue(((Boolean[]) MVEL.executeExpression(expr))[1]);
+      assertFalse(((Boolean[]) MVEL.executeExpression(expr))[2]);
+  }
+
+  public void testArrayDefinitionWithCoercionInt() {
+      Serializable expr = MVEL.compileExpression( "new int[] { 0, 1, 2 }" );
+      assertEquals(0, ((int[]) MVEL.executeExpression(expr))[0]);
+      assertEquals(1, ((int[]) MVEL.executeExpression(expr))[1]);
+  }
+  
+  public void testArrayDefinitionWithCoercionShort() {
+      Serializable expr = MVEL.compileExpression( "new short[] { 0, 1, 2 }" );
+      assertEquals(0, ((short[]) MVEL.executeExpression(expr))[0]);
+      assertEquals(1, ((short[]) MVEL.executeExpression(expr))[1]);
   }
 
   public void testArrayCreation2() {

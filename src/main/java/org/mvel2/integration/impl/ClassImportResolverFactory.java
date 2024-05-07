@@ -27,8 +27,8 @@ import java.util.*;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
   private Set<String> packageImports;
-  private ClassLoader classLoader;
-  private Map<String, Object> imports;
+  private final ClassLoader classLoader;
+  private final Map<String, Object> imports;
   private Map<String, Object> dynImports;
   
   public ClassImportResolverFactory(ParserConfiguration pCfg, VariableResolverFactory nextFactory, boolean compiled) {
@@ -40,6 +40,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         imports = Collections.unmodifiableMap(pCfg.getImports());        
       } else {
          classLoader =  Thread.currentThread().getContextClassLoader();
+        imports = null;
       }
 
     this.nextFactory = nextFactory;    
@@ -58,7 +59,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
       nextFactory = new MapVariableResolverFactory(new HashMap());
     }
 
-    return nextFactory.createVariable(name, value);
+    return nextFactory.createVariable(name, value, type);
   }
 
   public Class addClass(Class clazz) {

@@ -17,6 +17,8 @@
  */
 package org.mvel2.ast;
 
+import java.lang.reflect.Array;
+
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
@@ -27,9 +29,9 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.ParseTools;
 
-import java.lang.reflect.Array;
-
-import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.createStringTrimmed;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 /**
  * @author Christopher Brock
@@ -178,11 +180,10 @@ public class ForEachNode extends BlockNode {
 
     int x;
     if ((x = (item = createStringTrimmed(condition, start, cursor - start)).indexOf(' ')) != -1) {
-      String tk = new String(condition, start, x).trim();
+      String tk = item.substring(0, x);
       try {
         itemType = ParseTools.findClass(null, tk, pCtx);
-        item = new String(condition, start + x, (cursor - start) - x).trim();
-
+        item = item.substring( item.lastIndexOf( ' ' )+1, item.length() );
       }
       catch (ClassNotFoundException e) {
         throw new CompileException("cannot resolve identifier: " + tk, condition, start);

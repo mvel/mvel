@@ -3,11 +3,19 @@ package org.mvel2.util;
 import org.mvel2.CompileException;
 import org.mvel2.ErrorDetail;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author Mike Brock .
  */
 public class ErrorUtil {
+  private static final Logger LOG = Logger.getLogger(ErrorUtil.class.getName());
+
   public static CompileException rewriteIfNeeded(CompileException caught, char[] outer, int outerCursor) {
+    if (caught.getExpr() == null) {
+        return caught;
+    }
     if (outer != caught.getExpr()) {
       if (caught.getExpr().length <= caught.getCursor()) {
         caught.setCursor(caught.getExpr().length - 1);
@@ -25,7 +33,7 @@ public class ErrorUtil {
       caught.setCursor(newCursor);
       }
       catch (Throwable t) {
-        t.printStackTrace();
+        LOG.log(Level.WARNING, "", t);
       }
     }
     return caught;

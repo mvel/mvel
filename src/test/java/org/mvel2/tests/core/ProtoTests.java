@@ -1,13 +1,13 @@
 package org.mvel2.tests.core;
 
-import junit.framework.TestCase;
+import java.util.HashMap;
+
 import org.mvel2.MVEL;
 import org.mvel2.ast.Proto;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.tests.BaseMvelTestCase;
 
-import java.util.HashMap;
-
-public class ProtoTests extends TestCase {
+public class ProtoTests extends BaseMvelTestCase {
   boolean run;
 
   public ProtoTests() {

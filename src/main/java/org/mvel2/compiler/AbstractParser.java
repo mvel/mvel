@@ -17,6 +17,10 @@
  */
 package org.mvel2.compiler;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
 import org.mvel2.CompileException;
 import org.mvel2.ErrorDetail;
 import org.mvel2.Operator;
@@ -28,6 +32,7 @@ import org.mvel2.ast.BooleanNode;
 import org.mvel2.ast.DeclProtoVarNode;
 import org.mvel2.ast.DeclTypedVarNode;
 import org.mvel2.ast.DeepAssignmentNode;
+import org.mvel2.ast.DeepOperativeAssignmentNode;
 import org.mvel2.ast.DoNode;
 import org.mvel2.ast.DoUntilNode;
 import org.mvel2.ast.EndOfStatement;
@@ -82,17 +87,10 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
-import org.mvel2.util.PropertyTools;
 import org.mvel2.util.ProtoParser;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.WeakHashMap;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.Double.parseDouble;
-import static java.lang.Thread.currentThread;
 import static org.mvel2.Operator.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -116,6 +114,7 @@ public class AbstractParser implements Parser, Serializable {
 
   protected int fields;
 
+  protected static final int OP_NOT_LITERAL = -3;
   protected static final int OP_OVERFLOW = -2;
   protected static final int OP_TERMINATE = -1;
   protected static final int OP_RESET_FRAME = 0;
@@ -213,16 +212,9 @@ public class AbstractParser implements Parser, Serializable {
       CLASS_LITERALS.put("ClassLoader", ClassLoader.class);
       CLASS_LITERALS.put("Runtime", Runtime.class);
       CLASS_LITERALS.put("Thread", Thread.class);
-      CLASS_LITERALS.put("Compiler", Compiler.class);
-      CLASS_LITERALS.put("StringBuffer", StringBuffer.class);
-      CLASS_LITERALS.put("ThreadLocal", ThreadLocal.class);
-      CLASS_LITERALS.put("SecurityManager", SecurityManager.class);
-      CLASS_LITERALS.put("StrictMath", StrictMath.class);
 
       CLASS_LITERALS.put("Exception", Exception.class);
-
       CLASS_LITERALS.put("Array", java.lang.reflect.Array.class);
-
       CLASS_LITERALS.put("StringBuilder", StringBuilder.class);
 
       // Setup LITERALS
@@ -590,7 +582,7 @@ public class AbstractParser implements Parser, Serializable {
                     captureToEOS();
 
                     if (union) {
-                      return lastNode = new DeepAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                      return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
                           ADD, name, pCtx);
                     }
                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
@@ -635,8 +627,8 @@ public class AbstractParser implements Parser, Serializable {
                     captureToEOS();
 
                     if (union) {
-                      return lastNode = new DeepAssignmentNode(expr, st, cursor - st, fields,
-                          SUB, t, pCtx);
+                      return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                          SUB, name, pCtx);
                     }
                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                       return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
@@ -666,6 +658,7 @@ public class AbstractParser implements Parser, Serializable {
               case '\'':
               case ';':
               case ':':
+              case '#':
                 break CaptureLoop;
 
               case '\u00AB': // special compact code for recursive parses
@@ -685,8 +678,8 @@ public class AbstractParser implements Parser, Serializable {
                   captureToEOS();
 
                   if (union) {
-                    return lastNode = new DeepAssignmentNode(expr, st, cursor - st, fields,
-                        opLookup(op), t, pCtx);
+                    return lastNode = new DeepOperativeAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
+                        opLookup(op), name, pCtx);
                   }
                   else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                     return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
@@ -1409,7 +1402,7 @@ public class AbstractParser implements Parser, Serializable {
       }
     }
 
-    if (pCtx != null && pCtx.hasImports() && isArrayType(expr, st, end)) {
+    if (pCtx != null && isArrayType(expr, st, end)) {
       if (pCtx.hasImport(new String(expr, st, cursor - st - 2))) {
         lastWasIdentifier = true;
         TypeDescriptor typeDescriptor = new TypeDescriptor(expr, st, cursor - st, fields);
@@ -1784,7 +1777,7 @@ public class AbstractParser implements Parser, Serializable {
       if (expr[cursor] != ';') cursor--;
       skipWhitespace();
 
-      return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
+      return (cursor + 4) < end && expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
           && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
     }
     return false;
@@ -1951,7 +1944,10 @@ public class AbstractParser implements Parser, Serializable {
           return;
 
         case '.':
+          // Skip spaces after dot but do not consume following character
+          ++cursor;
           skipWhitespace();
+          --cursor;
           break;
 
         case '\'':
@@ -2252,7 +2248,7 @@ public class AbstractParser implements Parser, Serializable {
   /**
    * NOTE: This method assumes that the current position of the cursor is at the end of a logical statement, to
    * begin with.
-   * <p/>
+   *
    * Determines whether or not the logical statement is manually terminated with a statement separator (';').
    *
    * @return -
@@ -2410,8 +2406,6 @@ public class AbstractParser implements Parser, Serializable {
          * need to stop if this is not a literal.
          */
         if (compileMode && !tk.isLiteral()) {
-
-
           splitAccumulator.push(tk, new OperatorNode(operator2, expr, st, pCtx));
           return OP_OVERFLOW;
         }
@@ -2419,6 +2413,7 @@ public class AbstractParser implements Parser, Serializable {
         dStack.push(operator = operator2, tk.getReducedValue(ctx, ctx, variableFactory));
 
         while (true) {
+          ASTNode previousToken = tk;
           // look ahead again
           if ((tk = nextToken()) != null && (operator2 = tk.getOperator()) != -1
               && operator2 != END_OF_STMT && PTABLE[operator2] > PTABLE[operator]) {
@@ -2431,7 +2426,12 @@ public class AbstractParser implements Parser, Serializable {
             /**
              * This operator is of higher precedence, or the same level precedence.  push to the RHS.
              */
-            dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+            ASTNode nextToken = nextToken();
+            if (compileMode && !nextToken.isLiteral()) {
+              splitAccumulator.push(nextToken, new OperatorNode(operator2, expr, st, pCtx));
+              return OP_OVERFLOW;
+            }
+            dStack.push(operator = operator2, nextToken.getReducedValue(ctx, ctx, variableFactory));
 
             continue;
           }
@@ -2501,6 +2501,10 @@ public class AbstractParser implements Parser, Serializable {
               }
 
               default:
+                if (compileMode && !tk.isLiteral()) {
+                  stk.push(operator, tk);
+                  return OP_NOT_LITERAL;
+                }
                 stk.push(operator, tk.getReducedValue(ctx, ctx, variableFactory));
             }
           }
@@ -2560,6 +2564,7 @@ public class AbstractParser implements Parser, Serializable {
         case GETHAN:
         case LETHAN:
         case POWER:
+        case STR_APPEND:
           stk.op(operator);
           break;
 
