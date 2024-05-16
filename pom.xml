@@ -8,7 +8,7 @@
     <version>2.5.3-SNAPSHOT</version>
 
     <name>mvel</name>
-    <url>http://mvel.codehaus.org/</url>
+    <url>https://github.com/mvel/mvel</url>
     <description>
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
@@ -31,42 +31,19 @@
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
-        <tag>mvel2-2.4.9.Final</tag>
+        <tag>HEAD</tag>
     </scm>
     <issueManagement>
-        <system>jira</system>
-        <url>http://jira.codehaus.org/browse/MVEL</url>
+        <system>GitHub</system>
+        <url>https://github.com/mvel/mvel/issues</url>
     </issueManagement>
-    <developers>
-        <developer>
-            <name>All developers are listed on the team website</name>
-            <url>http://www.jboss.org/drools/team</url>
-        </developer>
-    </developers>
     <contributors>
         <contributor>
-            <name>All contributors are listed on the team website</name>
-            <url>http://www.jboss.org/drools/team</url>
+            <name>MVEL Project Contributors</name>
+            <url>https://github.com/mvel/mvel/graphs/contributors</url>
         </contributor>
     </contributors>
-    <mailingLists>
-        <mailingList>
-            <name>user</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-users</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-users</unsubscribe>
-            <archive>http://dir.gmane.org/gmane.comp.java.drools.user</archive>
-            <otherArchives>
-                <otherArchive>http://drools.46999.n3.nabble.com/Drools-User-forum-f47000.html</otherArchive>
-            </otherArchives>
-        </mailingList>
-        <mailingList>
-            <name>dev</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</unsubscribe>
-            <archive>http://dir.gmane.org/gmane.comp.java.drools.devel</archive>
-        </mailingList>
-    </mailingLists>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
