@@ -28,7 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,17 +40,22 @@ public class ObjectInspector implements Command {
 
   public Object execute(ShellSession session, String[] args) {
 
-    if (args.length == 0) {
-      System.out.println("inspect: requires an argument.");
-      return null;
-    }
+    Object val;
 
-    if (!session.getVariables().containsKey(args[0])) {
+    if (args.length == 0) {
+      val = session.getCtxObject();
+      if (val == null) {
+        System.out.println("inspect: requires an argument or a session context.");
+        return null;
+      }
+    }
+    else if (!session.getVariables().containsKey(args[0])) {
       System.out.println("inspect: no such variable: " + args[0]);
       return null;
     }
-
-    Object val = session.getVariables().get(args[0]);
+    else {
+      val = session.getVariables().get(args[0]);
+    }
 
     System.out.println("Object Inspector");
     System.out.println(TextUtil.paint('-', PADDING));
@@ -77,7 +83,9 @@ public class ObjectInspector implements Command {
       serialized = false;
     }
 
-    write("VariableName", args[0]);
+    if (args.length > 0) {
+      write("VariableName", args[0]);
+    }
     write("Hashcode", val.hashCode());
     write("ClassType", cls.getName());
     write("Serializable", serialized);
@@ -125,31 +133,40 @@ public class ObjectInspector implements Command {
 
   private static void renderMethods(Class cls) {
     Method[] methods = cls.getMethods();
+    Arrays.sort(methods, new Comparator<Method>() {
+      public int compare(Method o1, Method o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
 
     Method m;
     StringAppender appender = new StringAppender();
     int mf;
     for (int i = 0; i < methods.length; i++) {
       appender.append(TextUtil.paint(' ', PADDING + 2));
-      if (((mf = (m = methods[i]).getModifiers()) & Modifier.PUBLIC) != 0) appender.append("public");
-      else if ((mf & Modifier.PRIVATE) != 0) appender.append("private");
-      else if ((mf & Modifier.PROTECTED) != 0) appender.append("protected");
+      m = methods[i];
+//      if (((mf = m.getModifiers()) & Modifier.PUBLIC) != 0) appender.append("public");
+//      else if ((mf & Modifier.PRIVATE) != 0) appender.append("private");
+//      else if ((mf & Modifier.PROTECTED) != 0) appender.append("protected");
 
-      appender.append(' ').append(m.getReturnType().getName()).append(' ').append(m.getName()).append("(");
+      appender.append(m.getName()).append("(");
       Class[] parmTypes = m.getParameterTypes();
       for (int y = 0; y < parmTypes.length; y++) {
         if (parmTypes[y].isArray()) {
-          appender.append(parmTypes[y].getComponentType().getName() + "[]");
+          appender.append(shorter(parmTypes[y].getComponentType().getName()) + "[]");
         }
         else {
-          appender.append(parmTypes[y].getName());
+          appender.append(shorter(parmTypes[y].getName()));
         }
         if ((y + 1) < parmTypes.length) appender.append(", ");
       }
       appender.append(")");
-
+      String rt = m.getReturnType().getName();
+      if (!"void".equals(rt)) {
+        appender.append(" -> ").append(shorter(rt));
+      }
       if (m.getDeclaringClass() != cls) {
-        appender.append("    [inherited from: ").append(m.getDeclaringClass().getName()).append("]");
+        appender.append("    [").append(shorter(m.getDeclaringClass().getName())).append("]");
       }
 
 
@@ -157,6 +174,18 @@ public class ObjectInspector implements Command {
     }
 
     System.out.println(appender.toString());
+  }
+
+  private static String shorter(String clazz) {
+    if (!clazz.startsWith("java.lang.")) {
+      return clazz;
+    }
+    for (String pck : Arrays.asList("annotation", "instrument", "invoke", "management", "ref", "reflect")) {
+      if (clazz.startsWith("java.lang." + pck + ".")) {
+        return clazz;
+      }
+    }
+    return clazz.replaceAll("^java\\.lang\\.", "");
   }
 
   private static void write(Object first, Object second) {
