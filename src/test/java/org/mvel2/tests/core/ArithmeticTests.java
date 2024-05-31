@@ -1085,4 +1085,12 @@ public class ArithmeticTests extends AbstractTest {
     Object result = MVEL.executeExpression(compileExpression, parserContext, expressionVars);
     Assert.assertEquals(3919.9, ((Number)result).doubleValue(), 0.01);
   }
+
+  public void testIssue321() {
+      Map<String, Object> vars = new HashMap<>();
+      vars.put("a", BigDecimal.valueOf(19.8));
+      Object result = MVEL.eval("a>=19.8", vars);
+      Assert.assertTrue((boolean) result);
+  }
+
 }

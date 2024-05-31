@@ -722,7 +722,7 @@ public strictfp class MathProcessor {
       return new BigDecimal((String) in);
     }
     if (in instanceof Number) {
-      return new BigDecimal(((Number) in).doubleValue());
+      return BigDecimal.valueOf(((Number) in).doubleValue());
     }
 
     throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass());
