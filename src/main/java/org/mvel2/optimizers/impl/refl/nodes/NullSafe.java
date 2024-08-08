@@ -23,8 +23,9 @@ public class NullSafe implements AccessorNode {
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (ctx == null) return null;
     if (nextNode == null) {
+      // Don't pass the variable factory, to prevent resolutions from involving variables.
       final Accessor a = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE)
-          .optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, variableFactory, true, ctx.getClass());
+          .optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, null, true, ctx.getClass());
 
       nextNode = new AccessorNode() {
         public AccessorNode getNextNode() {

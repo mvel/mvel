@@ -1,11 +1,13 @@
 package org.mvel2.compiler;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.compiler.CompiledExpression;
@@ -119,6 +121,30 @@ public class MvelCompileExpNullSafeTest extends BaseMvelTest
         assert result == false;
 
     }
+
+	/**
+	 * Tests NullSafe with a segment which shadows a variable.
+	 */
+	@Test
+	public void testNullSafeVariableOverlap() {
+		String expression = "foo.?bar.baz"; // "baz" shadows the variable named "baz".
+
+		final String expectedResult = "You got me!";
+
+		Map<String, Object> foo = new HashMap<>();
+		Map<String, Object> ctx = Collections.singletonMap("foo", foo);
+		Map<String, Object> bar = Collections.singletonMap("baz", expectedResult);
+		foo.put("bar", null); // start with null, as this will cause NullSafe to be added to the AST.
+
+		// This variable overlaps the segment to be resolved next after NullSafe.
+		Map<String, Object> vars = Collections.singletonMap("baz", "no, over here!");
+
+		Serializable compiledExpr = MVEL.compileExpression(expression);
+		Assert.assertNull(MVEL.executeExpression(compiledExpr, ctx, vars));
+
+		foo.put("bar", bar);
+		Assert.assertEquals(expectedResult, MVEL.executeExpression(compiledExpr, ctx, vars));
+	}
 
 	public class Child {
 		private String firstName;
