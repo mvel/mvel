@@ -12,20 +12,22 @@ public class NullSafe implements AccessorNode {
   private int start;
   private int offset;
   private ParserContext pCtx;
+  private boolean topLevel;
 
-  public NullSafe(char[] expr, int start, int offset, ParserContext pCtx) {
+  public NullSafe(char[] expr, int start, int offset, ParserContext pCtx, boolean topLevel) {
     this.expr = expr;
     this.start = start;
     this.offset = offset;
     this.pCtx = pCtx;
+    this.topLevel = topLevel;
   }
 
   public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     if (ctx == null) return null;
     if (nextNode == null) {
-      // Don't pass the variable factory, to prevent resolutions from involving variables.
+      // If NullSafe is not a top level element, optimizer doesn't use variableFactory to resolve a bean property.
       final Accessor a = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE)
-          .optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, null, true, ctx.getClass());
+              .optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, variableFactory, true, ctx.getClass(), topLevel);
 
       nextNode = new AccessorNode() {
         public AccessorNode getNextNode() {

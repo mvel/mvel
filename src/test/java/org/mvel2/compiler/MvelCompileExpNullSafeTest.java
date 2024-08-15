@@ -146,6 +146,51 @@ public class MvelCompileExpNullSafeTest extends BaseMvelTest
 		Assert.assertEquals(expectedResult, MVEL.executeExpression(compiledExpr, ctx, vars));
 	}
 
+	@Test
+	public void testNullSafeWithVariableAsMapKey() {
+		String expression = "foo.?bar[myvar]";
+
+		final String expectedResult = "You got me!";
+
+		Map<String, Object> foo = new HashMap<>();
+		Map<String, Object> ctx = Collections.singletonMap("foo", foo);
+		Map<String, Object> bar = Collections.singletonMap("baz", expectedResult);
+		foo.put("bar", null); // start with null, as this will cause NullSafe to be added to the AST.
+
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("myvar", "baz");
+
+		Serializable compiledExpr = MVEL.compileExpression(expression);
+		Assert.assertNull(MVEL.executeExpression(compiledExpr, ctx, vars));
+
+		foo.put("bar", bar);
+		Assert.assertEquals(expectedResult, MVEL.executeExpression(compiledExpr, ctx, vars));
+	}
+
+	@Test
+	public void testNullSafeWithVariableAsMethodArg() {
+		String expression = "foo.?bar.convert(myvar)";
+
+		Map<String, Object> foo = new HashMap<>();
+		Map<String, Object> ctx = Collections.singletonMap("foo", foo);
+		foo.put("bar", null); // start with null, as this will cause NullSafe to be added to the AST.
+
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("myvar", "hello");
+
+		Serializable compiledExpr = MVEL.compileExpression(expression);
+		Assert.assertNull(MVEL.executeExpression(compiledExpr, ctx, vars));
+
+		foo.put("bar", new StringConverter());
+		Assert.assertEquals("HELLO", MVEL.executeExpression(compiledExpr, ctx, vars));
+	}
+
+	public class StringConverter {
+		public String convert(String value) {
+			return value.toUpperCase();
+		}
+	}
+
 	public class Child {
 		private String firstName;
 		private String lastName;
