@@ -28,6 +28,15 @@ public interface AccessorOptimizer {
   public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                    VariableResolverFactory factory, boolean rootThisRef, Class ingressType);
 
+  /*
+    * This method is to optimize the accessor which is potentially in the middle of the bean property chain.
+    * If 'first' is true, it starts with the top level.
+   */
+  default Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
+                                    VariableResolverFactory factory, boolean rootThisRef, Class ingressType, boolean first) {
+    throw new UnsupportedOperationException();
+  }
+
   public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                       VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType);
 

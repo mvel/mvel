@@ -149,6 +149,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
   public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                    VariableResolverFactory factory, boolean root, Class ingressType) {
+    return optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, root, ingressType, true);
+  }
+
+  @Override
+  public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
+                                   VariableResolverFactory factory, boolean root, Class ingressType, boolean first) {
     this.rootNode = this.currNode = null;
     this.expr = property;
     this.start = start;
@@ -156,7 +162,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     this.length = end - start;
 
 
-    this.first = true;
+    this.first = first;
     this.ctx = ctx;
     this.thisRef = thisRef;
     this.variableFactory = factory;
@@ -376,16 +382,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
               break;
           }
 
-          first = false;
           if (curr != null) returnType = curr.getClass();
           if (cursor < end) {
             if (nullSafe) {
               int os = expr[cursor] == '.' ? 1 : 0;
-              addAccessorNode(new NullSafe(expr, cursor + os, end - cursor - os, pCtx));
+              addAccessorNode(new NullSafe(expr, cursor + os, end - cursor - os, pCtx, first));
               if (curr == null) break;
             }
             if (curr == null) throw new NullPointerException();
           }
+          first = false;
           staticAccess = false;
         }
 
@@ -409,16 +415,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
               break;
           }
 
-          first = false;
           if (curr != null) returnType = curr.getClass();
           if (cursor < end) {
             if (nullSafe) {
               int os = expr[cursor] == '.' ? 1 : 0;
-              addAccessorNode(new NullSafe(expr, cursor + os, end - cursor - os, pCtx));
+              addAccessorNode(new NullSafe(expr, cursor + os, end - cursor - os, pCtx, first));
               if (curr == null) break;
             }
             if (curr == null) throw new NullPointerException();
           }
+          first = false;
           staticAccess = false;
         }
       }
