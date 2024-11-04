@@ -1487,7 +1487,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
       assert debug("CHECKCAST java/util/List");
       mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-      writeLiteralOrSubexpression(compiled, int.class);
+      writeLiteralOrSubexpression(compiled, int.class, Object.class);
 
       assert debug("INVOKEINTERFACE: java/util/List.get");
       mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
