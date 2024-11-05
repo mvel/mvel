@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.mvel2.MVEL;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.util.MethodStub;
+import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
 
 public class ASMConsistencyTest extends AbstractTest {
   public void testInSetRepeated() throws InterruptedException {
@@ -81,5 +82,21 @@ public class ASMConsistencyTest extends AbstractTest {
     // revert the props
     DynamicOptimizer.tenuringThreshold = oldThreashold;
     DynamicOptimizer.timeSpan = oldTimeSpan;
+  }
+  public void testListGet() {
+    Object expr = MVEL.compileExpression("import java.util.List;\n" +
+            "\n" +
+            "List aList = [];\n" +
+            "for (int index = 0; index < 96; index++) {\n" +
+            "\taList.add(index);\n" +
+            "}\n"
+            +
+            "\t\t\t\n" +
+            "for (int index = 0; index < aList.size(); index++) {\n" +
+            "\ta = aList[index];\n" +
+            "\tSystem.out.println(a);\n" +
+            "}\n"
+    );
+    MVEL.executeExpression(expr,new CachingMapVariableResolverFactory(new HashMap()));
   }
 }
