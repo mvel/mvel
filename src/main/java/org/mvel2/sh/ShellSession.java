@@ -47,10 +47,11 @@ public class ShellSession {
   public static final String PROMPT_VAR = "$PROMPT";
   private static final String[] EMPTY = new String[0];
 
-  private final Map<String, Command> commands = new HashMap<String, Command>();
+  private final Map<String, Command> commands = new TreeMap<String, Command>();
   private Map<String, Object> variables;
   private Map<String, String> env;
   private Object ctxObject;
+  private Stack<Object> ctxStack = new Stack<Object>();
 
   ParserContext pCtx = new ParserContext();
   VariableResolverFactory lvrf;
@@ -446,7 +447,24 @@ public class ShellSession {
   }
 
   public void setCtxObject(Object ctxObject) {
-    this.ctxObject = ctxObject;
+    pushCtxObject(ctxObject);
+  }
+
+  public boolean pushCtxObject(Object ctxObject) {
+    if (this.ctxObject != ctxObject) {
+      ctxStack.push(this.ctxObject);
+      this.ctxObject = ctxObject;
+      return true;
+    }
+    return false;
+  }
+
+  public boolean popCtxObject() {
+    if (!ctxStack.isEmpty()) {
+      ctxObject = ctxStack.pop();
+      return true;
+    }
+    return false;
   }
 
   public String getCommandBuffer() {
