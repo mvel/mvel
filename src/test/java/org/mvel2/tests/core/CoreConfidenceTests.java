@@ -4587,6 +4587,34 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("nonEmptyString == empty", pctx), vars));
   }
 
+  public void testEmptyOperatorOnList() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("list", ArrayList.class);
+    Map vars = new HashMap() {{
+      put("list", new ArrayList<>());
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("list == empty", pctx), vars));
+  }
+
+  public void testEmptyOperatorOnMap() {
+    ParserConfiguration conf = new ParserConfiguration();
+    ParserContext pctx = new ParserContext( conf );
+    pctx.setStrictTypeEnforcement(true);
+    pctx.setStrongTyping(true);
+
+    pctx.addInput("map", HashMap.class);
+    Map vars = new HashMap() {{
+      put("map", new HashMap<>());
+    }};
+
+    assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("map == empty", pctx), vars));
+  }
+
   public void testEmptyOperatorOnBoolean() {
     ParserConfiguration conf = new ParserConfiguration();
     ParserContext pctx = new ParserContext( conf );
