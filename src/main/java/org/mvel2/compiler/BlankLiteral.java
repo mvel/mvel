@@ -20,6 +20,7 @@ package org.mvel2.compiler;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static java.lang.reflect.Array.getLength;
@@ -46,6 +47,9 @@ public class BlankLiteral implements Serializable {
     }
     if (obj instanceof Boolean) {
       return !(Boolean)obj;
+    }
+    if (obj instanceof Map) {
+      return ((Map) obj).size() == 0;
     }
     return false;
   }
