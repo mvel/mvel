@@ -41,14 +41,4 @@ public class WithStatement extends Statement {
         return modifyObject;
     }
 
-    @Override
-    public List<Node> getChildNodes() {
-        NodeList nodeList = NodeList.nodeList();
-        for (Statement e : expressions) {
-            if (e != null) {
-                nodeList.add(e);
-            }
-        }
-        return nodeList;
-    }
 }

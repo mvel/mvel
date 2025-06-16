@@ -19,9 +19,11 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -43,6 +45,7 @@ import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
 import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
 import com.github.javaparser.utils.Pair;
 import org.mvel3.MVEL;
+import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
@@ -105,6 +108,8 @@ public class MVELToJavaRewriter {
 
     Expression mathContext;
 
+    NameExpr modifyName;
+
     public MVELToJavaRewriter(TranspilerContext context) {
         this.context = context;
         unitContext = (CompilationUnitContext) JavaParserFactory.getContext(context.getUnit(), context.getTypeSolver());
@@ -151,19 +156,54 @@ public class MVELToJavaRewriter {
         BinaryExpr binExpr = null;
 
         switch (node.getClass().getSimpleName())  {
+            case "ModifyStatement" : {
+                ModifyStatement modifyStmt = (ModifyStatement) node;
+                NameExpr        nameExpr   = modifyStmt.getModifyObject();
+                modifyName = nameExpr;
+
+                // create a block to hold the rewritten statements to repalce the modify block
+                BlockStmt blockStmt = new BlockStmt();
+                modifyStmt.replace(blockStmt);
+                modifyStmt.getModifyObject().setParentNode(blockStmt);
+                modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement(n));
+                blockStmt.getStatements().forEach( n -> rewriteNode(n));
+
+                modifyName = null;
+                break;
+            }
+            case "UnaryExpr":
+                // JavaParser's extension to detect BigDecimal and BigNumber does not pass  the negative prefix on the number.
+                // This detects this and adds it back in.
+                UnaryExpr unaryExpr = (UnaryExpr) node;
+                if (((UnaryExpr) node).getOperator() == UnaryExpr.Operator.MINUS) {
+                    // For Big Numbers, any negative must be moved into the value. And as the prexi is in the string, the UnaryExpr is no longer needed
+                    if ( unaryExpr.getExpression().isObjectCreationExpr()) {
+                        ObjectCreationExpr objectCreationExpr = unaryExpr.getExpression().asObjectCreationExpr();
+                        SimpleName name = objectCreationExpr.getType().getName();
+                        StringLiteralExpr stringLiteral = (StringLiteralExpr) objectCreationExpr.getArguments().get(0);
+                        stringLiteral = new StringLiteralExpr("-" + stringLiteral.asString());
+                        objectCreationExpr.setArgument(0, stringLiteral);
+                        node.replace(objectCreationExpr);
+                    }
+
+                }
+                //unaryExpr.getExpression()
+                break;
             case "DrlNameExpr":
-            case "NameExpr":
+            case "NameExpr": {
                 NameExpr nameExpr = (NameExpr) node;
-                String name = nameExpr.getNameAsString();
+                String   name     = nameExpr.getNameAsString();
                 if (!context.getEvaluatorInfo().rootDeclaration().type().isVoid() && context.getEvaluatorInfo().rootDeclaration().name().equals(name)) {
                     // do not rewrite at root objects.
                     break;
                 }
 
                 if (!declaredVars.contains(name)) {
-                    node = rewriteNameToContextObject(nameExpr);
+                    NameExpr scope = new NameExpr(context.getEvaluatorInfo().rootDeclaration().name());
+                    node = rewriteNameToScope(scope, rootObjectType, nameExpr, true);
                 }
                 break;
+            }
             case "FieldAccessExpr":
                 node = maybeRewriteToGetter((FieldAccessExpr) node);
                 break;
@@ -297,6 +337,11 @@ public class MVELToJavaRewriter {
     }
 
     private void maybeCoerceArguments(MethodCallExpr methodCall) {
+        if (methodCall.getArguments().isEmpty()) {
+            // no arguments to coerce
+            return;
+        }
+
         // Get the Method declaration and it's resolved types.
         // @TODO this currently does not work for method calls without scopes, i.e. member methods or static methods (mdp)
         ResolvedType scope = context.getFacade().getType(methodCall.getScope().get());
@@ -470,20 +515,17 @@ public class MVELToJavaRewriter {
         return false;
     }
 
-    private Expression rewriteNameToContextObject(NameExpr nameExpr) {
+    private Expression rewriteNameToScope(NameExpr scope, ResolvedType scopeType, NameExpr nameExpr, boolean rewriteAfterRewrite) {
         String name = nameExpr.getNameAsString();
         Expression expr = nameExpr;
-        if (rootObjectType != null) {
-            NameExpr scope = new NameExpr(context.getEvaluatorInfo().rootDeclaration().name());
-
-            ResolvedReferenceTypeDeclaration d = rootObjectType.asReferenceType().getTypeDeclaration().get();
+        if (scopeType != null) {
+            ResolvedReferenceTypeDeclaration d = scopeType.asReferenceType().getTypeDeclaration().get();
             FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(scope, name);
 
             if (isPublicField(d, name)) {
                 // public field exists, so use that.
                 nameExpr.replace(fieldAccessExpr);
                 expr = fieldAccessExpr;
-                //rewriteNode(expr);
             } else {
                 // temporary swap, or type and thus method resolving will not work
                 nameExpr.replace(fieldAccessExpr);
@@ -498,7 +540,7 @@ public class MVELToJavaRewriter {
             }
         }
 
-        if (expr != nameExpr) { // reprocess if it was rewritten
+        if (rewriteAfterRewrite && expr != nameExpr) { // reprocess if it was rewritten
             rewriteNode(expr);
         }
 
@@ -534,9 +576,22 @@ public class MVELToJavaRewriter {
 
     private void processAssignExpr(AssignExpr node) {
         AssignExpr assignExpr = node;
-        Expression target = assignExpr.getTarget();
+
 
         rewriteNode(assignExpr.getValue());
+
+        if ( modifyName != null) {
+            //rewriteNode(assignExpr.getTarget());
+            if (assignExpr.getTarget().isNameExpr()) {
+                //rewriteNameToScope(modifyName, modifyName.calculateResolvedType(), (NameExpr) assignExpr.getTarget(), false);
+                FieldAccessExpr fieldAccesss = new FieldAccessExpr(modifyName.getTokenRange().get(),
+                                                                    new NameExpr(modifyName.getNameAsString()), null,
+                                                                    new SimpleName(assignExpr.getTarget().getTokenRange().get(), ((NameExpr)assignExpr.getTarget()).getNameAsString()));
+                assignExpr.getTarget().replace(fieldAccesss);
+            }
+        }
+
+        Expression target = assignExpr.getTarget();
 
         if (target instanceof ArrayAccessExpr) {
             ArrayAccessExpr arrayAccessor = (ArrayAccessExpr) target;
@@ -672,6 +727,7 @@ public class MVELToJavaRewriter {
         }
 
         ResolvedType valueType = value.calculateResolvedType();
+        Expression preCoercedValue = value;
 
         // Does anything need coercing?
         Expression coerced = coercer.coerce(valueType, value, targetType);
@@ -717,11 +773,12 @@ public class MVELToJavaRewriter {
             if (overloaded != null) {
                 value = overloaded;
             } else {
-                BinaryExpr binExpr = new BinaryExpr(left, right, getOperator(assignExpr));
-                BinaryExprTypes binExprTypes = new BinaryExprTypes(binExpr);
-                binExprTypes.setLeft(left, leftType);
-                binExprTypes.setRight(right, rightType);
+                if (isAssignableBy(stringType, leftType) && getOperator(assignExpr) == BinaryExpr.Operator.PLUS ) {
+                    // if the left type is String and the operator is + then do not coerce the right to a String
+                    right = preCoercedValue;
+                }
 
+                BinaryExpr binExpr = new BinaryExpr(left, right, getOperator(assignExpr));
                 value = binExpr;
             }
             assignExpr.setValue(value);

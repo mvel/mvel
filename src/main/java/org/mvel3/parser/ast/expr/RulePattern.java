@@ -57,6 +57,7 @@ public class RulePattern extends RuleItem {
 
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
+        v = RuleDeclaration.getDrlVoidVisitor(v);
         ((DrlVoidVisitor<A>)v).visit(this, arg);
     }
 

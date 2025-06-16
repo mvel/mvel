@@ -82,6 +82,7 @@ public final class DrlNameExpr extends NameExpr implements NodeWithSimpleName<Na
 
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
+        v = RuleDeclaration.getDrlVoidVisitor(v);
         v.visit(this, arg);
     }
 

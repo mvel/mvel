@@ -5296,31 +5296,84 @@ TryStmt TryStatement():
     { return new TryStmt(range(begin, token()), resources, tryBlock, catchs, finallyBlock); }
 }
 
+//Expression  MemberValueArrayInitializer():
+//{
+//    NodeList<Expression> ret = emptyNodeList();
+//    Expression member;
+//    JavaToken begin;
+//}
+//{
+//    "{" { begin=token(); }
+//    [
+//        member = MemberValue() { ret.add(member); }
+//        (
+//            LOOKAHEAD(2)
+//            ","
+//            member = MemberValue() { ret.add(member); }
+//        )*
+//    ]
+//    [ "," ]
+//    "}"
+//    { return new ArrayInitializerExpr(range(begin, token()),ret); }
+//}
+
+
+ExpressionStmt ModifyElement():
+/*
+ * Basically the same as StatementExpression but without a ";"
+ */
+{
+    Expression expr;
+    AssignExpr.Operator op;
+    Expression value;
+    RangedList<Type> typeArgs = new RangedList<Type>(null);
+    Statement lambdaBody;
+}
+{
+    (
+        LOOKAHEAD(2)
+        expr = PreIncrementExpression()
+     |
+        expr = PreDecrementExpression()
+     |
+        expr = PrimaryExpression()
+        [
+            "++" { expr = new UnaryExpr(range(expr, token()), expr, UnaryExpr.Operator.POSTFIX_INCREMENT);  }
+         |
+            "--" { expr = new UnaryExpr(range(expr, token()), expr, UnaryExpr.Operator.POSTFIX_DECREMENT);  }
+         |
+            op = AssignmentOperator()
+            value = Expression() { expr = new AssignExpr(range(expr, token()), expr, value, op); }
+        ]
+    )
+    { return new ExpressionStmt(range(expr, token()), expr); }
+}
+
 ModifyStatement ModifyStatement():
 {
     JavaToken begin;
     Statement first = null;
     Statement other = null;
     NodeList<Statement> all = emptyNodeList();
-    Expression modifyObject = null;
+    SimpleName modifyObject = null;
 }
 {
     { this.isWithOrModify = true; }
     (
         (
-            <MODIFY><LPAREN> (modifyObject = UnaryExpressionNotPlusMinus())<RPAREN> <LBRACE>
-            (first = Statement()(<SEMICOLON>)?)? { begin=token(); all.add(first); }
+            <MODIFY><LPAREN> (modifyObject = SimpleName())<RPAREN> <LBRACE>  { begin=token(); }
+            (first = ModifyElement() { all.add(first); }
             (
-                          (<COMMA>)+
-                          other = Statement() { all.add(other); }
+                LOOKAHEAD(2)
+                ","
+                other = ModifyElement() { all.add(other); }
             )*
-            <RBRACE>
-            (<SEMICOLON>)?
+            "}"
             {
                 this.isWithOrModify = false;
-                return new ModifyStatement(range(begin, token()), modifyObject, all);
+                return new ModifyStatement(range(begin, token()), new NameExpr(modifyObject), all);
             }
-
+            )
         )
     )
 }

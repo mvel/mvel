@@ -35,7 +35,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testAssignmentIncrement() {
         test(ctx -> ctx.addDeclaration("i", Integer.class),
              "i += 10;",
-             "context.put(\"i\", i += 10);");
+             "__context.put(\"i\", i += 10);");
     }
 
     @Test
@@ -435,7 +435,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalConstantModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = 50000 };",
-             "$p.setSalary(new java.math.BigDecimal(50000)); ",
+             "{$p.setSalary(new BigDecimal(50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -443,7 +443,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalLiteralModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = 50000B };",
-             "$p.setSalary(new java.math.BigDecimal(\"50000\")); ",
+             "{$p.setSalary(new BigDecimal(\"50000\"));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -451,7 +451,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalLiteralModifyNegative() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = -50000B };",
-             "$p.setSalary(new java.math.BigDecimal(\"-50000\")); ",
+             "{$p.setSalary(new BigDecimal(\"-50000\"));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -491,14 +491,16 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test
     public void testDoNotConvertAdditionInStringConcatenation() {
-        test(ctx -> ctx.addDeclaration("$p", Person.class),
+        test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("list", List.class);},
                           "     list.add(\"before \" + $p + \", money = \" + $p.salary); " +
-                          "     modify ( $p )  { salary = 50000 };  " +
+                          "     modify ( $p )  { " +
+                          "      salary = 50000 " +
+                          "}  " +
                           "     list.add(\"after \" + $p + \", money = \" + $p.salary); ",
                          "      list.add(\"before \" + $p + \", money = \" + $p.getSalary()); " +
-                         "      $p.setSalary(new java.math.BigDecimal(50000));" +
+                         "      {$p.setSalary(new BigDecimal(\"50000\"));}" +
                          "      list.add(\"after \" + $p + \", money = \" + $p.getSalary()); ",
-             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "list"));
     }
 
     @Test
@@ -582,7 +584,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      ctx.addDeclaration("b", BigDecimal.class);
                  },
                  "b " + op + "= 10;",
-                 "context.put(\"b\", b = b." + method + "(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128));"
+                 "__context.put(\"b\", b = b." + method + "(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128));"
                 );
 
         }
@@ -987,7 +989,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { name = \"Luca\", age = 35 };",
-             "$p.setName(\"Luca\");\n $p.setAge(35);\n",
+             "{$p.setName(\"Luca\");\n $p.setAge(35);}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -1011,7 +1013,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testModifyWithAssignment() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify($p) { age = $p.age+1 };",
-             "{ $p.setAge($p.getAge() + 1); ",
+             "{ $p.setAge($p.getAge() + 1); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 

@@ -53,7 +53,7 @@ public interface TranspilerTest {
 
         TranspiledResult compiled = new MVELCompiler().transpile(builder.build());
 
-        verifyBodyWithBetterDiff(expectedResult, compiled.methodBodyAsString());
+        verifyBodyWithBetterDiff(expectedResult + "return null;", compiled.methodBodyAsString());
         resultAssert.accept(compiled);
     }
 

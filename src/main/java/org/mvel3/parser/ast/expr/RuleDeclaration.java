@@ -28,6 +28,7 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import org.mvel3.parser.ast.visitor.DrlGenericVisitor;
 import org.mvel3.parser.ast.visitor.DrlVoidVisitor;
+import org.mvel3.parser.ast.visitor.DrlVoidVisitorAdapter;
 
 public class RuleDeclaration extends TypeDeclaration<RuleDeclaration> {
 
@@ -43,8 +44,16 @@ public class RuleDeclaration extends TypeDeclaration<RuleDeclaration> {
         return ((DrlGenericVisitor<R, A>)v).visit(this, arg);
     }
 
+    public static <A> VoidVisitor<A> getDrlVoidVisitor(VoidVisitor<A> v) {
+        if ( !(v instanceof DrlVoidVisitor)) {
+            v = new DrlVoidVisitorAdapter<>(v);
+        }
+        return v;
+    }
+
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
+        v = getDrlVoidVisitor(v);
         ((DrlVoidVisitor<A>)v).visit(this, arg);
     }
 
