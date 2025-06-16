@@ -776,7 +776,7 @@ public class ArithmeticTest {
 
   @Test
   public void testAssignPlus() {
-    assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; xx0 += 4; xx0 + 1;")).isEqualTo(10);
+    assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; xx0 += 4; return xx0 + 1;")).isEqualTo(10);
   }
 
   @Test
