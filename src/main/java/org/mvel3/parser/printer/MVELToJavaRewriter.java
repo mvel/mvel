@@ -665,7 +665,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr putMethod = new MethodCallExpr( scope,"putMap");
                         assignExpr.replace(putMethod);
-                        putMethod.addArgument(new NameExpr("context"));
+                        putMethod.addArgument(new NameExpr("__context"));
                         putMethod.addArgument(new StringLiteralExpr(nameExpr.getNameAsString()));
                         putMethod.addArgument(assignExpr);
                     }
@@ -684,7 +684,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr setMethod = new MethodCallExpr( scope,"setList");
                         assignExpr.replace(setMethod);
-                        setMethod.addArgument("context");
+                        setMethod.addArgument("__context");
                         setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().variableInfo().indexOf(nameExpr.getNameAsString())));
                         setMethod.addArgument(assignExpr);
                     }
@@ -692,7 +692,7 @@ public class MVELToJavaRewriter {
                     // pojo
                     // @TOOD I need to call the generated method below. But ideally only if it's part of some parent.
                     addSetterMethod(nameExpr);
-                    MethodCallExpr setMethod = new MethodCallExpr( "contextSet" + nameExpr.getNameAsString());
+                    MethodCallExpr setMethod = new MethodCallExpr( "__contextSet" + nameExpr.getNameAsString());
                     assignExpr.replace(setMethod);
                     setMethod.addArgument(new NameExpr(ctxDeclr.name()));
                     setMethod.addArgument(assignExpr);
@@ -795,7 +795,7 @@ public class MVELToJavaRewriter {
     }
 
     public void addSetterMethod(NameExpr nameExpr) {
-        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod( "contextSet" + nameExpr);
+        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod( "__contextSet" + nameExpr);
         methodDeclr.setStatic(true);
         methodDeclr.setPublic(true);
 
@@ -804,7 +804,7 @@ public class MVELToJavaRewriter {
         Type propertyType = resolvedTypeToType(propertyResolvedType);
         Type contextType = resolvedTypeToType(contextObjectType);
 
-        Parameter c = new Parameter(contextType, "context" );
+        Parameter c = new Parameter(contextType, "__context" );
         Parameter v = new Parameter(propertyType, "v" );
         methodDeclr.setParameters(NodeList.nodeList(c, v));
 
@@ -814,7 +814,7 @@ public class MVELToJavaRewriter {
 
         MethodUsage methodUsage = findGetterSetter("set", nameExpr.getNameAsString(), 1, d);
 
-        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName("context")), methodUsage.getName());
+        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName("__context")), methodUsage.getName());
         setMethod.addArgument(new NameExpr("v"));
 
         ReturnStmt returnStmt = new ReturnStmt(new NameExpr("v"));

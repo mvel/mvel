@@ -104,20 +104,22 @@ public class MVELTranspiler {
     public TranspiledBlockResult transpileBlock(String content, EvalPre evalPre) {
         BlockStmt blockStmt;
         System.out.println(content);
-//        try {
+
+        // This is a terrible hack, we either need a better way to snoop, or force the user to specify expression or block
+        try {
             // wrap as expression/block may or may not have {}, then unwrap latter.xs
             blockStmt = handleParserResult(context.getParser().parseBlock("{" + content + "}\n"));
-//        } catch (RuntimeException e) {
-//            // Block failed, try parsing an expression
-//            Expression expr = handleParserResult(context.getParser().parseExpression(content));
-//            if (context.getEvaluatorInfo().outType().isVoid()) {
-//                ExpressionStmt exprStmt = new ExpressionStmt(expr);
-//                blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
-//            } else {
-//                ReturnStmt returnStmt = new ReturnStmt(expr);
-//                blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
-//            }
-//        }
+        } catch (RuntimeException e) {
+            // Block failed, try parsing an expression
+            Expression expr = handleParserResult(context.getParser().parseExpression(content));
+            if (context.getEvaluatorInfo().outType().isVoid()) {
+                ExpressionStmt exprStmt = new ExpressionStmt(expr);
+                blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
+            } else {
+                ReturnStmt returnStmt = new ReturnStmt(expr);
+                blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
+            }
+        }
 
         VariableAnalyser analyser = new VariableAnalyser(context.getEvaluatorInfo().allVars().keySet());
         blockStmt.accept(analyser, null);
