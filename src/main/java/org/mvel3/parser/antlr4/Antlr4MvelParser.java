@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2025 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.mvel3.parser.antlr4;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.javaparser.ast.expr.Expression;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -57,6 +58,21 @@ public class Antlr4MvelParser {
             
         } catch (Exception e) {
             throw new RuntimeException("Parse error: " + e.getMessage(), e);
+        }
+    }
+
+    public static Expression parse(String expr) {
+        try {
+            // Parse the expression to get the parse tree
+            ParseTree tree = parseExpression(expr);
+
+            // Create visitor to convert ANTLR AST to JavaParser AST
+            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
+
+            // Visit the parse tree and return the JavaParser Expression
+            return visitor.visit(tree);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse expression: " + expr, e);
         }
     }
 }

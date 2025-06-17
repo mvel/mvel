@@ -18,6 +18,8 @@
 
 package org.mvel3.parser.util;
 
+import java.util.Map;
+
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -36,6 +38,33 @@ import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 
 public class AstUtils {
+
+    private static final Map<String, BinaryExpr.Operator> OPERATOR_MAP = Map.ofEntries(
+            Map.entry("==", BinaryExpr.Operator.EQUALS),
+            Map.entry("!=", BinaryExpr.Operator.NOT_EQUALS),
+            Map.entry("<", BinaryExpr.Operator.LESS),
+            Map.entry(">", BinaryExpr.Operator.GREATER),
+            Map.entry("<=", BinaryExpr.Operator.LESS_EQUALS),
+            Map.entry(">=", BinaryExpr.Operator.GREATER_EQUALS),
+            Map.entry("&&", BinaryExpr.Operator.AND),
+            Map.entry("||", BinaryExpr.Operator.OR),
+            Map.entry("+", BinaryExpr.Operator.PLUS),
+            Map.entry("-", BinaryExpr.Operator.MINUS),
+            Map.entry("*", BinaryExpr.Operator.MULTIPLY),
+            Map.entry("/", BinaryExpr.Operator.DIVIDE),
+            Map.entry("%", BinaryExpr.Operator.REMAINDER),
+            Map.entry("&", BinaryExpr.Operator.BINARY_AND),
+            Map.entry("|", BinaryExpr.Operator.BINARY_OR),
+            Map.entry("^", BinaryExpr.Operator.XOR)
+    );
+
+    public static BinaryExpr.Operator getBinaryExprOperator(String operatorText) {
+        BinaryExpr.Operator operator = OPERATOR_MAP.get(operatorText);
+        if (operator == null) {
+            throw new IllegalArgumentException("Unknown binary operator: " + operatorText);
+        }
+        return operator;
+    }
 
     public static String getStringFromLiteral(String value) {
         value = value.trim();

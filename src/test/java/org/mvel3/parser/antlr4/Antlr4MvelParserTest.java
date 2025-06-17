@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2025 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.parser.antlr4.ParserTestUtil.assertParsedExpressionRoundTrip;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpressionContext;
 
+/**
+ * Tests for the MVEL parser using ANTLR4.
+ * Assertions are based on the generated Antlr AST.
+ */
 public class Antlr4MvelParserTest {
 
     @Test
@@ -98,56 +102,56 @@ public class Antlr4MvelParserTest {
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast is DRLX specific, not MVEL")
+    @Ignore("Inline Cast : TBD")
     @Test
     public void testParseInlineCastExpr() {
         String expr = "this#Person.name == \"Mark\"";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast is DRLX specific, not MVEL")
+    @Ignore("Inline Cast : TBD")
     @Test
     public void testParseInlineCastExpr2() {
         String expr = "address#com.pkg.InternationalAddress.state.length == 5";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast is DRLX specific, not MVEL")
+    @Ignore("Inline Cast : TBD")
     @Test
     public void testParseInlineCastExpr3() {
         String expr = "address#org.mvel3.compiler.LongAddress.country.substring(1)";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast is DRLX specific, not MVEL")
+    @Ignore("Inline Cast : TBD")
     @Test
     public void testParseInlineCastExpr4() {
         String expr = "address#com.pkg.InternationalAddress.getState().length == 5";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("`!.` Null Safe Dereferencing is DRLX specific, not MVEL. Mvel2 has `.?` syntax, but skipping for now")
+    @Ignore("`!.` Null Safe Dereferencing : TBD. Mvel2 has `.?` syntax, but skipping for now")
     @Test
     public void testParseNullSafeFieldAccessExpr() {
         String expr = "person!.name == \"Mark\"";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator is DRLX specific, not MVEL")
+    @Ignore("Custom Operator : TBD")
     @Test
     public void testDotFreeExpr() {
         String expr = "this after $a";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator is DRLX specific, not MVEL")
+    @Ignore("Custom Operator : TBD")
     @Test
     public void testDotFreeEnclosed() {
         String expr = "(this after $a)";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator is DRLX specific, not MVEL")
+    @Ignore("Custom Operator : TBD")
     @Test
     public void testDotFreeEnclosedWithNameExpr() {
         String expr = "(something after $a)";
