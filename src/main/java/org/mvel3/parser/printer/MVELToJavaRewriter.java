@@ -44,6 +44,7 @@ import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
 import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
 import com.github.javaparser.utils.Pair;
+import org.mvel3.EvaluatorBuilder;
 import org.mvel3.MVEL;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.transpiler.context.Declaration;
@@ -665,7 +666,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr putMethod = new MethodCallExpr( scope,"putMap");
                         assignExpr.replace(putMethod);
-                        putMethod.addArgument(new NameExpr("__context"));
+                        putMethod.addArgument(new NameExpr());
                         putMethod.addArgument(new StringLiteralExpr(nameExpr.getNameAsString()));
                         putMethod.addArgument(assignExpr);
                     }
@@ -684,7 +685,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr setMethod = new MethodCallExpr( scope,"setList");
                         assignExpr.replace(setMethod);
-                        setMethod.addArgument("__context");
+                        setMethod.addArgument(EvaluatorBuilder.CONTEXT_NAME);
                         setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().variableInfo().indexOf(nameExpr.getNameAsString())));
                         setMethod.addArgument(assignExpr);
                     }
@@ -692,7 +693,7 @@ public class MVELToJavaRewriter {
                     // pojo
                     // @TOOD I need to call the generated method below. But ideally only if it's part of some parent.
                     addSetterMethod(nameExpr);
-                    MethodCallExpr setMethod = new MethodCallExpr( "__contextSet" + nameExpr.getNameAsString());
+                    MethodCallExpr setMethod = new MethodCallExpr( EvaluatorBuilder.CONTEXT_NAME + nameExpr.getNameAsString());
                     assignExpr.replace(setMethod);
                     setMethod.addArgument(new NameExpr(ctxDeclr.name()));
                     setMethod.addArgument(assignExpr);
@@ -795,7 +796,7 @@ public class MVELToJavaRewriter {
     }
 
     public void addSetterMethod(NameExpr nameExpr) {
-        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod( "__contextSet" + nameExpr);
+        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod( EvaluatorBuilder.CONTEXT_NAME + nameExpr);
         methodDeclr.setStatic(true);
         methodDeclr.setPublic(true);
 
@@ -804,7 +805,7 @@ public class MVELToJavaRewriter {
         Type propertyType = resolvedTypeToType(propertyResolvedType);
         Type contextType = resolvedTypeToType(contextObjectType);
 
-        Parameter c = new Parameter(contextType, "__context" );
+        Parameter c = new Parameter(contextType, EvaluatorBuilder.CONTEXT_NAME );
         Parameter v = new Parameter(propertyType, "v" );
         methodDeclr.setParameters(NodeList.nodeList(c, v));
 
@@ -814,7 +815,7 @@ public class MVELToJavaRewriter {
 
         MethodUsage methodUsage = findGetterSetter("set", nameExpr.getNameAsString(), 1, d);
 
-        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName("__context")), methodUsage.getName());
+        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(EvaluatorBuilder.CONTEXT_NAME)), methodUsage.getName());
         setMethod.addArgument(new NameExpr("v"));
 
         ReturnStmt returnStmt = new ReturnStmt(new NameExpr("v"));

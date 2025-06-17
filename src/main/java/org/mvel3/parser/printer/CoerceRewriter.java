@@ -70,12 +70,12 @@ public class CoerceRewriter {
         Function<Expression, Expression> toBigDecimal = e -> {
             List<Expression> args = getArgumentsWithUnwrap(e.clone());
 
-            if (e.isLiteralExpr()) {
+            if (e.isLiteralExpr() && !e.isIntegerLiteralExpr()) {
                 String literal;
                 if (e.isStringLiteralExpr()) {
                     literal = e.asStringLiteralExpr().asString();
-                } else if (e.isIntegerLiteralExpr()) {
-                    literal = e.asIntegerLiteralExpr().getValue();
+                } else if (e.isDoubleLiteralExpr()) {
+                    literal = e.asDoubleLiteralExpr().getValue();
                 } else {
                     literal = e.toString();
                 }

@@ -35,7 +35,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testAssignmentIncrement() {
         test(ctx -> ctx.addDeclaration("i", Integer.class),
              "i += 10;",
-             "__context.put(\"i\", i += 10);");
+             EvaluatorBuilder.CONTEXT_NAME + " .put(\"i\", i += 10);");
     }
 
     @Test
@@ -347,14 +347,14 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimal() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "$p.salary = $p.salary + 50000;",
-             "$p.setSalary($p.getSalary().add(new BigDecimal(\"50000\"), java.math.MathContext.DECIMAL128));");
+             "$p.setSalary($p.getSalary().add(BigDecimal.valueOf(50000), java.math.MathContext.DECIMAL128));");
     }
 
     @Test
     public void testSetterBigDecimalConstant() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "$p.salary = 50000;",
-             "$p.setSalary(new BigDecimal(\"50000\"));");
+             "$p.setSalary(BigDecimal.valueOf(50000));");
     }
 
     @Test
@@ -401,7 +401,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("$p", Person.class);
              },
              "$p.name = 10000B;",
-             "$p.setName(java.util.Objects.toString(new BigDecimal(\"10000\"), null));");
+             "$p.setName(java.util.Objects.toString(BigDecimal.valueOf(10000), null));");
     }
 
     @Test
@@ -410,7 +410,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("$p", Person.class);
              },
              "$p.name = 10000I;",
-             "$p.setName(java.util.Objects.toString(new BigInteger(\"10000\"), null));");
+             "$p.setName(java.util.Objects.toString(BigInteger.valueOf(10000), null));");
     }
 
     @Test
@@ -435,7 +435,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalConstantModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = 50000 };",
-             "{$p.setSalary(new BigDecimal(50000));}",
+             "{$p.setSalary(BigDecimal.valueOf(50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -443,7 +443,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalLiteralModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = 50000B };",
-             "{$p.setSalary(new BigDecimal(\"50000\"));}",
+             "{$p.setSalary(BigDecimal.valueOf(50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -451,7 +451,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testSetterBigDecimalLiteralModifyNegative() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify ( $p )  { salary = -50000B };",
-             "{$p.setSalary(new BigDecimal(\"-50000\"));}",
+             "{$p.setSalary(BigDecimal.valueOf(-50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -459,7 +459,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testBigDecimalModulo() {
         test(ctx -> ctx.addDeclaration("$b1", BigDecimal.class),
              "java.math.BigDecimal result = $b1 % 2;",
-             "java.math.BigDecimal result = $b1.remainder(new BigDecimal(\"2\"), java.math.MathContext.DECIMAL128);");
+             "java.math.BigDecimal result = $b1.remainder(BigDecimal.valueOf(2), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
@@ -498,7 +498,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                           "}  " +
                           "     list.add(\"after \" + $p + \", money = \" + $p.salary); ",
                          "      list.add(\"before \" + $p + \", money = \" + $p.getSalary()); " +
-                         "      {$p.setSalary(new BigDecimal(\"50000\"));}" +
+                         "      {$p.setSalary(BigDecimal.valueOf(50000));}" +
                          "      list.add(\"after \" + $p + \", money = \" + $p.getSalary()); ",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "list"));
     }
@@ -584,7 +584,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      ctx.addDeclaration("b", BigDecimal.class);
                  },
                  "b " + op + "= 10;",
-                 "__context.put(\"b\", b = b." + method + "(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128));"
+                 EvaluatorBuilder.CONTEXT_NAME + ".put(\"b\", b = b." + method + "(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128));"
                 );
 
         }
@@ -606,7 +606,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      ctx.addDeclaration("p", Person.class);
                  },
                  "var x = 10" + op + "p.salary;",
-                 "var x = new BigDecimal(\"10\")." + method + "(p.getSalary(), java.math.MathContext.DECIMAL128);"
+                 "var x = BigDecimal.valueOf(10)." + method + "(p.getSalary(), java.math.MathContext.DECIMAL128);"
                 );
         }
     }
@@ -797,7 +797,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("map", Map.class, "<String, Integer>");
              },
              "s = map[s];",
-             "context.put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
+             EvaluatorBuilder.CONTEXT_NAME + ".put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
     }
 
     @Test
@@ -847,8 +847,8 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "    sum += money;\n" +
                      "    sum -= money;",
 
-                     "   BigDecimal sum = new BigDecimal(\"0\");\n" +
-                     "   BigDecimal money =  new BigDecimal(\"10\");\n" +
+                     "   BigDecimal sum = BigDecimal.valueOf(0);\n" +
+                     "   BigDecimal money =  BigDecimal.valueOf(10);\n" +
                      "   sum = sum.add(money, java.math.MathContext.DECIMAL128);\n" +
                      "   sum = sum.subtract(money, java.math.MathContext.DECIMAL128);");
     }
@@ -858,8 +858,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test("    BigDecimal zero = 0;\n" +
                      "    BigDecimal ten = 10;\n" +
                      "    if(zero < ten) {}",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    BigDecimal ten = new BigDecimal(\"10\");\n" +
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    BigDecimal ten = BigDecimal.valueOf(10);\n" +
                      "    if (zero.compareTo(ten) < 0) {}");
     }
 
@@ -868,8 +868,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test("BigDecimal zero = 0;\n" +
                      "    BigDecimal ten = 10;\n" +
                      "    if(zero <= ten) {}",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    BigDecimal ten = new BigDecimal(\"10\");\n" +
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    BigDecimal ten = BigDecimal.valueOf(10);\n" +
                      "    if (zero.compareTo(ten) <= 0) {}");
     }
 
@@ -878,8 +878,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test("BigDecimal zero = 0;\n" +
                      "    BigDecimal ten = 10;\n" +
                      "    if(zero > ten) {}",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    BigDecimal ten = new BigDecimal(\"10\");\n" +
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    BigDecimal ten = BigDecimal.valueOf(10);\n" +
                      "    if (zero.compareTo(ten) > 0) {}\n");
     }
 
@@ -888,8 +888,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test("BigDecimal zero = 0;\n" +
                      "    BigDecimal ten = 10;\n" +
                      "    if(zero >= ten) {}",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    BigDecimal ten = new BigDecimal(\"10\");\n" +
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    BigDecimal ten = BigDecimal.valueOf(10);\n" +
                      "    if (zero.compareTo(ten) >= 0) {}");
     }
 
@@ -897,16 +897,16 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void bigDecimalEquals() {
         test("    BigDecimal zero = 0;\n" +
                      "    if(zero == 23) {}\n",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    if (zero.compareTo(new BigDecimal(\"23\")) == 0) {}");
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    if (zero.compareTo(BigDecimal.valueOf(23)) == 0) {}");
     }
 
     @Test
     public void bigDecimalNotEquals() {
         test("BigDecimal zero = 0;\n" +
                      "    if(zero != 23) {}",
-             "BigDecimal zero = new BigDecimal(\"0\");\n" +
-                     "    if (zero.compareTo(new BigDecimal(\"23\")) != 0) {}");
+             "BigDecimal zero = BigDecimal.valueOf(0);\n" +
+                     "    if (zero.compareTo(BigDecimal.valueOf(23)) != 0) {}");
     }
 
     @Test
@@ -931,17 +931,24 @@ public class MVELTranspilerTest implements TranspilerTest {
     }
 
     @Test
-    public void testBigDecimalArithmeticWithConversionLiteral() {
+    public void testBigDecimalArithmeticWithConversionIntegerLiteral() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "java.math.BigDecimal operation = $p.salary + 10B;",
-             "java.math.BigDecimal operation = $p.getSalary().add(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128);");
+             "java.math.BigDecimal operation = $p.getSalary().add(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);");
+    }
+
+    @Test
+    public void testBigDecimalArithmeticWithConversionDecimalLiteral() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "java.math.BigDecimal operation = $p.salary + 10.0B;",
+             "java.math.BigDecimal operation = $p.getSalary().add(new BigDecimal(\"10.0\"), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
     public void testBigDecimalArithmeticWithConversionFromInteger() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "java.math.BigDecimal operation = $p.salary + 10;",
-             "java.math.BigDecimal operation = $p.getSalary().add(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128);");
+             "java.math.BigDecimal operation = $p.getSalary().add(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
@@ -1423,8 +1430,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicBigDec = 10B;" +
               "p.publicBigDec = 20;",
-              "p.publicBigDec = new BigDecimal(\"10\");" +
-              "p.publicBigDec = new BigDecimal(\"20\");");
+              "p.publicBigDec = BigDecimal.valueOf(10);" +
+              "p.publicBigDec = BigDecimal.valueOf(20);");
     }
 
     @Test
@@ -1558,8 +1565,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.salary = 10B;" +
               "p.salary = 20;",
-              "p.setSalary( new BigDecimal(\"10\"));" +
-              "p.setSalary(new BigDecimal(\"20\"));");
+              "p.setSalary( BigDecimal.valueOf(10));" +
+              "p.setSalary(BigDecimal.valueOf(20));");
     }
 
     @Test
@@ -1592,10 +1599,10 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testPropertyAccessorMapBigDecimalAssignOperatorCoerceOverloadRewrite() {
         test( ctx -> ctx.addDeclaration("p", Person.class),
-              "p.bigDecimalMap[\"bd\"] = 10B;"  +
-              "p.bigDecimalMap[\"bd\"] += 20 + 20 + 40B;",
-              "p.getBigDecimalMap().put(\"bd\", new BigDecimal(\"10\"));"  +
-              "p.getBigDecimalMap().put(\"bd\", p.getBigDecimalMap().get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), " +
+              "p.bigDecimalMap[\"bd\"] = 10.0B;"  +
+              "p.bigDecimalMap[\"bd\"] += 20 + 20 + 40.0B;",
+              "p.getBigDecimalMap().put(\"bd\", new BigDecimal(\"10.0\"));"  +
+              "p.getBigDecimalMap().put(\"bd\", p.getBigDecimalMap().get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40.0\"), " +
               "java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128));");
     }
 

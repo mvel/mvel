@@ -36,7 +36,7 @@ public class ConstraintTranspilerTest implements TranspilerTest {
     @Test @Ignore // we are not coercing Strings yet (mdp);
     public void testBigDecimalStringEquality() {
         testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = salary == \"90\";}",
-                       "{var x = _this.getSalary().compareTo(new java.math.BigDecimal(\"90\")) == 0;}");
+                       "{var x = _this.getSalary().compareTo(new BigDecimal(\"90\")) == 0;}");
     }
 
     @Test
@@ -67,6 +67,12 @@ public class ConstraintTranspilerTest implements TranspilerTest {
     public void testBigDecimalAddInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 + 10;}",
                        "{var x = $bd1.add(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
+    }
+
+    @Test
+    public void testBigDecimalAddIntWithDecimal() {
+        testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 + 10.0;}",
+                       "{var x = $bd1.add(new BigDecimal(\"10.0\"), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test

@@ -51,6 +51,11 @@ public interface TranspilerTest {
 
         contextUpdater.accept(builder);
 
+        if (builder.getRootDeclaration() != EvaluatorBuilder.VOID_DECLARATION) {
+            // set a root within the context, if one is used
+            builder.getVariableInfo().setVars(builder.getRootDeclaration());
+        }
+
         TranspiledResult compiled = new MVELCompiler().transpile(builder.build());
 
         verifyBodyWithBetterDiff(expectedResult + "return null;", compiled.methodBodyAsString());

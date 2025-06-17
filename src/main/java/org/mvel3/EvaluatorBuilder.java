@@ -28,6 +28,7 @@ public class EvaluatorBuilder<T, K, R> {
     private ContextInfoBuilder<T> variableInfo;
 
     public static Declaration VOID_DECLARATION = Declaration.of(CONTEXT_NAME, Void.class);
+
     private Declaration rootDeclaration = VOID_DECLARATION;
 
     private int rootVarIndex = 0;

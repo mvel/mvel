@@ -17,6 +17,7 @@
 package org.mvel3.transpiler;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -49,10 +50,13 @@ public class TranspiledBlockResult implements TranspiledResult {
         StringBuilder sbuilder = new StringBuilder();
         NodeList<Statement> stmts = method.getBody().get().getStatements();
         int subListStart = context.getInputs().size();
-        if ( !context.getEvaluatorInfo().rootDeclaration().type().isVoid()) {
-            // root vars are not assigned at start, so remove that from the count
+
+        if ( !context.getEvaluatorInfo().rootDeclaration().type().isVoid() &&
+             context.getEvaluatorInfo().variableInfo().declaration() == context.getEvaluatorInfo().rootDeclaration()) {
+             // root vars are not assigned at start, if the variableinfo is the root variable.
             subListStart--;
         }
+
         for (Statement stmt : stmts.subList(subListStart, stmts.size())) {
             sbuilder.append(printNode(stmt, context.getTypeSolver()));
         }
