@@ -252,6 +252,7 @@
                 </configuration>
             </plugin>
 
+            <!-- finally, this javacc plugin will be removed -->
             <plugin>
                 <groupId>com.helger.maven</groupId>
                 <artifactId>ph-javacc-maven-plugin</artifactId>
@@ -271,6 +272,27 @@
             </plugin>
 
             <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.13.1</version>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/antlr4</sourceDirectory>
+                            <outputDirectory>target/generated-sources/antlr4</outputDirectory>
+                            <libDirectory>src/main/antlr4/org/mvel3/parser/antlr4</libDirectory>
+                            <visitor>true</visitor>
+                            <listener>true</listener>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
@@ -283,6 +305,7 @@
                         <configuration>
                             <sources>
                                 <source>src/main/javacc-support</source>
+                                <source>target/generated-sources/antlr4</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -320,6 +343,11 @@
             <version>9.5</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.13.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
