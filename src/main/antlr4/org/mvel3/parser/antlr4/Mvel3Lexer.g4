@@ -1,8 +1,8 @@
-// MVEL3 Lexer - extends Java 20 lexer with MVEL-specific tokens
+// MVEL3 Lexer - extends Java lexer with MVEL-specific tokens
 
 lexer grammar Mvel3Lexer;
 
-import Java20Lexer;
+import JavaLexer;
 
 // MVEL-specific keywords and operators
 IN        : 'in';
@@ -17,12 +17,12 @@ WITH      : 'with';
 // MVEL-specific literals (defined to avoid conflicts with imported tokens)
 // BigDecimal literals with 'B' suffix
 BigDecimalLiteral
-    : DecimalNumeral [bB]
-    | DecimalFloatingPointLiteral [bB]
+    : ('0' | [1-9] (Digits? | '_'+ Digits)) [bB]
+    | ((Digits '.' Digits? | '.' Digits) ExponentPart? | Digits ExponentPart) [bB]
     ;
 
 // BigInteger literals with 'I' suffix  
 BigIntegerLiteral
-    : DecimalNumeral [iI]
+    : ('0' | [1-9] (Digits? | '_'+ Digits)) [iI]
     ;
 

@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.parser.antlr4.ParserTestUtil.assertParsedExpressionRoundTrip;
-import static org.mvel3.parser.antlr4.ParserTestUtil.getEqualityExpressionContext;
+import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpressionContext;
 
 public class Antlr4MvelParserTest {
 
@@ -31,19 +31,18 @@ public class Antlr4MvelParserTest {
         String expr = "name == \"Mark\"";
         ParseTree tree = Antlr4MvelParser.parseExpression(expr);
 
-        // Get the equality expression context - this demonstrates proper AST node access
-        Mvel3Parser.EqualityExpressionContext eqCtx = getEqualityExpressionContext((Mvel3Parser.MvelStartContext) tree);
+        Mvel3Parser.BinaryOperatorExpressionContext binary = getBinaryOperatorExpressionContext((Mvel3Parser.MvelStartContext) tree);
 
         // Assert on the actual AST nodes
-        assertThat(eqCtx.EQUAL()).isNotNull();
-        assertThat(eqCtx.EQUAL().getText()).isEqualTo("==");
+        assertThat(binary.EQUAL()).isNotNull();
+        assertThat(binary.EQUAL().getText()).isEqualTo("==");
 
         // Should have relational expression on the right (for "Mark")
-        assertThat(eqCtx.relationalExpression()).isNotNull();
-        assertThat(eqCtx.relationalExpression().getText()).isEqualTo("\"Mark\"");
+        assertThat(binary.expression(0).getText()).isEqualTo("name");
+        assertThat(binary.expression(1).getText()).isEqualTo("\"Mark\"");
 
         // Verify the complete expression text
-        assertThat(eqCtx.getText()).isEqualTo("name==\"Mark\"");
+        assertThat(binary.getText()).isEqualTo("name==\"Mark\"");
     }
 
     @Test
