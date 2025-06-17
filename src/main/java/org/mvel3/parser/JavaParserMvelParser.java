@@ -1,19 +1,23 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2023 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
-
 package org.mvel3.parser;
 
 import java.io.File;
@@ -23,10 +27,15 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Supplier;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Problem;
+import com.github.javaparser.Processor;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -48,22 +57,85 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
-import org.mvel3.parser.antlr4.Antlr4MvelParser;
+
+import static com.github.javaparser.Problem.PROBLEM_BY_BEGIN_POSITION;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+import static java.util.stream.Collectors.toList;
+import static org.mvel3.parser.ParseStart.ANNOTATION;
+import static org.mvel3.parser.ParseStart.ANNOTATION_BODY;
+import static org.mvel3.parser.ParseStart.BLOCK;
+import static org.mvel3.parser.ParseStart.CLASS_BODY;
+import static org.mvel3.parser.ParseStart.CLASS_OR_INTERFACE_TYPE;
+import static org.mvel3.parser.ParseStart.COMPILATION_UNIT;
+import static org.mvel3.parser.ParseStart.EXPLICIT_CONSTRUCTOR_INVOCATION_STMT;
+import static org.mvel3.parser.ParseStart.EXPRESSION;
+import static org.mvel3.parser.ParseStart.IMPORT_DECLARATION;
+import static org.mvel3.parser.ParseStart.METHOD_DECLARATION;
+import static org.mvel3.parser.ParseStart.MODULE_DECLARATION;
+import static org.mvel3.parser.ParseStart.MODULE_DIRECTIVE;
+import static org.mvel3.parser.ParseStart.NAME;
+import static org.mvel3.parser.ParseStart.PACKAGE_DECLARATION;
+import static org.mvel3.parser.ParseStart.PARAMETER;
+import static org.mvel3.parser.ParseStart.SIMPLE_NAME;
+import static org.mvel3.parser.ParseStart.STATEMENT;
+import static org.mvel3.parser.ParseStart.TYPE;
+import static org.mvel3.parser.ParseStart.TYPE_DECLARATION;
+import static org.mvel3.parser.ParseStart.TYPE_PARAMETER;
+import static org.mvel3.parser.ParseStart.VARIABLE_DECLARATION_EXPR;
+import static org.mvel3.parser.Providers.provider;
+import static org.mvel3.parser.Providers.resourceProvider;
 
 /**
- * Interface for parsing MVEL expressions and Java source code.
- * 
- * @author MVEL Team
+ * Parse Java source code and creates Abstract Syntax Trees.
+ *
+ * @author Júlio Vilmar Gesser
+ * @see StaticJavaParser
  */
-public interface MvelParser {
+public final class JavaParserMvelParser implements MvelParser {
 
-    // for test convenience. we will eventually remove JavaParserMvelParser and use Antlr4MvelParser only.
-    boolean USE_ANTLR = true;
+    private final ParserConfiguration configuration;
+
+    private GeneratedMvelParser astParser = null;
+
+    /**
+     * Instantiate the parser with default configuration. Note that parsing can also be done with the static methods {@link StaticJavaParser}.
+     * Creating an instance will reduce setup time between parsing files.
+     */
+    public JavaParserMvelParser() {
+        this(new ParserConfiguration());
+    }
+
+    /**
+     * Instantiate the parser. Note that parsing can also be done with the static methods {@link StaticJavaParser}.
+     * Creating an instance will reduce setup time between parsing files.
+     */
+    public JavaParserMvelParser(ParserConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * @return The configuration for this parser.
      */
-    ParserConfiguration getParserConfiguration();
+    public ParserConfiguration getParserConfiguration() {
+        return this.configuration;
+    }
+
+    private GeneratedMvelParser getParserForProvider(Provider provider) {
+        if (astParser == null) {
+            astParser = new GeneratedMvelParser(provider);
+        } else {
+            astParser.reset(provider);
+        }
+        astParser.setTabSize(configuration.getTabSize());
+        astParser.setStoreTokens(configuration.isStoreTokens());
+        ParserConfiguration.LanguageLevel languageLevel = configuration.getLanguageLevel();
+        if (languageLevel != null) {
+            if (languageLevel.isYieldSupported()) {
+                astParser.setYieldSupported();
+            }
+        }
+        return astParser;
+    }
 
     /**
      * Parses source code.
@@ -75,7 +147,47 @@ public interface MvelParser {
      * @param <N> the subclass of Node that is the result of parsing in the start.
      * @return the parse result, a collection of encountered problems, and some extra data.
      */
-    <N extends Node> ParseResult<N> parse(ParseStart<N> start, final Provider provider);
+    public <N extends Node> ParseResult<N> parse(ParseStart<N> start, final Provider provider) {
+        assertNotNull(start);
+        assertNotNull(provider);
+        List<Processor> processors = configuration.getProcessors().stream().map(Supplier::get).collect(toList());
+
+        com.github.javaparser.Provider adapter = new com.github.javaparser.Provider() {
+            @Override
+            public int read(char[] aDest, int nOfs, int nLen) throws IOException {
+                return provider.read(aDest, nOfs, nLen);
+            }
+
+            @Override
+            public void close() throws IOException {
+                provider.close();
+            }
+        };
+
+        for (Processor processor : processors) {
+            adapter = processor.preProcess(adapter);
+        }
+        final GeneratedMvelParser parser = getParserForProvider(provider);
+        try {
+            N resultNode = start.parse(parser);
+            ParseResult<N> result = new ParseResult<>(resultNode, parser.problems, parser.getCommentsCollection());
+            for (Processor processor : processors) {
+                processor.postProcess(result, configuration);
+            }
+            result.getProblems().sort(PROBLEM_BY_BEGIN_POSITION);
+            return result;
+        } catch (Exception e) {
+            final String message = e.getMessage() == null ? "Unknown error" : e.getMessage();
+            parser.problems.add(new Problem(message, null, e));
+            return new ParseResult<>(null, parser.problems, parser.getCommentsCollection());
+        } finally {
+            try {
+                provider.close();
+            } catch (IOException e) {
+                // Since we're done parsing and have our result, we don't care about any errors.
+            }
+        }
+    }
 
     /**
      * Parses the Java code contained in the {@link InputStream} and returns a
@@ -86,7 +198,9 @@ public interface MvelParser {
      * @return CompilationUnit representing the Java source code
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<CompilationUnit> parse(final InputStream in, Charset encoding);
+    public ParseResult<CompilationUnit> parse(final InputStream in, Charset encoding) {
+        return parse(COMPILATION_UNIT, provider(in, encoding));
+    }
 
     /**
      * Parses the Java code contained in the {@link InputStream} and returns a
@@ -96,7 +210,9 @@ public interface MvelParser {
      * @return CompilationUnit representing the Java source code
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<CompilationUnit> parse(final InputStream in);
+    public ParseResult<CompilationUnit> parse(final InputStream in) {
+        return parse(in, configuration.getCharacterEncoding());
+    }
 
     /**
      * Parses the Java code contained in a {@link File} and returns a
@@ -110,7 +226,11 @@ public interface MvelParser {
      * @deprecated set the encoding in the {@link ParserConfiguration}
      */
     @Deprecated
-    ParseResult<CompilationUnit> parse(final File file, final Charset encoding) throws FileNotFoundException;
+    public ParseResult<CompilationUnit> parse(final File file, final Charset encoding) throws FileNotFoundException {
+        ParseResult<CompilationUnit> result = parse(COMPILATION_UNIT, provider(file, encoding));
+        result.getResult().ifPresent(cu -> cu.setStorage(file.toPath(), encoding));
+        return result;
+    }
 
     /**
      * Parses the Java code contained in a {@link File} and returns a
@@ -121,7 +241,11 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @throws FileNotFoundException the file was not found
      */
-    ParseResult<CompilationUnit> parse(final File file) throws FileNotFoundException;
+    public ParseResult<CompilationUnit> parse(final File file) throws FileNotFoundException {
+        ParseResult<CompilationUnit> result = parse(COMPILATION_UNIT, provider(file, configuration.getCharacterEncoding()));
+        result.getResult().ifPresent(cu -> cu.setStorage(file.toPath(), configuration.getCharacterEncoding()));
+        return result;
+    }
 
     /**
      * Parses the Java code contained in a file and returns a
@@ -135,7 +259,11 @@ public interface MvelParser {
      * @deprecated set the encoding in the {@link ParserConfiguration}
      */
     @Deprecated
-    ParseResult<CompilationUnit> parse(final Path path, final Charset encoding) throws IOException;
+    public ParseResult<CompilationUnit> parse(final Path path, final Charset encoding) throws IOException {
+        ParseResult<CompilationUnit> result = parse(COMPILATION_UNIT, provider(path, encoding));
+        result.getResult().ifPresent(cu -> cu.setStorage(path, encoding));
+        return result;
+    }
 
     /**
      * Parses the Java code contained in a file and returns a
@@ -146,7 +274,11 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @throws IOException the path could not be accessed
      */
-    ParseResult<CompilationUnit> parse(final Path path) throws IOException;
+    public ParseResult<CompilationUnit> parse(final Path path) throws IOException {
+        ParseResult<CompilationUnit> result = parse(COMPILATION_UNIT, provider(path, configuration.getCharacterEncoding()));
+        result.getResult().ifPresent(cu -> cu.setStorage(path, configuration.getCharacterEncoding()));
+        return result;
+    }
 
     /**
      * Parses the Java code contained in a resource and returns a
@@ -158,7 +290,9 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @throws IOException the path could not be accessed
      */
-    ParseResult<CompilationUnit> parseResource(final String path) throws IOException;
+    public ParseResult<CompilationUnit> parseResource(final String path) throws IOException {
+        return parse(COMPILATION_UNIT, resourceProvider(path, configuration.getCharacterEncoding()));
+    }
 
     /**
      * Parses the Java code contained in a resource and returns a
@@ -173,7 +307,9 @@ public interface MvelParser {
      * @deprecated set the encoding in the {@link ParserConfiguration}
      */
     @Deprecated
-    ParseResult<CompilationUnit> parseResource(final String path, Charset encoding) throws IOException;
+    public ParseResult<CompilationUnit> parseResource(final String path, Charset encoding) throws IOException {
+        return parse(COMPILATION_UNIT, resourceProvider(path, encoding));
+    }
 
     /**
      * Parses the Java code contained in a resource and returns a
@@ -188,7 +324,9 @@ public interface MvelParser {
      * @deprecated set the encoding in the {@link ParserConfiguration}
      */
     @Deprecated
-    ParseResult<CompilationUnit> parseResource(final ClassLoader classLoader, final String path, Charset encoding) throws IOException;
+    public ParseResult<CompilationUnit> parseResource(final ClassLoader classLoader, final String path, Charset encoding) throws IOException {
+        return parse(COMPILATION_UNIT, resourceProvider(classLoader, path, encoding));
+    }
 
     /**
      * Parses Java code from a Reader and returns a
@@ -198,7 +336,9 @@ public interface MvelParser {
      * @return CompilationUnit representing the Java source code
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<CompilationUnit> parse(final Reader reader);
+    public ParseResult<CompilationUnit> parse(final Reader reader) {
+        return parse(COMPILATION_UNIT, provider(reader));
+    }
 
     /**
      * Parses the Java code contained in code and returns a
@@ -208,7 +348,9 @@ public interface MvelParser {
      * @return CompilationUnit representing the Java source code
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<CompilationUnit> parse(String code);
+    public ParseResult<CompilationUnit> parse(String code) {
+        return parse(COMPILATION_UNIT, provider(code));
+    }
 
     /**
      * Parses the Java block contained in a {@link String} and returns a
@@ -218,7 +360,9 @@ public interface MvelParser {
      * @return BlockStmt representing the Java block
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<BlockStmt> parseBlock(final String blockStatement);
+    public ParseResult<BlockStmt> parseBlock(final String blockStatement) {
+        return parse(BLOCK, provider(blockStatement));
+    }
 
     /**
      * Parses the Java statement contained in a {@link String} and returns a
@@ -228,7 +372,9 @@ public interface MvelParser {
      * @return Statement representing the Java statement
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<Statement> parseStatement(final String statement);
+    public ParseResult<Statement> parseStatement(final String statement) {
+        return parse(STATEMENT, provider(statement));
+    }
 
     /**
      * Parses the Java import contained in a {@link String} and returns a
@@ -238,7 +384,9 @@ public interface MvelParser {
      * @return ImportDeclaration representing the Java import declaration
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<ImportDeclaration> parseImport(final String importDeclaration);
+    public ParseResult<ImportDeclaration> parseImport(final String importDeclaration) {
+        return parse(IMPORT_DECLARATION, provider(importDeclaration));
+    }
 
     /**
      * Parses the Java expression contained in a {@link String} and returns a
@@ -249,7 +397,9 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      */
     @SuppressWarnings("unchecked")
-    <T extends Expression> ParseResult<T> parseExpression(final String expression);
+    public <T extends Expression> ParseResult<T> parseExpression(final String expression) {
+        return (ParseResult<T>) parse(EXPRESSION, provider(expression));
+    }
 
     /**
      * Parses the Java annotation contained in a {@link String} and returns a
@@ -259,7 +409,9 @@ public interface MvelParser {
      * @return AnnotationExpr representing the Java annotation
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<AnnotationExpr> parseAnnotation(final String annotation);
+    public ParseResult<AnnotationExpr> parseAnnotation(final String annotation) {
+        return parse(ANNOTATION, provider(annotation));
+    }
 
     /**
      * Parses the Java annotation body declaration(e.g fields or methods) contained in a
@@ -269,7 +421,9 @@ public interface MvelParser {
      * @return BodyDeclaration representing the Java annotation
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<BodyDeclaration<?>> parseAnnotationBodyDeclaration(final String body);
+    public ParseResult<BodyDeclaration<?>> parseAnnotationBodyDeclaration(final String body) {
+        return parse(ANNOTATION_BODY, provider(body));
+    }
 
     /**
      * Parses a Java class or interface body declaration(e.g fields or methods) and returns a
@@ -280,7 +434,9 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      */
     @SuppressWarnings("unchecked")
-    <T extends BodyDeclaration<?>> ParseResult<T> parseBodyDeclaration(String body);
+    public <T extends BodyDeclaration<?>> ParseResult<T> parseBodyDeclaration(String body) {
+        return (ParseResult<T>) parse(CLASS_BODY, provider(body));
+    }
 
     /**
      * Parses a Java class or interface type name and returns a {@link ClassOrInterfaceType} that represents it.
@@ -289,7 +445,9 @@ public interface MvelParser {
      * @return ClassOrInterfaceType representing the type
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<ClassOrInterfaceType> parseClassOrInterfaceType(String type);
+    public ParseResult<ClassOrInterfaceType> parseClassOrInterfaceType(String type) {
+        return parse(CLASS_OR_INTERFACE_TYPE, provider(type));
+    }
 
     /**
      * Parses a Java type name and returns a {@link Type} that represents it.
@@ -298,7 +456,9 @@ public interface MvelParser {
      * @return ClassOrInterfaceType representing the type
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<Type> parseType(String type);
+    public ParseResult<Type> parseType(String type) {
+        return parse(TYPE, provider(type));
+    }
 
     /**
      * Parses a variable declaration expression and returns a {@link VariableDeclarationExpr}
@@ -308,7 +468,9 @@ public interface MvelParser {
      * @return VariableDeclarationExpr representing the type
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<VariableDeclarationExpr> parseVariableDeclarationExpr(String declaration);
+    public ParseResult<VariableDeclarationExpr> parseVariableDeclarationExpr(String declaration) {
+        return parse(VARIABLE_DECLARATION_EXPR, provider(declaration));
+    }
 
     /**
      * Parses the this(...) and super(...) statements that may occur at the start of a constructor.
@@ -317,7 +479,9 @@ public interface MvelParser {
      * @return the AST for the statement.
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<ExplicitConstructorInvocationStmt> parseExplicitConstructorInvocationStmt(String statement);
+    public ParseResult<ExplicitConstructorInvocationStmt> parseExplicitConstructorInvocationStmt(String statement) {
+        return parse(EXPLICIT_CONSTRUCTOR_INVOCATION_STMT, provider(statement));
+    }
 
     /**
      * Parses a qualified name (one that can have "."s in it) and returns it as a Name.
@@ -326,7 +490,9 @@ public interface MvelParser {
      * @return the AST for the name
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<Name> parseName(String qualifiedName);
+    public ParseResult<Name> parseName(String qualifiedName) {
+        return parse(NAME, provider(qualifiedName));
+    }
 
     /**
      * Parses a simple name (one that can NOT have "."s in it) and returns it as a SimpleName.
@@ -335,7 +501,9 @@ public interface MvelParser {
      * @return the AST for the name
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<SimpleName> parseSimpleName(String name);
+    public ParseResult<SimpleName> parseSimpleName(String name) {
+        return parse(SIMPLE_NAME, provider(name));
+    }
 
     /**
      * Parses a single parameter (a type and a name) and returns it as a Parameter.
@@ -344,7 +512,9 @@ public interface MvelParser {
      * @return the AST for the parameter
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<Parameter> parseParameter(String parameter);
+    public ParseResult<Parameter> parseParameter(String parameter) {
+        return parse(PARAMETER, provider(parameter));
+    }
 
     /**
      * Parses a package declaration and returns it as a PackageDeclaration.
@@ -353,7 +523,9 @@ public interface MvelParser {
      * @return the AST for the parameter
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<PackageDeclaration> parsePackageDeclaration(String packageDeclaration);
+    public ParseResult<PackageDeclaration> parsePackageDeclaration(String packageDeclaration) {
+        return parse(PACKAGE_DECLARATION, provider(packageDeclaration));
+    }
 
     /**
      * Parses a type declaration and returns it as a TypeDeclaration.
@@ -362,7 +534,9 @@ public interface MvelParser {
      * @return the AST for the type declaration
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<TypeDeclaration<?>> parseTypeDeclaration(String typeDeclaration);
+    public ParseResult<TypeDeclaration<?>> parseTypeDeclaration(String typeDeclaration) {
+        return parse(TYPE_DECLARATION, provider(typeDeclaration));
+    }
 
     /**
      * Parses a module declaration and returns it as a ModuleDeclaration.
@@ -372,7 +546,9 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @see ModuleDeclaration
      */
-    ParseResult<ModuleDeclaration> parseModuleDeclaration(String moduleDeclaration);
+    public ParseResult<ModuleDeclaration> parseModuleDeclaration(String moduleDeclaration) {
+        return parse(MODULE_DECLARATION, provider(moduleDeclaration));
+    }
 
     /**
      * Parses a module directive and returns it as a ModuleDirective.
@@ -382,7 +558,9 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @see ModuleDirective
      */
-    ParseResult<ModuleDirective> parseModuleDirective(String moduleDirective);
+    public ParseResult<ModuleDirective> parseModuleDirective(String moduleDirective) {
+        return parse(MODULE_DIRECTIVE, provider(moduleDirective));
+    }
 
     /**
      * Parses a type parameter and returns it as a TypeParameter
@@ -391,7 +569,9 @@ public interface MvelParser {
      * @return the AST for the type parameter
      * @throws ParseProblemException if the source code has parser errors
      */
-    ParseResult<TypeParameter> parseTypeParameter(String typeParameter);
+    public ParseResult<TypeParameter> parseTypeParameter(String typeParameter) {
+        return parse(TYPE_PARAMETER, provider(typeParameter));
+    }
 
     /**
      * Parses a method declaration and returns it as a MethodDeclaration.
@@ -401,37 +581,7 @@ public interface MvelParser {
      * @throws ParseProblemException if the source code has parser errors
      * @see MethodDeclaration
      */
-    ParseResult<MethodDeclaration> parseMethodDeclaration(String methodDeclaration);
-
-    /**
-     * Factory class to provide MvelParser implementations.
-     */
-    class Factory {
-        /**
-         * Get the default MvelParser implementation.
-         * 
-         * @return the default parser implementation
-         */
-        public static MvelParser get() {
-            if (USE_ANTLR) {
-                return new Antlr4MvelParser();
-            } else {
-                return new JavaParserMvelParser();
-            }
-        }
-
-        /**
-         * Get MvelParser implementation with custom configuration.
-         * 
-         * @param configuration the parser configuration
-         * @return the parser implementation with given configuration
-         */
-        public static MvelParser get(ParserConfiguration configuration) {
-            if (USE_ANTLR) {
-                return new Antlr4MvelParser(configuration);
-            } else {
-                return new JavaParserMvelParser(configuration);
-            }
-        }
+    public ParseResult<MethodDeclaration> parseMethodDeclaration(String methodDeclaration) {
+        return parse(METHOD_DECLARATION, provider(methodDeclaration));
     }
 }

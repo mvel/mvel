@@ -17,7 +17,7 @@ public class ParserTestUtil {
     }
 
     static void assertParsedExpressionRoundTrip(String expr) {
-        ParseTree tree = Antlr4MvelParser.parseExpression(expr);
+        ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
         Mvel3Parser.MvelStartContext startCtx = (Mvel3Parser.MvelStartContext) tree;
         assertThat(startCtx).isNotNull();
         assertThat(startCtx.mvelExpression().getText()).isEqualToIgnoringWhitespace(expr);

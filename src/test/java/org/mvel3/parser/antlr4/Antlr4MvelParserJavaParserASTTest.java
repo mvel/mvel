@@ -34,7 +34,7 @@ public class Antlr4MvelParserJavaParserASTTest {
     @Test
     public void testParseSimpleExpr() {
         String expr = "name == \"Mark\"";
-        Expression expression = Antlr4MvelParser.parse(expr);
+        Expression expression = Antlr4MvelParser.parseExpressionAsJavaParserAST(expr);
 
         BinaryExpr binaryExpr = ( (BinaryExpr) expression );
         assertThat(toString(binaryExpr.getLeft())).isEqualTo("name");

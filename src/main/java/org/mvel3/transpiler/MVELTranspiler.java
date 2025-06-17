@@ -72,7 +72,7 @@ public class MVELTranspiler {
         conf.setLanguageLevel(JAVA_15);
         conf.setSymbolResolver(solver);
 
-        MvelParser parser = new MvelParser(conf);
+        MvelParser parser = MvelParser.Factory.get(conf);
 //        if (context.getRootObject().isPresent()) {
 //            context.addDeclaration(context.getRootPrefix().get(), context.getRootObject().get(), context.getRootGenerics().get());
 //        }

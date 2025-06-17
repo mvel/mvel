@@ -22,7 +22,7 @@ public class DRLXTranspilerTest {
         conf.setLanguageLevel(JAVA_15);
         conf.setSymbolResolver(solver);
 
-        MvelParser parser = new MvelParser(conf);
+        MvelParser parser = MvelParser.Factory.get(conf);
 
         String str = "public class X {\n" +
                      "    rule fooBar {\n" +

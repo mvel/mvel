@@ -33,7 +33,7 @@ public class Antlr4MvelParserTest {
     @Test
     public void testParseSimpleExpr() {
         String expr = "name == \"Mark\"";
-        ParseTree tree = Antlr4MvelParser.parseExpression(expr);
+        ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
 
         Mvel3Parser.BinaryOperatorExpressionContext binary = getBinaryOperatorExpressionContext((Mvel3Parser.MvelStartContext) tree);
 
