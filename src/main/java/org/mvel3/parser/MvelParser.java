@@ -57,25 +57,11 @@ import org.mvel3.parser.antlr4.Antlr4MvelParser;
  */
 public interface MvelParser {
 
-    // for test convenience. we will eventually remove JavaParserMvelParser and use Antlr4MvelParser only.
-    boolean USE_ANTLR = true;
 
     /**
      * @return The configuration for this parser.
      */
     ParserConfiguration getParserConfiguration();
-
-    /**
-     * Parses source code.
-     * It takes the source code from a Provider.
-     * The start indicates what can be found in the source code (compilation unit, block, import...)
-     *
-     * @param start refer to the constants in ParseStart to see what can be parsed.
-     * @param provider refer to Providers to see how you can read source. The provider will be closed after parsing.
-     * @param <N> the subclass of Node that is the result of parsing in the start.
-     * @return the parse result, a collection of encountered problems, and some extra data.
-     */
-    <N extends Node> ParseResult<N> parse(ParseStart<N> start, final Provider provider);
 
     /**
      * Parses the Java code contained in the {@link InputStream} and returns a
@@ -407,6 +393,10 @@ public interface MvelParser {
      * Factory class to provide MvelParser implementations.
      */
     class Factory {
+
+        // for test convenience. we will eventually remove JavaParserMvelParser and use Antlr4MvelParser only.
+        public static boolean USE_ANTLR = true;
+
         /**
          * Get the default MvelParser implementation.
          * 

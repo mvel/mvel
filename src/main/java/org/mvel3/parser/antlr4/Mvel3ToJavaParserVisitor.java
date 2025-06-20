@@ -16,30 +16,32 @@
 
 package org.mvel3.parser.antlr4;
 
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
 /**
- * Visitor that converts ANTLR4 parse tree to JavaParser AST Expression nodes.
- * This implementation focuses on basic expressions needed for testing.
+ * Visitor that converts ANTLR4 parse tree to JavaParser AST nodes.
+ * This implementation can return various types of nodes (Expression, Type, etc.).
  */
-public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Expression> {
+public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
-    public Expression visitMvelStart(Mvel3Parser.MvelStartContext ctx) {
+    public Node visitMvelStart(Mvel3Parser.MvelStartContext ctx) {
         return visit(ctx.mvelExpression());
     }
 
     @Override
-    public Expression visitMvelExpression(Mvel3Parser.MvelExpressionContext ctx) {
+    public Node visitMvelExpression(Mvel3Parser.MvelExpressionContext ctx) {
         return visit(ctx.expression());
     }
 
     @Override
-    public Expression visitBinaryOperatorExpression(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
-        Expression left = visit(ctx.expression(0));
-        Expression right = visit(ctx.expression(1));
+    public Node visitBinaryOperatorExpression(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
+        Expression left = (Expression) visit(ctx.expression(0));
+        Expression right = (Expression) visit(ctx.expression(1));
         
         // Handle different binary operators
         String operatorText = ctx.bop.getText();
@@ -50,19 +52,19 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Expression>
 
 
     @Override
-    public Expression visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {
+    public Node visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {
         return visit(ctx.primary());
     }
 
     @Override
-    public Expression visitPrimary(Mvel3Parser.PrimaryContext ctx) {
+    public Node visitPrimary(Mvel3Parser.PrimaryContext ctx) {
         if (ctx.literal() != null) {
             return visit(ctx.literal());
         } else if (ctx.identifier() != null) {
             return new NameExpr(ctx.identifier().getText());
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
             // Parenthesized expression
-            return new EnclosedExpr(visit(ctx.expression()));
+            return new EnclosedExpr((Expression) visit(ctx.expression()));
         } else if (ctx.THIS() != null) {
             return new ThisExpr();
         }
@@ -72,7 +74,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Expression>
     }
 
     @Override
-    public Expression visitLiteral(Mvel3Parser.LiteralContext ctx) {
+    public Node visitLiteral(Mvel3Parser.LiteralContext ctx) {
         if (ctx.STRING_LITERAL() != null) {
             String text = ctx.STRING_LITERAL().getText();
             // Remove quotes
@@ -106,5 +108,32 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Expression>
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
+    }
+
+    @Override
+    public Node visitClassOrInterfaceType(Mvel3Parser.ClassOrInterfaceTypeContext ctx) {
+        // Grammar: (identifier typeArguments? '.')* typeIdentifier typeArguments?
+        
+        ClassOrInterfaceType type = null;
+        
+        // Handle the optional qualified prefix (identifier typeArguments? '.')*
+        if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
+            for (int i = 0; i < ctx.identifier().size(); i++) {
+                String name = ctx.identifier(i).getText();
+                type = new ClassOrInterfaceType(type, name);
+                // TODO: Handle typeArguments if present
+            }
+        }
+        
+        // Handle the required typeIdentifier at the end
+        if (ctx.typeIdentifier() != null) {
+            String typeName = ctx.typeIdentifier().getText();
+            type = new ClassOrInterfaceType(type, typeName);
+            // TODO: Handle final typeArguments if present
+        } else {
+            throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
+        }
+        
+        return type;
     }
 }

@@ -63,10 +63,22 @@ public class MvelParserTest {
 
     private static final Collection<String> operators = new HashSet<>();
     static {
+        // This class is a test for JavaParserMvelParser, so no antlr
+        MvelParser.Factory.USE_ANTLR = false;
+
         operators.addAll(Arrays.asList("after", "before", "in", "matches", "includes"));
     }
 
     final ParseStart<DrlxExpression> parser = DrlxParser.buildDrlxParserWithArguments(operators);
+
+    
+    @Test
+    public void testTmp() {
+        String expr = "java.math.MathContext.DECIMAL128";
+        Expression expression = parseExpression( parser, expr ).getExpr();
+
+        System.out.println(printNode(expression));
+    }
 
     @Test
     public void testParseSimpleExpr() {

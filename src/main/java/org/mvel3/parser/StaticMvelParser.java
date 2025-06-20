@@ -302,7 +302,7 @@ public final class StaticMvelParser {
         return simplifiedParse(EXPRESSION, provider(code));
     }
 
-    private static <T extends Node> T simplifiedParse(ParseStart<T> context, Provider provider) {
+    public static <T extends Node> T simplifiedParse(ParseStart<T> context, Provider provider) {
         ParseResult<T> result = new StaticMvelParser(staticConfiguration).parse(context, provider);
         if (result.isSuccessful()) {
             return result.getResult()

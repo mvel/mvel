@@ -16,14 +16,15 @@
 
 package org.mvel3.parser.antlr4;
 
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.junit.Test;
 import org.mvel3.parser.printer.PrintUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 /**
  * Tests for the MVEL parser using ANTLR4.
@@ -32,14 +33,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class Antlr4MvelParserJavaParserASTTest {
 
     @Test
-    public void testParseSimpleExpr() {
+    public void testExpression() {
         String expr = "name == \"Mark\"";
-        Expression expression = Antlr4MvelParser.parseExpressionAsJavaParserAST(expr);
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
 
-        BinaryExpr binaryExpr = ( (BinaryExpr) expression );
+        BinaryExpr binaryExpr = ((BinaryExpr) result.getResult().get());
         assertThat(toString(binaryExpr.getLeft())).isEqualTo("name");
         assertThat(toString(binaryExpr.getRight())).isEqualTo("\"Mark\"");
         assertThat(binaryExpr.getOperator()).isEqualTo(BinaryExpr.Operator.EQUALS);
+    }
+
+    @Test
+    public void testClassOrInterfaceType() {
+        String expr = "BigDecimal";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<ClassOrInterfaceType> result = parser.parseClassOrInterfaceType(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceType classOrInterfaceType = result.getResult().get();
+        assertThat(classOrInterfaceType.getNameAsString()).isEqualTo("BigDecimal");
     }
 
     private String toString(Node n) {

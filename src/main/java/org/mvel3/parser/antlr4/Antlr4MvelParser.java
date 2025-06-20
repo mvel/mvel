@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.javaparser.ParseProblemException;
@@ -37,6 +38,7 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.comments.CommentsCollection;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.Name;
@@ -50,11 +52,18 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.mvel3.parser.MvelParser;
-import org.mvel3.parser.ParseStart;
 import org.mvel3.parser.Provider;
+import org.mvel3.util.ProviderUtils;
+
+import static org.mvel3.parser.Providers.provider;
 
 public class Antlr4MvelParser implements MvelParser {
 
@@ -109,7 +118,7 @@ public class Antlr4MvelParser implements MvelParser {
             Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
 
             // Visit the parse tree and return the JavaParser Expression
-            return visitor.visit(tree);
+            return (Expression) visitor.visit(tree);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse expression: " + expr, e);
         }
@@ -123,18 +132,40 @@ public class Antlr4MvelParser implements MvelParser {
         return this.configuration;
     }
 
-    /**
-     * Parses source code.
-     * It takes the source code from a Provider.
-     * The start indicates what can be found in the source code (compilation unit, block, import...)
-     *
-     * @param start    refer to the constants in ParseStart to see what can be parsed.
-     * @param provider refer to Providers to see how you can read source. The provider will be closed after parsing.
-     * @return the parse result, a collection of encountered problems, and some extra data.
-     */
-    @Override
-    public <N extends Node> ParseResult<N> parse(ParseStart<N> start, Provider provider) {
-        throw new UnsupportedOperationException();
+
+    // TODO: brush-up... see JavaParserMvelParser
+    public ParseResult parse(Antlr4ParseStart start, final Provider provider) {
+        try {
+            // Create ANTLR4 lexer and parser
+            CharStream charStream = CharStreams.fromString(ProviderUtils.readAll(provider));
+            Mvel3Lexer lexer = new Mvel3Lexer(charStream);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            Mvel3Parser parser = new Mvel3Parser(tokens);
+
+            // Add error handling
+            List<String> errors = new ArrayList<>();
+            parser.addErrorListener(new BaseErrorListener() {
+                @Override
+                public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+                                        int line, int charPositionInLine, String msg, RecognitionException e) {
+                    errors.add(String.format("line %d:%d %s", line, charPositionInLine, msg));
+                }
+            });
+
+            ParseTree tree = start.parse(parser);
+
+            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
+            Node result = visitor.visit(tree);
+
+            if (!errors.isEmpty()) {
+                throw new RuntimeException("Parse errors: " + String.join(", ", errors));
+            }
+
+            return new ParseResult<>(result, Collections.emptyList(), new CommentsCollection());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Parse error: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -349,7 +380,7 @@ public class Antlr4MvelParser implements MvelParser {
      */
     @Override
     public <T extends Expression> ParseResult<T> parseExpression(String expression) {
-        throw new UnsupportedOperationException();
+        return parse(Antlr4ParseStart.EXPRESSION, provider(expression));
     }
 
     /**
@@ -400,7 +431,7 @@ public class Antlr4MvelParser implements MvelParser {
      */
     @Override
     public ParseResult<ClassOrInterfaceType> parseClassOrInterfaceType(String type) {
-        throw new UnsupportedOperationException();
+        return parse(Antlr4ParseStart.CLASS_OR_INTERFACE_TYPE, provider(type));
     }
 
     /**

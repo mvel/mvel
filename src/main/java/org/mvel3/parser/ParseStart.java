@@ -36,6 +36,8 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import org.antlr.runtime.tree.ParseTree;
+import org.mvel3.parser.antlr4.Mvel3Parser;
 
 /**
  * The start production for JavaParser.
