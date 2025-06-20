@@ -50,6 +50,35 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return new BinaryExpr(left, right, operator);
     }
 
+    @Override
+    public Node visitMemberReferenceExpression(Mvel3Parser.MemberReferenceExpressionContext ctx) {
+        // Handle member reference like "java.math.MathContext.DECIMAL128"
+        Expression scope = (Expression) visit(ctx.expression());
+        
+        if (ctx.identifier() != null) {
+            // Simple field access: expression.identifier
+            String fieldName = ctx.identifier().getText();
+            return new FieldAccessExpr(scope, fieldName);
+        } else if (ctx.methodCall() != null) {
+            // Method call: expression.methodCall()
+            // TODO: Implement method call handling
+            throw new UnsupportedOperationException("Method calls not yet implemented in member reference");
+        } else if (ctx.THIS() != null) {
+            // expression.this
+            return new FieldAccessExpr(scope, "this");
+        } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
+            // expression.super.something
+            // TODO: Implement super handling
+            throw new UnsupportedOperationException("Super references not yet implemented");
+        } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
+            // expression.new InnerClass()
+            // TODO: Implement inner class creation
+            throw new UnsupportedOperationException("Inner class creation not yet implemented");
+        }
+        
+        throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
+    }
+
 
     @Override
     public Node visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {

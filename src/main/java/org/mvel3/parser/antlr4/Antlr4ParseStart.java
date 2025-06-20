@@ -35,5 +35,6 @@ public interface Antlr4ParseStart {
     ParseTree parse(Mvel3Parser parser) throws ParseException;
 
     Antlr4ParseStart CLASS_OR_INTERFACE_TYPE = Mvel3Parser::classOrInterfaceType;
+    Antlr4ParseStart TYPE_TYPE = Mvel3Parser::typeType;
     Antlr4ParseStart EXPRESSION = Mvel3Parser::expression;
 }

@@ -77,6 +77,7 @@ public class Antlr4MvelParser implements MvelParser {
         this.configuration = configuration;
     }
 
+    // Simple parse to return Antlr AST. For testing purposes only.
     public static ParseTree parseExpressionAsAntlrAST(final String expression) {
         try {
             // Create ANTLR4 lexer and parser
@@ -109,21 +110,6 @@ public class Antlr4MvelParser implements MvelParser {
         }
     }
 
-    public static Expression parseExpressionAsJavaParserAST(String expr) {
-        try {
-            // Parse the expression to get the parse tree
-            ParseTree tree = parseExpressionAsAntlrAST(expr);
-
-            // Create visitor to convert ANTLR AST to JavaParser AST
-            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
-
-            // Visit the parse tree and return the JavaParser Expression
-            return (Expression) visitor.visit(tree);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse expression: " + expr, e);
-        }
-    }
-
     /**
      * @return The configuration for this parser.
      */
@@ -133,7 +119,7 @@ public class Antlr4MvelParser implements MvelParser {
     }
 
 
-    // TODO: brush-up... see JavaParserMvelParser
+    // The main parse method
     public ParseResult parse(Antlr4ParseStart start, final Provider provider) {
         try {
             // Create ANTLR4 lexer and parser
@@ -443,7 +429,7 @@ public class Antlr4MvelParser implements MvelParser {
      */
     @Override
     public ParseResult<Type> parseType(String type) {
-        throw new UnsupportedOperationException();
+        return parse(Antlr4ParseStart.TYPE_TYPE, provider(type));
     }
 
     /**

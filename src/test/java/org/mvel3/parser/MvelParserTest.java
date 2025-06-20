@@ -36,6 +36,7 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.type.Type;
 import org.apache.commons.lang3.SystemUtils;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -71,13 +72,14 @@ public class MvelParserTest {
 
     final ParseStart<DrlxExpression> parser = DrlxParser.buildDrlxParserWithArguments(operators);
 
-    
+
     @Test
     public void testTmp() {
-        String expr = "java.math.MathContext.DECIMAL128";
-        Expression expression = parseExpression( parser, expr ).getExpr();
+        String expr = "java.lang.Void";
+        //Expression expression = parseExpression( parser, expr ).getExpr();
+        Type type = StaticMvelParser.simplifiedParse(ParseStart.TYPE, new StringProvider(expr));
 
-        System.out.println(printNode(expression));
+        System.out.println(printNode(type));
     }
 
     @Test
