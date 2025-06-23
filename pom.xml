@@ -3,9 +3,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mvel</groupId>
-    <artifactId>mvel2</artifactId>
+    <artifactId>mvel3</artifactId>
     <packaging>jar</packaging>
-    <version>2.5.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
