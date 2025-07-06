@@ -38,12 +38,16 @@ public class CoerceRewriter {
                                                                           Primitive.INT,
                                                                           Primitive.LONG};
 
-    public static final Primitive[] FLOAT_PRIMITIVES = new Primitive[] {Primitive.CHAR,
-                                                                        Primitive.SHORT,
-                                                                        Primitive.INT,
-                                                                        Primitive.LONG,
-                                                                        Primitive.FLOAT,
-                                                                        Primitive.DOUBLE};
+    public static final Primitive[] DECIMAL_PRIMITIVES = new Primitive[] {Primitive.CHAR,
+                                                                          Primitive.SHORT,
+                                                                          Primitive.INT,
+                                                                          Primitive.LONG,
+                                                                          Primitive.FLOAT,
+                                                                          Primitive.DOUBLE};
+
+    public static final Primitive[] DECIMAL_ONLY_PRIMITIVES = new Primitive[] {Primitive.FLOAT,
+                                                                               Primitive.DOUBLE};
+
 
     TranspilerContext context;
 
@@ -90,7 +94,7 @@ public class CoerceRewriter {
 
         String bigDecimal = BigDecimal.class.getCanonicalName();
 
-        Arrays.stream(FLOAT_PRIMITIVES).forEach(p -> {
+        Arrays.stream(DECIMAL_PRIMITIVES).forEach(p -> {
             coercions.put(key(p.name().toUpperCase(), bigDecimal), toBigDecimal);
             coercions.put(key("java.lang." + p.toBoxedType(), bigDecimal), toBigDecimal);
         });
@@ -197,7 +201,7 @@ public class CoerceRewriter {
 
 
 
-        Arrays.stream(FLOAT_PRIMITIVES).forEach(p -> {
+        Arrays.stream(DECIMAL_PRIMITIVES).forEach(p -> {
             coercions.put(key(p.name().toUpperCase(), string), numberToString);
             coercions.put(key("java.lang." + p.toBoxedType(), string), objectToString);
         });
@@ -214,7 +218,7 @@ public class CoerceRewriter {
         // This class will preserve the coercion for target's type of primitive or Number Object wrapper.
 
         // This needs a function for each number type.
-        Arrays.stream(FLOAT_PRIMITIVES).forEach(p -> {
+        Arrays.stream(DECIMAL_PRIMITIVES).forEach(p -> {
             Function<Expression, Expression> toNumber = e -> {
                 MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(p.toBoxedType().getNameAsString()), "valueOf");
                 methodCallExpr.addArgument(e.clone());
@@ -226,7 +230,7 @@ public class CoerceRewriter {
 
         // This needs a function for each number type.
         // ignore Char
-        Arrays.stream(FLOAT_PRIMITIVES).forEach(p -> {
+        Arrays.stream(DECIMAL_PRIMITIVES).forEach(p -> {
             if ( p != Primitive.CHAR) {
                 Function<Expression, Expression> toNumber = e -> {
                     String         primName       = p.name().toLowerCase();
@@ -240,7 +244,7 @@ public class CoerceRewriter {
             }
         });
 
-        // Noq add Char
+        // Now add Char
         // This does not work, so always coerce to char
         // Character x = Character.valueOf("a".charAt(0)); x += Character.valueOf("a".charAt(0));
         Function<Expression, Expression> toNumber = e -> {
