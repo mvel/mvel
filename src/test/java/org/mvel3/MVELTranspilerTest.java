@@ -1073,14 +1073,15 @@ public class MVELTranspilerTest implements TranspilerTest {
                          "         modify ($p) {\n" +
                          "            name = \"without_parent\"" +
                          "         }\n" +
-                     "         " +
+                     "         }" +
                      "      ",
                      "  if ($p.getParent() != null) { " +
                      "      $p.setName(\"with_parent\"); " +
                      "  } else {\n " +
                      "      {\n" +
                      "          $p.setName(\"without_parent\");\n" +
-                     "      }\n",
+                     "      }" +
+                     "  }\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
