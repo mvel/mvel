@@ -4160,8 +4160,8 @@ Expression Literal():
             NodeList<Expression> arg = emptyNodeList();
             String s = getStringFromLiteral(token.image);
             if (s.indexOf('.') < 0) {
-                arg.add(new IntegerLiteralExpr(s));
-               ret = new MethodCallExpr(new NameExpr("BigDecimal"), "valueOf", arg);
+               arg.add(new LongLiteralExpr(tokenRange(), s));
+               ret = new MethodCallExpr(tokenRange(), new NameExpr("BigDecimal"), null, new SimpleName(tokenRange(),"valueOf"), arg);
             } else {
                 arg.add(new StringLiteralExpr(s));
                 ret = new ObjectCreationExpr(tokenRange(), null, new ClassOrInterfaceType("BigDecimal"), null, arg, null);
@@ -4171,8 +4171,8 @@ Expression Literal():
 	  <BIG_INTEGER_LITERAL> {
             NodeList<Expression> arg = emptyNodeList();
             String s = getStringFromLiteral(token.image);
-            arg.add(new IntegerLiteralExpr(s));
-            ret = new MethodCallExpr(new NameExpr("BigInteger"), "valueOf", arg);
+            arg.add(new IntegerLiteralExpr(tokenRange(),  s));
+            ret = new MethodCallExpr(tokenRange(), new NameExpr("BigInteger"),  null, new SimpleName(tokenRange(),"valueOf"), arg);
 	  }
 	|
         <FLOATING_POINT_LITERAL> { ret = new DoubleLiteralExpr(tokenRange(), token.image); }

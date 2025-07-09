@@ -51,7 +51,7 @@ public interface TranspilerTest {
 
         contextUpdater.accept(builder);
 
-        if (builder.getRootDeclaration() != EvaluatorBuilder.VOID_DECLARATION) {
+        if (!builder.getRootDeclaration().type().isVoid()) {
             // set a root within the context, if one is used
             builder.getVariableInfo().setVars(builder.getRootDeclaration());
         }

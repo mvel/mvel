@@ -110,6 +110,7 @@ public class MVELToJavaRewriter {
     Expression mathContext;
 
     NameExpr modifyName;
+    ResolvedType modifyType;
 
     public MVELToJavaRewriter(TranspilerContext context) {
         this.context = context;
@@ -161,6 +162,7 @@ public class MVELToJavaRewriter {
                 ModifyStatement modifyStmt = (ModifyStatement) node;
                 NameExpr        nameExpr   = modifyStmt.getModifyObject();
                 modifyName = nameExpr;
+                modifyType = nameExpr.calculateResolvedType();
 
                 // create a block to hold the rewritten statements to repalce the modify block
                 BlockStmt blockStmt = new BlockStmt();
@@ -170,6 +172,7 @@ public class MVELToJavaRewriter {
                 blockStmt.getStatements().forEach( n -> rewriteNode(n));
 
                 modifyName = null;
+                modifyType = null;
                 break;
             }
             case "UnaryExpr":
@@ -194,15 +197,26 @@ public class MVELToJavaRewriter {
             case "NameExpr": {
                 NameExpr nameExpr = (NameExpr) node;
                 String   name     = nameExpr.getNameAsString();
-                if (!context.getEvaluatorInfo().rootDeclaration().type().isVoid() && context.getEvaluatorInfo().rootDeclaration().name().equals(name)) {
-                    // do not rewrite at root objects.
+
+                NameExpr scope;
+                ResolvedType scopeType;
+                if (context.getEvaluatorInfo().rootDeclaration().type().isVoid()) {
+                    // root not set, cannot rewrite
                     break;
                 }
 
-                if (!declaredVars.contains(name)) {
-                    NameExpr scope = new NameExpr(context.getEvaluatorInfo().rootDeclaration().name());
-                    node = rewriteNameToScope(scope, rootObjectType, nameExpr, true);
+                if (context.getEvaluatorInfo().variableInfo().declaration().name().equals(name)) {
+                    // do not rewrite if using the context variable
+                    break;
                 }
+
+                if (declaredVars.contains(name)) {
+                    // do not rewrite if this is a declared variable
+                    break;
+                }
+
+                node = rewriteNameToScope(new NameExpr(context.getEvaluatorInfo().rootDeclaration().name()), rootObjectType,
+                                          nameExpr, true);
                 break;
             }
             case "FieldAccessExpr":
@@ -252,15 +266,30 @@ public class MVELToJavaRewriter {
 
                 // This attempts to only rewrite methods that are not called against a variable
                 if (!methodCallExpr.hasScope() && !methodCallExpr.getNameAsString().contains(".")) {
-                    node = rewriteMethodToContextObject(methodCallExpr);
-                    methodCall = (MethodCallExpr) node;
+                    if (modifyName == null) {
+                        node       = rewriteMethodToContextObject(methodCallExpr);
+                        methodCall = (MethodCallExpr) node;
+                    } else {
+                        methodCall.setScope(new NameExpr(methodCallExpr.getTokenRange().get(),
+                                                         new SimpleName(methodCallExpr.getTokenRange().get(),
+                                                                        modifyName.getNameAsString())));
+                    }
                 }
 
                 if (methodCall.getScope().isPresent()) {
-                    rewriteNode(methodCall.getScope().get());
                     Expression scope = methodCall.getScope().get();
+                    if (modifyName != null &&
+                        scope.isNameExpr() ) {
+
+                        scope = rewriteNameToScope(new NameExpr(modifyName.getNameAsString()), modifyType,
+                                                   scope.asNameExpr(), true);
+                    } else {
+                        rewriteNode(methodCall.getScope().get());
+                        scope = methodCall.getScope().get();
+                    }
 
                     ResolvedType scopeType = scope.calculateResolvedType();
+
                     if (languageFeatures.autoWrapPrimitiveWithMethod && scopeType.isPrimitive()) {
                         // scope is a primitive, so need to replace with Number object wrapper for it to work.
                         MethodCallExpr wrapperMethodCall = new MethodCallExpr(new NameExpr(scopeType.asPrimitive().getBoxTypeClass().getSimpleName()),
@@ -582,9 +611,7 @@ public class MVELToJavaRewriter {
         rewriteNode(assignExpr.getValue());
 
         if ( modifyName != null) {
-            //rewriteNode(assignExpr.getTarget());
             if (assignExpr.getTarget().isNameExpr()) {
-                //rewriteNameToScope(modifyName, modifyName.calculateResolvedType(), (NameExpr) assignExpr.getTarget(), false);
                 FieldAccessExpr fieldAccesss = new FieldAccessExpr(modifyName.getTokenRange().get(),
                                                                     new NameExpr(modifyName.getNameAsString()), null,
                                                                     new SimpleName(assignExpr.getTarget().getTokenRange().get(), ((NameExpr)assignExpr.getTarget()).getNameAsString()));

@@ -17,7 +17,6 @@
 package org.mvel3;
 
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.parser.printer.CoerceRewriter;
 
@@ -149,27 +148,37 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test
     public void testPrimitiveWithBigDecimal() {
-        for(Primitive p : CoerceRewriter.FLOAT_PRIMITIVES) {
+        for(Primitive p : CoerceRewriter.DECIMAL_PRIMITIVES) {
             test("var x = 10B * " + p.toBoxedType() + ".MAX_VALUE;",
-                 "var x = new BigDecimal(\"10\")." +
-                 "multiply( BigDecimal.valueOf(" + p.toBoxedType() + ".MAX_VALUE), java.math.MathContext.DECIMAL128);");
+                 "var x = BigDecimal.valueOf(10)." +
+                 "multiply(BigDecimal.valueOf(" + p.toBoxedType() + ".MAX_VALUE), java.math.MathContext.DECIMAL128);");
         }
     }
 
     @Test
-    public void testBoxTypeWithBigDecimal() {
-        for(Primitive p : CoerceRewriter.FLOAT_PRIMITIVES) {
-            test("var x = 10B * " + p.toBoxedType() + ".valueOf(" + p.toBoxedType() + ".MAX_VALUE);",
-                 "var x = new BigDecimal(\"10\").multiply( BigDecimal.valueOf(" + p.toBoxedType() + ".valueOf(" + p.toBoxedType() + ".MAX_VALUE)), java.math.MathContext.DECIMAL128);");
+    public void testBoxTypeWithBigDecimalAndIntegerValue() {
+        for(Primitive p : CoerceRewriter.DECIMAL_PRIMITIVES) {
+            String value = (p == Primitive.CHAR) ? "'9'" : "\"9\"";
+            test("var x = 10B * " + p.toBoxedType() + ".valueOf(" + value + ");",
+                 "var x = BigDecimal.valueOf(10).multiply(BigDecimal.valueOf(" + p.toBoxedType() + ".valueOf(" + value + ")), java.math.MathContext.DECIMAL128);");
+        }
+    }
+
+    @Test
+    public void testBoxTypeWithBigDecimalAndDecimalValue() {
+        for(Primitive p : CoerceRewriter.DECIMAL_ONLY_PRIMITIVES) {
+            test("var x = 10.1B * " + p.toBoxedType() + ".valueOf(\"10.2\");",
+                 "var x = new BigDecimal(\"10.1\").multiply(BigDecimal.valueOf(" + p.toBoxedType() + ".valueOf(\"10.2\")), java.math.MathContext.DECIMAL128);");
         }
     }
 
     @Test
     public void testBoxTypeWithBigInteger() {
         for(Primitive p : CoerceRewriter.INTEGER_PRIMITIVES) {
+            String value = (p == Primitive.CHAR) ? "'9'" : "\"9\"";
             test(ctx -> {},
-                 "var x = 10I * " + p.toBoxedType() + ".valueOf(" + p.toBoxedType() + ".MAX_VALUE);",
-                 "var x = new BigInteger(\"10\").multiply( BigInteger.valueOf(" + p.toBoxedType() + ".valueOf(" + p.toBoxedType() + ".MAX_VALUE)));");
+                 "var x = 10I * " + p.toBoxedType() + ".valueOf(" + value + ");",
+                 "var x = BigInteger.valueOf(10).multiply(BigInteger.valueOf(" + p.toBoxedType() + ".valueOf(" + value + ")));");
         }
     }
 
@@ -178,7 +187,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         for(Primitive p : CoerceRewriter.INTEGER_PRIMITIVES) {
             test(ctx -> {},
                  "var x = 10I * " + p.toBoxedType() + ".MAX_VALUE;",
-                 "var x = new BigInteger(\"10\").multiply( BigInteger.valueOf(" + p.toBoxedType() + ".MAX_VALUE));");
+                 "var x = BigInteger.valueOf(10).multiply( BigInteger.valueOf(" + p.toBoxedType() + ".MAX_VALUE));");
         }
     }
 
@@ -617,7 +626,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("$p", Person.class);
              },
              "$p.ageAsBigInteger = 10000I;",
-             "$p.setAgeAsBigInteger(new BigInteger(\"10000\"));");
+             "$p.setAgeAsBigInteger(BigInteger.valueOf(10000));");
     }
 
     @Test
@@ -660,14 +669,14 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("p", Person.class);
              },
              "var x = 10I*p.parentPublic.ageAsBigInteger;",
-             "var x = new BigInteger(\"10\").multiply(p.parentPublic.getAgeAsBigInteger());"
+             "var x = BigInteger.valueOf(10).multiply(p.parentPublic.getAgeAsBigInteger());"
             );
 
         test(ctx -> {
                  ctx.addDeclaration("p", Person.class);
              },
              "var x = p.parentPublic.ageAsBigInteger*10I;",
-             "var x = p.parentPublic.getAgeAsBigInteger().multiply(new BigInteger(\"10\"));"
+             "var x = p.parentPublic.getAgeAsBigInteger().multiply(BigInteger.valueOf(10));"
             );
     }
 
@@ -913,7 +922,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testBigDecimalCompoundOperatorOnField() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "$p.salary += 50000B;",
-             "$p.setSalary($p.getSalary().add(new BigDecimal(\"50000\"), java.math.MathContext.DECIMAL128));");
+             "$p.setSalary($p.getSalary().add(BigDecimal.valueOf(50000), java.math.MathContext.DECIMAL128));");
     }
 
     @Test
@@ -962,11 +971,11 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "    result *= 10;\n" +
                      "    result *= $p.salary;\n" +
                      "    $p.salary = result;",
-             "BigDecimal result = new BigDecimal(\"0\");\n" +
-                     "        result = result.add(new BigDecimal(\"50000\"), java.math.MathContext.DECIMAL128);\n" +
-                     "        result = result.subtract(new BigDecimal(\"10000\"), java.math.MathContext.DECIMAL128);\n" +
-                     "        result = result.divide(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128);\n" +
-                     "        result = result.multiply(new BigDecimal(\"10\"), java.math.MathContext.DECIMAL128);\n" +
+             "BigDecimal result = BigDecimal.valueOf(0);\n" +
+                     "        result = result.add(BigDecimal.valueOf(50000), java.math.MathContext.DECIMAL128);\n" +
+                     "        result = result.subtract(BigDecimal.valueOf(10000), java.math.MathContext.DECIMAL128);\n" +
+                     "        result = result.divide(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);\n" +
+                     "        result = result.multiply(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);\n" +
                      "        result = result.multiply($p.getSalary(), java.math.MathContext.DECIMAL128);\n" +
                      "        $p.setSalary(result);");
     }
@@ -976,7 +985,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( "    BigDecimal result = 0B;" +
                      "    int anotherVariable = 20;" +
                      "    result += anotherVariable;",
-             "BigDecimal result = new BigDecimal(\"0\");\n" +
+             "BigDecimal result = BigDecimal.valueOf(0);\n" +
                      "     int anotherVariable = 20;\n" +
                      "     result = result.add(BigDecimal.valueOf(anotherVariable), java.math.MathContext.DECIMAL128);");
     }
@@ -1002,17 +1011,17 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test
     public void testModifyMap() {
-        test(ctx -> ctx.addDeclaration("$p", Person.class),
+        test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("$p2", Person.class);},
              "modify ( $p )  { items = $p2.items };",
-             "$p.setItems($p2.getItems());\n",
+             "{$p.setItems($p2.getItems());}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "$p2"));
     }
 
     @Test
     public void testModifySemiColon() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { setAge(1); };",
-             "{ $p.setAge(1); ",
+             "modify($p) { setAge(1) };",
+             "{ $p.setAge(1); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -1028,7 +1037,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testModifyWithMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "modify($p) { addresses.clear() };",
-             "{ $p.getAddresses().clear(); ",
+             "{ $p.getAddresses().clear(); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -1064,14 +1073,15 @@ public class MVELTranspilerTest implements TranspilerTest {
                          "         modify ($p) {\n" +
                          "            name = \"without_parent\"" +
                          "         }\n" +
-                     "         " +
+                     "         }" +
                      "      ",
                      "  if ($p.getParent() != null) { " +
                      "      $p.setName(\"with_parent\"); " +
                      "  } else {\n " +
                      "      {\n" +
                      "          $p.setName(\"without_parent\");\n" +
-                     "      }\n",
+                     "      }" +
+                     "  }\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -1194,8 +1204,8 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test
     public void testMultiLineStringLiteral() {
-        test(" { String s = \"\"\"\n string content\n \"\"\";",
-             " { String s = \"\"\"\n string content\n \"\"\";");
+        test("String s = \"\"\"\n string content\n \"\"\";",
+             "String s = \"\"\"\n string content\n \"\"\";");
     }
 
     @Test
@@ -1262,16 +1272,16 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testNameExprBigDecimalAssignOperatorCoerceLiteralRewrite() {
         test( "BigDecimal bd = 10B;" +
-              "bd = 20;",
-              "BigDecimal bd = new BigDecimal(\"10\");" +
-              "bd = new BigDecimal(\"20\");");
+              "bd = 20.0;",
+              "BigDecimal bd = BigDecimal.valueOf(10);" +
+              "bd = new BigDecimal(\"20.0\");");
     }
 
     @Test
     public void testNameExprBigDecimalAssignOperatorCoerceIntVarRewrite() {
-        test( "int x = 20; BigDecimal bd = 10B;" +
+        test( "int x = 20; BigDecimal bd = 10.2B;" +
               "bd = x;",
-              "int x = 20; BigDecimal bd = new BigDecimal(\"10\");" +
+              "int x = 20; BigDecimal bd = new BigDecimal(\"10.2\");" +
               "bd = BigDecimal.valueOf(x);");
     }
 
@@ -1279,15 +1289,15 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testNameExprBigIntegerAssignOperatorCoerceOverloadRewrite() {
         test( "BigDecimal bd = 10B;" +
               "bd += 20;",
-              "BigDecimal bd = new BigDecimal(\"10\");bd = bd.add(new BigDecimal(\"20\"), java.math.MathContext.DECIMAL128);");
+              "BigDecimal bd = BigDecimal.valueOf(10);bd = bd.add(BigDecimal.valueOf(20), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
     public void testNameExprBigDecimalAssignOperatorCoerceTwiceOverloadRewrite() {
         test( "BigDecimal bd = 10B;" +
               "bd += 20 + 20 + 40B;",
-              "BigDecimal bd = new BigDecimal(\"10\");" +
-              "bd = bd.add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), " +
+              "BigDecimal bd = BigDecimal.valueOf(10);" +
+              "bd = bd.add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), " +
               "                                            java.math.MathContext.DECIMAL128);");
     }
 
@@ -1295,16 +1305,16 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testNameExprMapBigDecimalAssignOperatorCoerceOverloadRewrite() {
         test( "Map<String, BigDecimal> map = new HashMap<>();map[\"bd\"] = 10B;"  +
               "map[\"bd\"] += 20 + 20 + 40B;",
-              "Map<String, BigDecimal> map = new HashMap<>();map.put(\"bd\", new BigDecimal(\"10\"));"  +
-              "map.put(\"bd\", map.get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128));");
+              "Map<String, BigDecimal> map = new HashMap<>();map.put(\"bd\", BigDecimal.valueOf(10));"  +
+              "map.put(\"bd\", map.get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128));");
     }
 
     @Test
     public void testNameExprMapBigDecimalArrayAssignOperatorCoerceOverloadRewrite() {
         test( "BigDecimal[] map = new BigDecimal[] {10B};"  +
               "map[2] += 20 + 20 + 40B;",
-              "BigDecimal[] map = new BigDecimal[] {new BigDecimal(\"10\")};"  +
-              "map[2] = map[2].add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128);");
+              "BigDecimal[] map = new BigDecimal[] {BigDecimal.valueOf(10)};"  +
+              "map[2] = map[2].add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
@@ -1439,7 +1449,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "int x = 20; p.publicBigDec = 10B;" +
               "p.publicBigDec = x;",
-              "int x = 20; p.publicBigDec = new BigDecimal(\"10\");" +
+              "int x = 20; p.publicBigDec = BigDecimal.valueOf(10);" +
               "p.publicBigDec = BigDecimal.valueOf(x);");
     }
 
@@ -1448,7 +1458,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicBigDec = 10B;" +
               "p.publicBigDec += 20;",
-              "p.publicBigDec = new BigDecimal(\"10\");p.publicBigDec = p.publicBigDec.add(new BigDecimal(\"20\"), java.math.MathContext.DECIMAL128);");
+              "p.publicBigDec = BigDecimal.valueOf(10);p.publicBigDec = p.publicBigDec.add(BigDecimal.valueOf(20), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
@@ -1456,8 +1466,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicBigDec = 10B;" +
               "p.publicBigDec += 20 + 20 + 40B;",
-              "p.publicBigDec = new BigDecimal(\"10\");" +
-              "p.publicBigDec = p.publicBigDec.add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), " +
+              "p.publicBigDec = BigDecimal.valueOf(10);" +
+              "p.publicBigDec = p.publicBigDec.add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), " +
               "                                            java.math.MathContext.DECIMAL128);");
     }
 
@@ -1466,8 +1476,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicMapBigDec[\"bd\"] = 10B;"  +
               "p.publicMapBigDec[\"bd\"] += 20 + 20 + 40B;",
-              "p.publicMapBigDec.put(\"bd\", new BigDecimal(\"10\"));"  +
-              "p.publicMapBigDec.put(\"bd\", p.publicMapBigDec.get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128));");
+              "p.publicMapBigDec.put(\"bd\", BigDecimal.valueOf(10));"  +
+              "p.publicMapBigDec.put(\"bd\", p.publicMapBigDec.get(\"bd\").add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128));");
     }
 
     @Test
@@ -1475,8 +1485,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicArrayBigDec = new BigDecimal[] {10B};"  +
               "p.publicArrayBigDec[2] += 20 + 20 + 40B;",
-              "p.publicArrayBigDec = new BigDecimal[] {new BigDecimal(\"10\")};"  +
-              "p.publicArrayBigDec[2] = p.publicArrayBigDec[2].add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128);");
+              "p.publicArrayBigDec = new BigDecimal[] {BigDecimal.valueOf(10)};"  +
+              "p.publicArrayBigDec[2] = p.publicArrayBigDec[2].add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), java.math.MathContext.DECIMAL128);");
     }
 
     @Test
@@ -1574,7 +1584,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "int x = 20; p.salary = 10B;" +
               "p.salary = x;",
-              "int x = 20; p.setSalary(new BigDecimal(\"10\"));" +
+              "int x = 20; p.setSalary(BigDecimal.valueOf(10));" +
               "p.setSalary(BigDecimal.valueOf(x));");
     }
 
@@ -1583,7 +1593,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.salary = 10B;" +
               "p.salary += 20;",
-              "p.setSalary(new BigDecimal(\"10\"));p.setSalary(p.getSalary().add(new BigDecimal(\"20\"), java.math.MathContext.DECIMAL128));");
+              "p.setSalary(BigDecimal.valueOf(10));p.setSalary(p.getSalary().add(BigDecimal.valueOf(20), java.math.MathContext.DECIMAL128));");
     }
 
     @Test
@@ -1591,8 +1601,8 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.salary = 10B;" +
               "p.salary += 20 + 20 + 40B;",
-              "p.setSalary(new BigDecimal(\"10\"));" +
-              "p.setSalary(p.getSalary().add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), " +
+              "p.setSalary(BigDecimal.valueOf(10));" +
+              "p.setSalary(p.getSalary().add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), " +
               "                                            java.math.MathContext.DECIMAL128));");
     }
 
@@ -1611,14 +1621,14 @@ public class MVELTranspilerTest implements TranspilerTest {
         test( ctx -> ctx.addDeclaration("p", Person.class),
               "p.publicArrayBigDec = new BigDecimal[] {10B};"  +
               "p.publicArrayBigDec[2] += 20 + 20 + 40B;",
-              "p.publicArrayBigDec = new BigDecimal[] {new BigDecimal(\"10\")};"  +
-              "p.publicArrayBigDec[2] = p.publicArrayBigDec[2].add(BigDecimal.valueOf(20 + 20).add(new BigDecimal(\"40\"), java.math.MathContext.DECIMAL128), " +
+              "p.publicArrayBigDec = new BigDecimal[] {BigDecimal.valueOf(10)};"  +
+              "p.publicArrayBigDec[2] = p.publicArrayBigDec[2].add(BigDecimal.valueOf(20 + 20).add(BigDecimal.valueOf(40), java.math.MathContext.DECIMAL128), " +
               "java.math.MathContext.DECIMAL128);");
     }
 
     @Test
     public void testStringToPrimitiveCoercion() {
-        for (Primitive p : CoerceRewriter.FLOAT_PRIMITIVES) {
+        for (Primitive p : CoerceRewriter.DECIMAL_PRIMITIVES) {
             String v = "";
             if (p == Primitive.CHAR) {
                 continue;
