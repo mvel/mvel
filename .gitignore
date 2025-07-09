@@ -20,3 +20,8 @@
 
 .vscode
 dependency-reduced-pom.xml
+
+# Antlr related
+src/main/antlr4/org/mvel3/parser/antlr4/gen/
+gen/
+src/main/antlr4/org/mvel3/parser/antlr4/*.tokens
