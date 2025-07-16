@@ -16,6 +16,9 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.List;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
@@ -27,5 +30,13 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "$p.age == 20;",
              "$p.getAge() == 20;");
+    }
+
+    // In DRL, it's l#ArrayList.removeRange(0, 10);")
+    @Test
+    public void testInlineCast1() {
+        test(ctx -> ctx.addDeclaration("l", List.class),
+             "l#ArrayList#removeRange(0, 10);",
+             "((ArrayList)l).removeRange(0, 10);");
     }
 }

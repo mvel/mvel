@@ -10,7 +10,7 @@ options {
 
 // Start rule for MVEL expressions
 mvelStart
-    : mvelExpression EOF
+    : mvelExpression SEMI? EOF
     ;
 
 // MVEL expression - start with simple expression support
@@ -33,4 +33,17 @@ literal
     | NULL_LITERAL
     | BigDecimalLiteral
     | BigIntegerLiteral
+    ;
+
+// Override primary to add MVEL-specific inline cast syntax at primary level with suffix
+primary
+    : '(' expression ')'
+    | THIS
+    | SUPER
+    | literal
+    | identifier
+    | typeTypeOrVoid '.' CLASS
+    | nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
+    // MVEL inline cast: primary#Type#[methodCall]
+    | primary HASH typeType HASH (identifier arguments?)?
     ;

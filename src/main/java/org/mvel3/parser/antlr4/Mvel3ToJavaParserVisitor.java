@@ -17,8 +17,10 @@
 package org.mvel3.parser.antlr4;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
@@ -79,7 +81,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
-
     @Override
     public Node visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {
         return visit(ctx.primary());
@@ -89,6 +90,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     public Node visitPrimary(Mvel3Parser.PrimaryContext ctx) {
         if (ctx.literal() != null) {
             return visit(ctx.literal());
+        } else if (ctx.HASH() != null && ctx.HASH().size() == 2 && ctx.typeType() != null) {
+            // Handle inline cast: primary#Type#[methodCall]
+            Expression expr = (Expression) visit(ctx.primary());
+            Type type = (Type) visit(ctx.typeType());
+            CastExpr castExpr = new CastExpr(type, expr);
+            
+            // Check if there's a method call after the cast
+            if (ctx.identifier() != null) {
+                String methodName = ctx.identifier().getText();
+                if (ctx.arguments() != null) {
+                    // Method call with arguments
+                    MethodCallExpr methodCall = new MethodCallExpr(castExpr, methodName);
+                    // Parse arguments if they exist
+                    NodeList<Expression> args = parseArguments(ctx.arguments());
+                    methodCall.setArguments(args);
+                    return methodCall;
+                } else {
+                    // Field access
+                    return new FieldAccessExpr(castExpr, methodName);
+                }
+            }
+            
+            return castExpr;
         } else if (ctx.identifier() != null) {
             return new NameExpr(ctx.identifier().getText());
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
@@ -164,5 +188,30 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return type;
+    }
+
+    @Override
+    public Node visitTypeType(Mvel3Parser.TypeTypeContext ctx) {
+        // Handle different type possibilities
+        if (ctx.classOrInterfaceType() != null) {
+            return visit(ctx.classOrInterfaceType());
+        } else if (ctx.primitiveType() != null) {
+            return visit(ctx.primitiveType());
+        }
+        
+        // Fall back to default behavior
+        return visitChildren(ctx);
+    }
+
+    private NodeList<Expression> parseArguments(Mvel3Parser.ArgumentsContext ctx) {
+        NodeList<Expression> args = new NodeList<>();
+        if (ctx.expressionList() != null) {
+            // Parse each expression in the argument list
+            for (Mvel3Parser.ExpressionContext exprCtx : ctx.expressionList().expression()) {
+                Expression arg = (Expression) visit(exprCtx);
+                args.add(arg);
+            }
+        }
+        return args;
     }
 }
