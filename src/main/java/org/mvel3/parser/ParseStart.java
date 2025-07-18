@@ -87,9 +87,9 @@ public interface ParseStart<R> {
 
     ParseStart<TypeDeclaration<?>> TYPE_DECLARATION = GeneratedMvelParser::TypeDeclarationParseStart;
 
-    ParseStart<ModuleDeclaration> MODULE_DECLARATION = GeneratedMvelParser::ModuleDeclarationParseStart;
+    ParseStart<ModuleDeclaration> MODULE_DECLARATION = null; //GeneratedMvelParser::ModuleDeclarationParseStart;
 
-    ParseStart<ModuleDirective> MODULE_DIRECTIVE = GeneratedMvelParser::ModuleDirectiveParseStart;
+    ParseStart<ModuleDirective> MODULE_DIRECTIVE = null;//GeneratedMvelParser::ModuleDirectiveParseStart;
 
     ParseStart<MethodDeclaration> METHOD_DECLARATION = GeneratedMvelParser::MethodDeclarationParseStart;
 

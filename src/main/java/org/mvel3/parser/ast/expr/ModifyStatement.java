@@ -16,25 +16,11 @@ import java.util.List;
 
 import static com.github.javaparser.utils.Utils.assertNotNull;
 
-public class ModifyStatement extends Statement {
+public class ModifyStatement  extends AbstractContextStatement<ModifyStatement, NameExpr> {
 
-    private NameExpr            modifyObject;
-    private NodeList<Statement> expressions;
-
-    public ModifyStatement(TokenRange tokenRange) {
-        this(tokenRange, null, new NodeList<>());
+    public ModifyStatement(TokenRange tokenRange, NameExpr withObject, NodeList<Statement> expressions) {
+        super(tokenRange, withObject, expressions);
     }
-
-    public ModifyStatement(TokenRange tokenRange, NameExpr modifyObject, NodeList<Statement> expressions) {
-        super(tokenRange);
-        if (modifyObject != null) {
-            setModifyObject(modifyObject);
-        }
-        if (expressions != null) {
-            setExpressions(expressions);
-        }
-    }
-
     @Override
     public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
         return ((DrlGenericVisitor<R, A>)v).visit(this, arg);
@@ -42,47 +28,9 @@ public class ModifyStatement extends Statement {
 
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
-        if (v instanceof  DrlVoidVisitor) {
+        if (v instanceof DrlVoidVisitor) {
             ((DrlVoidVisitor<A>) v).visit(this, arg);
         }
     }
 
-    public NameExpr getModifyObject() {
-        return modifyObject;
-    }
-
-    public ModifyStatement setModifyObject(NameExpr modifyObject) {
-        assertNotNull(modifyObject);
-        if (modifyObject == this.modifyObject) {
-            return this;
-        }
-        notifyPropertyChange(ObservableProperty.EXPRESSION, this.modifyObject, modifyObject);
-        if (this.modifyObject != null) {
-            this.modifyObject.setParentNode(null);
-        }
-        this.modifyObject = modifyObject;
-        setAsParentNodeOf(modifyObject);
-        this.modifyObject = modifyObject;
-        return this;
-    }
-
-    public NodeList<Statement> getExpressions() {
-        return expressions;
-    }
-
-    public ModifyStatement setExpressions(NodeList<Statement> expressions) {
-        assertNotNull(expressions);
-        if (expressions == this.expressions) {
-            return this;
-        }
-        notifyPropertyChange(ObservableProperty.STATEMENTS, this.expressions, expressions);
-        if (this.expressions != null) {
-            this.expressions.setParentNode(null);
-        }
-        this.expressions = expressions;
-
-        setAsParentNodeOf(expressions); // refuses to work, wierd bug, so doing it manually
-
-        return this;
-    }
 }

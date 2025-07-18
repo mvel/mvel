@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.mvel3.parser.printer.CoerceRewriter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -443,7 +444,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testSetterBigDecimalConstantModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = 50000 };",
+             "modify ( $p )  { salary = 50000; };",
              "{$p.setSalary(BigDecimal.valueOf(50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -451,7 +452,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testSetterBigDecimalLiteralModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = 50000B };",
+             "modify ( $p )  { salary = 50000B; };",
              "{$p.setSalary(BigDecimal.valueOf(50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -459,9 +460,16 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testSetterBigDecimalLiteralModifyNegative() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = -50000B };",
+             "modify ( $p )  { salary = -50000B; };",
              "{$p.setSalary(BigDecimal.valueOf(-50000));}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+    }
+
+    @Test
+    public void testSetterBigDecimalLiteralModifyNot() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "var n = ~10I;",
+             "var n = BigInteger.valueOf(10).not();");
     }
 
     @Test
@@ -503,7 +511,7 @@ public class MVELTranspilerTest implements TranspilerTest {
         test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("list", List.class);},
                           "     list.add(\"before \" + $p + \", money = \" + $p.salary); " +
                           "     modify ( $p )  { " +
-                          "      salary = 50000 " +
+                          "      salary = 50000; " +
                           "}  " +
                           "     list.add(\"after \" + $p + \", money = \" + $p.salary); ",
                          "      list.add(\"before \" + $p + \", money = \" + $p.getSalary()); " +
@@ -1004,7 +1012,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { name = \"Luca\", age = 35 };",
+             "modify ( $p )  { name = \"Luca\"; age = 35; };",
              "{$p.setName(\"Luca\");\n $p.setAge(35);}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -1012,7 +1020,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModifyMap() {
         test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("$p2", Person.class);},
-             "modify ( $p )  { items = $p2.items };",
+             "modify ( $p )  { items = $p2.items; };",
              "{$p.setItems($p2.getItems());}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "$p2"));
     }
@@ -1020,7 +1028,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModifySemiColon() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { setAge(1) };",
+             "modify($p) { setAge(1); };",
              "{ $p.setAge(1); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -1028,7 +1036,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModifyWithAssignment() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { age = $p.age+1 };",
+             "modify($p) { age = $p.age+1; }",
              "{ $p.setAge($p.getAge() + 1); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -1036,7 +1044,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModifyWithMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { addresses.clear() };",
+             "modify($p) { addresses.clear(); };",
              "{ $p.getAddresses().clear(); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
@@ -1071,7 +1079,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "              $p.setName(\"with_parent\");\n" +
                      "         } else {\n" +
                          "         modify ($p) {\n" +
-                         "            name = \"without_parent\"" +
+                         "            name = \"without_parent\";" +
                          "         }\n" +
                      "         }" +
                      "      ",
@@ -1092,7 +1100,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "        $newAddress.setCity( \"Brno\" );\n" +
                      "        insert( $newAddress );\n" +
                      "        modify( $person ) {\n" +
-                     "          setAddress( $newAddress )\n" +
+                     "          setAddress( $newAddress );\n" +
                      "        }",
              "Addresss $newAddress = new Address(); " +
              "$newAddress.setCity(\"Brno\"); " +

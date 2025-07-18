@@ -40,7 +40,7 @@ public class PreprocessTranspilerTest implements TranspilerTest {
     public void testModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "{  modify($p) { setCanDrink(true); } }",
-             "{ { ($p).setCanDrink(true); } update($p); }",
+             "{ { $p.setCanDrink(true); } update($p); }",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 

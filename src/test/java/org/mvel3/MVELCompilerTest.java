@@ -212,6 +212,11 @@ public class MVELCompilerTest {
         assertThat(vars.get("d")).isEqualTo(15);
     }
 
+    public Object x() {
+        int a = 2;
+        return a = a + 1;
+    }
+
     // @TODO this should assign back to the context (mdp)
     @Test
     public void testMapEvalutorInputs() {

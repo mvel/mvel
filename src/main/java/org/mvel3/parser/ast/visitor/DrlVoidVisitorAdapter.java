@@ -267,7 +267,7 @@ public class DrlVoidVisitorAdapter<A> extends VoidVisitorAdapter<A> implements D
 
     public void visit(ModifyStatement n, A arg) {
         n.getExpressions().accept(this, arg);
-        n.getModifyObject().accept(this, arg);
+        n.getTarget().accept(this, arg);
     }
 
     public void visit(MapCreationLiteralExpression n, A arg) {
@@ -289,7 +289,7 @@ public class DrlVoidVisitorAdapter<A> extends VoidVisitorAdapter<A> implements D
 
     public void visit(WithStatement n, A arg) {
         n.getExpressions().accept(this, arg);
-        n.getWithObject().accept(this, arg);
+        n.getTarget().accept(this, arg);
     }
 
     // Delegate all the none DRL methods to wrapped.
