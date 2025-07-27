@@ -203,6 +203,7 @@ public class MVELToJavaRewriter {
                 modifyStmt.getTarget().setParentNode(blockStmt);
                 modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement(n));
                 blockStmt.getStatements().forEach( n -> rewriteNode(n));
+                blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(modifyName.getNameAsString())));
 
                 modifyName = null;
                 modifyType = null;
@@ -734,7 +735,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr putMethod = new MethodCallExpr( scope,"putMap");
                         assignExpr.replace(putMethod);
-                        putMethod.addArgument(new NameExpr());
+                        putMethod.addArgument(new NameExpr(context.getEvaluatorInfo().variableInfo().declaration().name()));
                         putMethod.addArgument(new StringLiteralExpr(nameExpr.getNameAsString()));
                         putMethod.addArgument(assignExpr);
                     }
