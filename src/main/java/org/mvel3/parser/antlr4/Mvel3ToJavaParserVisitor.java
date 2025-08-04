@@ -18,9 +18,14 @@ package org.mvel3.parser.antlr4;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.VarType;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
@@ -214,6 +219,60 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         MethodCallExpr methodCall = new MethodCallExpr(array, "get");
         methodCall.addArgument(index);
         return methodCall;
+    }
+
+    @Override
+    public Node visitBlock(Mvel3Parser.BlockContext ctx) {
+        BlockStmt blockStmt = new BlockStmt();
+        NodeList<Statement> statements = new NodeList<>();
+        
+        if (ctx.blockStatement() != null) {
+            for (Mvel3Parser.BlockStatementContext blockStatementCtx : ctx.blockStatement()) {
+                Node node = visit(blockStatementCtx);
+                if (node instanceof Statement) {
+                    statements.add((Statement) node);
+                }
+            }
+        }
+        
+        blockStmt.setStatements(statements);
+        return blockStmt;
+    }
+
+    @Override
+    public Node visitBlockStatement(Mvel3Parser.BlockStatementContext ctx) {
+        if (ctx.localVariableDeclaration() != null) {
+            // Handle local variable declaration
+            VariableDeclarationExpr varDecl = (VariableDeclarationExpr) visit(ctx.localVariableDeclaration());
+            return new ExpressionStmt(varDecl);
+        } else if (ctx.statement() != null) {
+            return visit(ctx.statement());
+        } else if (ctx.localTypeDeclaration() != null) {
+            // TODO: Handle local type declarations if needed
+            throw new UnsupportedOperationException("Local type declarations not yet implemented");
+        }
+        return null;
+    }
+
+    @Override
+    public Node visitLocalVariableDeclaration(Mvel3Parser.LocalVariableDeclarationContext ctx) {
+        // Handle: var x = expression;
+        
+        // Get the identifier (variable name)
+        String varName = ctx.identifier().getText();
+        
+        // Create variable declarator with var type
+        VariableDeclarator varDeclarator = new VariableDeclarator(new VarType(), varName);
+        
+        // Check if there's an initializer
+        if (ctx.ASSIGN() != null && ctx.expression() != null) {
+            Expression initializer = (Expression) visit(ctx.expression());
+            varDeclarator.setInitializer(initializer);
+        }
+        
+        // Create the variable declaration expression
+        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
+        return varDecl;
     }
 
     private NodeList<Expression> parseArguments(Mvel3Parser.ArgumentsContext ctx) {

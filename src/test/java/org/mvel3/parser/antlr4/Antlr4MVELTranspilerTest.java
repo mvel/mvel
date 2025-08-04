@@ -37,7 +37,7 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
         // The city rewrite wouldn't work, if it didn't know the generics
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "var x = $p.addresses[0];",
-             "var x = $p.addresses.get(0);");
+             "var x = $p.getAddresses().get(0);");
     }
 
     // In DRL, it's l#ArrayList.removeRange(0, 10);")
