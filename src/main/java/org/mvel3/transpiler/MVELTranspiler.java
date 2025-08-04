@@ -19,6 +19,8 @@ package org.mvel3.transpiler;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -44,6 +46,7 @@ import org.mvel3.transpiler.context.TranspilerContext;
 import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_15;
 
 public class MVELTranspiler {
+    private static final Logger logger = LoggerFactory.getLogger(MVELTranspiler.class);
 
     private final PreprocessPhase preprocessPhase = new PreprocessPhase();
 
@@ -103,15 +106,15 @@ public class MVELTranspiler {
 
     public TranspiledBlockResult transpileBlock(String content, EvalPre evalPre) {
         BlockStmt blockStmt;
-        System.out.println(content);
+        logger.debug("Transpiling block: {}", content);
 
         // This is a terrible hack, we either need a better way to snoop, or force the user to specify expression or block
         try {
             // wrap as expression/block may or may not have {}, then unwrap latter.xs
             blockStmt = handleParserResult(context.getParser().parseBlock("{" + content + "}\n"));
         } catch (RuntimeException e) {
-            System.out.println("Failed parseBlock, trying parseExpression: ");
-            e.printStackTrace();
+            logger.debug("Failed parseBlock, trying parseExpression. Error: {}", e.getMessage());
+            logger.trace("Full stack trace:", e);
             // Block failed, try parsing an expression
             Expression expr = handleParserResult(context.getParser().parseExpression(content));
             if (context.getEvaluatorInfo().outType().isVoid()) {
@@ -154,7 +157,7 @@ public class MVELTranspiler {
                                  ctxInf.declaration().type().getCanonicalGenericsName() + ", " +
                                  evalInfo.rootDeclaration().type().getCanonicalGenericsName() + ", " +
                                  evalInfo.outType().getCanonicalGenericsName() + "> ";
-        System.out.println(implementedType);
+        logger.debug("Implemented type: {}", implementedType);
         classDeclaration.addImplementedType(implementedType);
 
         MethodDeclaration method = classDeclaration.addMethod("eval");
@@ -196,7 +199,7 @@ public class MVELTranspiler {
             }
         }
 
-        System.out.println(PrintUtil.printNode(unit));
+        logger.debug("Generated compilation unit:\n{}", PrintUtil.printNode(unit));
 
         return new TranspiledBlockResult(unit, classDeclaration, method, context);
     }

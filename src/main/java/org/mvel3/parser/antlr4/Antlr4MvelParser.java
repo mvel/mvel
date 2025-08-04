@@ -62,10 +62,13 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.Provider;
 import org.mvel3.util.ProviderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mvel3.parser.Providers.provider;
 
 public class Antlr4MvelParser implements MvelParser {
+    private static final Logger logger = LoggerFactory.getLogger(Antlr4MvelParser.class);
 
     private final ParserConfiguration configuration;
 
@@ -122,8 +125,11 @@ public class Antlr4MvelParser implements MvelParser {
     // The main parse method
     public ParseResult parse(Antlr4ParseStart start, final Provider provider) {
         try {
+            String input = ProviderUtils.readAll(provider);
+            logger.debug("Parsing with input: {}", input);
+            
             // Create ANTLR4 lexer and parser
-            CharStream charStream = CharStreams.fromString(ProviderUtils.readAll(provider));
+            CharStream charStream = CharStreams.fromString(input);
             Mvel3Lexer lexer = new Mvel3Lexer(charStream);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             Mvel3Parser parser = new Mvel3Parser(tokens);
@@ -139,9 +145,11 @@ public class Antlr4MvelParser implements MvelParser {
             });
 
             ParseTree tree = start.parse(parser);
+            logger.debug("Parse tree: {}", tree.toStringTree(parser));
 
             Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
             Node result = visitor.visit(tree);
+            logger.debug("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
 
             if (!errors.isEmpty()) {
                 throw new RuntimeException("Parse errors: " + String.join(", ", errors));
