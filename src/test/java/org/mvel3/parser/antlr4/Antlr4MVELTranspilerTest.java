@@ -32,6 +32,14 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "$p.getAge() == 20;");
     }
 
+    @Test
+    public void testListAccess() {
+        // The city rewrite wouldn't work, if it didn't know the generics
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "var x = $p.addresses[0];",
+             "var x = $p.addresses.get(0);");
+    }
+
     // In DRL, it's l#ArrayList.removeRange(0, 10);")
     @Test
     public void testInlineCast1() {
@@ -39,4 +47,18 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "l#ArrayList#removeRange(0, 10);",
              "((ArrayList)l).removeRange(0, 10);");
     }
+
+    @Test
+    public void testInlineCast2() {
+        test(ctx -> ctx.addDeclaration("l", List.class),
+             "l#java.util.ArrayList#removeRange(0, 10);",
+             "((java.util.ArrayList)l).removeRange(0, 10);");
+    }
+
+//    @Test
+//    public void testInlineCast3() {
+//        test(ctx -> ctx.addDeclaration("l", List.class),
+//             "l#ArrayList#[0];",
+//             "((ArrayList)l).get(0);");
+//    }
 }

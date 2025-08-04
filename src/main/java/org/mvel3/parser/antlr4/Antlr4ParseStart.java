@@ -21,6 +21,7 @@
 package org.mvel3.parser.antlr4;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.mvel3.parser.ParseException;
@@ -37,4 +38,5 @@ public interface Antlr4ParseStart {
     Antlr4ParseStart CLASS_OR_INTERFACE_TYPE = Mvel3Parser::classOrInterfaceType;
     Antlr4ParseStart TYPE_TYPE = Mvel3Parser::typeType;
     Antlr4ParseStart EXPRESSION = Mvel3Parser::expression;
+    Antlr4ParseStart BLOCK = Mvel3Parser::block;
 }

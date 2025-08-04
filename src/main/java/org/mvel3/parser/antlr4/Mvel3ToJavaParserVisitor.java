@@ -203,6 +203,19 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return visitChildren(ctx);
     }
 
+    @Override
+    public Node visitSquareBracketExpression(Mvel3Parser.SquareBracketExpressionContext ctx) {
+        // Handle array/list access: expression[index]
+        Expression array = (Expression) visit(ctx.expression(0));
+        Expression index = (Expression) visit(ctx.expression(1));
+        
+        // Convert to method call .get(index) for List access
+        // In MVEL, array access is converted to appropriate method calls
+        MethodCallExpr methodCall = new MethodCallExpr(array, "get");
+        methodCall.addArgument(index);
+        return methodCall;
+    }
+
     private NodeList<Expression> parseArguments(Mvel3Parser.ArgumentsContext ctx) {
         NodeList<Expression> args = new NodeList<>();
         if (ctx.expressionList() != null) {

@@ -327,7 +327,7 @@ public class Antlr4MvelParser implements MvelParser {
      */
     @Override
     public ParseResult<BlockStmt> parseBlock(String blockStatement) {
-        throw new UnsupportedOperationException();
+        return parse(Antlr4ParseStart.BLOCK, provider(blockStatement));
     }
 
     /**

@@ -110,6 +110,8 @@ public class MVELTranspiler {
             // wrap as expression/block may or may not have {}, then unwrap latter.xs
             blockStmt = handleParserResult(context.getParser().parseBlock("{" + content + "}\n"));
         } catch (RuntimeException e) {
+            System.out.println("Failed parseBlock, trying parseExpression: ");
+            e.printStackTrace();
             // Block failed, try parsing an expression
             Expression expr = handleParserResult(context.getParser().parseExpression(content));
             if (context.getEvaluatorInfo().outType().isVoid()) {
