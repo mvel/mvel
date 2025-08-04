@@ -55,10 +55,10 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "((java.util.ArrayList)l).removeRange(0, 10);");
     }
 
-//    @Test
-//    public void testInlineCast3() {
-//        test(ctx -> ctx.addDeclaration("l", List.class),
-//             "l#ArrayList#[0];",
-//             "((ArrayList)l).get(0);");
-//    }
+    @Test
+    public void testInlineCast3() {
+        test(ctx -> ctx.addDeclaration("l", List.class),
+             "l#ArrayList#[0];",
+             "((ArrayList)l).get(0);");
+    }
 }

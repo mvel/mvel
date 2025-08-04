@@ -35,15 +35,87 @@ literal
     | BigIntegerLiteral
     ;
 
-// Override primary to add MVEL-specific inline cast syntax at primary level with suffix
-primary
-    : '(' expression ')'
-    | THIS
-    | SUPER
-    | literal
-    | identifier
-    | typeTypeOrVoid '.' CLASS
-    | nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
-    // MVEL inline cast: primary#Type#[methodCall]
-    | primary HASH typeType HASH (identifier arguments?)?
+// Override expression to add MVEL-specific inline cast syntax at expression level with suffix
+expression
+    // Expression order in accordance with https://introcs.cs.princeton.edu/java/11precedence/
+    // Level 16, Primary, array and member access
+    : primary                                                       #PrimaryExpression
+    | expression '[' expression ']'                                 #SquareBracketExpression
+    | expression bop = '.' (
+        identifier
+        | methodCall
+        | THIS
+        | NEW nonWildcardTypeArguments? innerCreator
+        | SUPER superSuffix
+        | explicitGenericInvocation
+    )                                                               #MemberReferenceExpression
+    // Method calls and method references are part of primary, and hence level 16 precedence
+    | methodCall                                                    #MethodCallExpression
+    | expression '::' typeArguments? identifier                     #MethodReferenceExpression
+    | typeType '::' (typeArguments? identifier | NEW)               #MethodReferenceExpression
+    | classType '::' typeArguments? NEW                             #MethodReferenceExpression
+
+    // Java17
+    | switchExpression                                              #ExpressionSwitch
+
+    // Level 15 Post-increment/decrement operators
+    | expression postfix = ('++' | '--')                            #PostIncrementDecrementOperatorExpression
+
+    // Level 14, Unary operators
+    | prefix = ('+' | '-' | '++' | '--' | '~' | '!') expression     #UnaryOperatorExpression
+
+    // Level 13 Cast and object creation
+    | '(' annotation* typeType ('&' typeType)* ')' expression       #CastExpression
+    | NEW creator                                                   #ObjectCreationExpression
+
+    // Level 12 to 1, Remaining operators
+    // Level 12, Multiplicative operators
+    | expression bop = ('*' | '/' | '%') expression           #BinaryOperatorExpression
+    // Level 11, Additive operators
+    | expression bop = ('+' | '-') expression                 #BinaryOperatorExpression
+    // Level 10, Shift operators
+    | expression ('<' '<' | '>' '>' '>' | '>' '>') expression #BinaryOperatorExpression
+    // Level 9, Relational operators
+    | expression bop = ('<=' | '>=' | '>' | '<') expression   #BinaryOperatorExpression
+    | expression bop = INSTANCEOF (typeType | pattern)        #InstanceOfOperatorExpression
+    // Level 8, Equality Operators
+    | expression bop = ('==' | '!=') expression               #BinaryOperatorExpression
+    // Level 7, Bitwise AND
+    | expression bop = '&' expression                         #BinaryOperatorExpression
+    // Level 6, Bitwise XOR
+    | expression bop = '^' expression                         #BinaryOperatorExpression
+    // Level 5, Bitwise OR
+    | expression bop = '|' expression                         #BinaryOperatorExpression
+    // Level 4, Logic AND
+    | expression bop = '&&' expression                        #BinaryOperatorExpression
+    // Level 3, Logic OR
+    | expression bop = '||' expression                        #BinaryOperatorExpression
+    // Level 2, Ternary
+    | <assoc = right> expression bop = '?' expression ':' expression #TernaryExpression
+    // Level 1, Assignment
+    | <assoc = right> expression bop = (
+        '='
+        | '+='
+        | '-='
+        | '*='
+        | '/='
+        | '&='
+        | '|='
+        | '^='
+        | '>>='
+        | '>>>='
+        | '<<='
+        | '%='
+    ) expression                                              #BinaryOperatorExpression
+
+    // Level 0, Lambda Expression // Java8
+    | lambdaExpression                                        #ExpressionLambda
+
+    // Mvel 3
+    | inlineCast                                              #InlineCastExpression
+    ;
+
+// MVEL inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
+inlineCast
+    : primary HASH typeType HASH (identifier arguments? | '[' expression ']')?
     ;

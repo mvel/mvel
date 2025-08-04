@@ -95,29 +95,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     public Node visitPrimary(Mvel3Parser.PrimaryContext ctx) {
         if (ctx.literal() != null) {
             return visit(ctx.literal());
-        } else if (ctx.HASH() != null && ctx.HASH().size() == 2 && ctx.typeType() != null) {
-            // Handle inline cast: primary#Type#[methodCall]
-            Expression expr = (Expression) visit(ctx.primary());
-            Type type = (Type) visit(ctx.typeType());
-            CastExpr castExpr = new CastExpr(type, expr);
-            
-            // Check if there's a method call after the cast
-            if (ctx.identifier() != null) {
-                String methodName = ctx.identifier().getText();
-                if (ctx.arguments() != null) {
-                    // Method call with arguments
-                    MethodCallExpr methodCall = new MethodCallExpr(castExpr, methodName);
-                    // Parse arguments if they exist
-                    NodeList<Expression> args = parseArguments(ctx.arguments());
-                    methodCall.setArguments(args);
-                    return methodCall;
-                } else {
-                    // Field access
-                    return new FieldAccessExpr(castExpr, methodName);
-                }
-            }
-            
-            return castExpr;
         } else if (ctx.identifier() != null) {
             return new NameExpr(ctx.identifier().getText());
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
@@ -129,6 +106,44 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Handle other primary cases that might be needed
         return visitChildren(ctx);
+    }
+
+    @Override
+    public Node visitInlineCastExpression(Mvel3Parser.InlineCastExpressionContext ctx) {
+        return visit(ctx.inlineCast());
+    }
+
+    @Override
+    public Node visitInlineCast(Mvel3Parser.InlineCastContext ctx) {
+        // Handle inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
+        Expression expr = (Expression) visit(ctx.primary());
+        Type type = (Type) visit(ctx.typeType());
+        CastExpr castExpr = new CastExpr(type, expr);
+        
+        // Check what comes after the cast
+        if (ctx.identifier() != null) {
+            String methodName = ctx.identifier().getText();
+            if (ctx.arguments() != null) {
+                // Method call with arguments
+                MethodCallExpr methodCall = new MethodCallExpr(castExpr, methodName);
+                // Parse arguments if they exist
+                NodeList<Expression> args = parseArguments(ctx.arguments());
+                methodCall.setArguments(args);
+                return methodCall;
+            } else {
+                // Field access
+                return new FieldAccessExpr(castExpr, methodName);
+            }
+        } else if (ctx.LBRACK() != null && ctx.expression() != null && ctx.RBRACK() != null) {
+            // Array access: primary#Type#[expression]
+            // Convert to method call: ((Type)primary).get(expression)
+            Expression indexExpr = (Expression) visit(ctx.expression());
+            MethodCallExpr methodCall = new MethodCallExpr(castExpr, "get");
+            methodCall.addArgument(indexExpr);
+            return methodCall;
+        }
+        
+        return castExpr;
     }
 
     @Override
@@ -252,6 +267,21 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             throw new UnsupportedOperationException("Local type declarations not yet implemented");
         }
         return null;
+    }
+
+    @Override
+    public Node visitStatement(Mvel3Parser.StatementContext ctx) {
+        if (ctx.statementExpression != null) {
+            // Handle expression statement: expression ';'
+            Expression expr = (Expression) visit(ctx.statementExpression);
+            return new ExpressionStmt(expr);
+        } else if (ctx.blockLabel != null) {
+            // Handle block statement
+            return visit(ctx.blockLabel);
+        }
+        // TODO: Handle other statement types as needed
+        // For now, fall back to default behavior
+        return visitChildren(ctx);
     }
 
     @Override
