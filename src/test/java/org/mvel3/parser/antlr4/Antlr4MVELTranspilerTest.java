@@ -61,4 +61,22 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "l#ArrayList#[0];",
              "((ArrayList)l).get(0);");
     }
+
+    @Test
+    public void testInlineCoercion4() {
+        test(ctx -> {
+                 ctx.addDeclaration("l", Long.class);
+                 ctx.addImport(java.util.Date.class.getCanonicalName());},
+             "var x = l#Date#;",
+             "var x = new java.util.Date(l);");
+    }
+
+    @Test
+    public void testInlineCoercion5() {
+        test(ctx -> {
+                 ctx.addDeclaration("l", Long.class);
+                 ctx.addImport(java.util.Date.class.getCanonicalName());},
+             "var x = l#Date#getTime();",
+             "var x = new java.util.Date(l).getTime();");
+    }
 }
