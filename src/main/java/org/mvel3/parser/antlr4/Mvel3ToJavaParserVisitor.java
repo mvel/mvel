@@ -68,8 +68,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return new FieldAccessExpr(scope, fieldName);
         } else if (ctx.methodCall() != null) {
             // Method call: expression.methodCall()
-            // TODO: Implement method call handling
-            throw new UnsupportedOperationException("Method calls not yet implemented in member reference");
+            String methodName = ctx.methodCall().identifier().getText();
+            NodeList<Expression> args = parseArguments(ctx.methodCall().arguments());
+            
+            MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
+            methodCall.setArguments(args);
+            return methodCall;
         } else if (ctx.THIS() != null) {
             // expression.this
             return new FieldAccessExpr(scope, "this");
@@ -303,6 +307,18 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Create the variable declaration expression
         VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
         return varDecl;
+    }
+
+    @Override
+    public Node visitMethodCall(Mvel3Parser.MethodCallContext ctx) {
+        String methodName = ctx.identifier().getText();
+        NodeList<Expression> args = parseArguments(ctx.arguments());
+        
+        // For method calls in member reference, we need the scope from the parent context
+        // This will be handled by visitMemberReferenceExpression
+        MethodCallExpr methodCall = new MethodCallExpr(null, methodName);
+        methodCall.setArguments(args);
+        return methodCall;
     }
 
     private NodeList<Expression> parseArguments(Mvel3Parser.ArgumentsContext ctx) {

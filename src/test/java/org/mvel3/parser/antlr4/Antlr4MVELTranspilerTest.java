@@ -79,4 +79,26 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "var x = l#Date#getTime();",
              "var x = new java.util.Date(l).getTime();");
     }
+
+    @Test
+    public void testConvertPropertyToAccessor() {
+        String expectedJavaCode = "$p.getParent().getParent().getName();";
+
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "$p.parent.getParent().name;",
+             expectedJavaCode);
+
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "$p.getParent().parent.name;",
+             expectedJavaCode);
+
+        test(ctx ->
+                     ctx.addDeclaration("$p", Person.class),
+             "$p.parent.parent.name;",
+             expectedJavaCode);
+
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "$p.getParent().getParent().getName();",
+             expectedJavaCode);
+    }
 }

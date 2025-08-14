@@ -126,7 +126,7 @@ public class Antlr4MvelParser implements MvelParser {
     public ParseResult parse(Antlr4ParseStart start, final Provider provider) {
         try {
             String input = ProviderUtils.readAll(provider);
-            logger.debug("Parsing with input: {}", input);
+            logger.trace("Parsing with input: {}", input);
             
             // Create ANTLR4 lexer and parser
             CharStream charStream = CharStreams.fromString(input);
@@ -145,11 +145,11 @@ public class Antlr4MvelParser implements MvelParser {
             });
 
             ParseTree tree = start.parse(parser);
-            logger.debug("Parse tree: {}", tree.toStringTree(parser));
+            logger.trace("Parse tree: {}", tree.toStringTree(parser));
 
             Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
             Node result = visitor.visit(tree);
-            logger.debug("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
+            logger.trace("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
 
             if (!errors.isEmpty()) {
                 throw new RuntimeException("Parse errors: " + String.join(", ", errors));

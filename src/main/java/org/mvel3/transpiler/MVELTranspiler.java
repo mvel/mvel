@@ -157,7 +157,7 @@ public class MVELTranspiler {
                                  ctxInf.declaration().type().getCanonicalGenericsName() + ", " +
                                  evalInfo.rootDeclaration().type().getCanonicalGenericsName() + ", " +
                                  evalInfo.outType().getCanonicalGenericsName() + "> ";
-        logger.debug("Implemented type: {}", implementedType);
+        logger.trace("Implemented type: {}", implementedType);
         classDeclaration.addImplementedType(implementedType);
 
         MethodDeclaration method = classDeclaration.addMethod("eval");
