@@ -28,6 +28,7 @@ public class EvaluatorBuilder<T, K, R> {
     private ContextInfoBuilder<T> variableInfo;
 
     public static Declaration VOID_DECLARATION = Declaration.of("__void", Void.class);
+
     private Declaration rootDeclaration = VOID_DECLARATION;
 
     private int rootVarIndex = 0;
@@ -37,6 +38,12 @@ public class EvaluatorBuilder<T, K, R> {
     private String expression;
 
     private String[] outVars = new String[0];
+
+    private String generatedClassName = "GeneratorEvaluaor__";
+
+    private String generatedMethodName = "eval";
+
+    private String generatedSuperName;
 
     public static <T, K, R> EvaluatorBuilder<T, K, R> create() {
         EvaluatorBuilder builder = new EvaluatorBuilder<>();
@@ -54,6 +61,8 @@ public class EvaluatorBuilder<T, K, R> {
         builder.rootDeclaration =  template.rootDeclaration;
         builder.rootVarIndex    =  template.rootVarIndex;
         builder.outType         = template.outType;
+        builder.generatedClassName = template.generatedClassName;
+        builder.generatedMethodName = template.generatedMethodName;
 
         return builder;
     }
@@ -179,6 +188,30 @@ public class EvaluatorBuilder<T, K, R> {
         variableInfo.addDeclaration(Declaration.of(name, clazz, generics));
     }
 
+    public String getGeneratedClassName() {
+        return generatedClassName;
+    }
+
+    public void setGeneratedClassName(String generatedClassName) {
+        this.generatedClassName = generatedClassName;
+    }
+
+    public String getGeneratedMethodName() {
+        return generatedMethodName;
+    }
+
+    public void setGeneratedMethodName(String generatedMethodName) {
+        this.generatedMethodName = generatedMethodName;
+    }
+
+    public String getGeneratedSuperName() {
+        return generatedSuperName;
+    }
+
+    public void setGeneratedSuperName(String generatedSuperName) {
+        this.generatedSuperName = generatedSuperName;
+    }
+
     public EvaluatorInfo<T, K, R> build() {
         // Either the root and context vars are the same, and no context variables.
         // Or the root variable must be a
@@ -209,6 +242,9 @@ public class EvaluatorBuilder<T, K, R> {
         info.rootVarIndex  = rootVarIndex;
         info.expression    = expression;
         info.outType      = outType;
+        info.generatedClassName = generatedClassName;
+        info.generatedMethodName = generatedMethodName;
+        info.generatedSuperName = generatedSuperName;
 
         return info;
     }
@@ -233,6 +269,12 @@ public class EvaluatorBuilder<T, K, R> {
         private String expression;
 
         private Map<String, Declaration> allVars;
+
+        private String generatedClassName;
+
+        private String generatedMethodName;
+
+        private String generatedSuperName;
 
         public ClassLoader classLoader() {
             return classLoader;
@@ -282,6 +324,18 @@ public class EvaluatorBuilder<T, K, R> {
             return allVars;
         }
 
+        public String generatedClassName() {
+            return generatedClassName;
+        }
+
+        public String generatedMethodName() {
+            return generatedMethodName;
+        }
+
+        public String generatedSuperName() {
+            return generatedSuperName;
+        }
+
         @Override
         public String toString() {
             return "EvaluatorInfo{" +
@@ -295,6 +349,9 @@ public class EvaluatorBuilder<T, K, R> {
                    ", rootVarIndex=" + rootVarIndex +
                    ", expression='" + expression + '\'' +
                    ", allVars=" + allVars +
+                   ", generatedClassName='" + generatedClassName + '\'' +
+                   ", generatedMethodName='" + generatedMethodName + '\'' +
+                   ", generatedSuperName='" + generatedSuperName + '\'' +
                    '}';
         }
     }

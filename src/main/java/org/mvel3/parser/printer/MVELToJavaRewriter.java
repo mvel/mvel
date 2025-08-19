@@ -1,5 +1,6 @@
 package org.mvel3.parser.printer;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -59,6 +60,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -75,9 +77,6 @@ public class MVELToJavaRewriter {
     }
 
     private LanguageFeatures languageFeatures = new LanguageFeatures();
-
-    private ResolvedType bigDecimalType;
-    private ResolvedType bigIntegerType;
 
     private ResolvedType stringType;
 
@@ -107,8 +106,6 @@ public class MVELToJavaRewriter {
 
     private TranspilerContext context;
 
-    private CompilationUnitContext unitContext;
-
     private MethodUsage mapGetMethod;
     private MethodUsage listGetMethod;
 
@@ -119,15 +116,12 @@ public class MVELToJavaRewriter {
 
     public MVELToJavaRewriter(TranspilerContext context) {
         this.context = context;
-        unitContext = (CompilationUnitContext) JavaParserFactory.getContext(context.getUnit(), context.getTypeSolver());
         Solver solver = context.getFacade().getSymbolSolver();
         coercer = context.getCoercer();
         overloader = context.getOverloader();
 
         declaredVars = new HashSet<>();
 
-        bigDecimalType = solver.classToResolvedType(BigDecimal.class);
-        bigIntegerType = solver.classToResolvedType(BigInteger.class);
         stringType = solver.classToResolvedType(String.class);
         mapType = solver.classToResolvedType(Map.class);
         listType = solver.classToResolvedType(List.class);
@@ -416,10 +410,21 @@ public class MVELToJavaRewriter {
 
         // Get the Method declaration and it's resolved types.
         // @TODO this currently does not work for method calls without scopes, i.e. member methods or static methods (mdp)
-        ResolvedType scope = context.getFacade().getType(methodCall.getScope().get());
-        ResolvedType resolvedScope = methodCall.getScope().get().calculateResolvedType();
+        ResolvedType scope = null;
+        ResolvedType                          resolvedScope = null;
+        Collection<ResolvedMethodDeclaration> methods;
+        if ( methodCall.getScope().isPresent()) {
+            scope = context.getFacade().getType(methodCall.getScope().get());
+            resolvedScope = methodCall.getScope().get().calculateResolvedType();
+            methods = scope.asReferenceType().getAllMethods();
+        } else {
+            // static methods
+            methods = (Collection<ResolvedMethodDeclaration>) context.getResolvedStaticMethods().get(methodCall.getNameAsString());
+        }
 
-        List<ResolvedMethodDeclaration> methods = scope.asReferenceType().getAllMethods();
+        if (methods == null || methods.isEmpty()) {
+            throw new RuntimeException("No method candidates were found for method call '" + methodCall.getNameAsString() + "'");
+        }
 
         List<ResolvedType> argTypes = Arrays.asList(new ResolvedType[methodCall.getArguments().size()]);
         for (int i = 0; i < methodCall.getArguments().size(); i++ ) {
@@ -443,7 +448,6 @@ public class MVELToJavaRewriter {
 
         // This will record all candidate methods that require one ore more coercions.
         // It will then select the candidate with the least number of coercions
-        methodLoop:
         for ( ResolvedMethodDeclaration methodDeclr : methods) {
             // Find the method with same name and number of arguments
             // Then find the first subset of those, that all arguments either match or

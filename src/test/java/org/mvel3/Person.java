@@ -169,6 +169,14 @@ public class Person {
         return true;
     }
 
+    public static boolean isEvenInt(int value) {
+        return true;
+    }
+
+    public static boolean isEven(Integer value) {
+        return true;
+    }
+
     public Map<String, BigInteger> getBigIntegerMap() {
         return null;
     }

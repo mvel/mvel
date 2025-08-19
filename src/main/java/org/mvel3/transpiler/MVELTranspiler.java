@@ -30,7 +30,6 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
@@ -53,16 +52,6 @@ public class MVELTranspiler {
         this.context = context;
     }
 
-//    public static TranspiledResult transpile(String expression, EvaluatorInfo<T, K, R> info) {
-//        TranspiledResult result = transpile(expression, varTypes, rootVarTypes, ctx -> {
-//            imports.stream().forEach(i -> ctx.addImport(i));
-//        });
-//
-//        result.getBlock();
-//
-//        return result;
-//    }
-
     public static <T, K, R>  TranspiledResult transpile(EvaluatorInfo<T, K, R> evalInfo, EvalPre evalPre) {
 
         TypeSolver typeSolver = new ReflectionTypeSolver(false);
@@ -73,18 +62,8 @@ public class MVELTranspiler {
         conf.setSymbolResolver(solver);
 
         MvelParser parser = new MvelParser(conf);
-//        if (context.getRootObject().isPresent()) {
-//            context.addDeclaration(context.getRootPrefix().get(), context.getRootObject().get(), context.getRootGenerics().get());
-//        }
 
         TranspilerContext context = new TranspilerContext(parser, typeSolver, evalInfo);
-
-        //  Some code provides var types via the contextUpdater and others via a list
-
-
-//        Arrays.stream(info.variableInfo().vars()).forEach( d -> context.addDeclaration(d));
-//
-//        Arrays.stream(info.rootInfo().vars()).forEach( d -> context.addDeclaration(d));
 
         MVELTranspiler mvelTranspiler = new MVELTranspiler(context);
 
@@ -133,7 +112,7 @@ public class MVELTranspiler {
 
         preprocessPhase.removeEmptyStmt(blockStmt);
 
-        CompilationUnit unit = new CompilationUnit("org.mvel3");
+        CompilationUnit unit = new CompilationUnit(context.getGeneratedPackageName());
         context.setUnit(unit);
 
         EvaluatorInfo<?, ?, ?> evalInfo = context.getEvaluatorInfo();
@@ -144,9 +123,13 @@ public class MVELTranspiler {
 
         ContextInfo<?> ctxInf = evalInfo.variableInfo();
 
-        ClassOrInterfaceDeclaration classDeclaration = unit.addClass("GeneratorEvaluaor__");
-        context.setClassDeclaration(classDeclaration);
+        ClassOrInterfaceDeclaration classDeclaration = unit.addClass(context.getEvaluatorInfo().generatedClassName());
 
+        if (context.getEvaluatorInfo().generatedSuperName() != null) {
+            classDeclaration.addExtendedType(context.getEvaluatorInfo().generatedSuperName());
+        }
+
+        context.setClassDeclaration(classDeclaration);
 
         String implementedType = org.mvel3.Evaluator.class.getCanonicalName() + "<" +
                                  ctxInf.declaration().type().getCanonicalGenericsName() + ", " +
@@ -155,7 +138,7 @@ public class MVELTranspiler {
         System.out.println(implementedType);
         classDeclaration.addImplementedType(implementedType);
 
-        MethodDeclaration method = classDeclaration.addMethod("eval");
+        MethodDeclaration method = classDeclaration.addMethod(context.getEvaluatorInfo().generatedMethodName());
         method.setPublic(true);
 
         org.mvel3.Type outType = evalInfo.outType();

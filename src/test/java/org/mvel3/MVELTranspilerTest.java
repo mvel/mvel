@@ -195,12 +195,14 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test // I changed this, to avoid implicit narrowing (mdp)
     public void testPromoteBigDecimalToIntValueInsideIf() {
+
+        Person.isEven(1);
         test(ctx -> {
                  ctx.addDeclaration("$p", Person.class);
                  ctx.addDeclaration("$m", BigDecimal.class);
              },
-             "if($p.isEven($p.salary.intValue()) && $p.isEven($m.intValue())){}\n",
-             "    if ($p.isEven($p.getSalary().intValue()) && $p.isEven($m.intValue())) {}\n");
+             "if($p.isEvenInt($p.salary.intValue()) && $p.isEvenInt($m.intValue())){}\n",
+             "    if ($p.isEvenInt($p.getSalary().intValue()) && $p.isEvenInt($m.intValue())) {}\n");
     }
 
     @Test
@@ -1103,10 +1105,11 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "        modify( $person ) {\n" +
                      "          setAddress( $newAddress );\n" +
                      "        }",
-             "Addresss $newAddress = new Address(); " +
+             "Address $newAddress = new Address(); " +
              "$newAddress.setCity(\"Brno\"); " +
              "insert($newAddress);\n" +
-             "  $person.setAddress($newAddress);\n");
+             "{  $person.setAddress($newAddress);" +
+             "  update($person);}\n");
     }
 
     @Test

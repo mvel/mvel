@@ -1,19 +1,29 @@
 package org.mvel3;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodHandles.Lookup.ClassOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * This defines the classes. It ensures only one class exists for an equal set of blocks.
  */
 public class ClassManager {
-    Map<String, Class<?>> classes;
+    private Map<String, Class<?>> classes;
 
-    Map<ClassEntry, ClassEntry> entries;
+    private Map<ClassEntry, ClassEntry> entries;
+
+    private Supplier<MethodHandles.Lookup> lookupSupplier;
 
     public ClassManager() {
+        this(() -> MethodHandles.lookup());
+    }
+
+    public ClassManager(Supplier<MethodHandles.Lookup> lookupSupplier) {
+        this.lookupSupplier = lookupSupplier;
         this.classes = new HashMap<>();
         this.entries = new HashMap<>();
     }
@@ -26,6 +36,10 @@ public class ClassManager {
         return classes;
     }
 
+    public Supplier<Lookup> getLookupSupplier() {
+        return lookupSupplier;
+    }
+
     public  void define(Map<String, byte[]> byteCode) {
         for (Map.Entry<String, byte[]> entry : byteCode.entrySet()) {
             try {
@@ -34,8 +48,9 @@ public class ClassManager {
                 if (existingEntry == null) {
                     entries.put(newEntry, newEntry);
 
-                    MethodHandles.Lookup lookup = MethodHandles.lookup();
+                    MethodHandles.Lookup lookup = lookupSupplier.get();
                     Class<?> c = lookup.defineHiddenClass(entry.getValue(), true).lookupClass();
+
                     classes.put(entry.getKey(), c);
                 }
             } catch (Exception e) {

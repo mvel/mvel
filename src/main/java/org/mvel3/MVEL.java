@@ -36,6 +36,10 @@ public class MVEL {
         return eval;
     }
 
+    public static MVEL EXPRESSION;
+
+    public static MVEL BLOCK;
+
     private static MVEL instance;
 
     public static MVEL get() {
@@ -47,28 +51,35 @@ public class MVEL {
     }
 
     public MVEL() {
-        this.clsManager = clsManager;
     }
 
-    ClassManager clsManager = new ClassManager();
-
     public <T extends Map, Void, R> Evaluator<T, Void, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, final Map<String, Type<?>> types) {
-        MVELCompiler MVELCompiler = new MVELCompiler();
+        return compileMapEvaluator(content, outClass, imports, types, new ClassManager(), ClassLoader.getSystemClassLoader());
+    }
+
+    public <T extends Map, Void, R> Evaluator<T, Void, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, final Map<String, Type<?>> types,
+                                                                              ClassManager clsManager, ClassLoader classLoader) {
+        MVELCompiler compiler = new MVELCompiler();
         EvaluatorBuilder<T, Void, R> eval = new EvaluatorBuilder<>();
-        eval.setClassManager(clsManager).setClassLoader(ClassLoader.getSystemClassLoader())
+        eval.setClassManager(clsManager).setClassLoader(classLoader)
             .setExpression(content)
             .setImports(imports)
             .setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class, "<String, Object>"))
                                                .setVars(Declaration.from(types)))
             .setOutType(Type.type(outClass));
 
-        Evaluator<T, Void, R> evaluator = MVELCompiler.compile(eval.build());
+        Evaluator<T, Void, R> evaluator = compiler.compile(eval.build());
 
         return  evaluator;
     }
 
     public <T extends List, Void, R> Evaluator<T, Void, R> compileListEvaluator(final String content, Class<R> outClass, final Set<String> imports, final Declaration[] types) {
-        MVELCompiler MVELCompiler = new MVELCompiler();
+        return compileListEvaluator(content, outClass, imports, types, new ClassManager(), ClassLoader.getSystemClassLoader());
+    }
+
+    public <T extends List, Void, R> Evaluator<T, Void, R> compileListEvaluator(final String content, Class<R> outClass, final Set<String> imports, final Declaration[] types,
+                                                                                ClassManager clsManager, ClassLoader classLoader) {
+        MVELCompiler compiler = new MVELCompiler();
         EvaluatorBuilder<T, Void, R> eval = new EvaluatorBuilder<>();
         eval.setClassManager(clsManager).setClassLoader(ClassLoader.getSystemClassLoader())
             .setExpression(content)
@@ -77,27 +88,17 @@ public class MVEL {
                                                .setVars(types))
             .setOutType(Type.type(outClass));
 
-        Evaluator<T, Void, R> evaluator = MVELCompiler.compile(eval.build());
+        Evaluator<T, Void, R> evaluator = compiler.compile(eval.build());
 
         return  evaluator;
     }
 
     public <T, K, R> Evaluator<T, K, R> compilePojoEvaluator(EvaluatorInfo<T, K, R> info) {
-        MVELCompiler MVELCompiler = new MVELCompiler();
-        Evaluator<T, K, R> evaluator = MVELCompiler.compile(info);
+        MVELCompiler compiler = new MVELCompiler();
+        Evaluator<T, K, R> evaluator = compiler.compile(info);
 
         return  evaluator;
     }
-
-//    public <T, R> RootObjectEvaluator<T,R> compileRootObjectEvaluator(final RootObjectValues values) {
-//        String actualExpression = maybeWrap(values.expression());
-//        MVELCompiler MVELCompiler = new MVELCompiler();
-//        RootObjectEvaluator evaluator = MVELCompiler.compileRootObjectEvaluator(clsManager, actualExpression,
-//                                                                                values.rootClass(), values.rootGenerics(), values.outClass(), values.outGenerics(),
-//                                                                                values.imports(), MVELCompiler.getClass().getClassLoader());
-//
-//        return  evaluator;
-//    }
 
     public Object executeExpression(final String content) {
         return executeExpression(content, new HashSet<>(), new HashMap<>(), Object.class);
@@ -112,9 +113,17 @@ public class MVEL {
     }
 
     public <R> R executeExpression(final String expr, Set<String> imports,
-                                    final Map<String, Type<?>> types,
-                                    Type<R> outType,
-                                    final Map<String, Object> vars) {
+                                   final Map<String, Type<?>> types,
+                                   Type<R> outType,
+                                   final Map<String, Object> vars) {
+        return executeExpression(expr, imports, types, outType, vars, new ClassManager(), ClassLoader.getSystemClassLoader());
+    }
+
+    public <R> R executeExpression(final String expr, Set<String> imports,
+                                   final Map<String, Type<?>> types,
+                                   Type<R> outType,
+                                   final Map<String, Object> vars,
+                                   ClassManager clsManager, ClassLoader classLoader) {
         for (Map.Entry<String, Object> o : vars.entrySet()) {
             if ( types.keySet().contains(o.getKey())) {
                 Class type = o.getValue() == null ? Object.class : o.getValue().getClass();
@@ -125,7 +134,7 @@ public class MVEL {
         MVELCompiler MVELCompiler = new MVELCompiler();
         EvaluatorBuilder<Map<String, Object>, Void, R> eval = EvaluatorBuilder.create();
 
-        eval.setClassManager(clsManager).setClassLoader(ClassLoader.getSystemClassLoader())
+        eval.setClassManager(clsManager).setClassLoader(classLoader)
             .setExpression(expr)
             .setImports(imports)
             .setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class, "<String, Object>"))
