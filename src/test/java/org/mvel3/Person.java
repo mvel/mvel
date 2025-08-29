@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class Person {
 
@@ -166,6 +169,14 @@ public class Person {
         return true;
     }
 
+    public static boolean isEvenInt(int value) {
+        return true;
+    }
+
+    public static boolean isEven(Integer value) {
+        return true;
+    }
+
     public Map<String, BigInteger> getBigIntegerMap() {
         return null;
     }
@@ -177,4 +188,8 @@ public class Person {
     public void process1(String a, String b, String c, int... nums) {}
 
     public void process2(int a, int b, int c, String... str) {}
+
+    public void setCanDrinkLambda(Supplier s) {
+        s.get();
+    }
 }

@@ -17,10 +17,12 @@
 package org.mvel3;
 
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.parser.printer.CoerceRewriter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -193,12 +195,14 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test // I changed this, to avoid implicit narrowing (mdp)
     public void testPromoteBigDecimalToIntValueInsideIf() {
+
+        Person.isEven(1);
         test(ctx -> {
                  ctx.addDeclaration("$p", Person.class);
                  ctx.addDeclaration("$m", BigDecimal.class);
              },
-             "if($p.isEven($p.salary.intValue()) && $p.isEven($m.intValue())){}\n",
-             "    if ($p.isEven($p.getSalary().intValue()) && $p.isEven($m.intValue())) {}\n");
+             "if($p.isEvenInt($p.salary.intValue()) && $p.isEvenInt($m.intValue())){}\n",
+             "    if ($p.isEvenInt($p.getSalary().intValue()) && $p.isEvenInt($m.intValue())) {}\n");
     }
 
     @Test
@@ -443,25 +447,32 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testSetterBigDecimalConstantModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = 50000 };",
-             "{$p.setSalary(BigDecimal.valueOf(50000));}",
+             "modify ( $p )  { salary = 50000; };",
+             "{$p.setSalary(BigDecimal.valueOf(50000)); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
     @Test
     public void testSetterBigDecimalLiteralModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = 50000B };",
-             "{$p.setSalary(BigDecimal.valueOf(50000));}",
+             "modify ( $p )  { salary = 50000B; };",
+             "{$p.setSalary(BigDecimal.valueOf(50000)); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
     @Test
     public void testSetterBigDecimalLiteralModifyNegative() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { salary = -50000B };",
-             "{$p.setSalary(BigDecimal.valueOf(-50000));}",
+             "modify ( $p )  { salary = -50000B; };",
+             "{$p.setSalary(BigDecimal.valueOf(-50000)); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+    }
+
+    @Test
+    public void testSetterBigDecimalLiteralModifyNot() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "var n = ~10I;",
+             "var n = BigInteger.valueOf(10).not();");
     }
 
     @Test
@@ -503,11 +514,11 @@ public class MVELTranspilerTest implements TranspilerTest {
         test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("list", List.class);},
                           "     list.add(\"before \" + $p + \", money = \" + $p.salary); " +
                           "     modify ( $p )  { " +
-                          "      salary = 50000 " +
+                          "      salary = 50000; " +
                           "}  " +
                           "     list.add(\"after \" + $p + \", money = \" + $p.salary); ",
                          "      list.add(\"before \" + $p + \", money = \" + $p.getSalary()); " +
-                         "      {$p.setSalary(BigDecimal.valueOf(50000));}" +
+                         "      {$p.setSalary(BigDecimal.valueOf(50000)); update($p);}" +
                          "      list.add(\"after \" + $p + \", money = \" + $p.getSalary()); ",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "list"));
     }
@@ -1004,40 +1015,40 @@ public class MVELTranspilerTest implements TranspilerTest {
     @Test
     public void testModify() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify ( $p )  { name = \"Luca\", age = 35 };",
-             "{$p.setName(\"Luca\");\n $p.setAge(35);}\n",
+             "modify ( $p )  { name = \"Luca\"; age = 35; };",
+             "{$p.setName(\"Luca\");\n $p.setAge(35); update($p);}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
     @Test
     public void testModifyMap() {
         test(ctx -> {ctx.addDeclaration("$p", Person.class); ctx.addDeclaration("$p2", Person.class);},
-             "modify ( $p )  { items = $p2.items };",
-             "{$p.setItems($p2.getItems());}\n",
+             "modify ( $p )  { items = $p2.items; };",
+             "{$p.setItems($p2.getItems()); update($p);}\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "$p2"));
     }
 
     @Test
     public void testModifySemiColon() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { setAge(1) };",
-             "{ $p.setAge(1); }",
+             "modify($p) { setAge(1); };",
+             "{ $p.setAge(1); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
     @Test
     public void testModifyWithAssignment() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { age = $p.age+1 };",
-             "{ $p.setAge($p.getAge() + 1); }",
+             "modify($p) { age = $p.age+1; }",
+             "{ $p.setAge($p.getAge() + 1); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
     @Test
     public void testModifyWithMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "modify($p) { addresses.clear() };",
-             "{ $p.getAddresses().clear(); }",
+             "modify($p) { addresses.clear(); };",
+             "{ $p.getAddresses().clear(); update($p);}",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
     }
 
@@ -1071,7 +1082,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "              $p.setName(\"with_parent\");\n" +
                      "         } else {\n" +
                          "         modify ($p) {\n" +
-                         "            name = \"without_parent\"" +
+                         "            name = \"without_parent\";" +
                          "         }\n" +
                      "         }" +
                      "      ",
@@ -1079,7 +1090,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "      $p.setName(\"with_parent\"); " +
                      "  } else {\n " +
                      "      {\n" +
-                     "          $p.setName(\"without_parent\");\n" +
+                     "          $p.setName(\"without_parent\"); update($p);\n" +
                      "      }" +
                      "  }\n",
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
@@ -1092,12 +1103,13 @@ public class MVELTranspilerTest implements TranspilerTest {
                      "        $newAddress.setCity( \"Brno\" );\n" +
                      "        insert( $newAddress );\n" +
                      "        modify( $person ) {\n" +
-                     "          setAddress( $newAddress )\n" +
+                     "          setAddress( $newAddress );\n" +
                      "        }",
-             "Addresss $newAddress = new Address(); " +
+             "Address $newAddress = new Address(); " +
              "$newAddress.setCity(\"Brno\"); " +
              "insert($newAddress);\n" +
-             "  $person.setAddress($newAddress);\n");
+             "{  $person.setAddress($newAddress);" +
+             "  update($person);}\n");
     }
 
     @Test
@@ -1740,6 +1752,117 @@ public class MVELTranspilerTest implements TranspilerTest {
         } catch (AssertionError e) {
             // swallow
         }
+    }
+
+
+    @Test @Ignore("Not yet supporing Method's with expressions, only variables")
+    public void testUncompiledMethod() {
+        test("modify( (List)$toEdit.get(0) ){ setEnabled( true ) }",
+             "{ ((List) $toEdit.get(0)).setEnabled(true); }",
+             result -> assertThat(allUsedBindings(result)).isEmpty());
+    }
+
+    @Test
+    public void testModifyWithMethod() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "modify($p) { setCanDrink(true); }",
+             "{ $p.setCanDrink(true); update($p); }",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+    }
+
+    @Test
+    public void testModifyWithLambda() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "modify($p) {  setCanDrinkLambda(() -> true); }",
+             "{ $p.setCanDrinkLambda(() -> true); update($p); }",
+             result ->assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+    }
+
+    public static class Fact {
+        String result;
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+    }
+
+    @Test
+    public void testNestedModify() {
+        test(ctx -> ctx.addDeclaration("$fact", Fact.class),
+             "    if ($fact.getResult() != null) {\n" +
+             "        $fact.setResult(\"OK\");\n" +
+             "    } else {\n" +
+             "        modify ($fact) {\n" +
+             "            setResult(\"FIRST\");\n" +
+             "        }\n" +
+             "    }",
+             " \n" +
+             "    if ($fact.getResult() != null) { \n" +
+             "      $fact.setResult(\"OK\"); \n" +
+             "    } else { \n" +
+             "    { \n" +
+             "        $fact.setResult(\"FIRST\"); \n" +
+             "        update($fact); \n" +
+             "        } \n" +
+             "   } \n" +
+             " \n",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$fact"));
+    }
+
+    @Test
+    public void testMultiLineStringLiteralSimple() {
+        test("java.lang.String s = \"\"\"\n" +
+             "                      Pikachu\n" +
+             "                      Is\n" +
+             "                      Yellow\n" +
+             "                      \"\"\"; " +
+             "",
+             "java.lang.String s = \"\"\"\n" +
+             "                      Pikachu\n" +
+             "                      Is\n" +
+             "                      Yellow\n" +
+             "                      \"\"\"; " +
+             "");
+    }
+
+    @Test @Ignore("JavaSymboleResolver doesn't work for TextBlockLiteralExpr")
+    public void testMultiLineStringLiteralAsMethodCallExpr() {
+        test("java.lang.String s = \"\"\"\n" +
+             "                      Charmander\n" +
+             "                      Is\n" +
+             "                      Red\n" +
+             "                      \"\"\"" +
+             ".formatted(2); " +
+             "        " +
+             "",
+             "java.lang.String s = \"\"\"\n" +
+             "                      Charmander\n" +
+             "                      Is\n" +
+             "                      Red\n" +
+             "                      \"\"\"" +
+             ".formatted(2); " +
+             "        " +
+             "");
+    }
+
+    @Test
+    public void testMultiLineStringWithStringCharacterInside() {
+        test(" java.lang.String s = \"\"\"\n" +
+             "                      Bulbasaur\n" +
+             "                      Is\n" +
+             "                      \"Green\"\n" +
+             "                      \"\"\";\n" +
+             "",
+             " java.lang.String s = \"\"\"\n" +
+             "                      Bulbasaur\n" +
+             "                      Is\n" +
+             "                      \"Green\"\n" +
+             "                      \"\"\";\n" +
+             "");
     }
 
 }

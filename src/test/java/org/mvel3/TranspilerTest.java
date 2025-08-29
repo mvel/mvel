@@ -35,6 +35,8 @@ public interface TranspilerTest {
                                         String expectedResult,
                                         Consumer<TranspiledResult> resultAssert) {
         EvaluatorBuilder<Map, Void, Object> builder = new EvaluatorBuilder<>();
+        builder.setClassManager(new ClassManager());
+        builder.setClassLoader(ClassLoader.getSystemClassLoader());
         builder.setExpression(inputExpression);
         builder.addImport(java.util.List.class.getCanonicalName());
         builder.addImport(java.util.ArrayList.class.getCanonicalName());
@@ -48,6 +50,7 @@ public interface TranspilerTest {
 
         builder.setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class)));
         builder.setOutType(Type.type(Void.class));
+        builder.setGeneratedSuperName(BaseExecutorClass.class.getName());
 
         contextUpdater.accept(builder);
 
@@ -60,6 +63,12 @@ public interface TranspilerTest {
 
         verifyBodyWithBetterDiff(expectedResult + "return null;", compiled.methodBodyAsString());
         resultAssert.accept(compiled);
+    }
+
+    public static class BaseExecutorClass {
+        public void insert(String string) {
+
+        }
     }
 
     default void verifyBodyWithBetterDiff(Object expected, Object actual) {

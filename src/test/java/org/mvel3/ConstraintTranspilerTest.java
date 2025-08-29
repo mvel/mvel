@@ -41,8 +41,8 @@ public class ConstraintTranspilerTest implements TranspilerTest {
 
     @Test
     public void testBigDecimalPromotionToIntMethod() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = isEven(salary.intValue());}",
-                       "{var x = _this.isEven(_this.getSalary().intValue());}");
+        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = isEvenInt(salary.intValue());}",
+                       "{var x = _this.isEvenInt(_this.getSalary().intValue());}");
     }
 
     @Test

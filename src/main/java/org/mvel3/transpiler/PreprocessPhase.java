@@ -104,7 +104,7 @@ public class PreprocessPhase {
     private PreprocessPhaseResult modifyPreprocessor(ModifyStatement modifyStatement) {
         PreprocessPhaseResult result = new PreprocessedResult();
 
-        final Expression scope = modifyStatement.getModifyObject();
+        final Expression scope = modifyStatement.getTarget();
         modifyStatement
                 .findAll(AssignExpr.class)
                 .replaceAll(assignExpr -> assignToFieldAccess(result, scope, assignExpr));

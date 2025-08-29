@@ -19,19 +19,28 @@ package org.mvel3.transpiler.context;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.resolution.Solver;
 import com.github.javaparser.resolution.TypeSolver;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
+import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
 import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.printer.CoerceRewriter;
 import org.mvel3.parser.printer.OverloadRewriter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class TranspilerContext<T, K, R> {
-
     private Set<String> inputs;
 
     private EvaluatorInfo<T, K, R> evaluatorInfo;
@@ -53,6 +62,8 @@ public class TranspilerContext<T, K, R> {
     private CoerceRewriter coercer;
 
     private OverloadRewriter overloader;
+
+    private Map<String, Set<ResolvedMethodDeclaration>> resolvedStaticMethods;
 
     public TranspilerContext(MvelParser parser, TypeSolver typeSolver, EvaluatorInfo<T, K, R> evaluatorInfo) {
         this.parser = parser;
@@ -124,5 +135,44 @@ public class TranspilerContext<T, K, R> {
 
     public void setClassDeclaration(ClassOrInterfaceDeclaration classDeclaration) {
         this.classDeclaration = classDeclaration;
+    }
+
+    public Map<String, Set<ResolvedMethodDeclaration>> getResolvedStaticMethods() {
+        if (resolvedStaticMethods == null) {
+            resolvedStaticMethods = new HashMap<>();
+            CompilationUnitContext unitContext = (CompilationUnitContext) JavaParserFactory.getContext(getUnit(), getTypeSolver());
+            Solver                 solver      = getFacade().getSymbolSolver();
+            Set<String>            imports     = getEvaluatorInfo().staticImports();
+
+            for (String importStr : imports) {
+                int indexOfStar = importStr.indexOf('*');
+                if (indexOfStar >= 0) {
+                    String                          clsName      = importStr.substring(0, indexOfStar - 1);
+                    ResolvedType                    resolvedType = solver.solveTypeUsage(clsName, unitContext);
+                    List<ResolvedMethodDeclaration> methods      = resolvedType.asReferenceType().getAllMethods();
+                    methods.stream().forEach(m -> resolvedStaticMethods.computeIfAbsent(m.getName(), (k) -> new HashSet<>()).add(m));
+                } else {
+                    int    lastDotIndex = importStr.lastIndexOf('.');
+                    String clsName      = importStr.substring(0, lastDotIndex);
+                    String methodName   = importStr.substring(lastDotIndex + 1, importStr.length());
+
+                    ResolvedType                    resolvedType = solver.solveTypeUsage(clsName, unitContext);
+
+                    List<ResolvedMethodDeclaration> methods      = resolvedType.asReferenceType().getAllMethods();
+                    methods.stream().filter(m -> m.getName().equals(methodName)).forEach(m -> resolvedStaticMethods.computeIfAbsent(methodName, (k) -> new HashSet<>()).add(m));
+                }
+            }
+        }
+
+        for( ClassOrInterfaceType cl : classDeclaration.getExtendedTypes()) {
+            List<ResolvedMethodDeclaration> methods = cl.resolve().asReferenceType().getAllMethods();
+            methods.stream().forEach(m -> resolvedStaticMethods.computeIfAbsent(m.getName(), (k) -> new HashSet<>()).add(m));
+        }
+
+        return resolvedStaticMethods;
+    }
+
+    public String getGeneratedPackageName() {
+        return evaluatorInfo.classManager().getLookupSupplier().getClass().getPackage().getName();
     }
 }

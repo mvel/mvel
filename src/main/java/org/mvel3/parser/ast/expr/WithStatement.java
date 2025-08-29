@@ -4,6 +4,7 @@ import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
@@ -12,17 +13,11 @@ import org.mvel3.parser.ast.visitor.DrlVoidVisitor;
 
 import java.util.List;
 
-public class WithStatement extends Statement {
+public class WithStatement extends AbstractContextStatement<WithStatement, Expression> {
 
-    private final Expression modifyObject;
-    private final NodeList<Statement> expressions;
-
-    public WithStatement(TokenRange tokenRange, Expression modifyObject, NodeList<Statement> expressions) {
-        super(tokenRange);
-        this.modifyObject = modifyObject;
-        this.expressions = expressions;
+    public WithStatement(TokenRange tokenRange, Expression withExpression, NodeList<Statement> expressions) {
+        super(tokenRange, withExpression, expressions);
     }
-
     @Override
     public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
         return ((DrlGenericVisitor<R, A>)v).visit(this, arg);
@@ -30,15 +25,9 @@ public class WithStatement extends Statement {
 
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
-        ((DrlVoidVisitor<A>)v).visit(this, arg);
-    }
-
-    public NodeList<Statement> getExpressions() {
-        return expressions;
-    }
-
-    public Expression getWithObject() {
-        return modifyObject;
+        if (v instanceof DrlVoidVisitor) {
+            ((DrlVoidVisitor<A>) v).visit(this, arg);
+        }
     }
 
 }

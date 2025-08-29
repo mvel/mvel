@@ -1,5 +1,6 @@
 package org.mvel3.parser.printer;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -17,6 +18,8 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LiteralStringValueExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -28,6 +31,7 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
 import com.github.javaparser.ast.type.Type;
@@ -46,6 +50,8 @@ import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUn
 import com.github.javaparser.utils.Pair;
 import org.mvel3.EvaluatorBuilder;
 import org.mvel3.MVEL;
+import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
+import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
@@ -54,6 +60,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -70,9 +77,6 @@ public class MVELToJavaRewriter {
     }
 
     private LanguageFeatures languageFeatures = new LanguageFeatures();
-
-    private ResolvedType bigDecimalType;
-    private ResolvedType bigIntegerType;
 
     private ResolvedType stringType;
 
@@ -102,8 +106,6 @@ public class MVELToJavaRewriter {
 
     private TranspilerContext context;
 
-    private CompilationUnitContext unitContext;
-
     private MethodUsage mapGetMethod;
     private MethodUsage listGetMethod;
 
@@ -114,15 +116,12 @@ public class MVELToJavaRewriter {
 
     public MVELToJavaRewriter(TranspilerContext context) {
         this.context = context;
-        unitContext = (CompilationUnitContext) JavaParserFactory.getContext(context.getUnit(), context.getTypeSolver());
         Solver solver = context.getFacade().getSymbolSolver();
         coercer = context.getCoercer();
         overloader = context.getOverloader();
 
         declaredVars = new HashSet<>();
 
-        bigDecimalType = solver.classToResolvedType(BigDecimal.class);
-        bigIntegerType = solver.classToResolvedType(BigInteger.class);
         stringType = solver.classToResolvedType(String.class);
         mapType = solver.classToResolvedType(Map.class);
         listType = solver.classToResolvedType(List.class);
@@ -158,18 +157,47 @@ public class MVELToJavaRewriter {
         BinaryExpr binExpr = null;
 
         switch (node.getClass().getSimpleName())  {
+            case "BigDecimalLiteralExpr" : {
+                BigDecimalLiteralExpr n = (BigDecimalLiteralExpr) node;
+                String value = n.getValue();
+                NodeList<Expression> arg = new NodeList<>();
+                if (value.indexOf('.') < 0) {
+                    arg.add(new LongLiteralExpr(n.getTokenRange().get(), value));
+                    Node mce = new MethodCallExpr(n.getTokenRange().get(), new NameExpr("BigDecimal"), null,
+                                                  new SimpleName(n.getTokenRange().get(),"valueOf"), arg);
+                    node.replace(mce);
+                } else {
+                    arg.add(new StringLiteralExpr(value));
+
+                    Node oce = new ObjectCreationExpr(n.getTokenRange().get(), null,
+                                                      new ClassOrInterfaceType("BigDecimal"), null, arg, null);
+                    node.replace(oce);
+                }
+                break;
+            }
+            case "BigIntegerLiteralExpr" : {
+                BigIntegerLiteralExpr n = (BigIntegerLiteralExpr) node;
+                NodeList<Expression> arg = new NodeList<>();
+                String value = n.getValue();
+                arg.add(new IntegerLiteralExpr(n.getTokenRange().get(),  value));
+                Node mce = new MethodCallExpr(n.getTokenRange().get(), new NameExpr("BigInteger"),  null,
+                                              new SimpleName(n.getTokenRange().get(),"valueOf"), arg);
+                node.replace(mce);
+                break;
+            }
             case "ModifyStatement" : {
                 ModifyStatement modifyStmt = (ModifyStatement) node;
-                NameExpr        nameExpr   = modifyStmt.getModifyObject();
+                NameExpr        nameExpr   = modifyStmt.getTarget();
                 modifyName = nameExpr;
                 modifyType = nameExpr.calculateResolvedType();
 
                 // create a block to hold the rewritten statements to repalce the modify block
                 BlockStmt blockStmt = new BlockStmt();
                 modifyStmt.replace(blockStmt);
-                modifyStmt.getModifyObject().setParentNode(blockStmt);
+                modifyStmt.getTarget().setParentNode(blockStmt);
                 modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement(n));
                 blockStmt.getStatements().forEach( n -> rewriteNode(n));
+                blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(modifyName.getNameAsString())));
 
                 modifyName = null;
                 modifyType = null;
@@ -179,19 +207,26 @@ public class MVELToJavaRewriter {
                 // JavaParser's extension to detect BigDecimal and BigNumber does not pass  the negative prefix on the number.
                 // This detects this and adds it back in.
                 UnaryExpr unaryExpr = (UnaryExpr) node;
-                if (((UnaryExpr) node).getOperator() == UnaryExpr.Operator.MINUS) {
-                    // For Big Numbers, any negative must be moved into the value. And as the prexi is in the string, the UnaryExpr is no longer needed
-                    if ( unaryExpr.getExpression().isObjectCreationExpr()) {
-                        ObjectCreationExpr objectCreationExpr = unaryExpr.getExpression().asObjectCreationExpr();
-                        SimpleName name = objectCreationExpr.getType().getName();
-                        StringLiteralExpr stringLiteral = (StringLiteralExpr) objectCreationExpr.getArguments().get(0);
-                        stringLiteral = new StringLiteralExpr("-" + stringLiteral.asString());
-                        objectCreationExpr.setArgument(0, stringLiteral);
-                        node.replace(objectCreationExpr);
+                if (unaryExpr.getOperator() == UnaryExpr.Operator.MINUS ||
+                    unaryExpr.getOperator() == UnaryExpr.Operator.PLUS) {
+                    if (unaryExpr.getExpression() instanceof BigDecimalLiteralExpr ||
+                        unaryExpr.getExpression() instanceof BigIntegerLiteralExpr) {
+                        LiteralStringValueExpr lit = (LiteralStringValueExpr) unaryExpr.getExpression();
+                        lit.setValue(unaryExpr.getOperator().asString() + lit.getValue().substring(0, lit.getValue().length()));
+                        rewriteNode(unaryExpr.getExpression());
+                        unaryExpr.replace(unaryExpr.getExpression());
                     }
-
+                } else if (unaryExpr.getOperator() == UnaryExpr.Operator.BITWISE_COMPLEMENT) {
+                    if (unaryExpr.getExpression() instanceof BigIntegerLiteralExpr) {
+                        rewriteNode(unaryExpr.getExpression());
+                        Expression     expr = unaryExpr.getExpression();
+                        MethodCallExpr not  = new MethodCallExpr(expr, "not");
+                        Node           p    = unaryExpr.getParentNode().get();
+                        unaryExpr.replace(not);
+                    } else if (unaryExpr.getExpression() instanceof BigDecimalLiteralExpr) {
+                        throw new UnsupportedOperationException("BigDecimals cannot use bitwise compliment operators");
+                    }
                 }
-                //unaryExpr.getExpression()
                 break;
             case "DrlNameExpr":
             case "NameExpr": {
@@ -254,6 +289,7 @@ public class MVELToJavaRewriter {
                 ArrayCreationExpr arrayCreationExpr = (ArrayCreationExpr) node;
                 if (arrayCreationExpr.getInitializer().isPresent()) {
                     ArrayInitializerExpr initExpr = ((ArrayCreationExpr) node).getInitializer().get();
+                    rewriteNode(initExpr);
                     ResolvedType resolvedType = arrayCreationExpr.getElementType().resolve();
                     rewriteArrayInitializer(resolvedType, initExpr);
                 }
@@ -374,10 +410,21 @@ public class MVELToJavaRewriter {
 
         // Get the Method declaration and it's resolved types.
         // @TODO this currently does not work for method calls without scopes, i.e. member methods or static methods (mdp)
-        ResolvedType scope = context.getFacade().getType(methodCall.getScope().get());
-        ResolvedType resolvedScope = methodCall.getScope().get().calculateResolvedType();
+        ResolvedType scope = null;
+        ResolvedType                          resolvedScope = null;
+        Collection<ResolvedMethodDeclaration> methods;
+        if ( methodCall.getScope().isPresent()) {
+            scope = context.getFacade().getType(methodCall.getScope().get());
+            resolvedScope = methodCall.getScope().get().calculateResolvedType();
+            methods = scope.asReferenceType().getAllMethods();
+        } else {
+            // static methods
+            methods = (Collection<ResolvedMethodDeclaration>) context.getResolvedStaticMethods().get(methodCall.getNameAsString());
+        }
 
-        List<ResolvedMethodDeclaration> methods = scope.asReferenceType().getAllMethods();
+        if (methods == null || methods.isEmpty()) {
+            throw new RuntimeException("No method candidates were found for method call '" + methodCall.getNameAsString() + "'");
+        }
 
         List<ResolvedType> argTypes = Arrays.asList(new ResolvedType[methodCall.getArguments().size()]);
         for (int i = 0; i < methodCall.getArguments().size(); i++ ) {
@@ -401,7 +448,6 @@ public class MVELToJavaRewriter {
 
         // This will record all candidate methods that require one ore more coercions.
         // It will then select the candidate with the least number of coercions
-        methodLoop:
         for ( ResolvedMethodDeclaration methodDeclr : methods) {
             // Find the method with same name and number of arguments
             // Then find the first subset of those, that all arguments either match or
@@ -693,7 +739,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr putMethod = new MethodCallExpr( scope,"putMap");
                         assignExpr.replace(putMethod);
-                        putMethod.addArgument(new NameExpr());
+                        putMethod.addArgument(new NameExpr(context.getEvaluatorInfo().variableInfo().declaration().name()));
                         putMethod.addArgument(new StringLiteralExpr(nameExpr.getNameAsString()));
                         putMethod.addArgument(assignExpr);
                     }
@@ -976,18 +1022,6 @@ public class MVELToJavaRewriter {
 
         Expression overloaded = overloader.overload(leftType, left, right, binExprTypes.binaryExpr.getOperator());
         return overloaded;
-    }
-
-    boolean isBigNumber(ResolvedType type) {
-        if (isAssignableBy(bigDecimalType, type)) {
-            return true;
-        }
-
-        if (isAssignableBy(bigIntegerType, type)) {
-            return true;
-        }
-
-        return false;
     }
 
     public static boolean isAssignableBy(ResolvedType target, ResolvedType source) {

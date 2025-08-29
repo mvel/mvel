@@ -1188,8 +1188,8 @@ public CompilationUnit CompilationUnit():
                  |
                     typeDeclaration = AnnotationTypeDeclaration(modifier) { types = add(types, typeDeclaration); }
                  |
-                    module = ModuleDeclaration(modifier)
-                 |
+//                    module = ModuleDeclaration(modifier)
+//                 |
                     ";"
                 )
             )
@@ -3043,7 +3043,7 @@ String Identifier():
         // TODO: Explain why these keywords are explicitly flagged up as "included", and why they're not already covered by {@code <IDENTIFIER>}.
         // TODO: Explain how / where boolean and null literals are excluded.
         // Make sure the module info keywords don't interfere with normal Java parsing by matching them as normal identifiers.
-        <RULE> | <MODULE>  | <REQUIRES> | <TO> | <WITH> | <OPEN> | <OPENS> | <USES> | <EXPORTS> | <PROVIDES> | <TRANSITIVE> |
+        <RULE> | <MODULE>  | <REQUIRES> | <TO> | <OPEN> | <OPENS> | <USES> | <EXPORTS> | <PROVIDES> | <TRANSITIVE> |
         // Make sure older Java versions parse
         <ENUM> | <STRICTFP> | <YIELD> | <RECORD> | <PERMITS> | <SEALED> |
         // An actual plain old identifier
@@ -4156,24 +4156,9 @@ Expression Literal():
      |
         <LONG_LITERAL> { ret = new LongLiteralExpr(tokenRange(), token.image); }
      |
-	  <BIG_DECIMAL_LITERAL> {
-            NodeList<Expression> arg = emptyNodeList();
-            String s = getStringFromLiteral(token.image);
-            if (s.indexOf('.') < 0) {
-               arg.add(new LongLiteralExpr(tokenRange(), s));
-               ret = new MethodCallExpr(tokenRange(), new NameExpr("BigDecimal"), null, new SimpleName(tokenRange(),"valueOf"), arg);
-            } else {
-                arg.add(new StringLiteralExpr(s));
-                ret = new ObjectCreationExpr(tokenRange(), null, new ClassOrInterfaceType("BigDecimal"), null, arg, null);
-            }
-	  }
+	    <BIG_DECIMAL_LITERAL> { ret = new BigDecimalLiteralExpr(tokenRange(), token.image); }
 	|
-	  <BIG_INTEGER_LITERAL> {
-            NodeList<Expression> arg = emptyNodeList();
-            String s = getStringFromLiteral(token.image);
-            arg.add(new IntegerLiteralExpr(tokenRange(),  s));
-            ret = new MethodCallExpr(tokenRange(), new NameExpr("BigInteger"),  null, new SimpleName(tokenRange(),"valueOf"), arg);
-	  }
+	    <BIG_INTEGER_LITERAL> { ret = new BigIntegerLiteralExpr(tokenRange(), token.image); }
 	|
         <FLOATING_POINT_LITERAL> { ret = new DoubleLiteralExpr(tokenRange(), token.image); }
      |
@@ -4454,7 +4439,7 @@ Statement Statement():
             | ret = SynchronizedStatement()
             | ret = TryStatement()
             | ret = ModifyStatement()
-            // | ret = WithStatement()
+            | ret = WithStatement()
         )
         { return ret; }
     } catch (ParseException e) {
@@ -5324,43 +5309,10 @@ TryStmt TryStatement():
 //    { return new ArrayInitializerExpr(range(begin, token()),ret); }
 //}
 
-
-ExpressionStmt ModifyElement():
-/*
- * Basically the same as StatementExpression but without a ";"
- */
-{
-    Expression expr;
-    AssignExpr.Operator op;
-    Expression value;
-    RangedList<Type> typeArgs = new RangedList<Type>(null);
-    Statement lambdaBody;
-}
-{
-    (
-        LOOKAHEAD(2)
-        expr = PreIncrementExpression()
-     |
-        expr = PreDecrementExpression()
-     |
-        expr = PrimaryExpression()
-        [
-            "++" { expr = new UnaryExpr(range(expr, token()), expr, UnaryExpr.Operator.POSTFIX_INCREMENT);  }
-         |
-            "--" { expr = new UnaryExpr(range(expr, token()), expr, UnaryExpr.Operator.POSTFIX_DECREMENT);  }
-         |
-            op = AssignmentOperator()
-            value = Expression() { expr = new AssignExpr(range(expr, token()), expr, value, op); }
-        ]
-    )
-    { return new ExpressionStmt(range(expr, token()), expr); }
-}
-
 ModifyStatement ModifyStatement():
 {
     JavaToken begin;
-    Statement first = null;
-    Statement other = null;
+    Statement stmt = null;
     NodeList<Statement> all = emptyNodeList();
     SimpleName modifyObject = null;
 }
@@ -5369,18 +5321,12 @@ ModifyStatement ModifyStatement():
     (
         (
             <MODIFY><LPAREN> (modifyObject = SimpleName())<RPAREN> <LBRACE>  { begin=token(); }
-            (first = ModifyElement() { all.add(first); }
-            (
-                LOOKAHEAD(2)
-                ","
-                other = ModifyElement() { all.add(other); }
-            )*
-            "}"
+            ( LOOKAHEAD(2) stmt = StatementExpression() { all.add(stmt); } )*
+            <RBRACE>
             {
                 this.isWithOrModify = false;
                 return new ModifyStatement(range(begin, token()), new NameExpr(modifyObject), all);
             }
-            )
         )
     )
 }
@@ -5389,8 +5335,7 @@ ModifyStatement ModifyStatement():
 WithStatement WithStatement():
 {
     JavaToken begin;
-    Statement first = null;
-    Statement other = null;
+    Statement stmt = null;
     NodeList<Statement> all = emptyNodeList();
     Expression withObject = null;
 }
@@ -5398,19 +5343,13 @@ WithStatement WithStatement():
     { this.isWithOrModify = true; }
     (
         (
-            <WITH><LPAREN> (withObject = Expression())<RPAREN> <LBRACE>
-            (first = Statement()(<SEMICOLON>)*)* { begin=token(); all.add(first); }
-            (
-                          <COMMA>
-                          other = Statement() { all.add(other); }
-            )*
+            <WITH><LPAREN> (withObject = Expression())<RPAREN> <LBRACE>  { begin=token(); }
+            ( LOOKAHEAD(2) stmt = StatementExpression() { all.add(stmt); } )*
             <RBRACE>
-            (<SEMICOLON>)?
             {
                 this.isWithOrModify = false;
                 return new WithStatement(range(begin, token()), withObject, all);
             }
-
         )
     )
 }
@@ -5945,125 +5884,6 @@ Expression DefaultValue():
 }
 
 
-/* MODULES - Module syntax follows */
-
-/**
- * https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-ModuleDirective
- * <pre>{@code
- *     ModuleDirective:
- *         requires {RequiresModifier} ModuleName ;
- *         exports PackageName [to ModuleName {, ModuleName}] ;
- *         opens PackageName [to ModuleName {, ModuleName}] ;
- *         uses TypeName ;
- *         provides TypeName with TypeName {, TypeName} ;
- *     RequiresModifier:
- *         (one of)
- *         transitive static
- * }<pre>
- */
-ModuleDirective ModuleDirective():
-{
-    ModifierHolder modifiers;
-    Name name;
-    Name tmpName;
-    NodeList<Name> names=emptyNodeList();
-    JavaToken begin;
-    ModuleDirective directive;
-    JavaToken transitiveExceptionalToken;
-}
-{
-    (
-        // {@code requires {RequiresModifier} ModuleName ;}
-        // This is a hack for the edge case "requires transitive;" which is supposed to mean "require the module named 'transitive'"
-        LOOKAHEAD(<REQUIRES> <TRANSITIVE> ";")
-        <REQUIRES> { begin=token(); }
-        <TRANSITIVE> {transitiveExceptionalToken=token(); setTokenKind(IDENTIFIER);}
-        ";"
-        { directive=new ModuleRequiresDirective(range(begin, token()), new NodeList<Modifier>(), new Name(range(transitiveExceptionalToken, transitiveExceptionalToken), null, transitiveExceptionalToken.getText())); }
-    |
-        // {@code requires {RequiresModifier} ModuleName ;}
-        <REQUIRES> { begin=token(); }
-        modifiers=Modifiers() name=Name()
-        ";"
-        { directive=new ModuleRequiresDirective(range(begin, token()), modifiers.modifiers, name); }
-    |
-        // {@code exports PackageName [to ModuleName {, ModuleName}] ;}
-        <EXPORTS> { begin=token(); }
-        name=Name()
-        [
-            <TO>
-            tmpName=Name() { names.add(tmpName); }
-            (
-                ","
-                tmpName=Name(){ names.add(tmpName); }
-            )*
-        ]
-        ";"
-        { directive=new ModuleExportsDirective(range(begin, token()), name, names); }
-    |
-        // {@code opens PackageName [to ModuleName {, ModuleName}] ;}
-        <OPENS> { begin=token(); }
-        name=Name()
-        [
-            <TO>
-            tmpName=Name() { names.add(tmpName); }
-            (
-                ","
-                tmpName=Name() { names.add(tmpName); }
-            )*
-        ]
-        ";"
-        { directive=new ModuleOpensDirective(range(begin, token()), name, names); }
-    |
-        // {@code uses TypeName ;}
-        <USES> { begin=token(); }
-        name=Name()
-        ";"
-        { directive=new ModuleUsesDirective(range(begin, token()), name); }
-    |
-        // {@code provides TypeName with TypeName {, TypeName} ;}
-        <PROVIDES> { begin=token(); }
-        name=Name()
-        <WITH>
-        tmpName=Name() { names.add(tmpName); }
-        (
-            ","
-            tmpName=Name() { names.add(tmpName); }
-        )*
-        ";"
-        { directive=new ModuleProvidesDirective(range(begin, token()), name, names);}
-    )
-    { return directive; }
-}
-
-/**
- * https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7
- * <pre>{@code
- *     ModuleDeclaration:
- *         {Annotation} [open] module Identifier {. Identifier} { {ModuleDirective} }
- * }<pre>
- */
-ModuleDeclaration ModuleDeclaration(ModifierHolder modifier):
-{
-    NodeList<ModuleDirective> directives = new NodeList<ModuleDirective>();
-    boolean open=false;
-    ModuleDirective directive;
-    Name name;
-    JavaToken begin = modifier.begin;
-}
-{
-    [ <OPEN> { open = true; begin = orIfInvalid(begin, token()); } ]
-    <MODULE> { begin = orIfInvalid(begin, token()); }
-    name = Name()
-    "{"
-    (
-        directive = ModuleDirective() { directives = add(directives, directive); }
-    )*
-    "}"
-    { return new ModuleDeclaration(range(begin, token()), modifier.annotations, name, open, directives); }
-}
-
-
 /* Rules for matching partial inputs.
  * These rules are needed to properly terminate them -
  * if we simply use the usual rules, they will ignore everything in the provider
@@ -6145,23 +5965,6 @@ TypeDeclaration<?> TypeDeclarationParseStart():
     <EOF>
     { return ret; }
 }
-
-ModuleDeclaration ModuleDeclarationParseStart():
-{
-    ModuleDeclaration ret;
-    ModifierHolder modifiers;
-}
-{
-    modifiers = Modifiers()
-    ret = ModuleDeclaration(modifiers)
-    <EOF>
-    { return ret; }
-}
-
-ModuleDirective ModuleDirectiveParseStart():
-{ ModuleDirective ret; }
-{ ret = ModuleDirective() <EOF> { return ret; } }
-
 TypeParameter TypeParameterParseStart():
 {
     TypeParameter ret;

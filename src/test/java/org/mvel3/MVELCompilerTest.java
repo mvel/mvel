@@ -212,6 +212,11 @@ public class MVELCompilerTest {
         assertThat(vars.get("d")).isEqualTo(15);
     }
 
+    public Object x() {
+        int a = 2;
+        return a = a + 1;
+    }
+
     // @TODO this should assign back to the context (mdp)
     @Test
     public void testMapEvalutorInputs() {
@@ -324,7 +329,7 @@ public class MVELCompilerTest {
 
         EvaluatorInfo<ContextWithInts, Void, Integer> evalInfo = EvaluatorBuilder
                                                                          .create()
-                                                                         .setImports(getImports())
+                                                                         .setImports(getImports()).setClassManager(new ClassManager())
                                                                          .setExpression("a = 4; b = 5; int c = 6; int d = a + b + c; return d;")
                                                                          .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextWithInts.class))
                                                                                                             .setVars(Declaration.of("a", int.class),
@@ -350,6 +355,7 @@ public class MVELCompilerTest {
 
         EvaluatorInfo<ContextCamelCase, Void, String> evalInfo = EvaluatorBuilder
                 .create()
+                .setClassManager(new ClassManager())
                 .setImports(getImports())
                 .setExpression("{ return foo.getName() + bar.getName(); }")
                 .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextCamelCase.class))
@@ -376,7 +382,7 @@ public class MVELCompilerTest {
         Bar bar = new Bar();
         bar.setName("yyy");
 
-        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports())
+        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
                                                    .setExpression("{ return foo.getName() + bar.getName(); }")
                                                    .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextRecord.class))
                                                                                       .setVars(Declaration.of("foo", Foo.class),
@@ -399,7 +405,7 @@ public class MVELCompilerTest {
         Foo foo2 = new Foo();
         foo2.setName("foo2");
 
-        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports())
+        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
                                                                                 .setExpression("{ return foos[0].name + foos[1].name; }")
                                                                                 .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextRecord.class))
                                                                                                                    .setVars(Declaration.of("foos", Type.type(List.class, "<" + Foo.class.getCanonicalName() + ">"))))
@@ -436,7 +442,7 @@ public class MVELCompilerTest {
 //                                                                               .setOutType(Type.type(String.class))
 //                                                                               .build();
 
-        EvaluatorInfo<ContextMixed, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports())
+        EvaluatorInfo<ContextMixed, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
                                                                                .setExpression("{ return foo.getName() + bar.getName(); }")
                                                                                .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextMixed.class))
                                                                                                                   .setVars(Declaration.of("foo", Foo.class),
@@ -479,6 +485,7 @@ public class MVELCompilerTest {
         imports.add("java.math.BigDecimal");
         imports.add(org.mvel3.Address.class.getCanonicalName());
         imports.add(Foo.class.getCanonicalName());
+        imports.add(Person.class.getCanonicalName());
 
         return imports;
     }
