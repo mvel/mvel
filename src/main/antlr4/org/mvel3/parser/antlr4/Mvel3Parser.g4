@@ -119,3 +119,10 @@ expression
 inlineCast
     : primary HASH typeType HASH (identifier arguments? | '[' expression ']')?
     ;
+
+
+
+// Override block without any changes. Just for ANTLR plugin conveinience. We may remove this later.
+block
+    : '{' blockStatement* '}'
+    ;

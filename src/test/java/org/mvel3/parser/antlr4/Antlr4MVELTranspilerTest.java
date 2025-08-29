@@ -101,4 +101,44 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "$p.getParent().getParent().getName();",
              expectedJavaCode);
     }
+
+    @Test
+    public void testGenericsOnListAccess() {
+        // The city rewrite wouldn't work, if it didn't know the generics
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "var x = $p.addresses[0].city + $p.addresses[1].city;",
+             "var x = $p.getAddresses().get(0).getCity() + $p.getAddresses().get(1).getCity();");
+    }
+
+    @Test
+    public void testSetter() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "$p.name = \"Luca\";",
+             "$p.setName(\"Luca\");");
+    }
+
+    @Test
+    public void testStaticMethod() {
+        test("System.out.println(\"Hello World\");",
+             "System.out.println(\"Hello World\");");
+    }
+
+    @Test
+    public void testBigDecimalLiteral() {
+        test("var x = 10B;",
+             "var x = BigDecimal.valueOf(10);");
+    }
+
+    @Test
+    public void testBigIntegerLiteral() {
+        test("var x = 10I;",
+             "var x = BigInteger.valueOf(10);");
+    }
+
+    @Test
+    public void testBigDecimalDecimalLiteral() {
+        test("var x = 10.5B;",
+             "var x = new BigDecimal(\"10.5\");");
+    }
+
 }

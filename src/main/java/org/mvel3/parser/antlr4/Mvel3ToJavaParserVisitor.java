@@ -50,10 +50,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         Expression left = (Expression) visit(ctx.expression(0));
         Expression right = (Expression) visit(ctx.expression(1));
         
-        // Handle different binary operators
         String operatorText = ctx.bop.getText();
+        
+        // Handle assignment operators separately
+        if ("=".equals(operatorText)) {
+            return new AssignExpr(left, right, AssignExpr.Operator.ASSIGN);
+        }
+        
+        // Handle other binary operators
         BinaryExpr.Operator operator = getBinaryExprOperator(operatorText);
-
         return new BinaryExpr(left, right, operator);
     }
 
@@ -176,12 +181,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             String text = ctx.BigDecimalLiteral().getText();
             // Remove 'B' suffix
             text = text.substring(0, text.length() - 1);
-            return new DoubleLiteralExpr(text);
+            
+            // Check if it's a decimal number
+            if (text.contains(".")) {
+                // Use BigDecimal constructor for decimal values: new BigDecimal("10.5")
+                ObjectCreationExpr constructor = new ObjectCreationExpr();
+                constructor.setType("BigDecimal");
+                constructor.addArgument(new StringLiteralExpr(text));
+                return constructor;
+            } else {
+                // Use BigDecimal.valueOf() for integer values: BigDecimal.valueOf(10)
+                MethodCallExpr valueOf = new MethodCallExpr(new NameExpr("BigDecimal"), "valueOf");
+                valueOf.addArgument(new IntegerLiteralExpr(text));
+                return valueOf;
+            }
         } else if (ctx.BigIntegerLiteral() != null) {
             String text = ctx.BigIntegerLiteral().getText();
             // Remove 'I' suffix
             text = text.substring(0, text.length() - 1);
-            return new IntegerLiteralExpr(text);
+            
+            // Use BigInteger.valueOf(): BigInteger.valueOf(10)
+            MethodCallExpr valueOf = new MethodCallExpr(new NameExpr("BigInteger"), "valueOf");
+            valueOf.addArgument(new IntegerLiteralExpr(text));
+            return valueOf;
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
