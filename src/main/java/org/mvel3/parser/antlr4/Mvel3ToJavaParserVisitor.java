@@ -16,6 +16,9 @@
 
 package org.mvel3.parser.antlr4;
 
+import com.github.javaparser.TokenRange;
+import com.github.javaparser.JavaToken;
+import com.github.javaparser.Position;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -26,6 +29,9 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
+import org.mvel3.parser.ast.expr.ModifyStatement;
+import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
+import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
@@ -54,7 +60,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Handle assignment operators separately
         if ("=".equals(operatorText)) {
-            return new AssignExpr(left, right, AssignExpr.Operator.ASSIGN);
+            return new AssignExpr(TokenRange.INVALID, left, right, AssignExpr.Operator.ASSIGN);
         }
         
         // Handle other binary operators
@@ -105,7 +111,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.literal() != null) {
             return visit(ctx.literal());
         } else if (ctx.identifier() != null) {
-            return new NameExpr(ctx.identifier().getText());
+            return new NameExpr(TokenRange.INVALID, new SimpleName(ctx.identifier().getText()));
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
             // Parenthesized expression
             return new EnclosedExpr((Expression) visit(ctx.expression()));
@@ -176,34 +182,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return new CharLiteralExpr(value);
         }
         
-        // Handle MVEL-specific literals
+        // Handle MVEL-specific literals - create proper AST nodes like mvel.jj does
         if (ctx.BigDecimalLiteral() != null) {
             String text = ctx.BigDecimalLiteral().getText();
-            // Remove 'B' suffix
-            text = text.substring(0, text.length() - 1);
-            
-            // Check if it's a decimal number
-            if (text.contains(".")) {
-                // Use BigDecimal constructor for decimal values: new BigDecimal("10.5")
-                ObjectCreationExpr constructor = new ObjectCreationExpr();
-                constructor.setType("BigDecimal");
-                constructor.addArgument(new StringLiteralExpr(text));
-                return constructor;
-            } else {
-                // Use BigDecimal.valueOf() for integer values: BigDecimal.valueOf(10)
-                MethodCallExpr valueOf = new MethodCallExpr(new NameExpr("BigDecimal"), "valueOf");
-                valueOf.addArgument(new IntegerLiteralExpr(text));
-                return valueOf;
-            }
+            // Create BigDecimalLiteralExpr node (transformation happens in MVELToJavaRewriter)
+            return new BigDecimalLiteralExpr(TokenRange.INVALID, text);
         } else if (ctx.BigIntegerLiteral() != null) {
             String text = ctx.BigIntegerLiteral().getText();
-            // Remove 'I' suffix
-            text = text.substring(0, text.length() - 1);
-            
-            // Use BigInteger.valueOf(): BigInteger.valueOf(10)
-            MethodCallExpr valueOf = new MethodCallExpr(new NameExpr("BigInteger"), "valueOf");
-            valueOf.addArgument(new IntegerLiteralExpr(text));
-            return valueOf;
+            // Create BigIntegerLiteralExpr node (transformation happens in MVELToJavaRewriter)
+            return new BigIntegerLiteralExpr(TokenRange.INVALID, text);
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
@@ -297,7 +284,10 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitStatement(Mvel3Parser.StatementContext ctx) {
-        if (ctx.statementExpression != null) {
+        // Handle modify statement
+        if (ctx.modifyStatement() != null) {
+            return visit(ctx.modifyStatement());
+        } else if (ctx.statementExpression != null) {
             // Handle expression statement: expression ';'
             Expression expr = (Expression) visit(ctx.statementExpression);
             return new ExpressionStmt(expr);
@@ -309,21 +299,63 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // For now, fall back to default behavior
         return visitChildren(ctx);
     }
+    
+    @Override
+    public Node visitModifyStatement(Mvel3Parser.ModifyStatementContext ctx) {
+        // modify ( identifier ) { statement* }
+        String targetName = ctx.identifier().getText();
+        NameExpr target = new NameExpr(TokenRange.INVALID, new SimpleName(targetName));
+
+        // Create a NodeList for the statements  
+        NodeList<Statement> statements = new NodeList<>();
+        
+        // Process each statement in the modify block
+        // Keep assignments as simple names - MVELToJavaRewriter will add the target prefix
+        for (Mvel3Parser.StatementContext stmtCtx : ctx.statement()) {
+            Statement stmt = (Statement) visit(stmtCtx);
+            statements.add(stmt);
+        }
+        
+        // Create and return a ModifyStatement
+        // Create a dummy TokenRange to avoid NPE in MVELToJavaRewriter
+        return new ModifyStatement(TokenRange.INVALID, target, statements);
+    }
 
     @Override
     public Node visitLocalVariableDeclaration(Mvel3Parser.LocalVariableDeclarationContext ctx) {
-        // Handle: var x = expression;
+        // Handle both: var x = expression; and Type name = expression;
         
-        // Get the identifier (variable name)
-        String varName = ctx.identifier().getText();
+        Type varType;
+        String varName;
         
-        // Create variable declarator with var type
-        VariableDeclarator varDeclarator = new VariableDeclarator(new VarType(), varName);
+        if (ctx.VAR() != null) {
+            // Handle: var x = expression;
+            varType = new VarType();
+            varName = ctx.identifier().getText();
+        } else if (ctx.typeType() != null && ctx.variableDeclarators() != null) {
+            // Handle: Type name = expression;
+            varType = (Type) visit(ctx.typeType());
+            // Get the first variable declarator name
+            Mvel3Parser.VariableDeclaratorContext firstDeclarator = ctx.variableDeclarators().variableDeclarator(0);
+            varName = firstDeclarator.variableDeclaratorId().identifier().getText();
+        } else {
+            throw new IllegalArgumentException("Unsupported local variable declaration: " + ctx.getText());
+        }
+        
+        // Create variable declarator
+        VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
         
         // Check if there's an initializer
         if (ctx.ASSIGN() != null && ctx.expression() != null) {
             Expression initializer = (Expression) visit(ctx.expression());
             varDeclarator.setInitializer(initializer);
+        } else if (ctx.variableDeclarators() != null) {
+            // Handle initializer from variableDeclarators
+            Mvel3Parser.VariableDeclaratorContext firstDeclarator = ctx.variableDeclarators().variableDeclarator(0);
+            if (firstDeclarator.variableInitializer() != null) {
+                Expression initializer = (Expression) visit(firstDeclarator.variableInitializer().expression());
+                varDeclarator.setInitializer(initializer);
+            }
         }
         
         // Create the variable declaration expression

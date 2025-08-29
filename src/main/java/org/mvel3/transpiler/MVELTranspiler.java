@@ -91,11 +91,16 @@ public class MVELTranspiler {
         try {
             // wrap as expression/block may or may not have {}, then unwrap latter.xs
             blockStmt = handleParserResult(context.getParser().parseBlock("{" + content + "}\n"));
-        } catch (RuntimeException e) {
-            logger.debug("Failed parseBlock, trying parseExpression. Error: {}", e.getMessage());
-            logger.trace("Full stack trace:", e);
+        } catch (RuntimeException eParseBlock) {
+            logger.debug("Failed parseBlock, trying parseExpression. Error: {}", eParseBlock.getMessage());
             // Block failed, try parsing an expression
-            Expression expr = handleParserResult(context.getParser().parseExpression(content));
+            Expression expr;
+            try {
+                expr = handleParserResult(context.getParser().parseExpression(content));
+            } catch (RuntimeException eParseExpression) {
+                logger.error("Stack trace at parseBlock : ", eParseBlock);
+                throw eParseExpression;
+            }
             if (context.getEvaluatorInfo().outType().isVoid()) {
                 ExpressionStmt exprStmt = new ExpressionStmt(expr);
                 blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));

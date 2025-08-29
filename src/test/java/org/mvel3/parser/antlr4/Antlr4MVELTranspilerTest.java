@@ -17,6 +17,7 @@
 package org.mvel3.parser.antlr4;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -139,6 +140,27 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
     public void testBigDecimalDecimalLiteral() {
         test("var x = 10.5B;",
              "var x = new BigDecimal(\"10.5\");");
+    }
+
+    @Test
+    public void testMapGet() {
+        test(ctx -> ctx.addDeclaration("m", Map.class),
+             "m[\"key\"];",
+             "m.get(\"key\");");
+    }
+
+    @Test
+    public void testAssignment() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "Person np = $p; np = $p;",
+             "Person np = $p; np = $p;");
+    }
+
+    @Test
+    public void testModify() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "modify ( $p )  { name = \"Luca\"; age = 35; };",
+             "{$p.setName(\"Luca\");\n $p.setAge(35);update($p);}");
     }
 
 }

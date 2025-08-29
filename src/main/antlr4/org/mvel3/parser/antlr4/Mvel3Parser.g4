@@ -115,12 +115,40 @@ expression
     | inlineCast                                              #InlineCastExpression
     ;
 
+// Override expression to add MVEL-specific modify statement
+statement
+    : blockLabel = block
+    | ASSERT expression (':' expression)? ';'
+    | IF parExpression statement (ELSE statement)?
+    | FOR '(' forControl ')' statement
+    | WHILE parExpression statement
+    | DO statement WHILE parExpression ';'
+    | TRY block (catchClause+ finallyBlock? | finallyBlock)
+    | TRY resourceSpecification block catchClause* finallyBlock?
+    | SWITCH parExpression '{' switchBlockStatementGroup* switchLabel* '}'
+    | SYNCHRONIZED parExpression block
+    | RETURN expression? ';'
+    | THROW expression ';'
+    | BREAK identifier? ';'
+    | CONTINUE identifier? ';'
+    | YIELD expression ';' // Java17
+    | SEMI
+    | statementExpression = expression ';'
+    | switchExpression ';'? // Java17
+    | identifierLabel = identifier ':' statement
+    | modifyStatement               // MVEL-specific modify statement
+    ;
+
+// MVEL-specific modify statement
+modifyStatement
+    : MODIFY LPAREN identifier RPAREN LBRACE (statement)* RBRACE
+    ;
+
+
 // MVEL inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
 inlineCast
     : primary HASH typeType HASH (identifier arguments? | '[' expression ']')?
     ;
-
-
 
 // Override block without any changes. Just for ANTLR plugin conveinience. We may remove this later.
 block
