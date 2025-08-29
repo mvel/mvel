@@ -163,4 +163,58 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
              "{$p.setName(\"Luca\");\n $p.setAge(35);update($p);}");
     }
 
+    @Test
+    public void testConvertIfConditionAndStatements() {
+        test(ctx -> {ctx.addDeclaration("$p", Person.class);
+                 ctx.addDeclaration("results", List.class, "<Object>");},
+             "if($p.addresses != null){\n" +
+                     "  results.add($p.name);\n" +
+                     "} else {\n " +
+                     "  results.add($p.age);" +
+                     "}",
+             "if ($p.getAddresses() != null) {\n" +
+                     "  results.add($p.getName());\n" +
+                     "} else {\n" +
+                     "results.add($p.getAge());\n" +
+                     "}");
+    }
+
+    @Test
+    public void testConvertPropertyToAccessorWhile() {
+        test(ctx -> {ctx.addDeclaration("$p", Person.class);
+                     ctx.addDeclaration("results", List.class, "<String>");},
+             "while($p.addresses != null){" +
+                     "  results.add($p.name);\n" +
+                     "}",
+             "while ($p.getAddresses() != null) {\n" +
+                     "  results.add($p.getName());\n" +
+                     "}");
+    }
+
+    @Test
+    public void testConvertPropertyToAccessorFor() {
+        test(ctx -> {ctx.addDeclaration("$p", Person.class);
+                 ctx.addDeclaration("results", List.class, "<String>");},
+             "for(int i = 0; i < $p.addresses; i++) {\n" +
+                     "  results.add($p.name);\n" +
+                     "} ",
+             "for (int i = 0; i < $p.getAddresses(); i++) {\n" +
+                     "  results.add($p.getName());\n" +
+                     "}");
+    }
+
+    @Test
+    public void testConvertPropertyToAccessorSwitch() {
+        test(ctx -> {ctx.addDeclaration("$p", Person.class);
+                 ctx.addDeclaration("results", List.class, "<String>");},
+                     "        switch($p.name) {\n" +
+                     "            case \"Luca\":\n" +
+                     "                results.add($p.name);\n" +
+                     "}",
+                     "        switch($p.getName()) {\n" +
+                     "            case \"Luca\":\n" +
+                     "                results.add($p.getName());\n" +
+                     "}");
+    }
+
 }

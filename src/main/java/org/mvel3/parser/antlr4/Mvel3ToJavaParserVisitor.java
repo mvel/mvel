@@ -26,15 +26,23 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.WhileStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
+import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
@@ -323,6 +331,46 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitPrimitiveType(Mvel3Parser.PrimitiveTypeContext ctx) {
+        // Map ANTLR primitive types to JavaParser PrimitiveType
+        String typeName = ctx.getText();
+        PrimitiveType.Primitive primitive;
+        
+        switch (typeName) {
+            case "boolean":
+                primitive = PrimitiveType.Primitive.BOOLEAN;
+                break;
+            case "byte":
+                primitive = PrimitiveType.Primitive.BYTE;
+                break;
+            case "short":
+                primitive = PrimitiveType.Primitive.SHORT;
+                break;
+            case "int":
+                primitive = PrimitiveType.Primitive.INT;
+                break;
+            case "long":
+                primitive = PrimitiveType.Primitive.LONG;
+                break;
+            case "char":
+                primitive = PrimitiveType.Primitive.CHAR;
+                break;
+            case "float":
+                primitive = PrimitiveType.Primitive.FLOAT;
+                break;
+            case "double":
+                primitive = PrimitiveType.Primitive.DOUBLE;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown primitive type: " + typeName);
+        }
+        
+        PrimitiveType primitiveType = new PrimitiveType(primitive);
+        primitiveType.setTokenRange(createTokenRange(ctx));
+        return primitiveType;
+    }
+
+    @Override
     public Node visitSquareBracketExpression(Mvel3Parser.SquareBracketExpressionContext ctx) {
         // Handle array/list access: expression[index]
         Expression array = (Expression) visit(ctx.expression(0));
@@ -386,8 +434,76 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.blockLabel != null) {
             // Handle block statement
             return visit(ctx.blockLabel);
+        } else if (ctx.IF() != null) {
+            // Handle if statement: IF parExpression statement (ELSE statement)?
+            Expression condition = (Expression) visit(ctx.parExpression().expression());
+            Statement thenStmt = (Statement) visit(ctx.statement(0));
+            
+            IfStmt ifStmt = new IfStmt(condition, thenStmt, null);
+            ifStmt.setTokenRange(createTokenRange(ctx));
+            
+            // Handle else clause if present
+            if (ctx.ELSE() != null && ctx.statement().size() > 1) {
+                Statement elseStmt = (Statement) visit(ctx.statement(1));
+                ifStmt.setElseStmt(elseStmt);
+            }
+            
+            return ifStmt;
+        } else if (ctx.WHILE() != null) {
+            // Handle while statement: WHILE parExpression statement
+            Expression condition = (Expression) visit(ctx.parExpression().expression());
+            Statement body = (Statement) visit(ctx.statement(0));
+            
+            WhileStmt whileStmt = new WhileStmt(condition, body);
+            whileStmt.setTokenRange(createTokenRange(ctx));
+            return whileStmt;
+        } else if (ctx.FOR() != null) {
+            // Handle for statement: FOR '(' forControl ')' statement
+            Statement body = (Statement) visit(ctx.statement(0));
+            ForStmt forStmt = new ForStmt();
+            forStmt.setBody(body);
+            
+            // Parse forControl if available
+            if (ctx.forControl() != null) {
+                visitForControlAndPopulate(ctx.forControl(), forStmt);
+            }
+            
+            forStmt.setTokenRange(createTokenRange(ctx));
+            return forStmt;
+        } else if (ctx.SWITCH() != null) {
+            // Handle switch statement: SWITCH parExpression '{' switchBlockStatementGroup* switchLabel* '}'
+            Expression selector = (Expression) visit(ctx.parExpression().expression());
+            
+            SwitchStmt switchStmt = new SwitchStmt();
+            switchStmt.setSelector(selector);
+            switchStmt.setTokenRange(createTokenRange(ctx));
+            
+            NodeList<SwitchEntry> entries = new NodeList<>();
+            
+            // Process switchBlockStatementGroups
+            if (ctx.switchBlockStatementGroup() != null) {
+                for (Mvel3Parser.SwitchBlockStatementGroupContext groupCtx : ctx.switchBlockStatementGroup()) {
+                    SwitchEntry entry = processSwitchBlockStatementGroup(groupCtx);
+                    if (entry != null) {
+                        entries.add(entry);
+                    }
+                }
+            }
+            
+            // Process standalone switchLabels (if any)
+            if (ctx.switchLabel() != null) {
+                for (Mvel3Parser.SwitchLabelContext labelCtx : ctx.switchLabel()) {
+                    SwitchEntry entry = processSwitchLabel(labelCtx);
+                    if (entry != null) {
+                        entries.add(entry);
+                    }
+                }
+            }
+            
+            switchStmt.setEntries(entries);
+            return switchStmt;
         }
-        // TODO: Handle other statement types as needed
+        // TODO: Handle other statement types as needed (TRY, etc.)
         // For now, fall back to default behavior
         return visitChildren(ctx);
     }
@@ -481,5 +597,155 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
         return args;
+    }
+
+    @Override
+    public Node visitPostIncrementDecrementOperatorExpression(Mvel3Parser.PostIncrementDecrementOperatorExpressionContext ctx) {
+        // Handle post-increment and post-decrement: expression++ or expression--
+        Expression operand = (Expression) visit(ctx.expression());
+        String operator = ctx.postfix.getText();
+        
+        UnaryExpr.Operator unaryOp;
+        if ("++".equals(operator)) {
+            unaryOp = UnaryExpr.Operator.POSTFIX_INCREMENT;
+        } else if ("--".equals(operator)) {
+            unaryOp = UnaryExpr.Operator.POSTFIX_DECREMENT;
+        } else {
+            throw new IllegalArgumentException("Unknown post-increment/decrement operator: " + operator);
+        }
+        
+        UnaryExpr unaryExpr = new UnaryExpr(operand, unaryOp);
+        unaryExpr.setTokenRange(createTokenRange(ctx));
+        return unaryExpr;
+    }
+
+    // Handle constant expressions by visiting the contained expression
+    private Node visitConstantExpr(ExpressionContext ctx) {
+        return visit(ctx);
+    }
+
+    private void visitForControlAndPopulate(Mvel3Parser.ForControlContext forControlCtx, ForStmt forStmt) {
+        // FOR control can be: forInit? ';' expression? ';' forUpdate?
+        // Or enhanced for: variableDeclarator ':' expression
+        
+        // Check if it's an enhanced for (for-each) loop
+        if (forControlCtx.enhancedForControl() != null) {
+            // Enhanced for: for (Type var : iterable)
+            // TODO: Implement enhanced for loop parsing if needed
+            return;
+        }
+        
+        // Regular for loop: for (init; condition; update)
+        NodeList<Expression> initialization = new NodeList<>();
+        Expression compare = null;
+        NodeList<Expression> update = new NodeList<>();
+        
+        // Parse forInit
+        if (forControlCtx.forInit() != null) {
+            // forInit can be localVariableDeclaration or expressionList
+            if (forControlCtx.forInit().localVariableDeclaration() != null) {
+                // Variable declaration like: int i = 0
+                VariableDeclarationExpr varDecl = (VariableDeclarationExpr) visit(forControlCtx.forInit().localVariableDeclaration());
+                if (varDecl != null) {
+                    initialization.add(varDecl);
+                }
+            } else if (forControlCtx.forInit().expressionList() != null) {
+                // Expression list like: i = 0, j = 1
+                for (Mvel3Parser.ExpressionContext exprCtx : forControlCtx.forInit().expressionList().expression()) {
+                    Expression expr = (Expression) visit(exprCtx);
+                    if (expr != null) {
+                        initialization.add(expr);
+                    }
+                }
+            }
+        }
+        
+        // Parse condition
+        if (forControlCtx.expression() != null) {
+            compare = (Expression) visit(forControlCtx.expression());
+        }
+        
+        // Parse forUpdate
+        if (forControlCtx.forUpdate != null) {
+            for (Mvel3Parser.ExpressionContext exprCtx : forControlCtx.forUpdate.expression()) {
+                Expression expr = (Expression) visit(exprCtx);
+                if (expr != null) {
+                    update.add(expr);
+                }
+            }
+        }
+        
+        // Set the for loop components - only set non-empty lists
+        if (!initialization.isEmpty()) {
+            forStmt.setInitialization(initialization);
+        }
+        if (compare != null) {
+            forStmt.setCompare(compare);
+        }
+        if (!update.isEmpty()) {
+            forStmt.setUpdate(update);
+        }
+    }
+
+    private SwitchEntry processSwitchBlockStatementGroup(Mvel3Parser.SwitchBlockStatementGroupContext groupCtx) {
+        // switchBlockStatementGroup: switchLabel+ blockStatement*
+        if (groupCtx.switchLabel() == null || groupCtx.switchLabel().isEmpty()) {
+            return null;
+        }
+
+        // Process the first switch label
+        Mvel3Parser.SwitchLabelContext firstLabel = groupCtx.switchLabel(0);
+        SwitchEntry entry = processSwitchLabel(firstLabel);
+        
+        if (entry != null) {
+            // Process statements in this switch block
+            NodeList<Statement> statements = new NodeList<>();
+            if (groupCtx.blockStatement() != null) {
+                for (Mvel3Parser.BlockStatementContext blockStmtCtx : groupCtx.blockStatement()) {
+                    Node stmt = visit(blockStmtCtx);
+                    if (stmt instanceof Statement) {
+                        statements.add((Statement) stmt);
+                    }
+                }
+            }
+            entry.setStatements(statements);
+        }
+        
+        return entry;
+    }
+
+    private SwitchEntry processSwitchLabel(Mvel3Parser.SwitchLabelContext labelCtx) {
+        // switchLabel: CASE (constantExpression | enumConstantName | typeType varName=IDENTIFIER) ':'
+        //            | DEFAULT ':'
+        
+        if (labelCtx.CASE() != null) {
+            // Case label
+            NodeList<Expression> labels = new NodeList<>();
+            
+            if (labelCtx.constantExpression != null) {
+                // case constantExpression:
+                Expression caseExpr = (Expression) visitConstantExpr(labelCtx.constantExpression);
+                if (caseExpr != null) {
+                    labels.add(caseExpr);
+                }
+            } else if (labelCtx.enumConstantName != null) {
+                // case enumConstantName:
+                String enumName = labelCtx.enumConstantName.getText();
+                labels.add(new NameExpr(enumName));
+            }
+            // TODO: Handle typeType varName case if needed
+            
+            SwitchEntry entry = new SwitchEntry(labels, SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
+            entry.setTokenRange(createTokenRange(labelCtx));
+            return entry;
+            
+        } else if (labelCtx.DEFAULT() != null) {
+            // Default label
+            SwitchEntry entry = new SwitchEntry(new NodeList<>(), SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
+            entry.setTokenRange(createTokenRange(labelCtx));
+            return entry;
+        }
+        
+        return null;
     }
 }
