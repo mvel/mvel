@@ -19,6 +19,9 @@ package org.mvel3.parser.antlr4;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.JavaToken;
 import com.github.javaparser.Position;
+import com.github.javaparser.Range;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -40,6 +43,57 @@ import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
  * This implementation can return various types of nodes (Expression, Type, etc.).
  */
 public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
+    
+    /**
+     * Create a JavaParser TokenRange from ANTLR ParserRuleContext.
+     * This provides proper source location information instead of using TokenRange.INVALID.
+     */
+    private TokenRange createTokenRange(ParserRuleContext ctx) {
+        if (ctx == null) {
+            return TokenRange.INVALID;
+        }
+        
+        Token startToken = ctx.getStart();
+        Token stopToken = ctx.getStop();
+        
+        if (startToken == null || stopToken == null) {
+            return TokenRange.INVALID;
+        }
+        
+        // Create JavaParser positions
+        Position startPos = new Position(startToken.getLine(), startToken.getCharPositionInLine() + 1);
+        Position stopPos = new Position(stopToken.getLine(), stopToken.getCharPositionInLine() + stopToken.getText().length());
+        
+        // Create JavaParser Range
+        Range range = new Range(startPos, stopPos);
+        
+        // Create JavaParser JavaTokens (simplified - we use token type 0 and the actual text)
+        JavaToken startJavaToken = new JavaToken(0, startToken.getText());
+        startJavaToken.setRange(range);
+        
+        JavaToken stopJavaToken = new JavaToken(0, stopToken.getText());
+        stopJavaToken.setRange(range);
+        
+        return new TokenRange(startJavaToken, stopJavaToken);
+    }
+    
+    /**
+     * Create a TokenRange from a single ANTLR token (for terminal nodes).
+     */
+    private TokenRange createTokenRange(Token token) {
+        if (token == null) {
+            return TokenRange.INVALID;
+        }
+        
+        Position startPos = new Position(token.getLine(), token.getCharPositionInLine() + 1);
+        Position stopPos = new Position(token.getLine(), token.getCharPositionInLine() + token.getText().length());
+        Range range = new Range(startPos, stopPos);
+        
+        JavaToken javaToken = new JavaToken(0, token.getText());
+        javaToken.setRange(range);
+        
+        return new TokenRange(javaToken, javaToken);
+    }
 
     @Override
     public Node visitMvelStart(Mvel3Parser.MvelStartContext ctx) {
@@ -60,12 +114,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Handle assignment operators separately
         if ("=".equals(operatorText)) {
-            return new AssignExpr(TokenRange.INVALID, left, right, AssignExpr.Operator.ASSIGN);
+            return new AssignExpr(createTokenRange(ctx), left, right, AssignExpr.Operator.ASSIGN);
         }
         
         // Handle other binary operators
         BinaryExpr.Operator operator = getBinaryExprOperator(operatorText);
-        return new BinaryExpr(left, right, operator);
+        return new BinaryExpr(createTokenRange(ctx), left, right, operator);
     }
 
     @Override
@@ -76,7 +130,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.identifier() != null) {
             // Simple field access: expression.identifier
             String fieldName = ctx.identifier().getText();
-            return new FieldAccessExpr(scope, fieldName);
+            FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
+            fieldAccess.setTokenRange(createTokenRange(ctx));
+            return fieldAccess;
         } else if (ctx.methodCall() != null) {
             // Method call: expression.methodCall()
             String methodName = ctx.methodCall().identifier().getText();
@@ -84,10 +140,13 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             
             MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
             methodCall.setArguments(args);
+            methodCall.setTokenRange(createTokenRange(ctx));
             return methodCall;
         } else if (ctx.THIS() != null) {
             // expression.this
-            return new FieldAccessExpr(scope, "this");
+            FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, "this");
+            fieldAccess.setTokenRange(createTokenRange(ctx));
+            return fieldAccess;
         } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
             // expression.super.something
             // TODO: Implement super handling
@@ -111,12 +170,18 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.literal() != null) {
             return visit(ctx.literal());
         } else if (ctx.identifier() != null) {
-            return new NameExpr(TokenRange.INVALID, new SimpleName(ctx.identifier().getText()));
+            NameExpr nameExpr = new NameExpr(ctx.identifier().getText());
+            nameExpr.setTokenRange(createTokenRange(ctx));
+            return nameExpr;
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
             // Parenthesized expression
-            return new EnclosedExpr((Expression) visit(ctx.expression()));
+            EnclosedExpr enclosedExpr = new EnclosedExpr((Expression) visit(ctx.expression()));
+            enclosedExpr.setTokenRange(createTokenRange(ctx));
+            return enclosedExpr;
         } else if (ctx.THIS() != null) {
-            return new ThisExpr();
+            ThisExpr thisExpr = new ThisExpr();
+            thisExpr.setTokenRange(createTokenRange(ctx));
+            return thisExpr;
         }
         
         // Handle other primary cases that might be needed
@@ -134,6 +199,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         Expression expr = (Expression) visit(ctx.primary());
         Type type = (Type) visit(ctx.typeType());
         CastExpr castExpr = new CastExpr(type, expr);
+        castExpr.setTokenRange(createTokenRange(ctx));
         
         // Check what comes after the cast
         if (ctx.identifier() != null) {
@@ -141,19 +207,23 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (ctx.arguments() != null) {
                 // Method call with arguments
                 MethodCallExpr methodCall = new MethodCallExpr(castExpr, methodName);
+                methodCall.setTokenRange(createTokenRange(ctx));
                 // Parse arguments if they exist
                 NodeList<Expression> args = parseArguments(ctx.arguments());
                 methodCall.setArguments(args);
                 return methodCall;
             } else {
                 // Field access
-                return new FieldAccessExpr(castExpr, methodName);
+                FieldAccessExpr fieldAccess = new FieldAccessExpr(castExpr, methodName);
+                fieldAccess.setTokenRange(createTokenRange(ctx));
+                return fieldAccess;
             }
         } else if (ctx.LBRACK() != null && ctx.expression() != null && ctx.RBRACK() != null) {
             // Array access: primary#Type#[expression]
             // Convert to method call: ((Type)primary).get(expression)
             Expression indexExpr = (Expression) visit(ctx.expression());
             MethodCallExpr methodCall = new MethodCallExpr(castExpr, "get");
+            methodCall.setTokenRange(createTokenRange(ctx));
             methodCall.addArgument(indexExpr);
             return methodCall;
         }
@@ -167,30 +237,42 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             String text = ctx.STRING_LITERAL().getText();
             // Remove quotes
             String value = text.substring(1, text.length() - 1);
-            return new StringLiteralExpr(value);
+            StringLiteralExpr stringLiteral = new StringLiteralExpr(value);
+            stringLiteral.setTokenRange(createTokenRange(ctx));
+            return stringLiteral;
         } else if (ctx.DECIMAL_LITERAL() != null) {
-            return new IntegerLiteralExpr(ctx.DECIMAL_LITERAL().getText());
+            IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(ctx.DECIMAL_LITERAL().getText());
+            integerLiteral.setTokenRange(createTokenRange(ctx));
+            return integerLiteral;
         } else if (ctx.FLOAT_LITERAL() != null) {
-            return new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
+            DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
+            doubleLiteral.setTokenRange(createTokenRange(ctx));
+            return doubleLiteral;
         } else if (ctx.BOOL_LITERAL() != null) {
-            return new BooleanLiteralExpr(Boolean.parseBoolean(ctx.BOOL_LITERAL().getText()));
+            BooleanLiteralExpr booleanLiteral = new BooleanLiteralExpr(Boolean.parseBoolean(ctx.BOOL_LITERAL().getText()));
+            booleanLiteral.setTokenRange(createTokenRange(ctx));
+            return booleanLiteral;
         } else if (ctx.NULL_LITERAL() != null) {
-            return new NullLiteralExpr();
+            NullLiteralExpr nullLiteral = new NullLiteralExpr();
+            nullLiteral.setTokenRange(createTokenRange(ctx));
+            return nullLiteral;
         } else if (ctx.CHAR_LITERAL() != null) {
             String text = ctx.CHAR_LITERAL().getText();
             char value = text.charAt(1); // Simple case, more complex handling needed for escape sequences
-            return new CharLiteralExpr(value);
+            CharLiteralExpr charLiteral = new CharLiteralExpr(value);
+            charLiteral.setTokenRange(createTokenRange(ctx));
+            return charLiteral;
         }
         
         // Handle MVEL-specific literals - create proper AST nodes like mvel.jj does
         if (ctx.BigDecimalLiteral() != null) {
             String text = ctx.BigDecimalLiteral().getText();
             // Create BigDecimalLiteralExpr node (transformation happens in MVELToJavaRewriter)
-            return new BigDecimalLiteralExpr(TokenRange.INVALID, text);
+            return new BigDecimalLiteralExpr(createTokenRange(ctx), text);
         } else if (ctx.BigIntegerLiteral() != null) {
             String text = ctx.BigIntegerLiteral().getText();
             // Create BigIntegerLiteralExpr node (transformation happens in MVELToJavaRewriter)
-            return new BigIntegerLiteralExpr(TokenRange.INVALID, text);
+            return new BigIntegerLiteralExpr(createTokenRange(ctx), text);
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
@@ -206,7 +288,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
             for (int i = 0; i < ctx.identifier().size(); i++) {
                 String name = ctx.identifier(i).getText();
-                type = new ClassOrInterfaceType(type, name);
+                ClassOrInterfaceType newType = new ClassOrInterfaceType(type, name);
+                newType.setTokenRange(createTokenRange(ctx));
+                type = newType;
                 // TODO: Handle typeArguments if present
             }
         }
@@ -214,7 +298,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Handle the required typeIdentifier at the end
         if (ctx.typeIdentifier() != null) {
             String typeName = ctx.typeIdentifier().getText();
-            type = new ClassOrInterfaceType(type, typeName);
+            ClassOrInterfaceType newType = new ClassOrInterfaceType(type, typeName);
+            newType.setTokenRange(createTokenRange(ctx));
+            type = newType;
             // TODO: Handle final typeArguments if present
         } else {
             throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
@@ -245,6 +331,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Convert to method call .get(index) for List access
         // In MVEL, array access is converted to appropriate method calls
         MethodCallExpr methodCall = new MethodCallExpr(array, "get");
+        methodCall.setTokenRange(createTokenRange(ctx));
         methodCall.addArgument(index);
         return methodCall;
     }
@@ -252,6 +339,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitBlock(Mvel3Parser.BlockContext ctx) {
         BlockStmt blockStmt = new BlockStmt();
+        blockStmt.setTokenRange(createTokenRange(ctx));
         NodeList<Statement> statements = new NodeList<>();
         
         if (ctx.blockStatement() != null) {
@@ -272,7 +360,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.localVariableDeclaration() != null) {
             // Handle local variable declaration
             VariableDeclarationExpr varDecl = (VariableDeclarationExpr) visit(ctx.localVariableDeclaration());
-            return new ExpressionStmt(varDecl);
+            ExpressionStmt exprStmt = new ExpressionStmt(varDecl);
+            exprStmt.setTokenRange(createTokenRange(ctx));
+            return exprStmt;
         } else if (ctx.statement() != null) {
             return visit(ctx.statement());
         } else if (ctx.localTypeDeclaration() != null) {
@@ -290,7 +380,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.statementExpression != null) {
             // Handle expression statement: expression ';'
             Expression expr = (Expression) visit(ctx.statementExpression);
-            return new ExpressionStmt(expr);
+            ExpressionStmt exprStmt = new ExpressionStmt(expr);
+            exprStmt.setTokenRange(createTokenRange(ctx));
+            return exprStmt;
         } else if (ctx.blockLabel != null) {
             // Handle block statement
             return visit(ctx.blockLabel);
@@ -304,7 +396,8 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     public Node visitModifyStatement(Mvel3Parser.ModifyStatementContext ctx) {
         // modify ( identifier ) { statement* }
         String targetName = ctx.identifier().getText();
-        NameExpr target = new NameExpr(TokenRange.INVALID, new SimpleName(targetName));
+        NameExpr target = new NameExpr(targetName);
+        target.setTokenRange(createTokenRange(ctx));
 
         // Create a NodeList for the statements  
         NodeList<Statement> statements = new NodeList<>();
@@ -316,9 +409,8 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             statements.add(stmt);
         }
         
-        // Create and return a ModifyStatement
-        // Create a dummy TokenRange to avoid NPE in MVELToJavaRewriter
-        return new ModifyStatement(TokenRange.INVALID, target, statements);
+        // Create and return a ModifyStatement with proper TokenRange
+        return new ModifyStatement(createTokenRange(ctx), target, statements);
     }
 
     @Override
@@ -331,6 +423,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.VAR() != null) {
             // Handle: var x = expression;
             varType = new VarType();
+            varType.setTokenRange(createTokenRange(ctx));
             varName = ctx.identifier().getText();
         } else if (ctx.typeType() != null && ctx.variableDeclarators() != null) {
             // Handle: Type name = expression;
@@ -344,6 +437,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Create variable declarator
         VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
+        varDeclarator.setTokenRange(createTokenRange(ctx));
         
         // Check if there's an initializer
         if (ctx.ASSIGN() != null && ctx.expression() != null) {
@@ -360,6 +454,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Create the variable declaration expression
         VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
+        varDecl.setTokenRange(createTokenRange(ctx));
         return varDecl;
     }
 
@@ -371,6 +466,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // For method calls in member reference, we need the scope from the parent context
         // This will be handled by visitMemberReferenceExpression
         MethodCallExpr methodCall = new MethodCallExpr(null, methodName);
+        methodCall.setTokenRange(createTokenRange(ctx));
         methodCall.setArguments(args);
         return methodCall;
     }
