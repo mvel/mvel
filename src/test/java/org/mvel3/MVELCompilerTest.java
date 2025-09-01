@@ -3,6 +3,7 @@ package org.mvel3;
 import org.junit.Test;
 import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
 import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
+import org.mvel3.parser.MvelParser;
 import org.mvel3.transpiler.context.Declaration;
 
 import java.util.ArrayList;
@@ -16,6 +17,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MVELCompilerTest {
+
+    static {
+        MvelParser.Factory.USE_ANTLR = false;
+    }
 
     public static class ContextCamelCase {
         private Foo foo;

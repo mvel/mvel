@@ -27,6 +27,7 @@ import org.mvel3.EvaluatorBuilder;
 import org.mvel3.MVELTranspilerTest;
 import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
+import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.printer.CoerceRewriter;
 
 import static org.assertj.core.api.Assertions.assertThat;

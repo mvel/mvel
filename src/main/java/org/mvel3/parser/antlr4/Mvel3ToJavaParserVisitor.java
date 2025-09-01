@@ -27,6 +27,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -293,13 +294,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         ClassOrInterfaceType type = null;
         
         // Handle the optional qualified prefix (identifier typeArguments? '.')*
+        // For now, we skip typeArguments in the prefix (rare case)
         if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
             for (int i = 0; i < ctx.identifier().size(); i++) {
                 String name = ctx.identifier(i).getText();
                 ClassOrInterfaceType newType = new ClassOrInterfaceType(type, name);
                 newType.setTokenRange(createTokenRange(ctx));
                 type = newType;
-                // TODO: Handle typeArguments if present
+                // TODO: Handle typeArguments for intermediate identifiers if needed (rare case)
             }
         }
         
@@ -309,7 +311,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             ClassOrInterfaceType newType = new ClassOrInterfaceType(type, typeName);
             newType.setTokenRange(createTokenRange(ctx));
             type = newType;
-            // TODO: Handle final typeArguments if present
+            
+            // Handle final typeArguments if present (the common case for generics like List<Foo>)
+            if (ctx.typeArguments() != null && !ctx.typeArguments().isEmpty()) {
+                // Get the LAST typeArguments (which should be for the typeIdentifier)
+                Mvel3Parser.TypeArgumentsContext lastTypeArgs = ctx.typeArguments(ctx.typeArguments().size() - 1);
+                NodeList<com.github.javaparser.ast.type.Type> typeArgs = new NodeList<>();
+                
+                for (Mvel3Parser.TypeArgumentContext typeArgCtx : lastTypeArgs.typeArgument()) {
+                    com.github.javaparser.ast.type.Type typeArg = (com.github.javaparser.ast.type.Type) visit(typeArgCtx);
+                    if (typeArg != null) {
+                        typeArgs.add(typeArg);
+                    }
+                }
+                
+                if (!typeArgs.isEmpty()) {
+                    newType.setTypeArguments(typeArgs);
+                }
+            }
         } else {
             throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
         }
@@ -373,15 +392,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitSquareBracketExpression(Mvel3Parser.SquareBracketExpressionContext ctx) {
         // Handle array/list access: expression[index]
-        Expression array = (Expression) visit(ctx.expression(0));
-        Expression index = (Expression) visit(ctx.expression(1));
+        Expression array = (Expression) visit(ctx.expression(0)); // The array/list expression
+        Expression index = (Expression) visit(ctx.expression(1)); // The index expression
         
-        // Convert to method call .get(index) for List access
-        // In MVEL, array access is converted to appropriate method calls
-        MethodCallExpr methodCall = new MethodCallExpr(array, "get");
-        methodCall.setTokenRange(createTokenRange(ctx));
-        methodCall.addArgument(index);
-        return methodCall;
+        // Create ArrayAccessExpr like mvel.jj does
+        // The transformation to .get() method calls is handled by MVELToJavaRewriter
+        ArrayAccessExpr arrayAccess = new ArrayAccessExpr(array, index);
+        arrayAccess.setTokenRange(createTokenRange(ctx));
+        return arrayAccess;
     }
 
     @Override
@@ -747,5 +765,22 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    @Override
+    public Node visitTypeArguments(Mvel3Parser.TypeArgumentsContext ctx) {
+        // This is handled by visitClassOrInterfaceType
+        // Just return the result of visiting the type arguments
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Node visitTypeArgument(Mvel3Parser.TypeArgumentContext ctx) {
+        // Handle individual type argument like "Foo" in List<Foo>
+        if (ctx.typeType() != null) {
+            return visit(ctx.typeType());
+        }
+        // Handle wildcards like "? extends Foo" if needed in the future
+        return visitChildren(ctx);
     }
 }

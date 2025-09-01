@@ -112,6 +112,23 @@ public class MVELTranspiler {
             }
         }
 
+        // === Use this for parseExpression only ===
+//        Expression expr;
+//        try {
+//            expr = handleParserResult(context.getParser().parseExpression(content));
+//        } catch (RuntimeException eParseExpression) {
+//            throw eParseExpression;
+//        }
+//        if (context.getEvaluatorInfo().outType().isVoid()) {
+//            ExpressionStmt exprStmt = new ExpressionStmt(expr);
+//            blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
+//        } else {
+//            ReturnStmt returnStmt = new ReturnStmt(expr);
+//            blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
+//        }
+
+        logger.debug("Initial parsed block:\n{}", blockStmt.toString());
+
         VariableAnalyser analyser = new VariableAnalyser(context.getEvaluatorInfo().allVars().keySet());
         blockStmt.accept(analyser, null);
 
@@ -166,6 +183,8 @@ public class MVELTranspiler {
         } else {
             method.setBody(blockStmt);
         }
+
+        logger.debug("CompilationUnit before rewriting:\n{}", unit.toString());
 
         context.getSymbolResolver().inject(unit);
 
