@@ -250,7 +250,7 @@ public class Antlr4MVELCompilerTest {
     @Test
     public void testListEvaluator() {
         Declaration[] declrs = new Declaration[] {new Declaration("foo", Foo.class),
-                new Declaration("bar", Bar.class)};
+                                                 new Declaration("bar", Bar.class)};
 
         Foo foo = new Foo();
         foo.setName("xxx");
@@ -286,10 +286,10 @@ public class Antlr4MVELCompilerTest {
     @Test
     public void testListEvaluatorReturns() {
         Declaration[] types = new Declaration[] {
-                new Declaration("a", int.class),
-                new Declaration("b", int.class),
-                new Declaration("c", int.class),
-                new Declaration("d", int.class)
+            new Declaration("a", int.class),
+            new Declaration("b", int.class),
+            new Declaration("c", int.class),
+            new Declaration("d", int.class)
         };
 
         List<Object> vars = Arrays.asList(1, 2, 3, -1);
@@ -333,22 +333,22 @@ public class Antlr4MVELCompilerTest {
 
     @Test
     public void testPojoEvalutorInputs() {
-        MVELCompilerTest.ContextWithInts context = new MVELCompilerTest.ContextWithInts();
+        ContextWithInts context = new ContextWithInts();
         context.setA(1);
         context.setB(1);
 
-        EvaluatorInfo<MVELCompilerTest.ContextWithInts, Void, Integer> evalInfo = EvaluatorBuilder
-                .create()
-                .setImports(getImports()).setClassManager(new ClassManager())
-                .setExpression("a = 4; b = 5; int c = 6; int d = a + b + c; return d;")
-                .setVariableInfo(ContextInfoBuilder.create(Type.type(MVELCompilerTest.ContextWithInts.class))
-                                         .setVars(Declaration.of("a", int.class),
-                                                  Declaration.of("b", int.class)))
-                .setOutType(Type.type(Integer.class))
-                .build();
+        EvaluatorInfo<ContextWithInts, Void, Integer> evalInfo = EvaluatorBuilder
+                                                                         .create()
+                                                                         .setImports(getImports()).setClassManager(new ClassManager())
+                                                                         .setExpression("a = 4; b = 5; int c = 6; int d = a + b + c; return d;")
+                                                                         .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextWithInts.class))
+                                                                                                            .setVars(Declaration.of("a", int.class),
+                                                                                                                     Declaration.of("b", int.class)))
+                                                                         .setOutType(Type.type(Integer.class))
+                                                                         .build();
 
         MVEL mvel = new MVEL();
-        Evaluator<MVELCompilerTest.ContextWithInts, Void, Integer> evaluator = mvel.compilePojoEvaluator(evalInfo);
+        Evaluator<ContextWithInts, Void, Integer> evaluator = mvel.compilePojoEvaluator(evalInfo);
         assertThat(evaluator.eval(context)).isEqualTo(15);
 
         assertThat(context.getA()).isEqualTo(4);
@@ -363,14 +363,14 @@ public class Antlr4MVELCompilerTest {
         Bar bar = new Bar();
         bar.setName("yyy");
 
-        EvaluatorInfo<MVELCompilerTest.ContextCamelCase, Void, String> evalInfo = EvaluatorBuilder
+        EvaluatorInfo<ContextCamelCase, Void, String> evalInfo = EvaluatorBuilder
                 .create()
                 .setClassManager(new ClassManager())
                 .setImports(getImports())
                 .setExpression("{ return foo.getName() + bar.getName(); }")
-                .setVariableInfo(ContextInfoBuilder.create(Type.type(MVELCompilerTest.ContextCamelCase.class))
-                                         .setVars(Declaration.of("foo", Foo.class),
-                                                  Declaration.of("bar", Bar.class)))
+                .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextCamelCase.class))
+                                                   .setVars(Declaration.of("foo", Foo.class),
+                                                            Declaration.of("bar", Bar.class)))
                 .setOutType(Type.type(String.class))
                 .build();
 
@@ -378,9 +378,9 @@ public class Antlr4MVELCompilerTest {
 //        PojoEvaluator<ContextCamelCase, String> evaluator = mvel.compilePojoEvaluator(evalValues);
 
         MVEL mvel = new MVEL();
-        Evaluator<MVELCompilerTest.ContextCamelCase, Void, String> evaluator = mvel.compile(evalInfo);
+        Evaluator<ContextCamelCase, Void, String> evaluator = mvel.compile(evalInfo);
 
-        MVELCompilerTest.ContextCamelCase context = new MVELCompilerTest.ContextCamelCase(foo, bar);
+        ContextCamelCase context = new ContextCamelCase(foo, bar);
         assertThat(evaluator.eval(context)).isEqualTo("xxxyyy");
     }
 
@@ -392,18 +392,18 @@ public class Antlr4MVELCompilerTest {
         Bar bar = new Bar();
         bar.setName("yyy");
 
-        EvaluatorInfo<MVELCompilerTest.ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
-                .setExpression("{ return foo.getName() + bar.getName(); }")
-                .setVariableInfo(ContextInfoBuilder.create(Type.type(MVELCompilerTest.ContextRecord.class))
-                                         .setVars(Declaration.of("foo", Foo.class),
-                                                  Declaration.of("bar", Bar.class)))
-                .setOutType(Type.type(String.class))
-                .build();
+        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
+                                                   .setExpression("{ return foo.getName() + bar.getName(); }")
+                                                   .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextRecord.class))
+                                                                                      .setVars(Declaration.of("foo", Foo.class),
+                                                                                               Declaration.of("bar", Bar.class)))
+                                                   .setOutType(Type.type(String.class))
+                                                   .build();
 
         MVEL mvel = new MVEL();
-        Evaluator<MVELCompilerTest.ContextRecord, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
+        Evaluator<ContextRecord, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
 
-        MVELCompilerTest.ContextRecord context = new MVELCompilerTest.ContextRecord(foo, bar);
+        ContextRecord context = new ContextRecord(foo, bar);
         assertThat(evaluator.eval(context)).isEqualTo("xxxyyy");
     }
 
@@ -415,17 +415,17 @@ public class Antlr4MVELCompilerTest {
         Foo foo2 = new Foo();
         foo2.setName("foo2");
 
-        EvaluatorInfo<MVELCompilerTest.ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
-                .setExpression("{ return foos[0].name + foos[1].name; }")
-                .setVariableInfo(ContextInfoBuilder.create(Type.type(MVELCompilerTest.ContextRecord.class))
-                                         .setVars(Declaration.of("foos", Type.type(List.class, "<" + Foo.class.getCanonicalName() + ">"))))
-                .setOutType(Type.type(String.class))
-                .build();
+        EvaluatorInfo<ContextRecord, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
+                                                                                .setExpression("{ return foos[0].name + foos[1].name; }")
+                                                                                .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextRecord.class))
+                                                                                                                   .setVars(Declaration.of("foos", Type.type(List.class, "<" + Foo.class.getCanonicalName() + ">"))))
+                                                                                .setOutType(Type.type(String.class))
+                                                                                .build();
 
         MVEL mvel = new MVEL();
-        Evaluator<MVELCompilerTest.ContextRecord, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
+        Evaluator<ContextRecord, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
 
-        MVELCompilerTest.ContextRecord context = new MVELCompilerTest.ContextRecord(null, null, foo1, foo2);
+        ContextRecord context = new ContextRecord(null, null, foo1, foo2);
         assertThat(evaluator.eval(context)).isEqualTo("foo1foo2");
     }
 
@@ -452,18 +452,18 @@ public class Antlr4MVELCompilerTest {
 //                                                                               .setOutType(Type.type(String.class))
 //                                                                               .build();
 
-        EvaluatorInfo<MVELCompilerTest.ContextMixed, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
-                .setExpression("{ return foo.getName() + bar.getName(); }")
-                .setVariableInfo(ContextInfoBuilder.create(Type.type(MVELCompilerTest.ContextMixed.class))
-                                         .setVars(Declaration.of("foo", Foo.class),
-                                                  Declaration.of("bar", Bar.class)))
-                .setOutType(Type.type(String.class))
-                .build();
+        EvaluatorInfo<ContextMixed, Void, String> evalValues = EvaluatorBuilder.create().setImports(getImports()).setClassManager(new ClassManager())
+                                                                               .setExpression("{ return foo.getName() + bar.getName(); }")
+                                                                               .setVariableInfo(ContextInfoBuilder.create(Type.type(ContextMixed.class))
+                                                                                                                  .setVars(Declaration.of("foo", Foo.class),
+                                                                                                                           Declaration.of("bar", Bar.class)))
+                                                                               .setOutType(Type.type(String.class))
+                                                                               .build();
 
         MVEL mvel = new MVEL();
-        Evaluator<MVELCompilerTest.ContextMixed, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
+        Evaluator<ContextMixed, Void, String> evaluator = mvel.compilePojoEvaluator(evalValues);
 
-        MVELCompilerTest.ContextMixed context = new MVELCompilerTest.ContextMixed(foo, bar);
+        ContextMixed context = new ContextMixed(foo, bar);
         assertThat(evaluator.eval(context)).isEqualTo("xxxyyy");
     }
 

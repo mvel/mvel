@@ -36,6 +36,7 @@ import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
@@ -520,8 +521,20 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             
             switchStmt.setEntries(entries);
             return switchStmt;
+        } else if (ctx.RETURN() != null) {
+            // Handle return statement: RETURN expression? ';'
+            ReturnStmt returnStmt;
+            // Get the first expression after RETURN (if any)
+            if (ctx.expression() != null && !ctx.expression().isEmpty()) {
+                Expression expr = (Expression) visit(ctx.expression(0));
+                returnStmt = new ReturnStmt(expr);
+            } else {
+                returnStmt = new ReturnStmt();
+            }
+            returnStmt.setTokenRange(createTokenRange(ctx));
+            return returnStmt;
         }
-        // TODO: Handle other statement types as needed (TRY, etc.)
+        // TODO: Handle other statement types as needed (TRY, THROW, BREAK, CONTINUE, etc.)
         // For now, fall back to default behavior
         return visitChildren(ctx);
     }
