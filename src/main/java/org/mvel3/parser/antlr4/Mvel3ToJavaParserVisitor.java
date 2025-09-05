@@ -33,6 +33,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.ArrayCreationLevel;
+import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -300,6 +301,13 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             CharLiteralExpr charLiteral = new CharLiteralExpr(value);
             charLiteral.setTokenRange(createTokenRange(ctx));
             return charLiteral;
+        } else if (ctx.TEXT_BLOCK() != null) {
+            String rawText = ctx.TEXT_BLOCK().getText();
+            // Extract content between triple quotes: """content"""
+            String content = rawText.substring(3, rawText.length() - 3);
+            TextBlockLiteralExpr textBlockLiteral = new TextBlockLiteralExpr(content);
+            textBlockLiteral.setTokenRange(createTokenRange(ctx));
+            return textBlockLiteral;
         }
         
         // Handle MVEL-specific literals - create proper AST nodes like mvel.jj does

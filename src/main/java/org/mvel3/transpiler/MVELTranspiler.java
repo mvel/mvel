@@ -127,7 +127,13 @@ public class MVELTranspiler {
 //            blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
 //        }
 
-        logger.debug("Initial parsed block:\n{}", blockStmt.toString());
+        // It's not right to use PrintUtil without a TypeSolver, but this is just to help debugging
+        try {
+            logger.debug("Initial parsed block:\n{}", PrintUtil.printNode(blockStmt));
+        } catch (Exception e) {
+            logger.debug("Error printing initial parsed block, but ignoring it, because this is just a debug log");
+            logger.trace("  stacktrace", e);
+        }
 
         VariableAnalyser analyser = new VariableAnalyser(context.getEvaluatorInfo().allVars().keySet());
         blockStmt.accept(analyser, null);
