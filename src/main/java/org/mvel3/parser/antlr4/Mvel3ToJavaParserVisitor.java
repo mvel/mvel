@@ -22,12 +22,17 @@ import com.github.javaparser.Position;
 import com.github.javaparser.Range;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -41,6 +46,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.PrimitiveType;
+import com.github.javaparser.ast.type.ArrayType;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
@@ -123,13 +129,35 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         String operatorText = ctx.bop.getText();
         
         // Handle assignment operators separately
-        if ("=".equals(operatorText)) {
-            return new AssignExpr(createTokenRange(ctx), left, right, AssignExpr.Operator.ASSIGN);
+        AssignExpr.Operator assignOp = getAssignOperator(operatorText);
+        if (assignOp != null) {
+            return new AssignExpr(createTokenRange(ctx), left, right, assignOp);
         }
         
         // Handle other binary operators
         BinaryExpr.Operator operator = getBinaryExprOperator(operatorText);
         return new BinaryExpr(createTokenRange(ctx), left, right, operator);
+    }
+    
+    /**
+     * Map operator text to AssignExpr.Operator, return null if not an assignment operator
+     */
+    private AssignExpr.Operator getAssignOperator(String operatorText) {
+        switch (operatorText) {
+            case "=": return AssignExpr.Operator.ASSIGN;
+            case "+=": return AssignExpr.Operator.PLUS;
+            case "-=": return AssignExpr.Operator.MINUS;
+            case "*=": return AssignExpr.Operator.MULTIPLY;
+            case "/=": return AssignExpr.Operator.DIVIDE;
+            case "&=": return AssignExpr.Operator.BINARY_AND;
+            case "|=": return AssignExpr.Operator.BINARY_OR;
+            case "^=": return AssignExpr.Operator.XOR;
+            case "%=": return AssignExpr.Operator.REMAINDER;
+            case "<<=": return AssignExpr.Operator.LEFT_SHIFT;
+            case ">>=": return AssignExpr.Operator.SIGNED_RIGHT_SHIFT;
+            case ">>>=": return AssignExpr.Operator.UNSIGNED_RIGHT_SHIFT;
+            default: return null;
+        }
     }
 
     @Override
@@ -339,15 +367,42 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeType(Mvel3Parser.TypeTypeContext ctx) {
+        Type baseType = null;
+        
         // Handle different type possibilities
         if (ctx.classOrInterfaceType() != null) {
-            return visit(ctx.classOrInterfaceType());
+            baseType = (Type) visit(ctx.classOrInterfaceType());
         } else if (ctx.primitiveType() != null) {
-            return visit(ctx.primitiveType());
+            baseType = (Type) visit(ctx.primitiveType());
         }
         
-        // Fall back to default behavior
-        return visitChildren(ctx);
+        if (baseType == null) {
+            // Fall back to default behavior
+            return visitChildren(ctx);
+        }
+        
+        // Handle array dimensions: (annotation* '[' ']')*
+        // Count the number of '[' ']' pairs to determine array dimensions
+        int arrayDimensions = 0;
+        if (ctx.children != null) {
+            for (ParseTree child : ctx.children) {
+                if (child instanceof TerminalNode && "[".equals(child.getText())) {
+                    arrayDimensions++;
+                }
+            }
+        }
+        
+        // Wrap base type in ArrayType for each dimension
+        Type resultType = baseType;
+        for (int i = 0; i < arrayDimensions; i++) {
+            resultType = new ArrayType(resultType);
+        }
+        
+        if (resultType instanceof ArrayType) {
+            resultType.setTokenRange(createTokenRange(ctx));
+        }
+        
+        return resultType;
     }
 
     @Override
@@ -564,45 +619,170 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     public Node visitLocalVariableDeclaration(Mvel3Parser.LocalVariableDeclarationContext ctx) {
         // Handle both: var x = expression; and Type name = expression;
         
-        Type varType;
-        String varName;
-        
         if (ctx.VAR() != null) {
             // Handle: var x = expression;
-            varType = new VarType();
+            Type varType = new VarType();
             varType.setTokenRange(createTokenRange(ctx));
-            varName = ctx.identifier().getText();
+            String varName = ctx.identifier().getText();
+            
+            VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
+            varDeclarator.setTokenRange(createTokenRange(ctx));
+            
+            // Handle initializer for var declaration
+            if (ctx.expression() != null) {
+                Expression initializer = (Expression) visit(ctx.expression());
+                varDeclarator.setInitializer(initializer);
+            }
+            
+            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
+            varDecl.setTokenRange(createTokenRange(ctx));
+            return varDecl;
         } else if (ctx.typeType() != null && ctx.variableDeclarators() != null) {
             // Handle: Type name = expression;
-            varType = (Type) visit(ctx.typeType());
-            // Get the first variable declarator name
-            Mvel3Parser.VariableDeclaratorContext firstDeclarator = ctx.variableDeclarators().variableDeclarator(0);
-            varName = firstDeclarator.variableDeclaratorId().identifier().getText();
+            Type varType = (Type) visit(ctx.typeType());
+            
+            // Create NodeList for multiple declarators (though we usually have just one)
+            NodeList<VariableDeclarator> declarators = new NodeList<>();
+            
+            for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
+                // Get variable name
+                String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
+                
+                // Create variable declarator
+                VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
+                varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
+                
+                // Handle initializer if present
+                if (declaratorCtx.variableInitializer() != null) {
+                    Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
+                    varDeclarator.setInitializer(initializer);
+                }
+                
+                declarators.add(varDeclarator);
+            }
+            
+            // Create the variable declaration expression with all declarators
+            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(declarators);
+            varDecl.setTokenRange(createTokenRange(ctx));
+            return varDecl;
         } else {
             throw new IllegalArgumentException("Unsupported local variable declaration: " + ctx.getText());
         }
+    }
+
+    @Override
+    public Node visitVariableInitializer(Mvel3Parser.VariableInitializerContext ctx) {
+        if (ctx.arrayInitializer() != null) {
+            return visit(ctx.arrayInitializer());
+        } else if (ctx.expression() != null) {
+            return visit(ctx.expression());
+        }
+        return null;
+    }
+
+    @Override
+    public Node visitArrayInitializer(Mvel3Parser.ArrayInitializerContext ctx) {
+        NodeList<Expression> values = new NodeList<>();
         
-        // Create variable declarator
-        VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
-        varDeclarator.setTokenRange(createTokenRange(ctx));
-        
-        // Check if there's an initializer
-        if (ctx.ASSIGN() != null && ctx.expression() != null) {
-            Expression initializer = (Expression) visit(ctx.expression());
-            varDeclarator.setInitializer(initializer);
-        } else if (ctx.variableDeclarators() != null) {
-            // Handle initializer from variableDeclarators
-            Mvel3Parser.VariableDeclaratorContext firstDeclarator = ctx.variableDeclarators().variableDeclarator(0);
-            if (firstDeclarator.variableInitializer() != null) {
-                Expression initializer = (Expression) visit(firstDeclarator.variableInitializer().expression());
-                varDeclarator.setInitializer(initializer);
+        if (ctx.variableInitializer() != null && !ctx.variableInitializer().isEmpty()) {
+            for (Mvel3Parser.VariableInitializerContext initCtx : ctx.variableInitializer()) {
+                Expression expr = (Expression) visit(initCtx);
+                if (expr != null) {
+                    values.add(expr);
+                }
             }
         }
         
-        // Create the variable declaration expression
-        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
-        varDecl.setTokenRange(createTokenRange(ctx));
-        return varDecl;
+        ArrayInitializerExpr arrayInit = new ArrayInitializerExpr(values);
+        arrayInit.setTokenRange(createTokenRange(ctx));
+        return arrayInit;
+    }
+
+    @Override
+    public Node visitObjectCreationExpression(Mvel3Parser.ObjectCreationExpressionContext ctx) {
+        return visit(ctx.creator());
+    }
+
+    @Override
+    public Node visitCreator(Mvel3Parser.CreatorContext ctx) {
+        Node createdName = visit(ctx.createdName());
+        
+        if (ctx.arrayCreatorRest() != null) {
+            // Handle array creation: new Type[] {...} or new Type[size]
+            return visitArrayCreatorRest(ctx.arrayCreatorRest(), createdName);
+        } else if (ctx.classCreatorRest() != null) {
+            // Handle class creation: new Type(args)
+            // TODO: Implement class creation if needed
+            throw new UnsupportedOperationException("Class creation not yet implemented: " + ctx.getText());
+        }
+        
+        return createdName;
+    }
+
+    private Node visitArrayCreatorRest(Mvel3Parser.ArrayCreatorRestContext ctx, Node createdName) {
+        Type elementType = (Type) createdName;
+        
+        if (ctx.arrayInitializer() != null) {
+            // Handle: new Type[] { ... }
+            ArrayInitializerExpr initializer = (ArrayInitializerExpr) visit(ctx.arrayInitializer());
+            
+            // Count the array dimensions from '[' ']' pairs
+            int dimensions = 0;
+            if (ctx.children != null) {
+                for (ParseTree child : ctx.children) {
+                    if (child instanceof TerminalNode && "[".equals(child.getText())) {
+                        dimensions++;
+                    }
+                }
+            }
+            
+            // Create ArrayCreationLevel objects for each dimension (empty for array initializer)
+            NodeList<ArrayCreationLevel> levels = new NodeList<>();
+            for (int i = 0; i < dimensions; i++) {
+                ArrayCreationLevel level = new ArrayCreationLevel();
+                level.setTokenRange(createTokenRange(ctx)); 
+                levels.add(level);
+            }
+            
+            // Create ArrayCreationExpr
+            ArrayCreationExpr arrayCreation = new ArrayCreationExpr(elementType, levels, initializer);
+            arrayCreation.setTokenRange(createTokenRange(ctx));
+            return arrayCreation;
+        } else {
+            // Handle: new Type[size] or new Type[size1][size2]
+            NodeList<ArrayCreationLevel> levels = new NodeList<>();
+            
+            if (ctx.expression() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : ctx.expression()) {
+                    Expression dimExpr = (Expression) visit(exprCtx);
+                    ArrayCreationLevel level = new ArrayCreationLevel(dimExpr);
+                    level.setTokenRange(createTokenRange(exprCtx));
+                    levels.add(level);
+                }
+            }
+            
+            // Create ArrayCreationExpr with dimensions
+            ArrayCreationExpr arrayCreation = new ArrayCreationExpr(elementType, levels, null);
+            arrayCreation.setTokenRange(createTokenRange(ctx));
+            return arrayCreation;
+        }
+    }
+
+    @Override
+    public Node visitCreatedName(Mvel3Parser.CreatedNameContext ctx) {
+        if (ctx.primitiveType() != null) {
+            return visit(ctx.primitiveType());
+        } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
+            // Handle class/interface type creation
+            // For simplicity, create a ClassOrInterfaceType from the first identifier
+            // TODO: Handle full qualified names and type arguments if needed
+            String typeName = ctx.identifier(0).getText();
+            ClassOrInterfaceType type = new ClassOrInterfaceType(null, typeName);
+            type.setTokenRange(createTokenRange(ctx));
+            return type;
+        }
+        
+        throw new IllegalArgumentException("Unsupported created name: " + ctx.getText());
     }
 
     @Override

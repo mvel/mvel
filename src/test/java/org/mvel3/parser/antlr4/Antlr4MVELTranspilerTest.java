@@ -1242,6 +1242,7 @@ public class Antlr4MVELTranspilerTest implements TranspilerTest {
         test( "int[][] x = new int[][] {{\"3\"}, {\"3\"}};",
               "int[][] x = new int[][] { { Integer.parseInt(\"3\") }, { Integer.parseInt(\"3\") } };");
     }
+
     @Test
     public void testNameExprWithStringConcatenationNoRewrite() {
         test( "String a = \"Jonny\" + 5 + \"Is Alive\";",

@@ -19,6 +19,7 @@ package org.mvel3;
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.printer.CoerceRewriter;
 
 import java.math.BigDecimal;
@@ -31,6 +32,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 public class MVELTranspilerTest implements TranspilerTest {
+
+    static {
+        MvelParser.Factory.USE_ANTLR = false;
+    }
 
     @Test
     public void testAssignmentIncrement() {
