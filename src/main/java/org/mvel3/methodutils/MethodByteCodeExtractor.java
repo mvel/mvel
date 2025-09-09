@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.mvel3;
+package org.mvel3.methodutils;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;

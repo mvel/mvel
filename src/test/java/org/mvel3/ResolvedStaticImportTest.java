@@ -3,17 +3,12 @@ package org.mvel3;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.resolution.Solver;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.junit.Test;
-import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel3.parser.MvelParser;
-import org.mvel3.parser.printer.MVELToJavaRewriter;
 import org.mvel3.test.TestClassManager;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
@@ -31,9 +26,9 @@ import static org.mvel3.MVELCompilerTest.getImports;
 
 public class ResolvedStaticImportTest {
 
-    public <T extends Map, K, R> EvaluatorInfo<T, K, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, Set<String> staticImports, final Map<String, Type<?>> types) {
+    public <T extends Map, K, R> CompilerParamters<T, K, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, Set<String> staticImports, final Map<String, Type<?>> types) {
 
-        EvaluatorBuilder<T, K, R> eval = new EvaluatorBuilder<>();
+        CompilerParamtersBuilder<T, K, R> eval = new CompilerParamtersBuilder<>();
         eval.setClassManager(new TestClassManager()).setClassLoader(ClassLoader.getSystemClassLoader())
             .setExpression(content)
             .setImports(imports)
@@ -55,7 +50,7 @@ public class ResolvedStaticImportTest {
 
         Set<String> staticImports = new HashSet<>();
         staticImports.add(Person.class.getCanonicalName() + ".isEven");
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
+        CompilerParamters<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
 
         TranspilerContext<Map<String, Object>, Void, String> context          = buildTranspilerContext(eval);
         ClassOrInterfaceDeclaration classDeclaration = context.getUnit().addClass(context.getEvaluatorInfo().generatedClassName());
@@ -84,7 +79,7 @@ public class ResolvedStaticImportTest {
 
         Set<String> staticImports = new HashSet<>();
         staticImports.add(Person.class.getCanonicalName() + ".isEven");
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
+        CompilerParamters<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
 
         MVELCompiler compiler= new MVELCompiler();
         Evaluator<Map<String, Object>, Void, String> evaluator = compiler.compile(eval);
@@ -106,8 +101,8 @@ public class ResolvedStaticImportTest {
         bar.setName("yyy");
         vars.put("bar", bar);
 
-        Set<String> staticImports = new HashSet<>();
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + instanceMethod(1)", String.class, getImports(), staticImports, types);
+        Set<String>                                          staticImports = new HashSet<>();
+        CompilerParamters<Map<String, Object>, Void, String> eval          = compileMapEvaluator("foo.getName() + bar.getName() + instanceMethod(1)", String.class, getImports(), staticImports, types);
 
         MVELCompiler compiler= new MVELCompiler();
         Evaluator<Map<String, Object>, Void, String> evaluator = compiler.compile(eval);
@@ -130,8 +125,8 @@ public class ResolvedStaticImportTest {
         bar.setName("yyy");
         vars.put("bar", bar);
 
-        Set<String> staticImports = new HashSet<>();
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + staticMethod(1)", String.class, getImports(), staticImports, types);
+        Set<String>                                          staticImports = new HashSet<>();
+        CompilerParamters<Map<String, Object>, Void, String> eval          = compileMapEvaluator("foo.getName() + bar.getName() + staticMethod(1)", String.class, getImports(), staticImports, types);
 
         MVELCompiler compiler= new MVELCompiler();
         Evaluator<Map<String, Object>, Void, String> evaluator = compiler.compile(eval);
@@ -152,9 +147,9 @@ public class ResolvedStaticImportTest {
         bar.setName("yyy");
         vars.put("bar", bar);
 
-        Set<String> staticImports = new HashSet<>();
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + doesNotExist(1)", String.class, getImports(), staticImports, types);
-        MVELCompiler compiler= new MVELCompiler();
+        Set<String>                                          staticImports = new HashSet<>();
+        CompilerParamters<Map<String, Object>, Void, String> eval          = compileMapEvaluator("foo.getName() + bar.getName() + doesNotExist(1)", String.class, getImports(), staticImports, types);
+        MVELCompiler                                         compiler      = new MVELCompiler();
 
         assertThatException().isThrownBy(() -> {
             Evaluator<Map<String, Object>, Void, String> evaluator = compiler.compile(eval);
@@ -180,14 +175,14 @@ public class ResolvedStaticImportTest {
 
         Set<String> staticImports = new HashSet<>();
         staticImports.add(Person.class.getCanonicalName() + ".isEven");
-        EvaluatorInfo<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
+        CompilerParamters<Map<String, Object>, Void, String> eval = compileMapEvaluator("foo.getName() + bar.getName() + isEven(1)", String.class, getImports(), staticImports, types);
 
         MVELCompiler compiler= new MVELCompiler();
         Evaluator<Map<String, Object>, Void, String> evaluator = compiler.compile(eval);
         assertThat(evaluator.eval(vars)).isEqualTo("xxxyyytrue");
     }
 
-    public static <T, K, R> TranspilerContext buildTranspilerContext(EvaluatorInfo<T, K, R> evalInfo) {
+    public static <T, K, R> TranspilerContext buildTranspilerContext(CompilerParamters<T, K, R> evalInfo) {
         TypeSolver typeSolver = new ReflectionTypeSolver(false);
         JavaSymbolSolver   solver     = new JavaSymbolSolver(typeSolver);
 

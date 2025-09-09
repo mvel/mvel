@@ -32,8 +32,6 @@ public class PrintUtil {
     }
 
     public static String printNode(Node node, TypeSolver typeSolver) {
-        //return LexicalPreservingPrinter.print(node);
-
         PrinterConfiguration prettyPrinterConfiguration = new DefaultPrinterConfiguration();
         MVELPrintVisitor printVisitor = new MVELPrintVisitor(prettyPrinterConfiguration);
 

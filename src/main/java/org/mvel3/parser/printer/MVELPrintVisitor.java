@@ -107,54 +107,6 @@ public class MVELPrintVisitor extends DefaultPrettyPrinterVisitor implements Drl
         super(prettyPrinterConfiguration);
     }
 
-    public static class Coercion {
-        static BigDecimal s2bd(short v) {
-            return BigDecimal.valueOf(v);
-        }
-
-        static BigDecimal c2bd(char v) {
-            return BigDecimal.valueOf(v);
-        }
-
-
-        static BigDecimal i2bd(int v) {
-            return BigDecimal.valueOf(v);
-        }
-
-        static BigDecimal l2bd(long v) {
-            return BigDecimal.valueOf(v);
-        }
-
-        static BigDecimal f2bd(float v) {
-            return BigDecimal.valueOf(v);
-        }
-
-        static BigDecimal d2bd(double v) {
-            return BigDecimal.valueOf(v);
-        }
-
-        static BigDecimal str2bd(String v) {
-            return new BigDecimal(v, MathContext.DECIMAL128);
-        }
-
-        static BigInteger s2bi(short v) {
-            return BigInteger.valueOf(v);
-        }
-
-        static BigInteger c2bi(char v) {
-            return BigInteger.valueOf(v);
-        }
-
-
-        static BigInteger i2bi(int v) {
-            return BigInteger.valueOf(v);
-        }
-
-        static BigInteger l2bi(long v) {
-            return BigInteger.valueOf(v);
-        }
-    }
-
     @Override
     public void visit( RuleDeclaration n, Void arg ) {
         printComment(n.getComment(), arg);
@@ -405,16 +357,12 @@ public class MVELPrintVisitor extends DefaultPrettyPrinterVisitor implements Drl
 
     @Override
     public void visit(BigDecimalLiteralExpr bigDecimalLiteralExpr, Void arg) {
-        printer.print("BigDecimal.valueOf(");
-        printer.print(bigDecimalLiteralExpr.asBigDecimal().toString());
-        printer.print(")");
+        printer.print(bigDecimalLiteralExpr.getValue() + "B");
     }
 
     @Override
     public void visit(BigIntegerLiteralExpr bigIntegerLiteralExpr, Void arg) {
-        printer.print("BigInteger.valueOf(");
-        printer.print(bigIntegerLiteralExpr.asBigInteger().toString());
-        printer.print(")");
+        printer.print(bigIntegerLiteralExpr.getValue() + "I");
     }
 
     @Override

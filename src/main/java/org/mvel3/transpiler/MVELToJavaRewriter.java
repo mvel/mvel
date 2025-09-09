@@ -1,6 +1,5 @@
-package org.mvel3.parser.printer;
+package org.mvel3.transpiler;
 
-import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -45,10 +44,8 @@ import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclar
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.ResolvedTypeVariable;
-import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
-import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
 import com.github.javaparser.utils.Pair;
-import org.mvel3.EvaluatorBuilder;
+import org.mvel3.CompilerParamtersBuilder;
 import org.mvel3.MVEL;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
@@ -56,8 +53,6 @@ import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -758,7 +753,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr setMethod = new MethodCallExpr( scope,"setList");
                         assignExpr.replace(setMethod);
-                        setMethod.addArgument(EvaluatorBuilder.CONTEXT_NAME);
+                        setMethod.addArgument(CompilerParamtersBuilder.CONTEXT_NAME);
                         setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().variableInfo().indexOf(nameExpr.getNameAsString())));
                         setMethod.addArgument(assignExpr);
                     }
@@ -766,7 +761,7 @@ public class MVELToJavaRewriter {
                     // pojo
                     // @TOOD I need to call the generated method below. But ideally only if it's part of some parent.
                     addSetterMethod(nameExpr);
-                    MethodCallExpr setMethod = new MethodCallExpr( EvaluatorBuilder.CONTEXT_NAME + nameExpr.getNameAsString());
+                    MethodCallExpr setMethod = new MethodCallExpr(CompilerParamtersBuilder.CONTEXT_NAME + nameExpr.getNameAsString());
                     assignExpr.replace(setMethod);
                     setMethod.addArgument(new NameExpr(ctxDeclr.name()));
                     setMethod.addArgument(assignExpr);
@@ -869,7 +864,7 @@ public class MVELToJavaRewriter {
     }
 
     public void addSetterMethod(NameExpr nameExpr) {
-        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod( EvaluatorBuilder.CONTEXT_NAME + nameExpr);
+        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod(CompilerParamtersBuilder.CONTEXT_NAME + nameExpr);
         methodDeclr.setStatic(true);
         methodDeclr.setPublic(true);
 
@@ -878,7 +873,7 @@ public class MVELToJavaRewriter {
         Type propertyType = resolvedTypeToType(propertyResolvedType);
         Type contextType = resolvedTypeToType(contextObjectType);
 
-        Parameter c = new Parameter(contextType, EvaluatorBuilder.CONTEXT_NAME );
+        Parameter c = new Parameter(contextType, CompilerParamtersBuilder.CONTEXT_NAME );
         Parameter v = new Parameter(propertyType, "v" );
         methodDeclr.setParameters(NodeList.nodeList(c, v));
 
@@ -888,7 +883,7 @@ public class MVELToJavaRewriter {
 
         MethodUsage methodUsage = findGetterSetter("set", nameExpr.getNameAsString(), 1, d);
 
-        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(EvaluatorBuilder.CONTEXT_NAME)), methodUsage.getName());
+        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(CompilerParamtersBuilder.CONTEXT_NAME)), methodUsage.getName());
         setMethod.addArgument(new NameExpr("v"));
 
         ReturnStmt returnStmt = new ReturnStmt(new NameExpr("v"));

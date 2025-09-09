@@ -33,26 +33,22 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.mvel3.EvaluatorBuilder.ContextInfo;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
+import org.mvel3.ContextInfo;
+import org.mvel3.CompilerParamters;
 import org.mvel3.parser.MvelParser;
-import org.mvel3.parser.printer.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.context.TranspilerContext;
 
 import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_15;
 
 public class MVELTranspiler {
-
-    private final PreprocessPhase preprocessPhase = new PreprocessPhase();
-
     private TranspilerContext context;
 
     public MVELTranspiler(TranspilerContext context) {
         this.context = context;
     }
 
-    public static <T, K, R>  TranspiledResult transpile(EvaluatorInfo<T, K, R> evalInfo, EvalPre evalPre) {
+    public static <T, K, R>  TranspiledResult transpile(CompilerParamters<T, K, R> evalInfo, EvalPre evalPre) {
 
         TypeSolver typeSolver = new ReflectionTypeSolver(false);
         JavaSymbolSolver solver = new JavaSymbolSolver(typeSolver);
@@ -110,12 +106,12 @@ public class MVELTranspiler {
 
         analyser.getUsed().stream().forEach(v -> context.addInput(v));
 
-        preprocessPhase.removeEmptyStmt(blockStmt);
+        //preprocessPhase.removeEmptyStmt(blockStmt);
 
         CompilationUnit unit = new CompilationUnit(context.getGeneratedPackageName());
         context.setUnit(unit);
 
-        EvaluatorInfo<?, ?, ?> evalInfo = context.getEvaluatorInfo();
+        CompilerParamters<?, ?, ?> evalInfo = context.getEvaluatorInfo();
 
         evalInfo.imports().stream().forEach(s -> unit.addImport(s));
 

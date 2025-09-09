@@ -1,8 +1,10 @@
 package org.mvel3;
 
+import org.mvel3.methodutils.MethodByteCodeExtractor;
+import org.mvel3.methodutils.Murmur3F;
+
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodHandles.Lookup.ClassOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

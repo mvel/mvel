@@ -1,4 +1,4 @@
-package org.mvel3.parser.printer;
+package org.mvel3.transpiler;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.NodeList;
@@ -13,7 +13,6 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
 import com.github.javaparser.resolution.types.ResolvedType;
-import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.context.TranspilerContext;
 
 import java.math.BigDecimal;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.mvel3.parser.printer.MVELToJavaRewriter.getArgumentsWithUnwrap;
+import static org.mvel3.transpiler.MVELToJavaRewriter.getArgumentsWithUnwrap;
 
 /**
  * the Expression being coerced must be cloned, rather than added. There are times that adding it doesn't always remove it from previous location.
