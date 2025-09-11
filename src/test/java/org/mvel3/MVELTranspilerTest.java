@@ -17,6 +17,7 @@
 package org.mvel3;
 
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,8 +34,10 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class MVELTranspilerTest implements TranspilerTest {
 
-    static {
-        MvelParser.Factory.USE_ANTLR = false;
+    // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = true;
     }
 
     @Test

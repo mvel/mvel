@@ -1,5 +1,6 @@
 package org.mvel3;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.mvel3.parser.MvelParser;
@@ -17,8 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MVELCompilerTest {
 
-    static {
-        MvelParser.Factory.USE_ANTLR = false;
+    // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = true;
     }
 
     public static class ContextCamelCase {

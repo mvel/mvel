@@ -7,6 +7,7 @@ import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.test.TestClassManager;
@@ -25,6 +26,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mvel3.MVELCompilerTest.getImports;
 
 public class ResolvedStaticImportTest {
+
+    // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = true;
+    }
 
     public <T extends Map, K, R> CompilerParamters<T, K, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, Set<String> staticImports, final Map<String, Type<?>> types) {
 

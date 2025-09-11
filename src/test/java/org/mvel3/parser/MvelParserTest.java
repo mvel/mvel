@@ -39,6 +39,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.Type;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.BeforeClass;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -66,14 +67,16 @@ public class MvelParserTest implements TranspilerTest {
 
     private static final Collection<String> operators = new HashSet<>();
     static {
-        // This class is a test for JavaParserMvelParser, so no antlr
-        MvelParser.Factory.USE_ANTLR = false;
-
         operators.addAll(Arrays.asList("after", "before", "in", "matches", "includes"));
     }
 
     final ParseStart<DrlxExpression> parser = DrlxParser.buildDrlxParserWithArguments(operators);
 
+    // This test is only for JavaParser AST. So USE_ANTLR is set to false.
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = false;
+    }
 
     @Test
     public void testTmp() {

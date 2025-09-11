@@ -16,7 +16,9 @@
 
 package org.mvel3;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.mvel3.parser.MvelParser;
 import org.mvel3.transpiler.TranspiledResult;
 import org.mvel3.transpiler.context.Declaration;
 import org.junit.Test;
@@ -26,6 +28,12 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ConstraintTranspilerTest implements TranspilerTest {
+
+    // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = true;
+    }
 
     @Test
     public void testBigDecimalPromotion() {
