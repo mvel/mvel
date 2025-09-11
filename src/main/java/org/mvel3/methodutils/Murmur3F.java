@@ -1,4 +1,4 @@
-package org.mvel3;
+package org.mvel3.methodutils;
 
 /*
  * Code adapted from Greenrobot Essentials Murmur3F.java (https://git.io/fAG0Z)

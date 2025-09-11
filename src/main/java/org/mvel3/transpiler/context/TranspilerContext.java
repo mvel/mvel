@@ -28,12 +28,11 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
 import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
+import org.mvel3.CompilerParamters;
 import org.mvel3.parser.MvelParser;
-import org.mvel3.parser.printer.CoerceRewriter;
-import org.mvel3.parser.printer.OverloadRewriter;
+import org.mvel3.transpiler.CoerceRewriter;
+import org.mvel3.transpiler.OverloadRewriter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +42,7 @@ import java.util.Set;
 public class TranspilerContext<T, K, R> {
     private Set<String> inputs;
 
-    private EvaluatorInfo<T, K, R> evaluatorInfo;
+    private CompilerParamters<T, K, R> evaluatorInfo;
 
     private final MvelParser parser;
 
@@ -65,7 +64,7 @@ public class TranspilerContext<T, K, R> {
 
     private Map<String, Set<ResolvedMethodDeclaration>> resolvedStaticMethods;
 
-    public TranspilerContext(MvelParser parser, TypeSolver typeSolver, EvaluatorInfo<T, K, R> evaluatorInfo) {
+    public TranspilerContext(MvelParser parser, TypeSolver typeSolver, CompilerParamters<T, K, R> evaluatorInfo) {
         this.parser = parser;
         this.typeSolver = typeSolver;
         this.parserConfiguration = parser.getParserConfiguration();
@@ -77,7 +76,7 @@ public class TranspilerContext<T, K, R> {
         this.inputs = new HashSet<>();
     }
 
-    public EvaluatorInfo<T, K, R> getEvaluatorInfo() {
+    public CompilerParamters<T, K, R> getEvaluatorInfo() {
         return evaluatorInfo;
     }
 

@@ -41,7 +41,6 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.TranspiledResult;
@@ -71,8 +70,6 @@ public class CompilationUnitGenerator {
 
     private static final String ROOT_PREFIX = "___this";
 
-
-
     private MvelParser parser;
 
     public CompilationUnitGenerator(MvelParser parser) {
@@ -92,7 +89,7 @@ public class CompilationUnitGenerator {
 //        return template;
 //    }
 
-    public <T, K, R> CompilationUnit createMapEvaluatorUnit(TranspiledResult input, EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> CompilationUnit createMapEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
 //        loadTemplate("MapEvaluatorTemplate");
 //        renameTemplateClass(info.expression(), "MapEvaluatorTemplate");
 //        clearExamples();
@@ -106,7 +103,7 @@ public class CompilationUnitGenerator {
         return input.getUnit();//template;
     }
 
-    public <T, K, R> CompilationUnit createArrayEvaluatorUnit(TranspiledResult input, EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> CompilationUnit createArrayEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
 //        loadTemplate("ArrayEvaluatorTemplate");
 //        renameTemplateClass(info.expression(), "ArrayEvaluatorTemplate");
 //
@@ -119,7 +116,7 @@ public class CompilationUnitGenerator {
 //        rewriteBody(input, org.mvel3.Type.type(Object.class));
 //
 //        return template;
-        return input.getUnit();//template;
+        return input.getUnit();
     }
 
     private <R> void rewriteBody(TranspiledResult input, org.mvel3.Type<R> returnClass) {
@@ -134,7 +131,7 @@ public class CompilationUnitGenerator {
         logGenerateClass();
     }
 
-    public <T, K, R> CompilationUnit createPojoEvaluatorUnit(TranspiledResult input, EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> CompilationUnit createPojoEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
         loadTemplate("PojoEvaluatorTemplate");
         renameTemplateClass(info.expression(), "PojoEvaluatorTemplate");
 
@@ -165,7 +162,7 @@ public class CompilationUnitGenerator {
         return template;
     }
 
-    public <T, K, R> CompilationUnit createRootObjectEvaluatorUnit(TranspiledResult input, EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> CompilationUnit createRootObjectEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
         loadTemplate("PojoEvaluatorTemplate");
         renameTemplateClass(info.expression(), "PojoEvaluatorTemplate");
 
@@ -367,7 +364,7 @@ public class CompilationUnitGenerator {
         }
     }
 
-    private <T, K, R> void createPojoContextVariableAssignments(EvaluatorInfo<T, K, R> info) {
+    private <T, K, R> void createPojoContextVariableAssignments(CompilerParamters<T, K, R> info) {
         for (Declaration declr : info.variableInfo().vars()) {
             Class<?> contextVarClass = declr.type().getClass();
 
@@ -448,7 +445,7 @@ public class CompilationUnitGenerator {
                 .isPresent();
     }
 
-    public <R, K, T> CompilationUnit createEvaluatorUnit(TranspiledResult input, EvaluatorInfo<T,K,R> info) {
+    public <R, K, T> CompilationUnit createCompilationUnit(TranspiledResult input, CompilerParamters<T,K,R> info) {
         return input.getUnit();
     }
 

@@ -1,7 +1,7 @@
 package org.mvel2.tests.core;
 
-import org.mvel3.EvaluatorBuilder;
-import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
+import org.mvel3.CompilerParamtersBuilder;
+import org.mvel3.ContextInfoBuilder;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -10,7 +10,6 @@ import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
 import org.mvel3.Evaluator;
 import org.mvel3.Type;
-import org.mvel3.transpiler.context.Declaration;
 
 import java.util.*;
 import java.io.Serializable;
@@ -398,9 +397,9 @@ public class ControlFlowTests extends AbstractTest {
     imports.add("java.util.Date");
     imports.add("java.util.Map");
 
-    EvaluatorBuilder<Map<String, Map<String, Date>>,
-                     Map<String, Map<String, Date>>,
-                     String> builder = EvaluatorBuilder.create();
+    CompilerParamtersBuilder<Map<String, Map<String, Date>>,
+                         Map<String, Map<String, Date>>,
+                         String> builder = CompilerParamtersBuilder.create();
 
     builder.setImports(imports)
              .setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class, "<String, Map<String, Date>>")))

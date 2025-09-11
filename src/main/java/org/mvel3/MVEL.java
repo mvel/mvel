@@ -19,8 +19,6 @@
 
 package org.mvel3;
 
-import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel3.transpiler.context.Declaration;
 
 import java.util.HashMap;
@@ -30,11 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MVEL {
-    public <T, K, R> Evaluator<T, K, R> compile(EvaluatorInfo<T, K, R> evalInfo) {
-        MVELCompiler compiler = new MVELCompiler();
-        Evaluator<T, K, R> eval = compiler.compile(evalInfo);
-        return eval;
-    }
+
 
     public static MVEL EXPRESSION;
 
@@ -53,14 +47,20 @@ public class MVEL {
     public MVEL() {
     }
 
+    public <T, K, R> Evaluator<T, K, R> compile(CompilerParamters<T, K, R> evalInfo) {
+        MVELCompiler compiler = new MVELCompiler();
+        Evaluator<T, K, R> eval = compiler.compile(evalInfo);
+        return eval;
+    }
+
     public <T extends Map, Void, R> Evaluator<T, Void, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, final Map<String, Type<?>> types) {
         return compileMapEvaluator(content, outClass, imports, types, new ClassManager(), ClassLoader.getSystemClassLoader());
     }
 
     public <T extends Map, Void, R> Evaluator<T, Void, R> compileMapEvaluator(final String content, final Class<R> outClass, final Set<String> imports, final Map<String, Type<?>> types,
                                                                               ClassManager clsManager, ClassLoader classLoader) {
-        MVELCompiler compiler = new MVELCompiler();
-        EvaluatorBuilder<T, Void, R> eval = new EvaluatorBuilder<>();
+        MVELCompiler                         compiler = new MVELCompiler();
+        CompilerParamtersBuilder<T, Void, R> eval     = new CompilerParamtersBuilder<>();
         eval.setClassManager(clsManager).setClassLoader(classLoader)
             .setExpression(content)
             .setImports(imports)
@@ -79,8 +79,8 @@ public class MVEL {
 
     public <T extends List, Void, R> Evaluator<T, Void, R> compileListEvaluator(final String content, Class<R> outClass, final Set<String> imports, final Declaration[] types,
                                                                                 ClassManager clsManager, ClassLoader classLoader) {
-        MVELCompiler compiler = new MVELCompiler();
-        EvaluatorBuilder<T, Void, R> eval = new EvaluatorBuilder<>();
+        MVELCompiler                         compiler = new MVELCompiler();
+        CompilerParamtersBuilder<T, Void, R> eval     = new CompilerParamtersBuilder<>();
         eval.setClassManager(clsManager).setClassLoader(ClassLoader.getSystemClassLoader())
             .setExpression(content)
             .setImports(imports)
@@ -93,7 +93,7 @@ public class MVEL {
         return  evaluator;
     }
 
-    public <T, K, R> Evaluator<T, K, R> compilePojoEvaluator(EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> Evaluator<T, K, R> compilePojoEvaluator(CompilerParamters<T, K, R> info) {
         MVELCompiler compiler = new MVELCompiler();
         Evaluator<T, K, R> evaluator = compiler.compile(info);
 
@@ -131,8 +131,8 @@ public class MVEL {
             }
         }
 
-        MVELCompiler MVELCompiler = new MVELCompiler();
-        EvaluatorBuilder<Map<String, Object>, Void, R> eval = EvaluatorBuilder.create();
+        MVELCompiler                                           MVELCompiler = new MVELCompiler();
+        CompilerParamtersBuilder<Map<String, Object>, Void, R> eval         = CompilerParamtersBuilder.create();
 
         eval.setClassManager(clsManager).setClassLoader(classLoader)
             .setExpression(expr)

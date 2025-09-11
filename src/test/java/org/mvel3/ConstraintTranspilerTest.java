@@ -135,7 +135,7 @@ public class ConstraintTranspilerTest implements TranspilerTest {
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
-    public <K, R> void testExpression(Consumer<EvaluatorBuilder<Map, Void, Object>> testFunction,
+    public <K, R> void testExpression(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
                                String inputExpression,
                                String expectedResult,
                                Consumer<TranspiledResult> resultAssert) {
@@ -145,7 +145,7 @@ public class ConstraintTranspilerTest implements TranspilerTest {
              resultAssert);
     }
 
-    <K, R> void testExpression(Consumer<EvaluatorBuilder<Map, Void, Object>> testFunction,
+    <K, R> void testExpression(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
                                   String inputExpression,
                                   String expectedResult) {
         testExpression(testFunction, inputExpression, expectedResult, t -> {

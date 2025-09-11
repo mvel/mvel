@@ -3,9 +3,9 @@ package org.mvel2.tests.core;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.mvel2.DataConversion;
-import org.mvel3.EvaluatorBuilder;
-import org.mvel3.EvaluatorBuilder.ContextInfoBuilder;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
+import org.mvel3.CompilerParamtersBuilder;
+import org.mvel3.ContextInfoBuilder;
+import org.mvel3.CompilerParamters;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
@@ -14,7 +14,6 @@ import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.TestInterface;
 import org.mvel3.Evaluator;
 import org.mvel3.Type;
-import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.context.Declaration;
 
 import java.io.BufferedInputStream;
@@ -513,7 +512,7 @@ public abstract class AbstractTest extends TestCase {
       imports = new HashSet<>();
     }
 
-    EvaluatorBuilder<Object, Object, Object> builder = EvaluatorBuilder
+    CompilerParamtersBuilder<Object, Object, Object> builder = CompilerParamtersBuilder
                                                                             .create()
                                                                             .setImports(imports)
                                                                             .setExpression(expression)
@@ -539,7 +538,7 @@ public abstract class AbstractTest extends TestCase {
       }
     }
 
-    EvaluatorInfo<Object, Object, Object> evalInfo = builder.build();
+    CompilerParamters<Object, Object, Object> evalInfo = builder.build();
 
     return org.mvel3.MVEL.get().compile(evalInfo).eval(evalContext);
   }

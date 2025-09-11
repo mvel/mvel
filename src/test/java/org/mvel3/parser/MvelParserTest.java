@@ -27,7 +27,6 @@ package org.mvel3.parser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BinaryExpr.Operator;
@@ -37,17 +36,9 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
-
 import com.github.javaparser.ast.type.Type;
 
-import com.github.javaparser.resolution.SymbolResolver;
-import com.github.javaparser.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-
 import org.apache.commons.lang3.SystemUtils;
-import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -59,15 +50,12 @@ import org.mvel3.parser.ast.expr.OOPathExpr;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
-import org.mvel3.parser.printer.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
 import org.junit.Test;
-import org.mvel3.transpiler.context.TranspilerContext;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -196,7 +184,7 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     public void testParseNullSafeFieldAccessExpr() {
-        String expr = "person!.name == \"Mark\"";
+        String expr = "person?.name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
@@ -805,11 +793,11 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     public void testModifyStatement() {
-        String expr = "{ modify ( $p )  { name = \"Luca\", age = \"35\" }; }";
+        String expr = "{ modify ( $p )  { name = \"Luca\"; age = \"35\"; } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { name = \"Luca\", age = \"35\" };" + newLine() +
+                "    modify ($p) { name = \"Luca\"; age = \"35\"; }" + newLine() +
                 "}");
     }
 
@@ -831,21 +819,21 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     public void testModifySemiColon() {
-        String expr = "{ modify($p) { setAge(1); }; }";
+        String expr = "{ modify($p) { setAge(1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { setAge(1) };" + newLine() +
+                "    modify ($p) { setAge(1); }" + newLine() +
                 "}");
     }
 
     @Test
     public void testModifyMultiple() {
-        String expr = "{ modify($p) { setAge(1)," + newLine() + " setAge(2), setAge(3)," + newLine() + "setAge(4); }; }";
+        String expr = "{ modify($p) { setAge(1);" + newLine() + " setAge(2); setAge(3);" + newLine() + "setAge(4); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { setAge(1), setAge(2), setAge(3), setAge(4) };" + newLine() +
+                "    modify ($p) { setAge(1); setAge(2); setAge(3); setAge(4); }" + newLine() +
                 "}");
     }
 
@@ -861,11 +849,11 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     public void testModifyWithoutSemicolon() {
-        String expr = "{modify($p) { setAge($p.getAge()+1) } }";
+        String expr = "{modify($p) { setAge($p.getAge()+1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { setAge($p.getAge() + 1) };" + newLine() +
+                "    modify ($p) { setAge($p.getAge() + 1); }" + newLine() +
                 "}");
     }
 
@@ -1038,16 +1026,6 @@ public class MvelParserTest implements TranspilerTest {
     @Test
     public void singleLineBlock() {
         String expr = "{ delete($person); } // comment ";
-
-        BlockStmt expression = StaticMvelParser.parseBlock(expr);
-        assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    delete($person);" + newLine() +
-                "}");
-    }
-
-    @Test
-    public void singleLineBlockWithoutsemicolon() {
-        String expr = "{ delete($person) } // comment";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +

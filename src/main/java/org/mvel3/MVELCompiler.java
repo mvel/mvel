@@ -34,9 +34,8 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-import org.mvel3.EvaluatorBuilder.EvaluatorInfo;
 import org.mvel3.javacompiler.KieMemoryCompiler;
-import org.mvel3.parser.printer.MVELToJavaRewriter;
+import org.mvel3.transpiler.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.EvalPre;
 import org.mvel3.transpiler.MVELTranspiler;
@@ -53,13 +52,13 @@ import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELCompiler {
 
-    public <T, K, R> Evaluator<T, K, R> compile(EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> Evaluator<T, K, R> compile(CompilerParamters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
         Evaluator<T, K, R> evaluator = compileEvaluator(unit, info);
 
         return evaluator;
     }
-    public <T, K, R> TranspiledResult transpile(EvaluatorInfo<T, K, R> info) {
+    public <T, K, R> TranspiledResult transpile(CompilerParamters<T, K, R> info) {
         EvalPre  evalPre;
         switch(info.variableInfo().declaration().type().getClazz().getSimpleName()){
             case "Map":
@@ -144,13 +143,13 @@ public class MVELCompiler {
         return input;
     }
 
-    private <T, K, R> CompilationUnit compileNoLoad(EvaluatorInfo<T, K, R> info) {
+    private <T, K, R> CompilationUnit compileNoLoad(CompilerParamters<T, K, R> info) {
         TranspiledResult input = transpile(info);
 
-        return new CompilationUnitGenerator(input.getTranspilerContext().getParser()).createEvaluatorUnit(input, info);
+        return new CompilationUnitGenerator(input.getTranspilerContext().getParser()).createCompilationUnit(input, info);
     }
 
-    private <T, K, R> Evaluator<T, K, R> compileEvaluator(CompilationUnit unit, EvaluatorInfo<T, K, R> info) {
+    private <T, K, R> Evaluator<T, K, R> compileEvaluator(CompilationUnit unit, CompilerParamters<T, K, R> info) {
         String javaFQN = evaluatorFullQualifiedName(unit);
         ClassManager clsManager = info.classManager();
         if (clsManager == null) {

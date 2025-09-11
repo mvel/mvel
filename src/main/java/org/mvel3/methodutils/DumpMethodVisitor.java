@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.mvel3;
+package org.mvel3.methodutils;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -42,7 +42,7 @@ public class DumpMethodVisitor extends MethodVisitor {
     private final StringBuilder sb = new StringBuilder();
 
     public DumpMethodVisitor(Consumer<String> dumpConsumer) {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM9);
         this.dumpConsumer = dumpConsumer;
     }
 
