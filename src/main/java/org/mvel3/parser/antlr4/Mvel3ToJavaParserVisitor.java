@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
@@ -43,6 +44,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -553,16 +555,28 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.FOR() != null) {
             // Handle for statement: FOR '(' forControl ')' statement
             Statement body = (Statement) visit(ctx.statement(0));
-            ForStmt forStmt = new ForStmt();
-            forStmt.setBody(body);
-            
-            // Parse forControl if available
-            if (ctx.forControl() != null) {
-                visitForControlAndPopulate(ctx.forControl(), forStmt);
+
+            // Check if this is an enhanced for loop (foreach)
+            if (ctx.forControl() != null && ctx.forControl().enhancedForControl() != null) {
+                // Create ForEachStmt for enhanced for loops
+                ForEachStmt forEachStmt = new ForEachStmt();
+                forEachStmt.setBody(body);
+                visitEnhancedForControlAndPopulate(ctx.forControl().enhancedForControl(), forEachStmt);
+                forEachStmt.setTokenRange(createTokenRange(ctx));
+                return forEachStmt;
+            } else {
+                // Create regular ForStmt for traditional for loops
+                ForStmt forStmt = new ForStmt();
+                forStmt.setBody(body);
+
+                // Parse forControl if available
+                if (ctx.forControl() != null) {
+                    visitForControlAndPopulate(ctx.forControl(), forStmt);
+                }
+
+                forStmt.setTokenRange(createTokenRange(ctx));
+                return forStmt;
             }
-            
-            forStmt.setTokenRange(createTokenRange(ctx));
-            return forStmt;
         } else if (ctx.SWITCH() != null) {
             // Handle switch statement: SWITCH parExpression '{' switchBlockStatementGroup* switchLabel* '}'
             Expression selector = (Expression) visit(ctx.parExpression().expression());
@@ -984,6 +998,45 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (!update.isEmpty()) {
             forStmt.setUpdate(update);
         }
+    }
+
+    private void visitEnhancedForControlAndPopulate(Mvel3Parser.EnhancedForControlContext enhancedForCtx, ForEachStmt forEachStmt) {
+        // enhancedForControl: variableModifier* (typeType | VAR) variableDeclaratorId ':' expression
+
+        // Extract variable modifiers
+        NodeList<Modifier> modifiers = new NodeList<>();
+        if (enhancedForCtx.variableModifier() != null) {
+            for (Mvel3Parser.VariableModifierContext modCtx : enhancedForCtx.variableModifier()) {
+                // TODO: Handle variable modifiers if needed (final, etc.)
+            }
+        }
+
+        // Extract type (typeType or VAR)
+        Type variableType = null;
+        if (enhancedForCtx.typeType() != null) {
+            variableType = (Type) visit(enhancedForCtx.typeType());
+        } else if (enhancedForCtx.VAR() != null) {
+            // Handle var type - use VarType from JavaParser
+            variableType = new VarType();
+        }
+
+        // Extract variable name from variableDeclaratorId
+        String variableName = enhancedForCtx.variableDeclaratorId().identifier().getText();
+
+        // Create VariableDeclarator
+        VariableDeclarator variableDeclarator = new VariableDeclarator(variableType, variableName);
+
+        // Create VariableDeclarationExpr like mvel.jj does
+        NodeList<VariableDeclarator> variables = new NodeList<>();
+        variables.add(variableDeclarator);
+        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(modifiers, variables);
+
+        // Extract iterable expression
+        Expression iterable = (Expression) visit(enhancedForCtx.expression());
+
+        // Set the ForEachStmt components to match mvel.jj: ForEachStmt(range, varExpr, expr, body)
+        forEachStmt.setVariable(varDecl);
+        forEachStmt.setIterable(iterable);
     }
 
     private SwitchEntry processSwitchBlockStatementGroup(Mvel3Parser.SwitchBlockStatementGroupContext groupCtx) {
