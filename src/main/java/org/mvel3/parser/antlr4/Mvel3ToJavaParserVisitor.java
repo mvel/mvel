@@ -34,6 +34,9 @@ import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -280,9 +283,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             stringLiteral.setTokenRange(createTokenRange(ctx));
             return stringLiteral;
         } else if (ctx.DECIMAL_LITERAL() != null) {
-            IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(ctx.DECIMAL_LITERAL().getText());
-            integerLiteral.setTokenRange(createTokenRange(ctx));
-            return integerLiteral;
+            String text = ctx.DECIMAL_LITERAL().getText();
+            // Check if it's a long literal (ends with 'L' or 'l')
+            if (text.endsWith("L") || text.endsWith("l")) {
+                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
+                longLiteral.setTokenRange(createTokenRange(ctx));
+                return longLiteral;
+            } else {
+                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
+                integerLiteral.setTokenRange(createTokenRange(ctx));
+                return integerLiteral;
+            }
         } else if (ctx.FLOAT_LITERAL() != null) {
             DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
             doubleLiteral.setTokenRange(createTokenRange(ctx));
@@ -720,8 +731,22 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return visitArrayCreatorRest(ctx.arrayCreatorRest(), createdName);
         } else if (ctx.classCreatorRest() != null) {
             // Handle class creation: new Type(args)
-            // TODO: Implement class creation if needed
-            throw new UnsupportedOperationException("Class creation not yet implemented: " + ctx.getText());
+            Type type = (Type) createdName;
+
+            // Get constructor arguments
+            NodeList<Expression> arguments = new NodeList<>();
+            if (ctx.classCreatorRest().arguments() != null &&
+                ctx.classCreatorRest().arguments().expressionList() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : ctx.classCreatorRest().arguments().expressionList().expression()) {
+                    Expression arg = (Expression) visit(exprCtx);
+                    arguments.add(arg);
+                }
+            }
+
+            // Create ObjectCreationExpr
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, arguments);
+            objectCreation.setTokenRange(createTokenRange(ctx));
+            return objectCreation;
         }
         
         return createdName;
@@ -781,17 +806,49 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.primitiveType() != null) {
             return visit(ctx.primitiveType());
         } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
-            // Handle class/interface type creation
-            // For simplicity, create a ClassOrInterfaceType from the first identifier
-            // TODO: Handle full qualified names and type arguments if needed
-            String typeName = ctx.identifier(0).getText();
-            ClassOrInterfaceType type = new ClassOrInterfaceType(null, typeName);
-            type.setTokenRange(createTokenRange(ctx));
+            // Handle class/interface type creation - build qualified name with type arguments
+            ClassOrInterfaceType type = null;
+
+            // Build the qualified name from all identifiers with their type arguments
+            for (int i = 0; i < ctx.identifier().size(); i++) {
+                String name = ctx.identifier(i).getText();
+
+                // Check if this identifier has type arguments or diamond operator
+                NodeList<Type> typeArguments = null;
+                if (i < ctx.typeArgumentsOrDiamond().size() && ctx.typeArgumentsOrDiamond(i) != null) {
+                    typeArguments = handleTypeArgumentsOrDiamond(ctx.typeArgumentsOrDiamond(i));
+                }
+
+                type = new ClassOrInterfaceType(type, name);
+                if (typeArguments != null) {
+                    type.setTypeArguments(typeArguments);
+                }
+            }
+
+            if (type != null) {
+                type.setTokenRange(createTokenRange(ctx));
+            }
             return type;
         }
-        
+
         throw new IllegalArgumentException("Unsupported created name: " + ctx.getText());
     }
+
+    private NodeList<Type> handleTypeArgumentsOrDiamond(Mvel3Parser.TypeArgumentsOrDiamondContext ctx) {
+        if (ctx.typeArguments() != null) {
+            // Handle full type arguments: <String, Integer>
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
+                Type typeArg = (Type) visit(typeArgCtx);
+                typeArgs.add(typeArg);
+            }
+            return typeArgs;
+        } else {
+            // Handle diamond operator: <> - return empty NodeList to represent diamond
+            return new NodeList<>();
+        }
+    }
+
 
     @Override
     public Node visitMethodCall(Mvel3Parser.MethodCallContext ctx) {
@@ -816,6 +873,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
         return args;
+    }
+
+    @Override
+    public Node visitUnaryOperatorExpression(Mvel3Parser.UnaryOperatorExpressionContext ctx) {
+        // Handle unary operators: +expr, -expr, ++expr, --expr, ~expr, !expr
+        Expression operand = (Expression) visit(ctx.expression());
+        String operator = ctx.prefix.getText();
+
+        UnaryExpr.Operator unaryOp;
+        switch (operator) {
+            case "+": unaryOp = UnaryExpr.Operator.PLUS; break;
+            case "-": unaryOp = UnaryExpr.Operator.MINUS; break;
+            case "++": unaryOp = UnaryExpr.Operator.PREFIX_INCREMENT; break;
+            case "--": unaryOp = UnaryExpr.Operator.PREFIX_DECREMENT; break;
+            case "~": unaryOp = UnaryExpr.Operator.BITWISE_COMPLEMENT; break;
+            case "!": unaryOp = UnaryExpr.Operator.LOGICAL_COMPLEMENT; break;
+            default:
+                throw new IllegalArgumentException("Unknown unary operator: " + operator);
+        }
+
+        UnaryExpr unaryExpr = new UnaryExpr(operand, unaryOp);
+        unaryExpr.setTokenRange(createTokenRange(ctx));
+        return unaryExpr;
     }
 
     @Override
@@ -980,8 +1060,28 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Handle individual type argument like "Foo" in List<Foo>
         if (ctx.typeType() != null) {
             return visit(ctx.typeType());
+        } else if (ctx.annotation() != null && !ctx.annotation().isEmpty()) {
+            // Handle annotated wildcards - for now, just handle the basic wildcard case
+            // TODO: Implement annotation handling if needed
+            return new WildcardType();
+        } else {
+            // Handle wildcards: ? extends Type or ? super Type
+            WildcardType wildcard = new WildcardType();
+            if (ctx.EXTENDS() != null && ctx.typeType() != null) {
+                Type extendedType = (Type) visit(ctx.typeType());
+                // Cast to ReferenceType for JavaParser compatibility
+                if (extendedType instanceof ClassOrInterfaceType) {
+                    wildcard.setExtendedType((ClassOrInterfaceType) extendedType);
+                }
+            } else if (ctx.SUPER() != null && ctx.typeType() != null) {
+                Type superType = (Type) visit(ctx.typeType());
+                // Cast to ReferenceType for JavaParser compatibility
+                if (superType instanceof ClassOrInterfaceType) {
+                    wildcard.setSuperType((ClassOrInterfaceType) superType);
+                }
+            }
+            wildcard.setTokenRange(createTokenRange(ctx));
+            return wildcard;
         }
-        // Handle wildcards like "? extends Foo" if needed in the future
-        return visitChildren(ctx);
     }
 }
