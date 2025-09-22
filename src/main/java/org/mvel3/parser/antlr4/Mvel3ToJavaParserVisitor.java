@@ -20,12 +20,14 @@ import com.github.javaparser.TokenRange;
 import com.github.javaparser.JavaToken;
 import com.github.javaparser.Position;
 import com.github.javaparser.Range;
+import com.github.javaparser.StaticJavaParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.expr.*;
@@ -39,6 +41,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -53,10 +56,20 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.UnknownType;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
@@ -273,6 +286,16 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return castExpr;
+    }
+
+    @Override
+    public Node visitLambdaExpression(Mvel3Parser.LambdaExpressionContext ctx) {
+        LambdaParametersResult parametersResult = resolveLambdaParameters(ctx.lambdaParameters());
+        Statement body = resolveLambdaBody(ctx.lambdaBody());
+
+        LambdaExpr lambdaExpr = new LambdaExpr(parametersResult.parameters, body, parametersResult.enclosingParameters);
+        lambdaExpr.setTokenRange(createTokenRange(ctx));
+        return lambdaExpr;
     }
 
     @Override
@@ -544,6 +567,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             
             return ifStmt;
+        } else if (ctx.DO() != null) {
+            // Handle do-while statement: DO statement WHILE parExpression ';'
+            Statement body = (Statement) visit(ctx.statement(0));
+            Expression condition = (Expression) visit(ctx.parExpression().expression());
+
+            DoStmt doStmt = new DoStmt(body, condition);
+            doStmt.setTokenRange(createTokenRange(ctx));
+            return doStmt;
         } else if (ctx.WHILE() != null) {
             // Handle while statement: WHILE parExpression statement
             Expression condition = (Expression) visit(ctx.parExpression().expression());
@@ -627,6 +658,49 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return visitChildren(ctx);
     }
     
+    @Override
+    public Node visitFormalParameter(Mvel3Parser.FormalParameterContext ctx) {
+        ModifiersAnnotations modifiersAnnotations = parseVariableModifiers(ctx.variableModifier());
+        Type type = (Type) visit(ctx.typeType());
+        Type adjustedType = applyArrayDimensions(type, ctx.variableDeclaratorId());
+        SimpleName name = createSimpleName(ctx.variableDeclaratorId().identifier());
+
+        Parameter parameter = new Parameter(modifiersAnnotations.modifiers,
+                modifiersAnnotations.annotations,
+                adjustedType,
+                false,
+                new NodeList<>(),
+                name);
+        parameter.setTokenRange(createTokenRange(ctx));
+        return parameter;
+    }
+
+    @Override
+    public Node visitLastFormalParameter(Mvel3Parser.LastFormalParameterContext ctx) {
+        ModifiersAnnotations modifiersAnnotations = parseVariableModifiers(ctx.variableModifier());
+        Type type = (Type) visit(ctx.typeType());
+        boolean isVarArgs = ctx.ELLIPSIS() != null;
+
+        NodeList<AnnotationExpr> varArgsAnnotations = new NodeList<>();
+        if (ctx.annotation() != null) {
+            for (Mvel3Parser.AnnotationContext annotationContext : ctx.annotation()) {
+                varArgsAnnotations.add(parseAnnotationExpr(annotationContext));
+            }
+        }
+
+        Type adjustedType = applyArrayDimensions(type, ctx.variableDeclaratorId());
+        SimpleName name = createSimpleName(ctx.variableDeclaratorId().identifier());
+
+        Parameter parameter = new Parameter(modifiersAnnotations.modifiers,
+                modifiersAnnotations.annotations,
+                adjustedType,
+                isVarArgs,
+                varArgsAnnotations,
+                name);
+        parameter.setTokenRange(createTokenRange(ctx));
+        return parameter;
+    }
+
     @Override
     public Node visitModifyStatement(Mvel3Parser.ModifyStatementContext ctx) {
         // modify ( identifier ) { statement* }
@@ -1135,6 +1209,168 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             wildcard.setTokenRange(createTokenRange(ctx));
             return wildcard;
+        }
+    }
+
+    private LambdaParametersResult resolveLambdaParameters(Mvel3Parser.LambdaParametersContext ctx) {
+        if (ctx == null) {
+            return new LambdaParametersResult(new NodeList<>(), false);
+        }
+
+        NodeList<Parameter> parameters = new NodeList<>();
+        boolean enclosingParameters = ctx.LPAREN() != null;
+
+        if (!enclosingParameters && ctx.identifier() != null && !ctx.identifier().isEmpty()) {
+            parameters.add(createInferredParameter(ctx.identifier(0)));
+            return new LambdaParametersResult(parameters, false);
+        }
+
+        if (ctx.formalParameterList() != null) {
+            parameters.addAll(collectFormalParameters(ctx.formalParameterList()));
+        } else if (ctx.lambdaLVTIList() != null) {
+            parameters.addAll(collectLambdaLVTIParameters(ctx.lambdaLVTIList()));
+        } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
+            for (Mvel3Parser.IdentifierContext identifierContext : ctx.identifier()) {
+                parameters.add(createInferredParameter(identifierContext));
+            }
+        }
+
+        return new LambdaParametersResult(parameters, enclosingParameters);
+    }
+
+    private NodeList<Parameter> collectFormalParameters(Mvel3Parser.FormalParameterListContext ctx) {
+        NodeList<Parameter> parameters = new NodeList<>();
+        if (ctx == null) {
+            return parameters;
+        }
+
+        if (ctx.formalParameter() != null) {
+            for (Mvel3Parser.FormalParameterContext formalParameterContext : ctx.formalParameter()) {
+                parameters.add((Parameter) visit(formalParameterContext));
+            }
+        }
+
+        if (ctx.lastFormalParameter() != null) {
+            parameters.add((Parameter) visit(ctx.lastFormalParameter()));
+        }
+
+        return parameters;
+    }
+
+    private NodeList<Parameter> collectLambdaLVTIParameters(Mvel3Parser.LambdaLVTIListContext ctx) {
+        NodeList<Parameter> parameters = new NodeList<>();
+        if (ctx != null) {
+            for (Mvel3Parser.LambdaLVTIParameterContext parameterContext : ctx.lambdaLVTIParameter()) {
+                parameters.add(createLambdaVarParameter(parameterContext));
+            }
+        }
+        return parameters;
+    }
+
+    private Parameter createInferredParameter(Mvel3Parser.IdentifierContext identifierContext) {
+        UnknownType unknownType = new UnknownType();
+        unknownType.setTokenRange(createTokenRange(identifierContext));
+
+        SimpleName name = createSimpleName(identifierContext);
+
+        Parameter parameter = new Parameter(new NodeList<>(), new NodeList<>(), unknownType, false, new NodeList<>(), name);
+        parameter.setTokenRange(createTokenRange(identifierContext));
+        return parameter;
+    }
+
+    private Parameter createLambdaVarParameter(Mvel3Parser.LambdaLVTIParameterContext ctx) {
+        ModifiersAnnotations modifiersAnnotations = parseVariableModifiers(ctx.variableModifier());
+        VarType varType = new VarType();
+        varType.setTokenRange(createTokenRange(ctx));
+
+        SimpleName name = createSimpleName(ctx.identifier());
+
+        Parameter parameter = new Parameter(modifiersAnnotations.modifiers,
+                modifiersAnnotations.annotations,
+                varType,
+                false,
+                new NodeList<>(),
+                name);
+        parameter.setTokenRange(createTokenRange(ctx));
+        return parameter;
+    }
+
+    private Statement resolveLambdaBody(Mvel3Parser.LambdaBodyContext ctx) {
+        if (ctx.block() != null) {
+            return (Statement) visit(ctx.block());
+        }
+
+        Expression expression = (Expression) visit(ctx.expression());
+        ExpressionStmt expressionStmt = new ExpressionStmt(expression);
+        expressionStmt.setTokenRange(createTokenRange(ctx));
+        return expressionStmt;
+    }
+
+    private ModifiersAnnotations parseVariableModifiers(List<Mvel3Parser.VariableModifierContext> modifierContexts) {
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        if (modifierContexts != null) {
+            for (Mvel3Parser.VariableModifierContext modifierContext : modifierContexts) {
+                if (modifierContext.FINAL() != null) {
+                    Modifier finalModifier = Modifier.finalModifier();
+                    finalModifier.setTokenRange(createTokenRange(modifierContext));
+                    modifiers.add(finalModifier);
+                } else if (modifierContext.annotation() != null) {
+                    annotations.add(parseAnnotationExpr(modifierContext.annotation()));
+                }
+            }
+        }
+
+        return new ModifiersAnnotations(modifiers, annotations);
+    }
+
+    private Type applyArrayDimensions(Type baseType, Mvel3Parser.VariableDeclaratorIdContext idContext) {
+        if (idContext == null) {
+            return baseType;
+        }
+
+        int dimensions = idContext.LBRACK() != null ? idContext.LBRACK().size() : 0;
+
+        Type result = baseType;
+        for (int i = 0; i < dimensions; i++) {
+            ArrayType arrayType = new ArrayType(result);
+            arrayType.setTokenRange(createTokenRange(idContext));
+            result = arrayType;
+        }
+
+        return result;
+    }
+
+    private SimpleName createSimpleName(Mvel3Parser.IdentifierContext identifierContext) {
+        SimpleName name = new SimpleName(identifierContext.getText());
+        name.setTokenRange(createTokenRange(identifierContext));
+        return name;
+    }
+
+    private AnnotationExpr parseAnnotationExpr(Mvel3Parser.AnnotationContext ctx) {
+        AnnotationExpr annotationExpr = StaticJavaParser.parseAnnotation(ctx.getText());
+        annotationExpr.setTokenRange(createTokenRange(ctx));
+        return annotationExpr;
+    }
+
+    private static final class LambdaParametersResult {
+        private final NodeList<Parameter> parameters;
+        private final boolean enclosingParameters;
+
+        private LambdaParametersResult(NodeList<Parameter> parameters, boolean enclosingParameters) {
+            this.parameters = parameters;
+            this.enclosingParameters = enclosingParameters;
+        }
+    }
+
+    private static final class ModifiersAnnotations {
+        private final NodeList<Modifier> modifiers;
+        private final NodeList<AnnotationExpr> annotations;
+
+        private ModifiersAnnotations(NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations) {
+            this.modifiers = modifiers;
+            this.annotations = annotations;
         }
     }
 }
