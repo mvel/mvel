@@ -52,6 +52,8 @@ import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.IntersectionType;
+import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -144,9 +146,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     public Node visitBinaryOperatorExpression(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
         Expression left = (Expression) visit(ctx.expression(0));
         Expression right = (Expression) visit(ctx.expression(1));
-        
-        String operatorText = ctx.bop.getText();
-        
+
+        String operatorText = resolveOperatorText(ctx);
+
         // Handle assignment operators separately
         AssignExpr.Operator assignOp = getAssignOperator(operatorText);
         if (assignOp != null) {
@@ -285,6 +287,36 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return methodCall;
         }
         
+        return castExpr;
+    }
+
+    @Override
+    public Node visitCastExpression(Mvel3Parser.CastExpressionContext ctx) {
+        NodeList<Type> parsedTypes = new NodeList<>();
+        for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
+            parsedTypes.add((Type) visit(typeCtx));
+        }
+
+        Type targetType;
+        if (parsedTypes.size() == 1) {
+            targetType = parsedTypes.get(0);
+        } else {
+            NodeList<ReferenceType> referenceTypes = new NodeList<>();
+            for (Type type : parsedTypes) {
+                if (!(type instanceof ReferenceType)) {
+                    throw new IllegalArgumentException("Intersection casts require reference types: " + ctx.getText());
+                }
+                referenceTypes.add((ReferenceType) type);
+            }
+            IntersectionType intersectionType = new IntersectionType(referenceTypes);
+            intersectionType.setTokenRange(createTokenRange(ctx));
+            targetType = intersectionType;
+        }
+
+        Expression expression = (Expression) visit(ctx.expression());
+
+        CastExpr castExpr = new CastExpr(targetType, expression);
+        castExpr.setTokenRange(createTokenRange(ctx));
         return castExpr;
     }
 
@@ -1352,6 +1384,33 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         AnnotationExpr annotationExpr = StaticJavaParser.parseAnnotation(ctx.getText());
         annotationExpr.setTokenRange(createTokenRange(ctx));
         return annotationExpr;
+    }
+
+    /**
+     * The Java grammar we inherit emits shift operators as separate '<' and '>' tokens, so
+     * {@code ctx.bop} remains {@code null}. JavaCC still produces "<<", ">>", ">>>", so we
+     * synthesise that text here to keep the generated AST identical to the legacy pipeline.
+     */
+    private String resolveOperatorText(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
+        if (ctx.bop != null) {
+            return ctx.bop.getText();
+        }
+
+        // This looks odd, but indeed it's expected by JavaParser.g4
+        int ltCount = ctx.LT().size();
+        int gtCount = ctx.GT().size();
+
+        if (ltCount == 2) {
+            return "<<";
+        }
+        if (gtCount == 3) {
+            return ">>>";
+        }
+        if (gtCount == 2) {
+            return ">>";
+        }
+
+        throw new IllegalArgumentException("Unknown binary operator: " + ctx.getText());
     }
 
     private static final class LambdaParametersResult {

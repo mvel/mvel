@@ -55,7 +55,10 @@ public class AstUtils {
             Map.entry("%", BinaryExpr.Operator.REMAINDER),
             Map.entry("&", BinaryExpr.Operator.BINARY_AND),
             Map.entry("|", BinaryExpr.Operator.BINARY_OR),
-            Map.entry("^", BinaryExpr.Operator.XOR)
+            Map.entry("^", BinaryExpr.Operator.XOR),
+            Map.entry("<<", BinaryExpr.Operator.LEFT_SHIFT),
+            Map.entry(">>", BinaryExpr.Operator.SIGNED_RIGHT_SHIFT),
+            Map.entry(">>>", BinaryExpr.Operator.UNSIGNED_RIGHT_SHIFT)
     );
 
     public static BinaryExpr.Operator getBinaryExprOperator(String operatorText) {
