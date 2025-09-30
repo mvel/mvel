@@ -29,19 +29,19 @@ public class ConstraintTranspilerTest implements TranspilerTest {
 
     @Test
     public void testBigDecimalPromotion() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = salary + salary;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary + salary;}",
                        "{var x = _this.getSalary().add(_this.getSalary(), java.math.MathContext.DECIMAL128);}");
     }
 
-    @Test @Ignore // we are not coercing Strings yet (mdp);
+    @Test
     public void testBigDecimalStringEquality() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = salary == \"90\";}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary == \"90\";}",
                        "{var x = _this.getSalary().compareTo(new BigDecimal(\"90\")) == 0;}");
     }
 
     @Test
     public void testBigDecimalPromotionToIntMethod() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = isEvenInt(salary.intValue());}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = isEvenInt(salary.intValue());}",
                        "{var x = _this.isEvenInt(_this.getSalary().intValue());}");
     }
 
@@ -93,49 +93,49 @@ public class ConstraintTranspilerTest implements TranspilerTest {
                        "{var x = $bd1.remainder(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
-    @Test @Ignore // no coercion of Strings yet (mdp)
+    @Test
     public void testBigDecimalStringNonEquality() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != \"90\";}",
-                       "{var x = _this.getSalary().compareTo(new java.math.BigDecimal(\"90\")) != 0;}");
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != \"90\";}",
+                       "{var x = _this.getSalary().compareTo(new BigDecimal(\"90\")) != 0;}");
     }
 
     @Test
     public void testRootObjectWithPropertyAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != 90;}",
                        "{var x = _this.getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
     public void testRootObjectWithNestedPropertiesAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.salary != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.salary != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
     public void testRootObjectWithPropertyAndNestedMethdAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.getSalary() != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.getSalary() != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
     public void testRootObjectWithMethodAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = getSalary() != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getSalary() != 90;}",
                        "{var x = _this.getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
     public void testRootObjectWithMethodAndNestedPropertyAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().salary != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().salary != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
     public void testRootObjectWithMethodAndNestedMethodAndBigRewrite() {
-        testExpression(c -> c.setRootDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().getSalary() != 90;}",
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().getSalary() != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
-    public <K, R> void testExpression(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
+    public <K, R> void testExpression(Consumer<MVELBuilder<Map<String, Object>, Void, Object>> testFunction,
                                String inputExpression,
                                String expectedResult,
                                Consumer<TranspiledResult> resultAssert) {
@@ -145,7 +145,7 @@ public class ConstraintTranspilerTest implements TranspilerTest {
              resultAssert);
     }
 
-    <K, R> void testExpression(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
+    <K, R> void testExpression(Consumer<MVELBuilder<Map<String, Object>, Void, Object>> testFunction,
                                   String inputExpression,
                                   String expectedResult) {
         testExpression(testFunction, inputExpression, expectedResult, t -> {

@@ -34,7 +34,6 @@ public interface TranspiledResult {
 
     NodeList<ImportDeclaration> getImports();
 
-    // this overlaps with getUsedBindings, I've left above for now and will unify on this later.
     Set<String> getInputs();
 
     public TranspilerContext getTranspilerContext();

@@ -29,14 +29,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public interface TranspilerTest {
 
-    default void test(Consumer<CompilerParamtersBuilder<Map, Void,Object>> contextUpdater,
-                                        String inputExpression,
-                                        String expectedResult,
-                                        Consumer<TranspiledResult> resultAssert) {
-        CompilerParamtersBuilder<Map, Void, Object> builder = new CompilerParamtersBuilder<>();
-        builder.setClassManager(new ClassManager());
-        builder.setClassLoader(ClassLoader.getSystemClassLoader());
-        builder.setExpression(inputExpression);
+    default void  test(Consumer<MVELBuilder<Map<String, Object>, Void,Object>> contextUpdater,
+                      String inputExpression,
+                      String expectedResult,
+                      Consumer<TranspiledResult> resultAssert) {
+        MVELBuilder<Map<String, Object>, Void, Object> builder = MVEL.map()
+                                                                     .out(Type.OBJECT)
+                                                                     .block(inputExpression)
+                                                                     .classManager(new ClassManager())
+                                                                     .classLoader(ClassLoader.getSystemClassLoader())
+                                                                     .generatedSuperName(BaseExecutorClass.class.getName());
+
         builder.addImport(java.util.List.class.getCanonicalName());
         builder.addImport(java.util.ArrayList.class.getCanonicalName());
         builder.addImport(java.util.HashMap.class.getCanonicalName());
@@ -46,25 +49,21 @@ public interface TranspilerTest {
         builder.addImport(Address.class.getCanonicalName());
         builder.addImport(Person.class.getCanonicalName());
         builder.addImport(Gender.class.getCanonicalName());
-
-        builder.setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class)));
-        builder.setOutType(Type.type(Void.class));
-        builder.setGeneratedSuperName(BaseExecutorClass.class.getName());
-
         contextUpdater.accept(builder);
 
-        if (!builder.getRootDeclaration().type().isVoid()) {
-            // set a root within the context, if one is used
-            builder.getVariableInfo().setVars(builder.getRootDeclaration());
-        }
+//        // @FIXME
+//        if (!builder.getRootDeclaration().type().isVoid()) {
+//            // set a root within the context, if one is used
+//            builder.getVariableInfo().setVars(builder.getRootDeclaration());
+//        }
 
         TranspiledResult compiled = new MVELCompiler().transpile(builder.build());
 
-        verifyBodyWithBetterDiff(expectedResult + "return null;", compiled.methodBodyAsString());
+        verifyBodyWithBetterDiff(expectedResult, compiled.methodBodyAsString());
         resultAssert.accept(compiled);
     }
 
-    public static class BaseExecutorClass {
+    class BaseExecutorClass {
         public void insert(String string) {
 
         }
@@ -85,7 +84,7 @@ public interface TranspilerTest {
         }, inputExpression, expectedResult, resultAssert);
     }
 
-    default <K,R> void test(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
+    default <K,R> void test(Consumer<MVELBuilder<Map<String, Object>, Void, Object>> testFunction,
                       String inputExpression,
                       String expectedResult) {
         test(testFunction, inputExpression, expectedResult, t -> {

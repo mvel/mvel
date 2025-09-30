@@ -52,90 +52,95 @@ import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELCompiler {
 
-    public <T, K, R> Evaluator<T, K, R> compile(CompilerParamters<T, K, R> info) {
+    public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
         Evaluator<T, K, R> evaluator = compileEvaluator(unit, info);
 
         return evaluator;
     }
-    public <T, K, R> TranspiledResult transpile(CompilerParamters<T, K, R> info) {
+
+    public <T, K, R> TranspiledResult transpile(CompilerParameters<T, K, R> info) {
         EvalPre  evalPre;
-        switch(info.variableInfo().declaration().type().getClazz().getSimpleName()){
-            case "Map":
-                evalPre = (evalInfo, context, statements) -> {
-                    NodeList tempStmts = new NodeList<Statement>();
-                    context.getInputs().stream().forEach(var -> {
-                        Declaration declr = evalInfo.allVars().get(var);
+        if ( info.contextDeclaration().type().isVoid()) {
+            evalPre = (evalInfo, context, statements) -> statements;
+        } else {
+            switch (info.contextDeclaration().type().getClazz().getSimpleName()) {
+                case "Map":
+                    evalPre = (evalInfo, context, statements) -> {
+                        NodeList tempStmts = new NodeList<Statement>();
+                        context.getInputs().stream().forEach(var -> {
+                            Declaration declr = evalInfo.allVars().get(var);
 
-                        MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(evalInfo.variableInfo().declaration().name()),
-                                                                           "get", NodeList.nodeList(new StringLiteralExpr(declr.name())));
-                        Type castType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
-                        CastExpr castExpr = new CastExpr(castType.clone(),
-                                                         methodCallExpr);
-
-                        VariableDeclarator varDeclr = new VariableDeclarator(castType, declr.name());
-                        varDeclr.setInitializer(castExpr);
-                        VariableDeclarationExpr varDeclExpr = new VariableDeclarationExpr(varDeclr);
-
-                        tempStmts.add(new ExpressionStmt(varDeclExpr));
-                    });
-
-                    tempStmts.addAll(statements);
-
-                    return tempStmts;
-                };
-                break;
-            case "List":
-                evalPre = (evalInfo, context, statements) -> {
-                    NodeList tempStmts = new NodeList<Statement>();
-
-                    for ( int i  = 0; i < evalInfo.variableInfo().vars().length; i++) {
-                        Declaration declr = evalInfo.variableInfo().vars()[i];
-                        if (context.getInputs().contains(declr.name())) {
-                            MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(evalInfo.variableInfo().declaration().name()), "get", NodeList.nodeList(new IntegerLiteralExpr(i)));
-                            CastExpr castExpr = new CastExpr(handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName())),
+                            MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(evalInfo.contextDeclaration().name()),
+                                                                               "get", NodeList.nodeList(new StringLiteralExpr(declr.name())));
+                            Type castType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
+                            CastExpr castExpr = new CastExpr(castType.clone(),
                                                              methodCallExpr);
 
-                            Type               castType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
                             VariableDeclarator varDeclr = new VariableDeclarator(castType, declr.name());
                             varDeclr.setInitializer(castExpr);
                             VariableDeclarationExpr varDeclExpr = new VariableDeclarationExpr(varDeclr);
 
                             tempStmts.add(new ExpressionStmt(varDeclExpr));
+                        });
+
+                        tempStmts.addAll(statements);
+
+                        return tempStmts;
+                    };
+                    break;
+                case "List":
+                    evalPre = (evalInfo, context, statements) -> {
+                        NodeList tempStmts = new NodeList<Statement>();
+
+                        for (int i = 0; i < evalInfo.variableDeclarations().size(); i++) {
+                            Declaration declr = evalInfo.variableDeclarations().get(i);
+                            if (context.getInputs().contains(declr.name())) {
+                                MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(evalInfo.contextDeclaration().name()), "get", NodeList.nodeList(new IntegerLiteralExpr(i)));
+                                CastExpr castExpr = new CastExpr(handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName())),
+                                                                 methodCallExpr);
+
+                                Type               castType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
+                                VariableDeclarator varDeclr = new VariableDeclarator(castType, declr.name());
+                                varDeclr.setInitializer(castExpr);
+                                VariableDeclarationExpr varDeclExpr = new VariableDeclarationExpr(varDeclr);
+
+                                tempStmts.add(new ExpressionStmt(varDeclExpr));
+                            }
                         }
-                    }
 
-                    tempStmts.addAll(statements);
+                        tempStmts.addAll(statements);
 
-                    return tempStmts;
-                };
-                break;
-            default: // pojo
-                evalPre = (evalInfo, context, statements) -> {
-                    NodeList tempStmts = new NodeList<Statement>();
-                    context.getInputs().stream().forEach(var -> {
-                        Declaration declr = evalInfo.allVars().get(var);
+                        return tempStmts;
+                    };
+                    break;
+                default: // pojo
+                    evalPre = (evalInfo, context, statements) -> {
+                        NodeList tempStmts = new NodeList<Statement>();
+                        context.getInputs().stream().forEach(var -> {
+                            Declaration declr = evalInfo.allVars().get(var);
 
-                        ResolvedType                     resolvedType = context.getFacade().getSymbolSolver().classToResolvedType(info.variableInfo().declaration().type().getClazz());
-                        ResolvedReferenceTypeDeclaration d            = resolvedType.asReferenceType().getTypeDeclaration().get();
+                            ResolvedType                     resolvedType = context.getFacade().getSymbolSolver().classToResolvedType(info.contextDeclaration().type().getClazz());
+                            ResolvedReferenceTypeDeclaration d            = resolvedType.asReferenceType().getTypeDeclaration().get();
 
-                        MethodUsage method = MVELToJavaRewriter.findGetterSetter("get", declr.name(), 0, d);
+                            MethodUsage method = MVELToJavaRewriter.findGetterSetter("get", declr.name(), 0, d);
 
-                        MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(info.variableInfo().declaration().name()), method.getName());
+                            MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(info.contextDeclaration().name()), method.getName());
 
-                        Type targetType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
+                            Type targetType = handleParserResult(context.getParser().parseType(declr.type().getCanonicalGenericsName()));
 
-                        VariableDeclarator varDeclr = new VariableDeclarator(targetType, declr.name());
-                        varDeclr.setInitializer(methodCallExpr);
-                        VariableDeclarationExpr varDeclExpr = new VariableDeclarationExpr(varDeclr);
+                            VariableDeclarator varDeclr = new VariableDeclarator(targetType, declr.name());
+                            varDeclr.setInitializer(methodCallExpr);
+                            VariableDeclarationExpr varDeclExpr = new VariableDeclarationExpr(varDeclr);
 
-                        tempStmts.add(new ExpressionStmt(varDeclExpr));
-                    });
+                            tempStmts.add(new ExpressionStmt(varDeclExpr));
+                        });
 
-                    tempStmts.addAll(statements);
+                        tempStmts.addAll(statements);
 
-                    return tempStmts;
-                };
+                        return tempStmts;
+                    };
+            }
         }
 
         TranspiledResult input = MVELTranspiler.transpile(info, evalPre);
@@ -143,13 +148,13 @@ public class MVELCompiler {
         return input;
     }
 
-    private <T, K, R> CompilationUnit compileNoLoad(CompilerParamters<T, K, R> info) {
+    private <T, K, R> CompilationUnit compileNoLoad(CompilerParameters<T, K, R> info) {
         TranspiledResult input = transpile(info);
 
         return new CompilationUnitGenerator(input.getTranspilerContext().getParser()).createCompilationUnit(input, info);
     }
 
-    private <T, K, R> Evaluator<T, K, R> compileEvaluator(CompilationUnit unit, CompilerParamters<T, K, R> info) {
+    private <C, W, O> Evaluator<C, W, O> compileEvaluator(CompilationUnit unit, CompilerParameters<C, W, O> info) {
         String javaFQN = evaluatorFullQualifiedName(unit);
         ClassManager clsManager = info.classManager();
         if (clsManager == null) {
@@ -158,9 +163,9 @@ public class MVELCompiler {
 
         compileEvaluatorClass(clsManager, info.classLoader(), unit, javaFQN);
 
-        Class<Evaluator<T, K, R>> evaluatorDefinition = clsManager.getClass(javaFQN);
+        Class<Evaluator<C, W, O>> evaluatorDefinition = clsManager.getClass(javaFQN);
 
-        Evaluator<T, K, R> evaluator = createEvaluatorInstance(evaluatorDefinition);
+        Evaluator<C, W, O> evaluator = createEvaluatorInstance(evaluatorDefinition);
 
         return evaluator;
     }

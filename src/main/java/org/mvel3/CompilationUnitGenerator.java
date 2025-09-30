@@ -89,7 +89,7 @@ public class CompilationUnitGenerator {
 //        return template;
 //    }
 
-    public <T, K, R> CompilationUnit createMapEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
+    public <T, K, R> CompilationUnit createMapEvaluatorUnit(TranspiledResult input, CompilerParameters<T, K, R> info) {
 //        loadTemplate("MapEvaluatorTemplate");
 //        renameTemplateClass(info.expression(), "MapEvaluatorTemplate");
 //        clearExamples();
@@ -103,7 +103,7 @@ public class CompilationUnitGenerator {
         return input.getUnit();//template;
     }
 
-    public <T, K, R> CompilationUnit createArrayEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
+    public <T, K, R> CompilationUnit createArrayEvaluatorUnit(TranspiledResult input, CompilerParameters<T, K, R> info) {
 //        loadTemplate("ArrayEvaluatorTemplate");
 //        renameTemplateClass(info.expression(), "ArrayEvaluatorTemplate");
 //
@@ -131,7 +131,7 @@ public class CompilationUnitGenerator {
         logGenerateClass();
     }
 
-    public <T, K, R> CompilationUnit createPojoEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
+    public <T, K, R> CompilationUnit createPojoEvaluatorUnit(TranspiledResult input, CompilerParameters<T, K, R> info) {
         loadTemplate("PojoEvaluatorTemplate");
         renameTemplateClass(info.expression(), "PojoEvaluatorTemplate");
 
@@ -139,12 +139,12 @@ public class CompilationUnitGenerator {
 
         Type contextType = null;
         Type returnType = null;
-        ParseResult<Type> parseTypeResults = parser.parseType(info.variableInfo().declaration().type().getCanonicalGenericsName());
+        ParseResult<Type> parseTypeResults = parser.parseType(info.contextDeclaration().type().getCanonicalGenericsName());
         if (parseTypeResults.isSuccessful()){
             contextType = parseTypeResults.getResult().get();
         }
 
-        parseTypeResults = parser.parseType(info.variableInfo().declaration().type().getCanonicalGenericsName());
+        parseTypeResults = parser.parseType(info.contextDeclaration().type().getCanonicalGenericsName());
         if (parseTypeResults.isSuccessful()){
             returnType = parseTypeResults.getResult().get();
         }
@@ -162,20 +162,20 @@ public class CompilationUnitGenerator {
         return template;
     }
 
-    public <T, K, R> CompilationUnit createRootObjectEvaluatorUnit(TranspiledResult input, CompilerParamters<T, K, R> info) {
+    public <T, K, R> CompilationUnit createRootObjectEvaluatorUnit(TranspiledResult input, CompilerParameters<T, K, R> info) {
         loadTemplate("PojoEvaluatorTemplate");
         renameTemplateClass(info.expression(), "PojoEvaluatorTemplate");
 
         clearExamples();
 
-        ParseResult<Type> rootTypeResult = parser.parseType(info.rootDeclaration().type().getCanonicalGenericsName());
+        ParseResult<Type> rootTypeResult = parser.parseType(info.withDeclaration().type().getCanonicalGenericsName());
         if (!rootTypeResult.isSuccessful()) {
-            throwParserException(info.rootDeclaration().type(), rootTypeResult);
+            throwParserException(info.withDeclaration().type(), rootTypeResult);
         }
 
-        ParseResult<Type> outTypeResult = parser.parseType(info.rootDeclaration().type().getCanonicalGenericsName());
+        ParseResult<Type> outTypeResult = parser.parseType(info.withDeclaration().type().getCanonicalGenericsName());
         if (!rootTypeResult.isSuccessful()) {
-            throwParserException(info.rootDeclaration().type(), rootTypeResult);
+            throwParserException(info.withDeclaration().type(), rootTypeResult);
         }
 
         Type rootType = rootTypeResult.getResult().get();
@@ -186,7 +186,7 @@ public class CompilationUnitGenerator {
         methodDeclaration.getParameter(0).setType(rootType);
         methodDeclaration.setType(outType);
 
-        ParseResult<Type> result = parser.parseType(info.rootDeclaration().type().getCanonicalGenericsName());
+        ParseResult<Type> result = parser.parseType(info.withDeclaration().type().getCanonicalGenericsName());
         if (result.isSuccessful()) {
             Type type = result.getResult().get();
             VariableDeclarationExpr variable = new VariableDeclarationExpr(type, ROOT_PREFIX);
@@ -197,7 +197,7 @@ public class CompilationUnitGenerator {
 //                final Expression expr = new AssignExpr(new NameExpr(binding), new NameExpr("pojo"), AssignExpr.Operator.ASSIGN);
             bindingAssignmentBlock.addStatement(variable);
         } else {
-            throwParserException(info.rootDeclaration().type(), rootTypeResult);
+            throwParserException(info.withDeclaration().type(), rootTypeResult);
         }
 
         addImports(input);
@@ -364,8 +364,8 @@ public class CompilationUnitGenerator {
         }
     }
 
-    private <T, K, R> void createPojoContextVariableAssignments(CompilerParamters<T, K, R> info) {
-        for (Declaration declr : info.variableInfo().vars()) {
+    private <T, K, R> void createPojoContextVariableAssignments(CompilerParameters<T, K, R> info) {
+        for (Declaration declr : info.variableDeclarations()) {
             Class<?> contextVarClass = declr.type().getClass();
 
             // get getter Name
@@ -445,7 +445,7 @@ public class CompilationUnitGenerator {
                 .isPresent();
     }
 
-    public <R, K, T> CompilationUnit createCompilationUnit(TranspiledResult input, CompilerParamters<T,K,R> info) {
+    public <R, K, T> CompilationUnit createCompilationUnit(TranspiledResult input, CompilerParameters<T,K,R> info) {
         return input.getUnit();
     }
 

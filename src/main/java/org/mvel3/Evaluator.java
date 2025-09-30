@@ -1,19 +1,15 @@
 package org.mvel3;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.function.Function;
-
-public interface Evaluator<T, K, R> {
-    default R eval(T t) {
+public interface Evaluator<C, W, O> {
+    default O eval(C c) {
         throw new RuntimeException("Not Implemented");
     }
 
-    default R eval(T t, K k) {
+    default O eval(C c, W w) {
         throw new RuntimeException("Not Implemented");
     }
 
-    default R evalRoot(K k) {
+    default O evalWith(W w) {
         throw new RuntimeException("Not Implemented");
 
     }

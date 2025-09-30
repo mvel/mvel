@@ -37,6 +37,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.Ignore;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -828,7 +829,7 @@ public class MvelParserTest implements TranspilerTest {
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($s) {  };" + newLine() +
+                "    modify ($s) {  }" + newLine() +
                 "}");
     }
 

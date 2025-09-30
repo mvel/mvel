@@ -5337,7 +5337,7 @@ WithStatement WithStatement():
     JavaToken begin;
     Statement stmt = null;
     NodeList<Statement> all = emptyNodeList();
-    Expression withObject = null;
+    NameExpr withObject = null;
 }
 {
     { this.isWithOrModify = true; }

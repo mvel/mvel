@@ -35,7 +35,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testAssignmentIncrement() {
         test(ctx -> ctx.addDeclaration("i", Integer.class),
              "i += 10;",
-             CompilerParamtersBuilder.CONTEXT_NAME + " .put(\"i\", i += 10);");
+             MVELBuilder.CONTEXT_NAME + " .put(\"i\", i += 10);");
     }
 
     @Test
@@ -603,7 +603,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      ctx.addDeclaration("b", BigDecimal.class);
                  },
                  "b " + op + "= 10;",
-                 CompilerParamtersBuilder.CONTEXT_NAME + ".put(\"b\", b = b." + method + "(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128));"
+                 MVELBuilder.CONTEXT_NAME + ".put(\"b\", b = b." + method + "(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128));"
                 );
 
         }
@@ -816,7 +816,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("map", Map.class, "<String, Integer>");
              },
              "s = map[s];",
-             CompilerParamtersBuilder.CONTEXT_NAME + ".put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
+             MVELBuilder.CONTEXT_NAME + ".put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
     }
 
     @Test
@@ -1753,6 +1753,13 @@ public class MVELTranspilerTest implements TranspilerTest {
         }
     }
 
+    @Test
+    public void tesWith() {
+        test(ctx -> ctx.addDeclaration("foo", Foo.class),
+             "with (foo) { countTest += 5; } return foo;",
+             "{ foo.setCountTest(foo.getCountTest() + 5);} return foo;",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("foo"));
+    }
 
     @Test @Ignore("Not yet supporing Method's with expressions, only variables")
     public void testUncompiledMethod() {
