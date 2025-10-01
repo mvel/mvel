@@ -153,6 +153,7 @@ public class MVELPrintVisitor extends DefaultPrettyPrinterVisitor implements Drl
         inlineCastExpr.getExpression().accept( this, arg );
         printer.print( "#" );
         inlineCastExpr.getType().accept( this, arg );
+        printer.print( "#" );
     }
 
     @Override

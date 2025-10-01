@@ -166,7 +166,9 @@ public class InlineCastExpr extends Expression implements NodeWithType<InlineCas
 
     @Override
     public <A> void accept(VoidVisitor<A> v, A arg) {
-        ((DrlVoidVisitor<A>)v).visit(this, arg);
+        if (v instanceof DrlVoidVisitor) {
+            ((DrlVoidVisitor<A>) v).visit(this, arg);
+        }
     }
 
 }

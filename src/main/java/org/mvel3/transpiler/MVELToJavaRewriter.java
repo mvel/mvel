@@ -30,6 +30,7 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.PrimitiveType.Primitive;
@@ -45,11 +46,12 @@ import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import com.github.javaparser.utils.Pair;
-import org.mvel3.CompilerParamtersBuilder;
+import org.mvel3.MVELBuilder;
 import org.mvel3.MVEL;
+import org.mvel3.parser.ast.expr.AbstractContextStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
-import org.mvel3.parser.ast.expr.ModifyStatement;
+import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
@@ -106,8 +108,9 @@ public class MVELToJavaRewriter {
 
     Expression mathContext;
 
-    NameExpr modifyName;
-    ResolvedType modifyType;
+    NameExpr     withContextName;
+    ResolvedType withContextType;
+    boolean isModifyWithContext;
 
     public MVELToJavaRewriter(TranspilerContext context) {
         this.context = context;
@@ -123,8 +126,8 @@ public class MVELToJavaRewriter {
 
         mathContext = handleParserResult(context.getParser().parseExpression("java.math.MathContext.DECIMAL128"));
 
-        if (!context.getEvaluatorInfo().rootDeclaration().type().isVoid()) {
-            Class cls = context.getEvaluatorInfo().rootDeclaration().type().getClazz();
+        if (!context.getEvaluatorInfo().withDeclaration().type().isVoid()) {
+            Class cls = context.getEvaluatorInfo().withDeclaration().type().getClazz();
             try {
                 rootObjectType = solver.classToResolvedType(cls);
             } catch (Exception e) {
@@ -132,7 +135,7 @@ public class MVELToJavaRewriter {
             }
         }
 
-        Class cls = context.getEvaluatorInfo().variableInfo().declaration().type().getClazz();
+        Class cls = context.getEvaluatorInfo().contextDeclaration().type().getClazz();
         try {
             contextObjectType = solver.classToResolvedType(cls);
         } catch (Exception e) {
@@ -180,22 +183,26 @@ public class MVELToJavaRewriter {
                 node.replace(mce);
                 break;
             }
-            case "ModifyStatement" : {
-                ModifyStatement modifyStmt = (ModifyStatement) node;
-                NameExpr        nameExpr   = modifyStmt.getTarget();
-                modifyName = nameExpr;
-                modifyType = nameExpr.calculateResolvedType();
+            case "ModifyStatement" :
+                isModifyWithContext = true;
+            case "WithStatement" : {
+                AbstractContextStatement modifyStmt = (AbstractContextStatement) node;
+                NameExpr                 nameExpr   = (NameExpr) modifyStmt.getTarget();
+                withContextName = nameExpr;
+                withContextType = nameExpr.calculateResolvedType();
 
                 // create a block to hold the rewritten statements to repalce the modify block
                 BlockStmt blockStmt = new BlockStmt();
                 modifyStmt.replace(blockStmt);
                 modifyStmt.getTarget().setParentNode(blockStmt);
-                modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement(n));
+                modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement((Statement) n));
                 blockStmt.getStatements().forEach( n -> rewriteNode(n));
-                blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(modifyName.getNameAsString())));
+                if (isModifyWithContext) {
+                    blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(withContextName.getNameAsString())));
+                }
 
-                modifyName = null;
-                modifyType = null;
+                withContextName = null;
+                withContextType = null;
                 break;
             }
             case "UnaryExpr":
@@ -230,12 +237,12 @@ public class MVELToJavaRewriter {
 
                 NameExpr scope;
                 ResolvedType scopeType;
-                if (context.getEvaluatorInfo().rootDeclaration().type().isVoid()) {
+                if (context.getEvaluatorInfo().withDeclaration().type().isVoid()) {
                     // root not set, cannot rewrite
                     break;
                 }
 
-                if (context.getEvaluatorInfo().variableInfo().declaration().name().equals(name)) {
+                if (context.getEvaluatorInfo().contextDeclaration().name().equals(name)) {
                     // do not rewrite if using the context variable
                     break;
                 }
@@ -245,15 +252,15 @@ public class MVELToJavaRewriter {
                     break;
                 }
 
-                node = rewriteNameToScope(new NameExpr(context.getEvaluatorInfo().rootDeclaration().name()), rootObjectType,
+                node = rewriteNameToScope(new NameExpr(context.getEvaluatorInfo().withDeclaration().name()), rootObjectType,
                                           nameExpr, true);
                 break;
             }
             case "FieldAccessExpr":
                 node = maybeRewriteToGetter((FieldAccessExpr) node);
                 break;
-            case "CastExpr":
-                processInlineCastExpr((CastExpr) node);
+            case "InlineCastExpr":
+                processInlineCastExpr((InlineCastExpr) node);
                 break;
             case "AssignExpr":
                 processAssignExpr((AssignExpr) node);
@@ -297,22 +304,22 @@ public class MVELToJavaRewriter {
 
                 // This attempts to only rewrite methods that are not called against a variable
                 if (!methodCallExpr.hasScope() && !methodCallExpr.getNameAsString().contains(".")) {
-                    if (modifyName == null) {
+                    if (withContextName == null) {
                         node       = rewriteMethodToContextObject(methodCallExpr);
                         methodCall = (MethodCallExpr) node;
                     } else {
                         methodCall.setScope(new NameExpr(methodCallExpr.getTokenRange().get(),
                                                          new SimpleName(methodCallExpr.getTokenRange().get(),
-                                                                        modifyName.getNameAsString())));
+                                                                        withContextName.getNameAsString())));
                     }
                 }
 
                 if (methodCall.getScope().isPresent()) {
                     Expression scope = methodCall.getScope().get();
-                    if (modifyName != null &&
+                    if (withContextName != null &&
                         scope.isNameExpr() ) {
 
-                        scope = rewriteNameToScope(new NameExpr(modifyName.getNameAsString()), modifyType,
+                        scope = rewriteNameToScope(new NameExpr(withContextName.getNameAsString()), withContextType,
                                                    scope.asNameExpr(), true);
                     } else {
                         rewriteNode(methodCall.getScope().get());
@@ -547,7 +554,7 @@ public class MVELToJavaRewriter {
         return paramType;
     }
 
-    private Expression processInlineCastExpr(CastExpr node) {
+    private Expression processInlineCastExpr(InlineCastExpr node) {
         Expression expr;
 
         rewriteNode(node.getExpression());
@@ -557,11 +564,10 @@ public class MVELToJavaRewriter {
 
         ResolvedType sourceType = node.getExpression().calculateResolvedType();
         if (isAssignableBy(sourceType, targetType)) { // in casting the source and target are reversed
-            // have to put into an () enclosure, as this was not in the original grammar due to #....#
-            EnclosedExpr enclosure = new EnclosedExpr();
+            CastExpr newNode = new CastExpr(node.getTokenRange().get(), node.getType(), node.getExpression());
+            EnclosedExpr enclosure = new EnclosedExpr(node.getTokenRange().get(), newNode);
             node.replace(enclosure);
-            enclosure.setInner(node);
-            expr = enclosure; // a normal casts suffices
+            expr = newNode;
         } else {
             // else try coercion
             Expression result = coercer.coerce(sourceType, node.getExpression(), targetType);
@@ -624,7 +630,7 @@ public class MVELToJavaRewriter {
             // clone this, so we can try and resolve it against the root pattern as scope.
             // Note if this is a static import, the root will take priority.
             MethodCallExpr cloned = methodCallExpr.clone();
-            cloned.setScope(new NameExpr(context.getEvaluatorInfo().rootDeclaration().name()));
+            cloned.setScope(new NameExpr(context.getEvaluatorInfo().withDeclaration().name()));
 
             methodCallExpr.replace(cloned); // temporary swap, so type resolving works
             MethodUsage methodUsage = null;
@@ -651,11 +657,11 @@ public class MVELToJavaRewriter {
 
         rewriteNode(assignExpr.getValue());
 
-        if ( modifyName != null) {
+        if (withContextName != null) {
             if (assignExpr.getTarget().isNameExpr()) {
-                FieldAccessExpr fieldAccesss = new FieldAccessExpr(modifyName.getTokenRange().get(),
-                                                                    new NameExpr(modifyName.getNameAsString()), null,
-                                                                    new SimpleName(assignExpr.getTarget().getTokenRange().get(), ((NameExpr)assignExpr.getTarget()).getNameAsString()));
+                FieldAccessExpr fieldAccesss = new FieldAccessExpr(withContextName.getTokenRange().get(),
+                                                                   new NameExpr(withContextName.getNameAsString()), null,
+                                                                   new SimpleName(assignExpr.getTarget().getTokenRange().get(), ((NameExpr)assignExpr.getTarget()).getNameAsString()));
                 assignExpr.getTarget().replace(fieldAccesss);
             }
         }
@@ -716,7 +722,7 @@ public class MVELToJavaRewriter {
 
             // If this updates a var that exists in the context, make sure the result is assigned back there too.
             if ( context.getInputs().contains(nameExpr.getNameAsString())) {
-                Declaration<?> ctxDeclr = context.getEvaluatorInfo().variableInfo().declaration();
+                Declaration<?> ctxDeclr = context.getEvaluatorInfo().contextDeclaration();
                 Class ctxClass = ctxDeclr.type().getClazz();
                 if (ctxDeclr.type().getClazz().isAssignableFrom(Map.class)) {
 
@@ -734,7 +740,7 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr putMethod = new MethodCallExpr( scope,"putMap");
                         assignExpr.replace(putMethod);
-                        putMethod.addArgument(new NameExpr(context.getEvaluatorInfo().variableInfo().declaration().name()));
+                        putMethod.addArgument(new NameExpr(context.getEvaluatorInfo().contextDeclaration().name()));
                         putMethod.addArgument(new StringLiteralExpr(nameExpr.getNameAsString()));
                         putMethod.addArgument(assignExpr);
                     }
@@ -744,7 +750,7 @@ public class MVELToJavaRewriter {
                         // a = 5 becomes context.set(i, a = 5);
                         MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(ctxDeclr.name())), "set");
                         assignExpr.replace(setMethod);
-                        setMethod.setArguments(NodeList.nodeList(new IntegerLiteralExpr(context.getEvaluatorInfo().variableInfo().indexOf(nameExpr.getNameAsString())),
+                        setMethod.setArguments(NodeList.nodeList(new IntegerLiteralExpr(context.getEvaluatorInfo().indexOf(nameExpr.getNameAsString())),
                                                                  assignExpr));
                     } else {
                         // This assigment is part of some expression, so wwrap the asssignment and return the new value
@@ -753,15 +759,15 @@ public class MVELToJavaRewriter {
 
                         MethodCallExpr setMethod = new MethodCallExpr( scope,"setList");
                         assignExpr.replace(setMethod);
-                        setMethod.addArgument(CompilerParamtersBuilder.CONTEXT_NAME);
-                        setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().variableInfo().indexOf(nameExpr.getNameAsString())));
+                        setMethod.addArgument(MVELBuilder.CONTEXT_NAME);
+                        setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().indexOf(nameExpr.getNameAsString())));
                         setMethod.addArgument(assignExpr);
                     }
                 } else {
                     // pojo
                     // @TOOD I need to call the generated method below. But ideally only if it's part of some parent.
                     addSetterMethod(nameExpr);
-                    MethodCallExpr setMethod = new MethodCallExpr(CompilerParamtersBuilder.CONTEXT_NAME + nameExpr.getNameAsString());
+                    MethodCallExpr setMethod = new MethodCallExpr(MVELBuilder.CONTEXT_NAME + nameExpr.getNameAsString());
                     assignExpr.replace(setMethod);
                     setMethod.addArgument(new NameExpr(ctxDeclr.name()));
                     setMethod.addArgument(assignExpr);
@@ -864,7 +870,7 @@ public class MVELToJavaRewriter {
     }
 
     public void addSetterMethod(NameExpr nameExpr) {
-        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod(CompilerParamtersBuilder.CONTEXT_NAME + nameExpr);
+        MethodDeclaration methodDeclr = context.getClassDeclaration().addMethod(MVELBuilder.CONTEXT_NAME + nameExpr);
         methodDeclr.setStatic(true);
         methodDeclr.setPublic(true);
 
@@ -873,7 +879,7 @@ public class MVELToJavaRewriter {
         Type propertyType = resolvedTypeToType(propertyResolvedType);
         Type contextType = resolvedTypeToType(contextObjectType);
 
-        Parameter c = new Parameter(contextType, CompilerParamtersBuilder.CONTEXT_NAME );
+        Parameter c = new Parameter(contextType, MVELBuilder.CONTEXT_NAME );
         Parameter v = new Parameter(propertyType, "v" );
         methodDeclr.setParameters(NodeList.nodeList(c, v));
 
@@ -883,7 +889,7 @@ public class MVELToJavaRewriter {
 
         MethodUsage methodUsage = findGetterSetter("set", nameExpr.getNameAsString(), 1, d);
 
-        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(CompilerParamtersBuilder.CONTEXT_NAME)), methodUsage.getName());
+        MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(MVELBuilder.CONTEXT_NAME)), methodUsage.getName());
         setMethod.addArgument(new NameExpr("v"));
 
         ReturnStmt returnStmt = new ReturnStmt(new NameExpr("v"));
@@ -993,26 +999,27 @@ public class MVELToJavaRewriter {
         boolean isLeftTypeString = isAssignableBy(stringType, leftType);
         boolean isRightTypeString = isAssignableBy(stringType, rightType);
 
-        // This handles a special case for + and Strings in binary expressions
-        if (binExprTypes.getBinaryExpr().getOperator() == BinaryExpr.Operator.PLUS &&
-            (isLeftTypeString || isRightTypeString)) {
-            return null;
-        } // else do not coerce to String.
+        if ((isLeftTypeString || isRightTypeString) &&
+            (binExprTypes.getBinaryExpr().getOperator() != BinaryExpr.Operator.EQUALS &&
+            binExprTypes.getBinaryExpr().getOperator() != BinaryExpr.Operator.NOT_EQUALS)) {
+            return null; // becuase Java has expected behaviour for + and Strings it is left as is,
+                         // nor is the behaviour of other operators changed.
+                         // Unless it's an '==' operator
+        }
 
-        Expression coerced; // only attempt right to left, if left is not String.
-        if (!isLeftTypeString && ((coerced = coercer.coerce(rightType, right, leftType)) != null))  {
+        Expression coerced;
+        // Always attempt to coerce to the right to the left first
+        // for widening like BigDecimal this is
+        if ((coerced = coercer.coerce(rightType, right, leftType)) != null)  {
             right     = coerced;
             rightType = leftType;
             binExprTypes.setRight(right, rightType);
             binExprTypes.binaryExpr.setRight(right);
-        } else {
-            coerced = coercer.coerce(leftType, left, rightType);
-            if (coerced != null) {
-                left     = coerced;
-                leftType = rightType;
-                binExprTypes.setLeft(left, leftType);
-                binExprTypes.binaryExpr.setLeft(left);
-            }
+        } else if ((coerced = coercer.coerce(leftType, left, rightType)) != null)  {
+            left     = coerced;
+            leftType = rightType;
+            binExprTypes.setLeft(left, leftType);
+            binExprTypes.binaryExpr.setLeft(left);
         }
 
         Expression overloaded = overloader.overload(leftType, left, right, binExprTypes.binaryExpr.getOperator());

@@ -3,9 +3,8 @@ package org.mvel2.tests.core;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.mvel2.DataConversion;
-import org.mvel3.CompilerParamtersBuilder;
-import org.mvel3.ContextInfoBuilder;
-import org.mvel3.CompilerParamters;
+import org.mvel3.MVELBuilder;
+import org.mvel3.CompilerParameters;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
@@ -302,7 +301,7 @@ public abstract class AbstractTest extends TestCase {
     //ex = maybeWrap(ex);
     Map<String, Object>                          vars     = createTestMap();
     Map<String, Type<?>>                            types    = org.mvel3.MVEL.getTypeMap(vars);
-    Evaluator<Map<String, Object>, Void, Object> compiled = new org.mvel3.MVEL().compileMapEvaluator(ex, Object.class, imports, types);
+    Evaluator<Map<String, Object>, Void, Object> compiled = new org.mvel3.MVEL().compileMapBlock(ex, Object.class, imports, types);
     Object result = compiled.eval(createTestMap());
     System.out.println("result: " + result);
     return result;
@@ -507,40 +506,40 @@ public abstract class AbstractTest extends TestCase {
     return eval(expression, rootObject, vars, new HashSet<>());
   }
 
-  public Object eval(String expression, Object rootObject, Map<String, Object> vars, Set<String> imports) {
+  public Object eval(String expression, Object withObject, Map<String, Object> vars, Set<String> imports) {
     if (imports == null) {
       imports = new HashSet<>();
     }
 
-    CompilerParamtersBuilder<Object, Object, Object> builder = CompilerParamtersBuilder
-                                                                            .create()
-                                                                            .setImports(imports)
-                                                                            .setExpression(expression)
-                                                                            .setOutType(Type.type(Object.class));
+    MVELBuilder<Map<String, Object>, Object, Object> builder = org.mvel3.MVEL.map(Declaration.from(org.mvel3.MVEL.getTypeMap(vars)))
+                                                          .with(withObject.getClass())
+                                                          .out(Object.class)
+                                                          .expression(expression)
+                                                          .imports(imports);
 
-    if (vars != null) {
-      // @TODO why do these need to be separared, how can I fix the generics (mdp)
-      ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(Map.class));
-      contextBuilder.setVars(Declaration.from(org.mvel3.MVEL.getTypeMap(vars)));
-      builder.setVariableInfo(contextBuilder);
-    }
+//    if (vars != null) {
+//      // @TODO why do these need to be separared, how can I fix the generics (mdp)
+//      ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(Map.class));
+//      contextBuilder.setVars(Declaration.from(org.mvel3.MVEL.getTypeMap(vars)));
+//      builder.variableInfo(contextBuilder);
+//    }
 
     Object evalContext = vars; // If vars are passsed us it, else default to the root object
-    if (rootObject != null) {
-      builder.setRootDeclaration(Type.type(rootObject.getClass()));
+    if (withObject != null) {
+      //builder.withDeclaration(Type.type(rootObject.getClass()));
 
       if (vars != null) {
-        vars.put("__this", rootObject); // there are vars, so the root object must map to a property of the context
+        vars.put("__this", withObject); // there are vars, so the root object must map to a property of the context
       } else {
-        ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(rootObject.getClass()));
-        builder.setVariableInfo(contextBuilder);
-        evalContext = rootObject; // no vars, so default to the root object
+//        ContextInfoBuilder<Object> contextBuilder = ContextInfoBuilder.create(Type.type(rootObject.getClass()));
+//        builder.variableInfo(contextBuilder);
+        evalContext = withObject; // no vars, so default to the root object
       }
     }
 
-    CompilerParamters<Object, Object, Object> evalInfo = builder.build();
+    CompilerParameters<Map<String, Object>, Object, Object> evalInfo = builder.build();
 
-    return org.mvel3.MVEL.get().compile(evalInfo).eval(evalContext);
+    return org.mvel3.MVEL.get().compile(evalInfo).eval(vars, withObject);
   }
 
   public Object eval(String expression, Map<String, String> map, VariableResolverFactory factory) {

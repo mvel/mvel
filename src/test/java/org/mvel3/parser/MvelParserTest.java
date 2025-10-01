@@ -40,6 +40,7 @@ import com.github.javaparser.ast.type.Type;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -76,15 +77,6 @@ public class MvelParserTest implements TranspilerTest {
     @BeforeClass
     public static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = false;
-    }
-
-    @Test
-    public void testTmp() {
-        String expr = "java.lang.Void";
-        //Expression expression = parseExpression( parser, expr ).getExpr();
-        Type type = StaticMvelParser.simplifiedParse(ParseStart.TYPE, new StringProvider(expr));
-
-        System.out.println(printNode(type));
     }
 
     @Test
@@ -159,28 +151,28 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     public void testParseInlineCastExpr() {
-        String expr = "this#Person.name == \"Mark\"";
+        String expr = "this#Person#.name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
     public void testParseInlineCastExpr2() {
-        String expr = "address#com.pkg.InternationalAddress.state.length == 5";
+        String expr = "address#com.pkg.InternationalAddress#.state.length == 5";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
     public void testParseInlineCastExpr3() {
-        String expr = "address#org.mvel3.compiler.LongAddress.country.substring(1)";
+        String expr = "address#org.mvel3.compiler.LongAddress#.country.substring(1)";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
     public void testParseInlineCastExpr4() {
-        String expr = "address#com.pkg.InternationalAddress.getState().length == 5";
+        String expr = "address#com.pkg.InternationalAddress#.getState().length == 5";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
@@ -815,9 +807,7 @@ public class MvelParserTest implements TranspilerTest {
         String expr = "{ modify ( $p )  { name = \"Luca\"; }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
-        assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { name = \"Luca\" };" + newLine() +
-                "}");
+        verifyBodyWithBetterDiff(printNode(expression),"{ modify ($p) { name = \"Luca\"; }; }");
     }
 
     @Test
@@ -825,9 +815,8 @@ public class MvelParserTest implements TranspilerTest {
         String expr = "{ modify($p) { setAge(1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
-        assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($p) { setAge(1); }" + newLine() +
-                "}");
+
+        verifyBodyWithBetterDiff(printNode(expression),"{ modify ($p) { setAge(1); } }");
     }
 
     @Test
@@ -846,7 +835,7 @@ public class MvelParserTest implements TranspilerTest {
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ($s) {  };" + newLine() +
+                "    modify ($s) {  }" + newLine() +
                 "}");
     }
 
@@ -867,7 +856,7 @@ public class MvelParserTest implements TranspilerTest {
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         assertThat(printNode(expression)).isEqualTo("{" + newLine() +
-                "    modify ((BooleanEvent) $toEdit.get(0)) {  };" + newLine() +
+                "    modify ((BooleanEvent) $toEdit.get(0)) {  }" + newLine() +
                 "}");
     }
     

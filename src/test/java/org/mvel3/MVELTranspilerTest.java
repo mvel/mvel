@@ -44,7 +44,7 @@ public class MVELTranspilerTest implements TranspilerTest {
     public void testAssignmentIncrement() {
         test(ctx -> ctx.addDeclaration("i", Integer.class),
              "i += 10;",
-             CompilerParamtersBuilder.CONTEXT_NAME + " .put(\"i\", i += 10);");
+             MVELBuilder.CONTEXT_NAME + " .put(\"i\", i += 10);");
     }
 
     @Test
@@ -203,19 +203,16 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test // I changed this, to avoid implicit narrowing (mdp)
     public void testPromoteBigDecimalToIntValueInsideIf() {
-
-        Person.isEven(1);
         test(ctx -> {
                  ctx.addDeclaration("$p", Person.class);
                  ctx.addDeclaration("$m", BigDecimal.class);
              },
              "if($p.isEvenInt($p.salary.intValue()) && $p.isEvenInt($m.intValue())){}\n",
-             "    if ($p.isEvenInt($p.getSalary().intValue()) && $p.isEvenInt($m.intValue())) {}\n");
+             "if($p.isEvenInt($p.getSalary().intValue()) && $p.isEvenInt($m.intValue())) {}\n");
     }
 
     @Test
     // I changed this, to avoid implicit narrowing (mdp)
-    // Currently broken because maybeCoerceArguments doesn't understand static import methods
     public void testPromoteBigDecimalToIntValueInsideIfWithStaticMethod() {
         test(ctx -> {
                  ctx.addDeclaration("$m", BigDecimal.class);
@@ -612,7 +609,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                      ctx.addDeclaration("b", BigDecimal.class);
                  },
                  "b " + op + "= 10;",
-                 CompilerParamtersBuilder.CONTEXT_NAME + ".put(\"b\", b = b." + method + "(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128));"
+                 MVELBuilder.CONTEXT_NAME + ".put(\"b\", b = b." + method + "(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128));"
                 );
 
         }
@@ -825,7 +822,7 @@ public class MVELTranspilerTest implements TranspilerTest {
                  ctx.addDeclaration("map", Map.class, "<String, Integer>");
              },
              "s = map[s];",
-             CompilerParamtersBuilder.CONTEXT_NAME + ".put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
+             MVELBuilder.CONTEXT_NAME + ".put(\"s\", s = java.util.Objects.toString(map.get(s), null));");
     }
 
     @Test
@@ -1697,20 +1694,20 @@ public class MVELTranspilerTest implements TranspilerTest {
 
     @Test
     public void testStringNumberTimesBinaryExpressionRewrite() {
-        test("int x = 5; String y = \"6\"; var z = x * y;",
+        test("int x = 5; String y = \"6\"; var z = x * y#int#;",
              "int x = 5; String y = \"6\"; var z = x * Integer.parseInt(y);");
     }
 
     @Test
     public void testStringNumberTimesBinaryExpressionRewriteAsVarVersion() {
-        test("int x = 5; String y = \"6\"; int z = x * y;",
+        test("int x = 5; String y = \"6\"; int z = x * y#int#;",
              "int x = 5; String y = \"6\"; int z = x * Integer.parseInt(y);");
     }
 
     @Test
     public void testBinaryExpressionAsArgs() {
         test(ctx -> ctx.addDeclaration("p", Person.class),
-             "int x = 5; String y = \"6\"; p.setAge(x * y);",
+             "int x = 5; String y = \"6\"; p.setAge(x * y#int#);",
              "int x = 5; String y = \"6\"; p.setAge(x * Integer.parseInt(y));");
     }
 
@@ -1762,6 +1759,13 @@ public class MVELTranspilerTest implements TranspilerTest {
         }
     }
 
+    @Test
+    public void tesWith() {
+        test(ctx -> ctx.addDeclaration("foo", Foo.class),
+             "with (foo) { countTest += 5; } return foo;",
+             "{ foo.setCountTest(foo.getCountTest() + 5);} return foo;",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("foo"));
+    }
 
     @Test @Ignore("Not yet supporing Method's with expressions, only variables")
     public void testUncompiledMethod() {

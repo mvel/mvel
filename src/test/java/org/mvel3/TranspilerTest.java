@@ -16,55 +16,69 @@
 
 package org.mvel3;
 
+import org.mvel3.MVELBuilder.ContentBuilder;
 import org.mvel3.transpiler.TranspiledResult;
+import org.mvel3.transpiler.context.Declaration;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public interface TranspilerTest {
 
-    default void test(Consumer<CompilerParamtersBuilder<Map, Void,Object>> contextUpdater,
-                                        String inputExpression,
-                                        String expectedResult,
-                                        Consumer<TranspiledResult> resultAssert) {
-        CompilerParamtersBuilder<Map, Void, Object> builder = new CompilerParamtersBuilder<>();
-        builder.setClassManager(new ClassManager());
-        builder.setClassLoader(ClassLoader.getSystemClassLoader());
-        builder.setExpression(inputExpression);
-        builder.addImport(java.util.List.class.getCanonicalName());
-        builder.addImport(java.util.ArrayList.class.getCanonicalName());
-        builder.addImport(java.util.HashMap.class.getCanonicalName());
-        builder.addImport(java.util.Map.class.getCanonicalName());
-        builder.addImport(BigDecimal.class.getCanonicalName());
-        builder.addImport(BigInteger.class.getCanonicalName());
-        builder.addImport(Address.class.getCanonicalName());
-        builder.addImport(Person.class.getCanonicalName());
-        builder.addImport(Gender.class.getCanonicalName());
+    default void  test(Consumer<MVELBuilder<Map<String, Object>, Void,Object>> contextUpdater,
+                      String inputExpression,
+                      String expectedResult,
+                      Consumer<TranspiledResult> resultAssert) {
+        ContentBuilder<Map<String, Object>, Void, Object> contentBuilder = MVEL.map().<Object>out(Type.OBJECT);
 
-        builder.setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class)));
-        builder.setOutType(Type.type(Void.class));
-        builder.setGeneratedSuperName(BaseExecutorClass.class.getName());
-
-        contextUpdater.accept(builder);
-
-        if (!builder.getRootDeclaration().type().isVoid()) {
-            // set a root within the context, if one is used
-            builder.getVariableInfo().setVars(builder.getRootDeclaration());
+        MVELBuilder<Map<String, Object>, Void, Object> mvelBuilder;
+        if (inputExpression.indexOf(';') > 0 || inputExpression.contains("{")) {
+            mvelBuilder = contentBuilder.block(inputExpression);
+        } else {
+            mvelBuilder = contentBuilder.expression(inputExpression);
         }
 
-        TranspiledResult compiled = new MVELCompiler().transpile(builder.build());
+        mvelBuilder.classManager(new ClassManager())
+                   .classLoader(ClassLoader.getSystemClassLoader())
+                   .generatedSuperName(BaseExecutorClass.class.getName());
 
-        verifyBodyWithBetterDiff(expectedResult + "return null;", compiled.methodBodyAsString());
+        Set<String> imports = new HashSet<>();
+        imports.add(java.util.List.class.getCanonicalName());
+        imports.add(java.util.ArrayList.class.getCanonicalName());
+        imports.add(java.util.HashMap.class.getCanonicalName());
+        imports.add(java.util.Map.class.getCanonicalName());
+        imports.add(BigDecimal.class.getCanonicalName());
+        imports.add(BigInteger.class.getCanonicalName());
+        imports.add(Address.class.getCanonicalName());
+        imports.add(Person.class.getCanonicalName());
+        imports.add(Gender.class.getCanonicalName());
+
+        mvelBuilder.imports(imports) ;
+
+        contextUpdater.accept(mvelBuilder);
+
+
+//        // @FIXME
+//        if (!builder.getRootDeclaration().type().isVoid()) {
+//            // set a root within the context, if one is used
+//            builder.getVariableInfo().setVars(builder.getRootDeclaration());
+//        }
+
+        TranspiledResult compiled = new MVELCompiler().transpile(mvelBuilder.build());
+
+        verifyBodyWithBetterDiff(expectedResult, compiled.methodBodyAsString());
         resultAssert.accept(compiled);
     }
 
-    public static class BaseExecutorClass {
+    class BaseExecutorClass {
         public void insert(String string) {
 
         }
@@ -85,7 +99,7 @@ public interface TranspilerTest {
         }, inputExpression, expectedResult, resultAssert);
     }
 
-    default <K,R> void test(Consumer<CompilerParamtersBuilder<Map, Void, Object>> testFunction,
+    default <K,R> void test(Consumer<MVELBuilder<Map<String, Object>, Void, Object>> testFunction,
                       String inputExpression,
                       String expectedResult) {
         test(testFunction, inputExpression, expectedResult, t -> {

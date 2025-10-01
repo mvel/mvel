@@ -28,7 +28,7 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
 import com.github.javaparser.symbolsolver.javaparsermodel.contexts.CompilationUnitContext;
-import org.mvel3.CompilerParamters;
+import org.mvel3.CompilerParameters;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.transpiler.CoerceRewriter;
 import org.mvel3.transpiler.OverloadRewriter;
@@ -42,7 +42,7 @@ import java.util.Set;
 public class TranspilerContext<T, K, R> {
     private Set<String> inputs;
 
-    private CompilerParamters<T, K, R> evaluatorInfo;
+    private CompilerParameters<T, K, R> evaluatorInfo;
 
     private final MvelParser parser;
 
@@ -64,7 +64,7 @@ public class TranspilerContext<T, K, R> {
 
     private Map<String, Set<ResolvedMethodDeclaration>> resolvedStaticMethods;
 
-    public TranspilerContext(MvelParser parser, TypeSolver typeSolver, CompilerParamters<T, K, R> evaluatorInfo) {
+    public TranspilerContext(MvelParser parser, TypeSolver typeSolver, CompilerParameters<T, K, R> evaluatorInfo) {
         this.parser = parser;
         this.typeSolver = typeSolver;
         this.parserConfiguration = parser.getParserConfiguration();
@@ -76,7 +76,7 @@ public class TranspilerContext<T, K, R> {
         this.inputs = new HashSet<>();
     }
 
-    public CompilerParamters<T, K, R> getEvaluatorInfo() {
+    public CompilerParameters<T, K, R> getEvaluatorInfo() {
         return evaluatorInfo;
     }
 

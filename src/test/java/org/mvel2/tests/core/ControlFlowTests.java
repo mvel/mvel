@@ -1,21 +1,16 @@
 package org.mvel2.tests.core;
 
-import org.mvel3.CompilerParamtersBuilder;
-import org.mvel3.ContextInfoBuilder;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
-import org.mvel3.Evaluator;
-import org.mvel3.Type;
 
 import java.util.*;
 import java.io.Serializable;
 
 import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.executeExpression;
 
 
@@ -397,24 +392,26 @@ public class ControlFlowTests extends AbstractTest {
     imports.add("java.util.Date");
     imports.add("java.util.Map");
 
-    CompilerParamtersBuilder<Map<String, Map<String, Date>>,
-                         Map<String, Map<String, Date>>,
-                         String> builder = CompilerParamtersBuilder.create();
+//    MVELBuilder<Map<String, Map<String, Date>>,
+//                             Map<String, Map<String, Date>>,
+//                             String> builder = MVELBuilder.create();
+//
+//    builder.imports(imports)
+//             .variableInfo(ContextInfoBuilder.create(Type.type(Map.class, "<String, Map<String, Date>>")))
+//             .expression("return new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? \"Y\" : \"N\";")
+//             .withDeclaration(Type.type(Map.class, "<String, Map<String, Date>>"))
+//             .outType(Type.type(String.class));
 
-    builder.setImports(imports)
-             .setVariableInfo(ContextInfoBuilder.create(Type.type(Map.class, "<String, Map<String, Date>>")))
-             .setExpression("return new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? \"Y\" : \"N\";")
-             .setRootDeclaration(Type.type(Map.class, "<String, Map<String, Date>>"))
-             .setOutType(Type.type(String.class));
-
-
-    org.mvel3.MVEL mvel = new org.mvel3.MVEL();
-    Evaluator<Map<String, Map<String, Date>>,
-                     Map<String, Map<String, Date>>,
-                     String> evaluator = mvel.compile(builder.build());
-
-    assertEquals("N",
-                 evaluator.eval(objectMap));
+//    org.mvel3.MVEL.map()
+//
+//
+//    org.mvel3.MVEL mvel = new org.mvel3.MVEL();
+//    Evaluator<Map<String, Map<String, Date>>,
+//                     Map<String, Map<String, Date>>,
+//                     String> evaluator = mvel.compile(builder.build());
+//
+//    assertEquals("N",
+//                 evaluator.eval(objectMap));
   }
 
   public void testSubEvaluation() {

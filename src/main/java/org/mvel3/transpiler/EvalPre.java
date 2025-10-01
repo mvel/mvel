@@ -2,9 +2,9 @@ package org.mvel3.transpiler;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.stmt.Statement;
-import org.mvel3.CompilerParamters;
+import org.mvel3.CompilerParameters;
 import org.mvel3.transpiler.context.TranspilerContext;
 
 public interface EvalPre {
-    NodeList<Statement> evalPre(CompilerParamters<?, ?, ?> evalInfo, TranspilerContext<?, ?, ?> context, NodeList<Statement> statements);
+    NodeList<Statement> evalPre(CompilerParameters<?, ?, ?> evalInfo, TranspilerContext<?, ?, ?> context, NodeList<Statement> statements);
 }

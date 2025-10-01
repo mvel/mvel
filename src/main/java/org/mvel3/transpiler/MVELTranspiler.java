@@ -35,8 +35,8 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.mvel3.ContextInfo;
-import org.mvel3.CompilerParamters;
+import org.mvel3.ContentType;
+import org.mvel3.CompilerParameters;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.context.TranspilerContext;
@@ -52,7 +52,7 @@ public class MVELTranspiler {
         this.context = context;
     }
 
-    public static <T, K, R>  TranspiledResult transpile(CompilerParamters<T, K, R> evalInfo, EvalPre evalPre) {
+    public static <T, K, R>  TranspiledResult transpile(CompilerParameters<T, K, R> evalInfo, EvalPre evalPre) {
 
         TypeSolver typeSolver = new ReflectionTypeSolver(false);
         JavaSymbolSolver solver = new JavaSymbolSolver(typeSolver);
@@ -67,7 +67,7 @@ public class MVELTranspiler {
 
         MVELTranspiler mvelTranspiler = new MVELTranspiler(context);
 
-        TranspiledResult transpiledResult =  mvelTranspiler.transpileBlock(evalInfo.expression(), evalPre);
+        TranspiledResult transpiledResult =  mvelTranspiler.transpileContent(evalInfo, evalPre);
 
         return transpiledResult;
     }
@@ -80,26 +80,16 @@ public class MVELTranspiler {
         }
     }
 
-    public TranspiledBlockResult transpileBlock(String content, EvalPre evalPre) {
+    public <T, K, R> TranspiledBlockResult transpileContent(CompilerParameters<T, K, R> evalInfo, EvalPre evalPre) {
         BlockStmt blockStmt;
-        logger.debug("Transpiling block: {}", content);
+        String content = evalInfo.expression();
+        System.out.println(content);
 
-        // This is a terrible hack, we either need a better way to snoop, or force the user to specify expression or block
 
-// Can we remove the try/catch? Statement can be expression in JavaParser.g4
-        try {
-            // wrap as expression/block may or may not have {}, then unwrap latter.xs
+        if (evalInfo.contentType() == ContentType.BLOCK) {
             blockStmt = handleParserResult(context.getParser().parseBlock("{" + content + "}\n"));
-        } catch (RuntimeException eParseBlock) {
-            logger.debug("Failed parseBlock, trying parseExpression. Error: {}", eParseBlock.getMessage());
-            // Block failed, try parsing an expression
-            Expression expr;
-            try {
-                expr = handleParserResult(context.getParser().parseExpression(content));
-            } catch (RuntimeException eParseExpression) {
-                logger.error("Stack trace at parseBlock : ", eParseBlock);
-                throw eParseExpression;
-            }
+        } else {
+            Expression expr = handleParserResult(context.getParser().parseExpression(content));
             if (context.getEvaluatorInfo().outType().isVoid()) {
                 ExpressionStmt exprStmt = new ExpressionStmt(expr);
                 blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
@@ -109,51 +99,22 @@ public class MVELTranspiler {
             }
         }
 
-        // === Use this for parseExpression only ===
-//        Expression expr;
-//        try {
-//            expr = handleParserResult(context.getParser().parseExpression(content));
-//        } catch (RuntimeException eParseExpression) {
-//            throw eParseExpression;
-//        }
-//        if (context.getEvaluatorInfo().outType().isVoid()) {
-//            ExpressionStmt exprStmt = new ExpressionStmt(expr);
-//            blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
-//        } else {
-//            ReturnStmt returnStmt = new ReturnStmt(expr);
-//            blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
-//        }
-
-        // It's not right to use PrintUtil without a TypeSolver, but this is just to help debugging
-        try {
-            logger.debug("Initial parsed block:\n{}", PrintUtil.printNode(blockStmt));
-        } catch (Exception e) {
-            logger.debug("Error printing initial parsed block, but ignoring it, because this is just a debug log");
-            logger.trace("  stacktrace", e);
-        }
-
         VariableAnalyser analyser = new VariableAnalyser(context.getEvaluatorInfo().allVars().keySet());
         blockStmt.accept(analyser, null);
 
-        if (!context.getEvaluatorInfo().rootDeclaration().type().isVoid() &&
-            !context.getEvaluatorInfo().rootDeclaration().equals(context.getEvaluatorInfo().variableInfo().declaration())) {
-            analyser.getUsed().add(context.getEvaluatorInfo().rootDeclaration().name());
+        if (!context.getEvaluatorInfo().withDeclaration().type().isVoid() &&
+            !context.getEvaluatorInfo().withDeclaration().equals(context.getEvaluatorInfo().contextDeclaration())) {
+            analyser.getUsed().add(context.getEvaluatorInfo().withDeclaration().name());
         }
 
         analyser.getUsed().stream().forEach(v -> context.addInput(v));
 
-        //preprocessPhase.removeEmptyStmt(blockStmt);
-
         CompilationUnit unit = new CompilationUnit(context.getGeneratedPackageName());
         context.setUnit(unit);
-
-        CompilerParamters<?, ?, ?> evalInfo = context.getEvaluatorInfo();
 
         evalInfo.imports().stream().forEach(s -> unit.addImport(s));
 
         evalInfo.staticImports().stream().forEach(s -> unit.addImport(s, true, false));
-
-        ContextInfo<?> ctxInf = evalInfo.variableInfo();
 
         ClassOrInterfaceDeclaration classDeclaration = unit.addClass(context.getEvaluatorInfo().generatedClassName());
 
@@ -164,8 +125,8 @@ public class MVELTranspiler {
         context.setClassDeclaration(classDeclaration);
 
         String implementedType = org.mvel3.Evaluator.class.getCanonicalName() + "<" +
-                                 ctxInf.declaration().type().getCanonicalGenericsName() + ", " +
-                                 evalInfo.rootDeclaration().type().getCanonicalGenericsName() + ", " +
+                                 evalInfo.contextDeclaration().type().getCanonicalGenericsName() + ", " +
+                                 evalInfo.withDeclaration().type().getCanonicalGenericsName() + ", " +
                                  evalInfo.outType().getCanonicalGenericsName() + "> ";
         logger.trace("Implemented type: {}", implementedType);
         classDeclaration.addImplementedType(implementedType);
@@ -174,9 +135,11 @@ public class MVELTranspiler {
         method.setPublic(true);
 
         org.mvel3.Type outType = evalInfo.outType();
-        method.setType(handleParserResult(context.getParser().parseType(outType.getCanonicalGenericsName())));
+        if (!outType.isVoid()) {
+            method.setType(handleParserResult(context.getParser().parseType(outType.getCanonicalGenericsName())));
+        }
 
-        method.addParameter(handleParserResult(context.getParser().parseType(ctxInf.declaration().type().getCanonicalGenericsName())), ctxInf.declaration().name());
+        method.addParameter(handleParserResult(context.getParser().parseType(evalInfo.contextDeclaration().type().getCanonicalGenericsName())), evalInfo.contextDeclaration().name());
 
         NodeList<Statement> tempStmts = evalPre.evalPre(evalInfo, context, blockStmt.getStatements());
         blockStmt.setStatements(tempStmts);
@@ -195,21 +158,21 @@ public class MVELTranspiler {
 
         rewriter.rewriteChildren(method.getBody().get());
 
-        // Inject the "return" if one is needed and it's missing and it's a statement expression.
-        // This will not check branchs of an if statement or for loop, those need explicit returns
-        Statement stmt = method.getBody().get().getStatements().getLast().get();
-        if (evalInfo.outType().isVoid()) {
-            ReturnStmt returnStmt = new ReturnStmt(new NullLiteralExpr());
-            method.getBody().get().getStatements().add(returnStmt);
-        } else if (stmt.isExpressionStmt() && method.getType() != null) {
-            if (stmt.asExpressionStmt().getExpression().isVariableDeclarationExpr()) {
-                ReturnStmt returnStmt = new ReturnStmt( new NameExpr(stmt.asExpressionStmt().getExpression().asVariableDeclarationExpr().getVariables().get(0).getNameAsString()));
-                method.getBody().get().getStatements().add(returnStmt);
-            } else {
-                ReturnStmt returnStmt = new ReturnStmt(stmt.asExpressionStmt().getExpression());
-                stmt.replace(returnStmt);
-            }
-        }
+//        // Inject the "return" if one is needed and it's missing and it's a statement expression.
+//        // This will not check branchs of an if statement or for loop, those need explicit returns
+//        Statement stmt = method.getBody().get().getStatements().getLast().get();
+//        if (evalInfo.outType().isVoid()) {
+//            ReturnStmt returnStmt = new ReturnStmt(new NullLiteralExpr());
+//            method.getBody().get().getStatements().add(returnStmt);
+//        } else if (stmt.isExpressionStmt() && method.getType() != null) {
+//            if (stmt.asExpressionStmt().getExpression().isVariableDeclarationExpr()) {
+//                ReturnStmt returnStmt = new ReturnStmt( new NameExpr(stmt.asExpressionStmt().getExpression().asVariableDeclarationExpr().getVariables().get(0).getNameAsString()));
+//                method.getBody().get().getStatements().add(returnStmt);
+//            } else {
+//                ReturnStmt returnStmt = new ReturnStmt(stmt.asExpressionStmt().getExpression());
+//                stmt.replace(returnStmt);
+//            }
+//        }
 
         logger.debug("Generated compilation unit:\n{}", PrintUtil.printNode(unit));
 

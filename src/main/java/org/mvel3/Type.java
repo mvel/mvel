@@ -1,16 +1,29 @@
 package org.mvel3;
 
+import java.util.List;
+import java.util.Map;
+
 public class Type<T> {
-    private final Class<T> clazz;
+    public static Type<Void> VOID = Type.type(Void.class);
+    public static Type<Object> OBJECT = Type.type(Object.class);
+    public static Type<Map> MAP = Type.type(Map.class);
+    public static Type<List> LIST = Type.type(List.class);
+
+    private final Class clazz;
 
     private final String generics;
 
+    public Type(Class<T> clazz) {
+        this.clazz = clazz;
+        this.generics = "";
+    }
+
     public Type(Class clazz, String generics) {
-        this.clazz = (Class<T>) clazz;
+        this.clazz = clazz;
         this.generics = generics != null ? generics : "";
     }
 
-    public static <K> Type<K> type(Class clazz) {
+    public static <K> Type<K> type(Class<K> clazz) {
         return new Type(clazz, "");
     }
 
@@ -18,7 +31,7 @@ public class Type<T> {
         return new Type(clazz, generics);
     }
 
-    public Class<T> getClazz() {
+    public Class getClazz() {
         return clazz;
     }
 

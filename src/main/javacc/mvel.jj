@@ -3860,7 +3860,7 @@ Expression InlineExpression(Expression expr):
         LOOKAHEAD(2)
         primitiveType = PrimitiveType(annotations)
         "#"
-        { ret = new CastExpr(range(begin, token()), primitiveType, expr); }
+        { ret = new InlineCastExpr(range(begin, token()), primitiveType, expr); }
      |
         // ( ReferenceType {AdditionalBound} ) UnaryExpressionNotPlusMinus
         // ( ReferenceType {AdditionalBound} ) LambdaExpression
@@ -3873,9 +3873,9 @@ Expression InlineExpression(Expression expr):
         // TODO/FIXME: Handle LambdaExpression? Or is it handled elsewhere?
         {
             if (typesOfMultiCast.size() > 1) {
-                ret = new CastExpr(range(begin, token()), new IntersectionType(range(typesOfMultiCast.get(0), typesOfMultiCast.get(typesOfMultiCast.size() -1)), typesOfMultiCast), expr);
+                ret = new InlineCastExpr(range(begin, token()), new IntersectionType(range(typesOfMultiCast.get(0), typesOfMultiCast.get(typesOfMultiCast.size() -1)), typesOfMultiCast), expr);
             } else {
-                ret = new CastExpr(range(begin, token()), referenceType, expr);
+                ret = new InlineCastExpr(range(begin, token()), referenceType, expr);
             }
         }
     )
@@ -5314,18 +5314,18 @@ ModifyStatement ModifyStatement():
     JavaToken begin;
     Statement stmt = null;
     NodeList<Statement> all = emptyNodeList();
-    SimpleName modifyObject = null;
+    Expression modifyObject = null;
 }
 {
     { this.isWithOrModify = true; }
     (
         (
-            <MODIFY><LPAREN> (modifyObject = SimpleName())<RPAREN> <LBRACE>  { begin=token(); }
+            <MODIFY><LPAREN> (modifyObject = Expression())<RPAREN> <LBRACE>  { begin=token(); }
             ( LOOKAHEAD(2) stmt = StatementExpression() { all.add(stmt); } )*
             <RBRACE>
             {
                 this.isWithOrModify = false;
-                return new ModifyStatement(range(begin, token()), new NameExpr(modifyObject), all);
+                return new ModifyStatement(range(begin, token()), modifyObject, all);
             }
         )
     )
