@@ -60,6 +60,7 @@ import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.UnknownType;
 import org.mvel3.parser.ast.expr.ModifyStatement;
+import org.mvel3.parser.ast.expr.WithStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
@@ -744,6 +745,21 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         
         // Create and return a ModifyStatement with proper TokenRange
         return new ModifyStatement(createTokenRange(ctx), target, statements);
+    }
+
+    @Override
+    public Node visitWithStatement(Mvel3Parser.WithStatementContext ctx) {
+        String targetName = ctx.identifier().getText();
+        NameExpr target = new NameExpr(targetName);
+        target.setTokenRange(createTokenRange(ctx));
+
+        NodeList<Statement> statements = new NodeList<>();
+        for (Mvel3Parser.StatementContext stmtCtx : ctx.statement()) {
+            Statement stmt = (Statement) visit(stmtCtx);
+            statements.add(stmt);
+        }
+
+        return new WithStatement(createTokenRange(ctx), target, statements);
     }
 
     @Override

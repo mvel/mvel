@@ -138,11 +138,17 @@ statement
     | switchExpression ';'? // Java17
     | identifierLabel = identifier ':' statement
     | modifyStatement               // MVEL-specific modify statement
+    | withStatement                 // MVEL-specific with statement
     ;
 
 // MVEL-specific modify statement
 modifyStatement
     : MODIFY LPAREN identifier RPAREN LBRACE (statement)* RBRACE
+    ;
+
+// MVEL-specific with statement
+withStatement
+    : WITH LPAREN identifier RPAREN LBRACE (statement)* RBRACE
     ;
 
 
