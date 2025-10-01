@@ -16,9 +16,9 @@ import java.util.List;
 
 import static com.github.javaparser.utils.Utils.assertNotNull;
 
-public class ModifyStatement  extends AbstractContextStatement<ModifyStatement, NameExpr> {
+public class ModifyStatement  extends AbstractContextStatement<ModifyStatement, Expression> {
 
-    public ModifyStatement(TokenRange tokenRange, NameExpr withObject, NodeList<Statement> expressions) {
+    public ModifyStatement(TokenRange tokenRange, Expression withObject, NodeList<Statement> expressions) {
         super(tokenRange, withObject, expressions);
     }
     @Override

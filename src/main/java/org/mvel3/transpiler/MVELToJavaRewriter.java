@@ -51,6 +51,7 @@ import org.mvel3.MVEL;
 import org.mvel3.parser.ast.expr.AbstractContextStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
+import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
@@ -258,8 +259,8 @@ public class MVELToJavaRewriter {
             case "FieldAccessExpr":
                 node = maybeRewriteToGetter((FieldAccessExpr) node);
                 break;
-            case "CastExpr":
-                processInlineCastExpr((CastExpr) node);
+            case "InlineCastExpr":
+                processInlineCastExpr((InlineCastExpr) node);
                 break;
             case "AssignExpr":
                 processAssignExpr((AssignExpr) node);
@@ -553,7 +554,7 @@ public class MVELToJavaRewriter {
         return paramType;
     }
 
-    private Expression processInlineCastExpr(CastExpr node) {
+    private Expression processInlineCastExpr(InlineCastExpr node) {
         Expression expr;
 
         rewriteNode(node.getExpression());
@@ -563,11 +564,10 @@ public class MVELToJavaRewriter {
 
         ResolvedType sourceType = node.getExpression().calculateResolvedType();
         if (isAssignableBy(sourceType, targetType)) { // in casting the source and target are reversed
-            // have to put into an () enclosure, as this was not in the original grammar due to #....#
-            EnclosedExpr enclosure = new EnclosedExpr();
+            CastExpr newNode = new CastExpr(node.getTokenRange().get(), node.getType(), node.getExpression());
+            EnclosedExpr enclosure = new EnclosedExpr(node.getTokenRange().get(), newNode);
             node.replace(enclosure);
-            enclosure.setInner(node);
-            expr = enclosure; // a normal casts suffices
+            expr = newNode;
         } else {
             // else try coercion
             Expression result = coercer.coerce(sourceType, node.getExpression(), targetType);
@@ -999,26 +999,27 @@ public class MVELToJavaRewriter {
         boolean isLeftTypeString = isAssignableBy(stringType, leftType);
         boolean isRightTypeString = isAssignableBy(stringType, rightType);
 
-        // This handles a special case for + and Strings in binary expressions
-        if (binExprTypes.getBinaryExpr().getOperator() == BinaryExpr.Operator.PLUS &&
-            (isLeftTypeString || isRightTypeString)) {
-            return null;
-        } // else do not coerce to String.
+        if ((isLeftTypeString || isRightTypeString) &&
+            (binExprTypes.getBinaryExpr().getOperator() != BinaryExpr.Operator.EQUALS &&
+            binExprTypes.getBinaryExpr().getOperator() != BinaryExpr.Operator.NOT_EQUALS)) {
+            return null; // becuase Java has expected behaviour for + and Strings it is left as is,
+                         // nor is the behaviour of other operators changed.
+                         // Unless it's an '==' operator
+        }
 
-        Expression coerced; // only attempt right to left, if left is not String.
-        if (!isLeftTypeString && ((coerced = coercer.coerce(rightType, right, leftType)) != null))  {
+        Expression coerced;
+        // Always attempt to coerce to the right to the left first
+        // for widening like BigDecimal this is
+        if ((coerced = coercer.coerce(rightType, right, leftType)) != null)  {
             right     = coerced;
             rightType = leftType;
             binExprTypes.setRight(right, rightType);
             binExprTypes.binaryExpr.setRight(right);
-        } else {
-            coerced = coercer.coerce(leftType, left, rightType);
-            if (coerced != null) {
-                left     = coerced;
-                leftType = rightType;
-                binExprTypes.setLeft(left, leftType);
-                binExprTypes.binaryExpr.setLeft(left);
-            }
+        } else if ((coerced = coercer.coerce(leftType, left, rightType)) != null)  {
+            left     = coerced;
+            leftType = rightType;
+            binExprTypes.setLeft(left, leftType);
+            binExprTypes.binaryExpr.setLeft(left);
         }
 
         Expression overloaded = overloader.overload(leftType, left, right, binExprTypes.binaryExpr.getOperator());

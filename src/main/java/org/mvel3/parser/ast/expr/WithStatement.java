@@ -13,9 +13,9 @@ import org.mvel3.parser.ast.visitor.DrlVoidVisitor;
 
 import java.util.List;
 
-public class WithStatement extends AbstractContextStatement<WithStatement, NameExpr> {
+public class WithStatement extends AbstractContextStatement<WithStatement, Expression> {
 
-    public WithStatement(TokenRange tokenRange, NameExpr withExpression, NodeList<Statement> expressions) {
+    public WithStatement(TokenRange tokenRange, Expression withExpression, NodeList<Statement> expressions) {
         super(tokenRange, withExpression, expressions);
     }
     @Override

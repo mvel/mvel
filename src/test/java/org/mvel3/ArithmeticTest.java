@@ -123,7 +123,7 @@ public class ArithmeticTest {
 
   @Test
   public void testMath() {
-    String expression = "((double)pi) * hour"; // must cast pi to double, otherwise it uses the hour type, which is Integer for the coercion
+    String expression = "pi#double# * hour"; // must cast pi to double, otherwise it uses the hour type, which is Integer for the coercion
     double result = 188.4;
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
@@ -1045,7 +1045,7 @@ public class ArithmeticTest {
     }
   }
 
-  @Ignore("DROOLS-6572 - Generates wrong code - missing symbol")
+  //@Ignore("DROOLS-6572 - Generates wrong code - missing symbol")
   @Test
   public void testMathDec30() {
     Map<String, Object> params = new HashMap<>();
@@ -1054,7 +1054,7 @@ public class ArithmeticTest {
     vars.put("param", params);
     vars.put("param2", 10);
 
-    assertThat(executeExpression("1 + 2 * param.value", vars)).isEqualTo(1 + 2 * 10);
+    assertThat(executeExpression("1 + 2 * param.value#int#", vars)).isEqualTo(1 + 2 * 10);
   }
 
   @Test
