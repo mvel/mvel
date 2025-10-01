@@ -250,39 +250,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitInlineCastExpression(Mvel3Parser.InlineCastExpressionContext ctx) {
-        return visit(ctx.inlineCast());
-    }
-
-    @Override
-    public Node visitInlineCast(Mvel3Parser.InlineCastContext ctx) {
-        // Handle inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
-        System.out.println("inlineCast primary: " + ctx.primary().getText());
-        Expression expr = (Expression) visit(ctx.primary());
+        // Handle inline cast: expr#Type#[member]
+        Expression scope = (Expression) visit(ctx.expression(0));
         Type type = (Type) visit(ctx.typeType());
-        InlineCastExpr inlineCastExpr = new InlineCastExpr(type, expr);
+
+        InlineCastExpr inlineCastExpr = new InlineCastExpr(type, scope);
         inlineCastExpr.setTokenRange(createTokenRange(ctx));
 
-        // Check what comes after the cast
         if (ctx.identifier() != null) {
-            String methodName = ctx.identifier().getText();
+            String name = ctx.identifier().getText();
             if (ctx.arguments() != null) {
-                // Method call with arguments
-                MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, methodName);
+                MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, name);
                 methodCall.setTokenRange(createTokenRange(ctx));
-                // Parse arguments if they exist
-                NodeList<Expression> args = parseArguments(ctx.arguments());
-                methodCall.setArguments(args);
+                methodCall.setArguments(parseArguments(ctx.arguments()));
                 return methodCall;
-            } else {
-                // Field access
-                FieldAccessExpr fieldAccess = new FieldAccessExpr(inlineCastExpr, methodName);
-                fieldAccess.setTokenRange(createTokenRange(ctx));
-                return fieldAccess;
             }
-        } else if (ctx.LBRACK() != null && ctx.expression() != null && ctx.RBRACK() != null) {
-            // Array access: primary#Type#[expression]
-            // Convert to method call: ((Type)primary).get(expression)
-            Expression indexExpr = (Expression) visit(ctx.expression());
+
+            FieldAccessExpr fieldAccess = new FieldAccessExpr(inlineCastExpr, name);
+            fieldAccess.setTokenRange(createTokenRange(ctx));
+            return fieldAccess;
+        }
+
+        if (ctx.LBRACK() != null) {
+            Expression indexExpr = (Expression) visit(ctx.expression(1));
             MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, "get");
             methodCall.setTokenRange(createTokenRange(ctx));
             methodCall.addArgument(indexExpr);

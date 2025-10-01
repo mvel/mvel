@@ -41,6 +41,10 @@ expression
     // Level 16, Primary, array and member access
     : primary                                                       #PrimaryExpression
     | expression '[' expression ']'                                 #SquareBracketExpression
+
+    // Mvel 3
+    | expression HASH typeType HASH (identifier arguments? | '[' expression ']')? #InlineCastExpression
+
     | expression bop = '.' (
         identifier
         | methodCall
@@ -110,9 +114,6 @@ expression
 
     // Level 0, Lambda Expression // Java8
     | lambdaExpression                                        #ExpressionLambda
-
-    // Mvel 3
-    | inlineCast                                              #InlineCastExpression
     ;
 
 // Override expression to add MVEL-specific modify statement
@@ -144,11 +145,6 @@ modifyStatement
     : MODIFY LPAREN identifier RPAREN LBRACE (statement)* RBRACE
     ;
 
-
-// MVEL inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
-inlineCast
-    : primary HASH typeType HASH (identifier arguments? | '[' expression ']')?
-    ;
 
 // Override block without any changes. Just for ANTLR plugin conveinience. We may remove this later.
 block
