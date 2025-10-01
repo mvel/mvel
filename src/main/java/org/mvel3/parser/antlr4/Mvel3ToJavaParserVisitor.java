@@ -62,6 +62,7 @@ import com.github.javaparser.ast.type.UnknownType;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
+import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
 
 import java.util.ArrayList;
@@ -255,17 +256,18 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitInlineCast(Mvel3Parser.InlineCastContext ctx) {
         // Handle inline cast: primary#Type#[methodCall] or primary#Type#[arrayAccess]
+        System.out.println("inlineCast primary: " + ctx.primary().getText());
         Expression expr = (Expression) visit(ctx.primary());
         Type type = (Type) visit(ctx.typeType());
-        CastExpr castExpr = new CastExpr(type, expr);
-        castExpr.setTokenRange(createTokenRange(ctx));
-        
+        InlineCastExpr inlineCastExpr = new InlineCastExpr(type, expr);
+        inlineCastExpr.setTokenRange(createTokenRange(ctx));
+
         // Check what comes after the cast
         if (ctx.identifier() != null) {
             String methodName = ctx.identifier().getText();
             if (ctx.arguments() != null) {
                 // Method call with arguments
-                MethodCallExpr methodCall = new MethodCallExpr(castExpr, methodName);
+                MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, methodName);
                 methodCall.setTokenRange(createTokenRange(ctx));
                 // Parse arguments if they exist
                 NodeList<Expression> args = parseArguments(ctx.arguments());
@@ -273,7 +275,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 return methodCall;
             } else {
                 // Field access
-                FieldAccessExpr fieldAccess = new FieldAccessExpr(castExpr, methodName);
+                FieldAccessExpr fieldAccess = new FieldAccessExpr(inlineCastExpr, methodName);
                 fieldAccess.setTokenRange(createTokenRange(ctx));
                 return fieldAccess;
             }
@@ -281,13 +283,13 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // Array access: primary#Type#[expression]
             // Convert to method call: ((Type)primary).get(expression)
             Expression indexExpr = (Expression) visit(ctx.expression());
-            MethodCallExpr methodCall = new MethodCallExpr(castExpr, "get");
+            MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, "get");
             methodCall.setTokenRange(createTokenRange(ctx));
             methodCall.addArgument(indexExpr);
             return methodCall;
         }
-        
-        return castExpr;
+
+        return inlineCastExpr;
     }
 
     @Override
