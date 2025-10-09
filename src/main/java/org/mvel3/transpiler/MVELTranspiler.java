@@ -46,6 +46,9 @@ import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_15;
 public class MVELTranspiler {
     private static final Logger logger = LoggerFactory.getLogger(MVELTranspiler.class);
 
+    // development flag. Will be added to CompilerParameters later
+    public static boolean ENABLE_REWRITE = true;
+
     private TranspilerContext context;
 
     public MVELTranspiler(TranspilerContext context) {
@@ -154,9 +157,10 @@ public class MVELTranspiler {
 
         context.getSymbolResolver().inject(unit);
 
-        MVELToJavaRewriter rewriter = new MVELToJavaRewriter(context);
-
-        rewriter.rewriteChildren(method.getBody().get());
+        if (ENABLE_REWRITE) {
+            MVELToJavaRewriter rewriter = new MVELToJavaRewriter(context);
+            rewriter.rewriteChildren(method.getBody().get());
+        }
 
 //        // Inject the "return" if one is needed and it's missing and it's a statement expression.
 //        // This will not check branchs of an if statement or for loop, those need explicit returns
