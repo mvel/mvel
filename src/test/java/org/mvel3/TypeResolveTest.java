@@ -26,13 +26,16 @@ import java.util.function.Consumer;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mvel3.parser.MvelParser;
+import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
@@ -141,5 +144,16 @@ public class TypeResolveTest {
 
         ResolvedType resolvedType = inlineCastExpr.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("java.util.ArrayList");
+    }
+
+    @Test
+    public void testBigDecimalLiteral() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10B; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        BigDecimalLiteralExpr bigDecimalLiteral = body.findFirst(ReturnStmt.class).get().getExpression().get().asBigDecimalLiteralExpr();
+
+        ResolvedType resolvedType = bigDecimalLiteral.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.math.BigDecimal");
     }
 }

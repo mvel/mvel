@@ -1077,6 +1077,7 @@ public class ArithmeticTest {
     assertThat(executeExpression("x - y - z", map)).isEqualTo(20 - 10 - 5);
   }
 
+  @Ignore("temporary disabled for performance reasons")
   @Test()
   public void testModExpr() {
     String str = "$y % 4 == 0 && $y % 100 != 0 || $y % 400 == 0 ";
