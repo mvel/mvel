@@ -39,9 +39,13 @@ import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.HalfBinaryExpr;
 import org.mvel3.parser.ast.expr.HalfPointFreeExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
@@ -250,5 +254,59 @@ public class TypeResolveTest {
 
         ResolvedType resolvedType = halfPointFreeExpr.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("boolean");
+    }
+
+    @Test
+    public void testListCreationLiteralExpression() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [1, 2, 3]; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        Expression expression = body.getStatement(0).asReturnStmt().getExpression()
+                .orElseThrow(() -> new AssertionError("Return without expression"));
+        assertThat(expression).isInstanceOf(ListCreationLiteralExpression.class);
+
+        ResolvedType resolvedType = expression.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.util.List<E>");
+    }
+
+    @Test
+    public void testListCreationLiteralExpressionElement() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\"]; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        ListCreationLiteralExpression listLiteral = body.findFirst(ListCreationLiteralExpression.class)
+                .orElseThrow(() -> new AssertionError("Missing ListCreationLiteralExpression"));
+        ListCreationLiteralExpressionElement element = listLiteral.getExpressions().get(0)
+                .asListCreationLiteralExpressionElement();
+
+        ResolvedType resolvedType = element.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.lang.String");
+    }
+
+    @Test
+    public void testMapCreationLiteralExpression() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\": 1, \"b\": 2]; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        Expression expression = body.getStatement(0).asReturnStmt().getExpression()
+                .orElseThrow(() -> new AssertionError("Return without expression"));
+        assertThat(expression).isInstanceOf(MapCreationLiteralExpression.class);
+
+        ResolvedType resolvedType = expression.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.util.Map<K, V>");
+    }
+
+    @Test
+    public void testMapCreationLiteralExpressionKeyValuePair() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\": \"b\"]; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        MapCreationLiteralExpression mapLiteral = body.findFirst(MapCreationLiteralExpression.class)
+                .orElseThrow(() -> new AssertionError("Missing MapCreationLiteralExpression"));
+        MapCreationLiteralExpressionKeyValuePair entry = mapLiteral.getExpressions().get(0)
+                .asMapCreationLiteralExpressionKeyValuePair();
+
+        ResolvedType resolvedType = entry.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.util.Map.Entry<K, V>");
     }
 }
