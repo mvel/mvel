@@ -30,6 +30,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -38,6 +39,7 @@ import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.FullyQualifiedInlineCastExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
@@ -146,6 +148,11 @@ public class TypeResolveTest {
 
         ResolvedType resolvedType = inlineCastExpr.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("java.util.ArrayList");
+    }
+
+    @Test
+    public void testFullyQualifiedInlineCast() {
+        // FullyQualifiedInlineCast is not actually created. We will eventually remove the class
     }
 
     @Test
