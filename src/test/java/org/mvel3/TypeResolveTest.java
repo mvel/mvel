@@ -195,4 +195,10 @@ public class TypeResolveTest {
         ResolvedType resolvedType = drlNameExpr.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo(Person.class.getCanonicalName());
     }
+
+    @Test
+    public void testDrlxExpression() {
+        // TODO: DrlxExpression is not created when using legacy/ANTLR parser. Leave it for later
+        //       DrlsParser can create DrlxExpression, but rather, we will do it in drlx-parser project
+    }
 }
