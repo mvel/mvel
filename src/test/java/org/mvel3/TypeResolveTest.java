@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
+import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
@@ -151,9 +152,26 @@ public class TypeResolveTest {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10B; }");
         BlockStmt body = getFirstMethodBody(unit);
 
-        BigDecimalLiteralExpr bigDecimalLiteral = body.findFirst(ReturnStmt.class).get().getExpression().get().asBigDecimalLiteralExpr();
+        ReturnStmt returnStmt = body.findFirst(ReturnStmt.class)
+                .orElseThrow(() -> new AssertionError("Missing return statement"));
+        BigDecimalLiteralExpr bigDecimalLiteral = returnStmt.getExpression()
+                .orElseThrow(() -> new AssertionError("Return without expression")).asBigDecimalLiteralExpr();
 
         ResolvedType resolvedType = bigDecimalLiteral.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("java.math.BigDecimal");
+    }
+
+    @Test
+    public void testBigIntegerLiteral() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10I; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        ReturnStmt returnStmt = body.findFirst(ReturnStmt.class)
+                .orElseThrow(() -> new AssertionError("Missing return statement"));
+        BigIntegerLiteralExpr bigIntegerLiteral = returnStmt.getExpression()
+                .orElseThrow(() -> new AssertionError("Return without expression")).asBigIntegerLiteralExpr();
+
+        ResolvedType resolvedType = bigIntegerLiteral.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("java.math.BigInteger");
     }
 }
