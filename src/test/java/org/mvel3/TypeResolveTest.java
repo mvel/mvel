@@ -33,13 +33,16 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.HalfBinaryExpr;
+import org.mvel3.parser.ast.expr.HalfPointFreeExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
 
@@ -219,5 +222,33 @@ public class TypeResolveTest {
     public void testDrlxExpression() {
         // TODO: DrlxExpression is not created when using legacy/ANTLR parser. Leave it for later
         //       DrlsParser can create DrlxExpression, but rather, we will do it in drlx-parser project
+    }
+
+    @Ignore("Should be tested in drlx-parser project") // PointFreeExpr is inside DrlxExpression
+    @Test
+    public void testPointFreeExpr() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", String.class),
+                                                       "{ return value matches \"[A-Z]*\"; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        PointFreeExpr pointFreeExpr = body.findFirst(PointFreeExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing PointFreeExpr"));
+
+        ResolvedType resolvedType = pointFreeExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("boolean");
+    }
+
+    @Ignore("Should be tested in drlx-parser project") // PointFreeExpr is inside DrlxExpression
+    @Test
+    public void testHalfPointFreeExpr() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", String.class),
+                                                       "{ return matches \"[A-Z]*\"; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        HalfPointFreeExpr halfPointFreeExpr = body.findFirst(HalfPointFreeExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing HalfPointFreeExpr"));
+
+        ResolvedType resolvedType = halfPointFreeExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("boolean");
     }
 }
