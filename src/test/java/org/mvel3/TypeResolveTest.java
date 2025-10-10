@@ -38,6 +38,7 @@ import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
 
@@ -51,8 +52,8 @@ public class TypeResolveTest {
     // At the moment, I want to test legacy JavaParser first to check how type resolution works with custom AST nodes.
     @BeforeClass
     public static void chooseParser() {
-//        MvelParser.Factory.USE_ANTLR = false;
-        MvelParser.Factory.USE_ANTLR = true;
+        MvelParser.Factory.USE_ANTLR = false;
+//        MvelParser.Factory.USE_ANTLR = true;
     }
 
     @BeforeClass
@@ -173,5 +174,25 @@ public class TypeResolveTest {
 
         ResolvedType resolvedType = bigIntegerLiteral.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("java.math.BigInteger");
+    }
+
+    @Test
+    public void testDrlNameExpr() {
+        // TODO: This test fails when using ANTLR parser, because it creates NameExpr instead of DrlNameExpr. Need to fix it later
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
+                                                       "{ return person; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        ReturnStmt returnStmt = body.findFirst(ReturnStmt.class)
+                .orElseThrow(() -> new AssertionError("Missing return statement"));
+        Expression expression = returnStmt.getExpression()
+                .orElseThrow(() -> new AssertionError("Return without expression"));
+
+        assertThat(expression).isInstanceOf(DrlNameExpr.class);
+        DrlNameExpr drlNameExpr = (DrlNameExpr) expression;
+        assertThat(drlNameExpr.getBackReferencesCount()).isZero();
+
+        ResolvedType resolvedType = drlNameExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Person.class.getCanonicalName());
     }
 }
