@@ -48,7 +48,9 @@ import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
+import org.mvel3.parser.DrlxParser;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
 
@@ -339,5 +341,15 @@ public class TypeResolveTest {
 
         ResolvedType resolvedType = entry.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("java.util.Map.Entry<K, V>");
+    }
+
+    @Ignore("TemporalLiteralExpr is DRL-specific and requires CompilationUnit context for type resolution. Should be tested in drlx-parser project")
+    @Test
+    public void testTemporalLiteralExpr() {
+        // Parse temporal literal directly using DrlxParser
+        TemporalLiteralExpr temporalLiteral = DrlxParser.parseTemporalLiteral("5s");
+
+        ResolvedType resolvedType = temporalLiteral.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("long");
     }
 }
