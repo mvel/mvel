@@ -46,11 +46,13 @@ import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
+import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.parser.DrlxParser;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
+import org.mvel3.parser.ast.expr.WithStatement;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
 
@@ -58,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test class for type resolution with mvel3 custom AST nodes, without rewriting.
+ * Note: DrlxExpression specific nodes (PointFreeExpr, HalfPointFreeExpr) are tested in TypeResolveTestDrlxExpression
  */
 public class TypeResolveTest {
 
@@ -112,7 +115,7 @@ public class TypeResolveTest {
         return compiled.getUnit();
     }
 
-    private BlockStmt getFirstMethodBody(CompilationUnit unit) {
+    protected BlockStmt getFirstMethodBody(CompilationUnit unit) {
         return unit.getType(0).getMember(0).asMethodDeclaration().getBody().get();
     }
 
@@ -227,69 +230,6 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testDrlxExpression() {
-        // TODO: DrlxExpression is not created when using legacy/ANTLR parser. Leave it for later
-        //       DrlsParser can create DrlxExpression, but rather, we will do it in drlx-parser project
-    }
-
-    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
-    @Test
-    public void testNullSafeFieldAccessExpr() {
-
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
-                                                       "{ return value?.address; }");
-        BlockStmt body = getFirstMethodBody(unit);
-
-        NullSafeFieldAccessExpr nullSafeFieldAccessExpr = body.findFirst(NullSafeFieldAccessExpr.class)
-                .orElseThrow(() -> new AssertionError("Missing NullSafeFieldAccessExpr"));
-
-        ResolvedType resolvedType = nullSafeFieldAccessExpr.calculateResolvedType();
-        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
-    }
-
-    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
-    @Test
-    public void testNullSafeMethodCallExpr() {
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
-                                                       "{ return value?.getAddress(); }");
-        BlockStmt body = getFirstMethodBody(unit);
-
-        NullSafeMethodCallExpr nullSafeMethodCallExpr = body.findFirst(NullSafeMethodCallExpr.class)
-                .orElseThrow(() -> new AssertionError("Missing NullSafeMethodCallExpr"));
-
-        ResolvedType resolvedType = nullSafeMethodCallExpr.calculateResolvedType();
-        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
-    }
-
-    @Ignore("Should be tested in drlx-parser project") // PointFreeExpr is inside DrlxExpression
-    @Test
-    public void testPointFreeExpr() {
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", String.class),
-                                                       "{ return value matches \"[A-Z]*\"; }");
-        BlockStmt body = getFirstMethodBody(unit);
-
-        PointFreeExpr pointFreeExpr = body.findFirst(PointFreeExpr.class)
-                .orElseThrow(() -> new AssertionError("Missing PointFreeExpr"));
-
-        ResolvedType resolvedType = pointFreeExpr.calculateResolvedType();
-        assertThat(resolvedType.describe()).isEqualTo("boolean");
-    }
-
-    @Ignore("Should be tested in drlx-parser project") // PointFreeExpr is inside DrlxExpression
-    @Test
-    public void testHalfPointFreeExpr() {
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", String.class),
-                                                       "{ return matches \"[A-Z]*\"; }");
-        BlockStmt body = getFirstMethodBody(unit);
-
-        HalfPointFreeExpr halfPointFreeExpr = body.findFirst(HalfPointFreeExpr.class)
-                .orElseThrow(() -> new AssertionError("Missing HalfPointFreeExpr"));
-
-        ResolvedType resolvedType = halfPointFreeExpr.calculateResolvedType();
-        assertThat(resolvedType.describe()).isEqualTo("boolean");
-    }
-
-    @Test
     public void testListCreationLiteralExpression() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [1, 2, 3]; }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -343,13 +283,66 @@ public class TypeResolveTest {
         assertThat(resolvedType.describe()).isEqualTo("java.util.Map.Entry<K, V>");
     }
 
-    @Ignore("TemporalLiteralExpr is DRL-specific and requires CompilationUnit context for type resolution. Should be tested in drlx-parser project")
+    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
     @Test
-    public void testTemporalLiteralExpr() {
-        // Parse temporal literal directly using DrlxParser
-        TemporalLiteralExpr temporalLiteral = DrlxParser.parseTemporalLiteral("5s");
+    public void testNullSafeFieldAccessExpr() {
 
-        ResolvedType resolvedType = temporalLiteral.calculateResolvedType();
-        assertThat(resolvedType.describe()).isEqualTo("long");
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
+                                                                      "{ return value?.address == null }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        NullSafeFieldAccessExpr nullSafeFieldAccessExpr = body.findFirst(NullSafeFieldAccessExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing NullSafeFieldAccessExpr"));
+
+        ResolvedType resolvedType = nullSafeFieldAccessExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
+    }
+
+    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
+    @Test
+    public void testNullSafeMethodCallExpr() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
+                                                                      "{ return value?.getAddress(); }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        NullSafeMethodCallExpr nullSafeMethodCallExpr = body.findFirst(NullSafeMethodCallExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing NullSafeMethodCallExpr"));
+
+        ResolvedType resolvedType = nullSafeMethodCallExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
+    }
+
+    @Test
+    public void testModifyStatement() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("$p", Person.class),
+                                                       "{ modify($p) { setAge(1); } }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        ModifyStatement modifyStatement = body.findFirst(ModifyStatement.class)
+                .orElseThrow(() -> new AssertionError("Missing ModifyStatement"));
+
+        // Test the modify expression (the object being modified)
+        Expression target = modifyStatement.getTarget();
+        assertThat(target).isInstanceOf(NameExpr.class);
+
+        ResolvedType resolvedType = target.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Person.class.getCanonicalName());
+    }
+
+    @Test
+    public void testWithStatement() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("$p", Person.class),
+                                                       "{ with($p) { setAge(1); } }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        WithStatement withStatement = body.findFirst(WithStatement.class)
+                .orElseThrow(() -> new AssertionError("Missing WithStatement"));
+
+        // Test the with expression (the object in the with context)
+        Expression target = withStatement.getTarget();
+        assertThat(target).isInstanceOf(NameExpr.class);
+
+        ResolvedType resolvedType = target.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Person.class.getCanonicalName());
     }
 }
