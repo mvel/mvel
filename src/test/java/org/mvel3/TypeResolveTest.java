@@ -39,13 +39,15 @@ import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
-import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
-import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.HalfBinaryExpr;
 import org.mvel3.parser.ast.expr.HalfPointFreeExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
+import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
+import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
@@ -226,6 +228,35 @@ public class TypeResolveTest {
     public void testDrlxExpression() {
         // TODO: DrlxExpression is not created when using legacy/ANTLR parser. Leave it for later
         //       DrlsParser can create DrlxExpression, but rather, we will do it in drlx-parser project
+    }
+
+    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
+    @Test
+    public void testNullSafeFieldAccessExpr() {
+
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
+                                                       "{ return value?.address; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        NullSafeFieldAccessExpr nullSafeFieldAccessExpr = body.findFirst(NullSafeFieldAccessExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing NullSafeFieldAccessExpr"));
+
+        ResolvedType resolvedType = nullSafeFieldAccessExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
+    }
+
+    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
+    @Test
+    public void testNullSafeMethodCallExpr() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
+                                                       "{ return value?.getAddress(); }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        NullSafeMethodCallExpr nullSafeMethodCallExpr = body.findFirst(NullSafeMethodCallExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing NullSafeMethodCallExpr"));
+
+        ResolvedType resolvedType = nullSafeMethodCallExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
     }
 
     @Ignore("Should be tested in drlx-parser project") // PointFreeExpr is inside DrlxExpression
