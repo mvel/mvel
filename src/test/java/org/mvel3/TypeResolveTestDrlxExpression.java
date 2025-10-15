@@ -64,6 +64,8 @@ import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
+import org.mvel3.parser.ast.expr.OOPathChunk;
+import org.mvel3.parser.ast.expr.OOPathExpr;
 import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.transpiler.MVELTranspiler;
@@ -147,7 +149,7 @@ public class TypeResolveTestDrlxExpression {
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new ReflectionTypeSolver());
         JavaSymbolSolver symbolResolver = new JavaSymbolSolver(typeSolver);
-        StaticJavaParser.getParserConfiguration().setSymbolResolver(symbolResolver);
+        symbolResolver.inject(cu);
     }
 
     protected BlockStmt getFirstMethodBody(CompilationUnit unit) {
@@ -200,5 +202,44 @@ public class TypeResolveTestDrlxExpression {
 
         ResolvedType resolvedType = temporalLiteral.calculateResolvedType();
         assertThat(resolvedType.describe()).isEqualTo("long");
+    }
+
+    @Test
+    public void testOOPathExpr() {
+        // Test OOPath navigation through object graph
+        CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(ctx -> {}, "/addresses/city");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        OOPathExpr ooPathExpr = body.findFirst(OOPathExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing OOPathExpr"));
+
+        // OOPathExpr itself doesn't have a resolved type (it's a navigation expression)
+        // But we can verify its structure
+        assertThat(ooPathExpr.getChunks().size()).isEqualTo(2);
+        assertThat(ooPathExpr.getChunks().get(0).getField().asString()).isEqualTo("addresses");
+        assertThat(ooPathExpr.getChunks().get(1).getField().asString()).isEqualTo("city");
+    }
+
+    @Test
+    public void testOOPathChunk() {
+        // Test OOPath chunk with condition
+        CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(
+                ctx -> {}, "/addresses[city == \"Tokyo\"]/city");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        OOPathExpr ooPathExpr = body.findFirst(OOPathExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing OOPathExpr"));
+
+        // Get the first chunk (addresses with condition)
+        OOPathChunk firstChunk = ooPathExpr.getChunks().get(0);
+        assertThat(firstChunk.getField().asString()).isEqualTo("addresses");
+        assertThat(firstChunk.getConditions().size()).isEqualTo(1);
+        ResolvedType resolvedType = firstChunk.getConditions().get(0).calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo("boolean");
+
+        // Get the second chunk (city)
+        OOPathChunk secondChunk = ooPathExpr.getChunks().get(1);
+        assertThat(secondChunk.getField().asString()).isEqualTo("city");
+        assertThat(secondChunk.getConditions().size()).isEqualTo(0);
     }
 }

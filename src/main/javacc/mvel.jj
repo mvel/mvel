@@ -6185,7 +6185,7 @@ OOPathChunk OOPathChunk():
     SimpleName field;
     SimpleName inlineCast = null;
     DrlxExpression tempExpr;
-    List<DrlxExpression> conditions = new ArrayList<DrlxExpression>();
+    NodeList<DrlxExpression> conditions = emptyNodeList();
 }
 {
   field = SimpleName() { begin=token(); }
