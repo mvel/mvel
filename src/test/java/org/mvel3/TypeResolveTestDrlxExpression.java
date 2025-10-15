@@ -242,4 +242,7 @@ public class TypeResolveTestDrlxExpression {
         assertThat(secondChunk.getField().asString()).isEqualTo("city");
         assertThat(secondChunk.getConditions().size()).isEqualTo(0);
     }
+
+    // Note: No test for rule constructs e.g. RuleDeclaration, RulePattern
+    // It should be done in drlx-parser project
 }
