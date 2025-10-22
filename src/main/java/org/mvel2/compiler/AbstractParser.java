@@ -87,6 +87,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
+import org.mvel2.util.ParseTools;
 import org.mvel2.util.ProtoParser;
 
 import static java.lang.Boolean.FALSE;
@@ -2107,22 +2108,23 @@ public class AbstractParser implements Parser, Serializable {
    * @param expression the expression
    */
   protected void setExpression(String expression) {
-    if (expression != null && expression.length() != 0) {
+    if (expression != null && !expression.isEmpty()) {
       synchronized (EX_PRECACHE) {
         if ((this.expr = EX_PRECACHE.get(expression)) == null) {
-          end = length = (this.expr = expression.toCharArray()).length;
 
-          // trim any whitespace.
-          while (start < length && isWhitespace(expr[start])) start++;
+          int startIndex = 0;
+          while (startIndex< length && ParseTools.isWhitespace(expression.charAt(startIndex))) {
+            startIndex++;
+          }
+          int endIndex = expression.length() - 1;
+          while (endIndex > 0 && ParseTools.isWhitespace(expression.charAt(endIndex))) {
+            endIndex--;
+          }
+          this.expr=expression.substring(startIndex, endIndex + 1).toCharArray();
 
-          while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
+          this.end = this.length = this.expr.length;
 
-          char[] e = new char[length];
-
-          for (int i = 0; i != e.length; i++)
-            e[i] = expr[i];
-
-          EX_PRECACHE.put(expression, e);
+          EX_PRECACHE.put(expression, this.expr);
         }
         else {
           end = length = this.expr.length;
