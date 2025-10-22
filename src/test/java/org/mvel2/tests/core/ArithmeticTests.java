@@ -1070,7 +1070,7 @@ public class ArithmeticTests extends AbstractTest {
     String str = "s1=0B;s1+=1;s1+=1;s1";
     Serializable expr = MVEL.compileExpression(str);
     Object result = MVEL.executeExpression(expr, new HashMap<String, Object>());
-    assertEquals(new BigDecimal(2), result);
+    assertEqualsByComparingTo(new BigDecimal(2), result);
   }
   
   public void testIssue249() {

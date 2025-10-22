@@ -886,4 +886,19 @@ public abstract class AbstractTest extends BaseMvelTestCase {
 
     }
   }
+
+  public static void assertEqualsByComparingTo(Object expected, Object actual) {
+    if (expected == null || actual == null) {
+      throw new AssertionError("null value");
+    }
+    if (!(expected instanceof Comparable && actual instanceof Comparable)) {
+      throw new AssertionError("values not comparable: " +
+                                       expected.getClass().getName() + " and " + actual.getClass().getName());
+    }
+
+    int compare = ((Comparable) expected).compareTo(actual);
+    if (compare != 0) {
+      fail("expected <" + String.valueOf(expected) + "> but was <" + String.valueOf(actual) + ">");
+    }
+  }
 }
