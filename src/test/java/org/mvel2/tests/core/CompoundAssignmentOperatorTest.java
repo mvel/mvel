@@ -14,6 +14,8 @@ import org.mvel2.tests.BaseMvelTestCase;
 import org.mvel2.tests.core.res.DefaultKnowledgeHelper;
 import org.mvel2.tests.core.res.NumberHolder;
 
+import static org.mvel2.tests.core.AbstractTest.assertEqualsByComparingTo;
+
 public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
     private static final String HOLDER = "holder";
@@ -267,8 +269,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("130"), result);
-        assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("130"), result);
+        assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -277,8 +279,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("130"), result);
-        assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("130"), result);
+        assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
     }
 
     @Test
@@ -292,8 +294,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("110"), result);
-        assertEquals(new BigDecimal("110"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("110"), result);
+        assertEqualsByComparingTo(new BigDecimal("110"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -302,8 +304,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("110"), result);
-        assertEquals(new BigDecimal("110"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("110"), result);
+        assertEqualsByComparingTo(new BigDecimal("110"), holder.getBigDecimal());
     }
 
     @Test
@@ -317,8 +319,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("1200"), result);
-        assertEquals(new BigDecimal("1200"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("1200"), result);
+        assertEqualsByComparingTo(new BigDecimal("1200"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -327,8 +329,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("1200"), result);
-        assertEquals(new BigDecimal("1200"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("1200"), result);
+        assertEqualsByComparingTo(new BigDecimal("1200"), holder.getBigDecimal());
     }
 
     @Test
@@ -342,8 +344,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("12"), result);
-        assertEquals(new BigDecimal("12"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("12"), result);
+        assertEqualsByComparingTo(new BigDecimal("12"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -352,8 +354,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("12"), result);
-        assertEquals(new BigDecimal("12"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("12"), result);
+        assertEqualsByComparingTo(new BigDecimal("12"), holder.getBigDecimal());
     }
 
     @Test
@@ -367,8 +369,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("130"), result);
-        assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("130"), result);
+        assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -377,8 +379,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("130"), result);
-        assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("130"), result);
+        assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
     }
 
     @Test
@@ -392,8 +394,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("110"), result);
-        assertEquals(new BigDecimal("110"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("110"), result);
+        assertEqualsByComparingTo(new BigDecimal("110"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -402,8 +404,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("110"), result);
-        assertEquals(new BigDecimal("110"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("110"), result);
+        assertEqualsByComparingTo(new BigDecimal("110"), holder.getBigDecimal());
     }
 
     @Test
@@ -417,8 +419,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("1200"), result);
-        assertEquals(new BigDecimal("1200"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("1200"), result);
+        assertEqualsByComparingTo(new BigDecimal("1200"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -427,8 +429,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("1200"), result);
-        assertEquals(new BigDecimal("1200"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("1200"), result);
+        assertEqualsByComparingTo(new BigDecimal("1200"), holder.getBigDecimal());
     }
 
     @Test
@@ -442,8 +444,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         NumberHolder holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("12"), result);
-        assertEquals(new BigDecimal("12"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("12"), result);
+        assertEqualsByComparingTo(new BigDecimal("12"), holder.getBigDecimal());
 
         // compile test
         varMap = createVarMap();
@@ -452,8 +454,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
         holder = (NumberHolder) varMap.get(HOLDER);
 
-        assertEquals(new BigDecimal("12"), result);
-        assertEquals(new BigDecimal("12"), holder.getBigDecimal());
+        assertEqualsByComparingTo(new BigDecimal("12"), result);
+        assertEqualsByComparingTo(new BigDecimal("12"), holder.getBigDecimal());
     }
 
     @Test
@@ -495,8 +497,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
             Object result = MVEL.executeExpression(s, helper, variableResolverFactory);
 
-            assertEquals(new BigDecimal("130"), result);
-            assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+            assertEqualsByComparingTo(new BigDecimal("130"), result);
+            assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
         } finally {
             MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = allowNakedMethCall;
             MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowOverrideAllProphandling;
@@ -546,8 +548,8 @@ public class CompoundAssignmentOperatorTest extends BaseMvelTestCase {
 
             Object result = MVEL.executeExpression(s, helper, variableResolverFactory);
 
-            assertEquals(new BigDecimal("130"), result);
-            assertEquals(new BigDecimal("130"), holder.getBigDecimal());
+            assertEqualsByComparingTo(new BigDecimal("130"), result);
+            assertEqualsByComparingTo(new BigDecimal("130"), holder.getBigDecimal());
         } finally {
             MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = allowNakedMethCall;
             MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = allowOverrideAllProphandling;
