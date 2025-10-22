@@ -31,8 +31,10 @@ public class BasicCommandSet implements CommandSet {
 
     cmds.put("set", new Set());
     cmds.put("push", new PushContext());
+    cmds.put("pop", new PopContext());
     cmds.put("help", new Help());
     cmds.put("showvars", new ShowVars());
+    cmds.put("showenv", new ShowEnv());
     cmds.put("inspect", new ObjectInspector());
     cmds.put("exit", new Exit());
 
