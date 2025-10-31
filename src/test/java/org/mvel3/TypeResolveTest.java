@@ -67,8 +67,8 @@ public class TypeResolveTest {
     // At the moment, I want to test legacy JavaParser first to check how type resolution works with custom AST nodes.
     @BeforeClass
     public static void chooseParser() {
-        MvelParser.Factory.USE_ANTLR = false;
-//        MvelParser.Factory.USE_ANTLR = true;
+//        MvelParser.Factory.USE_ANTLR = false;
+        MvelParser.Factory.USE_ANTLR = true;
     }
 
     @BeforeClass
@@ -183,7 +183,7 @@ public class TypeResolveTest {
 
     @Test
     public void testBigDecimalLiteral() {
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10B; }");
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10.5B; }");
         BlockStmt body = getFirstMethodBody(unit);
 
         ReturnStmt returnStmt = body.findFirst(ReturnStmt.class)

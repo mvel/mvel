@@ -289,9 +289,9 @@ public class MVELPrintVisitor extends DefaultPrettyPrinterVisitor implements Drl
             chunk.accept(this, arg);
             printer.print(chunk.getField().toString());
 
-            if (chunk.getInlineCast() != null) {
+            if (chunk.getInlineCast().isPresent()) {
                 printer.print("#");
-                chunk.getInlineCast().accept( this, arg );
+                chunk.getInlineCast().get().accept( this, arg );
             }
 
             List<DrlxExpression> condition = chunk.getConditions();
