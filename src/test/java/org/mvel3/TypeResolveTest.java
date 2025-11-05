@@ -211,7 +211,6 @@ public class TypeResolveTest {
 
     @Test
     public void testDrlNameExpr() {
-        // TODO: This test fails when using ANTLR parser, because it creates NameExpr instead of DrlNameExpr. Need to fix it later
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                        "{ return person; }");
         BlockStmt body = getFirstMethodBody(unit);
