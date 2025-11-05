@@ -52,6 +52,10 @@ import org.mvel3.parser.ast.expr.AbstractContextStatement;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
@@ -181,6 +185,115 @@ public class MVELToJavaRewriter {
                 Node mce = new MethodCallExpr(n.getTokenRange().get(), new NameExpr("BigInteger"),  null,
                                               new SimpleName(n.getTokenRange().get(),"valueOf"), arg);
                 node.replace(mce);
+                break;
+            }
+            case "ListCreationLiteralExpression" : {
+                ListCreationLiteralExpression listExpr = (ListCreationLiteralExpression) node;
+                NodeList<Expression> elements = listExpr.getExpressions();
+
+                // Check if empty list
+                if (elements.isEmpty()) {
+                    // Replace with Collections.emptyList()
+                    MethodCallExpr emptyList = new MethodCallExpr(
+                        listExpr.getTokenRange().orElse(null),
+                        new FieldAccessExpr(
+                            new FieldAccessExpr(
+                                new NameExpr("java"),
+                                "util"
+                            ),
+                            "Collections"
+                        ),
+                        null,
+                        new SimpleName("emptyList"),
+                        new NodeList<>()
+                    );
+                    node.replace(emptyList);
+                } else {
+                    // Extract the actual values from ListCreationLiteralExpressionElement wrappers
+                    NodeList<Expression> actualValues = new NodeList<>();
+                    for (Expression expr : elements) {
+                        if (expr instanceof ListCreationLiteralExpressionElement) {
+                            // Unwrap the element to get the actual value
+                            ListCreationLiteralExpressionElement element =
+                                (ListCreationLiteralExpressionElement) expr;
+                            actualValues.add(element.getValue());
+                        } else {
+                            // Shouldn't happen, but handle gracefully
+                            actualValues.add(expr);
+                        }
+                    }
+
+                    // Replace with Arrays.asList(...)
+                    MethodCallExpr asList = new MethodCallExpr(
+                        listExpr.getTokenRange().orElse(null),
+                        new FieldAccessExpr(
+                            new FieldAccessExpr(
+                                new NameExpr("java"),
+                                "util"
+                            ),
+                            "Arrays"
+                        ),
+                        null,
+                        new SimpleName("asList"),
+                        actualValues
+                    );
+                    node.replace(asList);
+                }
+                break;
+            }
+            case "MapCreationLiteralExpression" : {
+                MapCreationLiteralExpression mapExpr = (MapCreationLiteralExpression) node;
+                NodeList<Expression> entries = mapExpr.getExpressions();
+
+                // Check if empty map
+                if (entries.isEmpty()) {
+                    // Replace with Collections.emptyMap()
+                    MethodCallExpr emptyMap = new MethodCallExpr(
+                        mapExpr.getTokenRange().orElse(null),
+                        new FieldAccessExpr(
+                            new FieldAccessExpr(
+                                new NameExpr("java"),
+                                "util"
+                            ),
+                            "Collections"
+                        ),
+                        null,
+                        new SimpleName("emptyMap"),
+                        new NodeList<>()
+                    );
+                    node.replace(emptyMap);
+                } else {
+                    // Extract keys and values from MapCreationLiteralExpressionKeyValuePair wrappers
+                    NodeList<Expression> keysAndValues = new NodeList<>();
+                    for (Expression expr : entries) {
+                        if (expr instanceof MapCreationLiteralExpressionKeyValuePair) {
+                            // Unwrap the entry to get key and value
+                            MapCreationLiteralExpressionKeyValuePair entry =
+                                (MapCreationLiteralExpressionKeyValuePair) expr;
+                            keysAndValues.add(entry.getKey());
+                            keysAndValues.add(entry.getValue());
+                        } else {
+                            // Shouldn't happen, but handle gracefully
+                            keysAndValues.add(expr);
+                        }
+                    }
+
+                    // Replace with Map.of(key1, value1, key2, value2, ...)
+                    MethodCallExpr mapOf = new MethodCallExpr(
+                        mapExpr.getTokenRange().orElse(null),
+                        new FieldAccessExpr(
+                            new FieldAccessExpr(
+                                new NameExpr("java"),
+                                "util"
+                            ),
+                            "Map"
+                        ),
+                        null,
+                        new SimpleName("of"),
+                        keysAndValues
+                    );
+                    node.replace(mapOf);
+                }
                 break;
             }
             case "ModifyStatement" :

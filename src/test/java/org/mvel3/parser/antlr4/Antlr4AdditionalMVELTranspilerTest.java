@@ -25,13 +25,19 @@ import org.mvel3.parser.MvelParser;
 
 public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
 
+    // Use 'false' when you want to test the legacy JavaCC parser
+    @BeforeClass
+    public static void enableAntlrParser() {
+        MvelParser.Factory.USE_ANTLR = true;
+    }
+
     // --- additional tests for Antlr based transpiler. Basically, smaller and more focused tests
 
     @Test
     public void testSimpleExpression() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
-             "$p.age == 20;",
-             "$p.getAge() == 20;");
+             "return $p.age == 20;",
+             "return $p.getAge() == 20;");
     }
 
     @Test
@@ -66,34 +72,24 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
              "var x = new BigDecimal(\"10.5\");");
     }
 
-//    Use this when you want to test the legacy JavaCC parser
-//    @BeforeClass
-//    public static void enableAntlrParser() {
-//        MvelParser.Factory.USE_ANTLR = false;
-//    }
-
-    @Ignore("Rewrite is not yet implemented")
     @Test
     public void testListCreationLiteral() {
         test("var list = [1, 2, 3];",
              "var list = java.util.Arrays.asList(1, 2, 3);");
     }
 
-    @Ignore("Rewrite is not yet implemented")
     @Test
     public void testListCreationLiteralEmpty() {
         test("var list = [];",
              "var list = java.util.Collections.emptyList();");
     }
 
-    @Ignore("Rewrite is not yet implemented")
     @Test
     public void testMapCreationLiteral() {
         test("var map = [\"a\": 1, \"b\": 2];",
              "var map = java.util.Map.of(\"a\", 1, \"b\", 2);");
     }
 
-    @Ignore("Rewrite is not yet implemented")
     @Test
     public void testMapCreationLiteralEmpty() {
         test("var map = [:];",
