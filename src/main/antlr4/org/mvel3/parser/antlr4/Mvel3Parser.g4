@@ -35,11 +35,31 @@ literal
     | BigIntegerLiteral
     ;
 
+// MVEL list/map literal expressions
+listCreationLiteral
+    : '[' (listElement (',' listElement)*)? ']'
+    ;
+
+listElement
+    : expression
+    ;
+
+mapCreationLiteral
+    : '[' ':' ']'  // empty map syntax [:]
+    | '[' mapEntry (',' mapEntry)* ']'
+    ;
+
+mapEntry
+    : expression ':' expression
+    ;
+
 // Override expression to add MVEL-specific inline cast syntax at expression level with suffix
 expression
     // Expression order in accordance with https://introcs.cs.princeton.edu/java/11precedence/
     // Level 16, Primary, array and member access
     : primary                                                       #PrimaryExpression
+    | listCreationLiteral                                           #ListCreationLiteralExpression
+    | mapCreationLiteral                                            #MapCreationLiteralExpression
     | expression '[' expression ']'                                 #SquareBracketExpression
 
     // Mvel 3

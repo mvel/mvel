@@ -16,9 +16,12 @@
 
 package org.mvel3.parser.antlr4;
 
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
+import org.mvel3.parser.MvelParser;
 
 public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
 
@@ -61,5 +64,39 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
     public void testBigDecimalDecimalLiteral() {
         test("var x = 10.5B;",
              "var x = new BigDecimal(\"10.5\");");
+    }
+
+//    Use this when you want to test the legacy JavaCC parser
+//    @BeforeClass
+//    public static void enableAntlrParser() {
+//        MvelParser.Factory.USE_ANTLR = false;
+//    }
+
+    @Ignore("Rewrite is not yet implemented")
+    @Test
+    public void testListCreationLiteral() {
+        test("var list = [1, 2, 3];",
+             "var list = java.util.Arrays.asList(1, 2, 3);");
+    }
+
+    @Ignore("Rewrite is not yet implemented")
+    @Test
+    public void testListCreationLiteralEmpty() {
+        test("var list = [];",
+             "var list = java.util.Collections.emptyList();");
+    }
+
+    @Ignore("Rewrite is not yet implemented")
+    @Test
+    public void testMapCreationLiteral() {
+        test("var map = [\"a\": 1, \"b\": 2];",
+             "var map = java.util.Map.of(\"a\", 1, \"b\", 2);");
+    }
+
+    @Ignore("Rewrite is not yet implemented")
+    @Test
+    public void testMapCreationLiteralEmpty() {
+        test("var map = [:];",
+             "var map = java.util.Collections.emptyMap();");
     }
 }

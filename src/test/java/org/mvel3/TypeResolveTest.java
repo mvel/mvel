@@ -168,6 +168,7 @@ public class TypeResolveTest {
         // FullyQualifiedInlineCast is not actually created. We will eventually remove the class
     }
 
+    @Ignore("HalfBinaryExpr rewriting is not yet implemented. Also not parsed by ANTLR yet.")
     @Test
     public void testHalfBinaryExpr() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Integer.class),

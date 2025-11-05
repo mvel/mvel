@@ -65,6 +65,10 @@ import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
 
 import java.util.ArrayList;
@@ -284,6 +288,70 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
 
         return inlineCastExpr;
+    }
+
+    @Override
+    public Node visitListCreationLiteralExpression(Mvel3Parser.ListCreationLiteralExpressionContext ctx) {
+        // Visit the listCreationLiteral rule
+        return visit(ctx.listCreationLiteral());
+    }
+
+    @Override
+    public Node visitListCreationLiteral(Mvel3Parser.ListCreationLiteralContext ctx) {
+        NodeList<Expression> elements = new NodeList<>();
+
+        // Process each list element
+        if (ctx.listElement() != null) {
+            for (Mvel3Parser.ListElementContext elementCtx : ctx.listElement()) {
+                Expression expr = (Expression) visit(elementCtx.expression());
+                // Wrap in ListCreationLiteralExpressionElement as per mvel.jj
+                ListCreationLiteralExpressionElement element =
+                    new ListCreationLiteralExpressionElement(expr);
+                element.setTokenRange(createTokenRange(elementCtx));
+                elements.add(element);
+            }
+        }
+
+        ListCreationLiteralExpression listExpr = new ListCreationLiteralExpression(elements);
+        listExpr.setTokenRange(createTokenRange(ctx));
+        return listExpr;
+    }
+
+    @Override
+    public Node visitMapCreationLiteralExpression(Mvel3Parser.MapCreationLiteralExpressionContext ctx) {
+        // Visit the mapCreationLiteral rule
+        return visit(ctx.mapCreationLiteral());
+    }
+
+    @Override
+    public Node visitMapCreationLiteral(Mvel3Parser.MapCreationLiteralContext ctx) {
+        NodeList<Expression> entries = new NodeList<>();
+
+        // Check for empty map syntax [:]
+        if (ctx.COLON() != null && ctx.mapEntry().isEmpty()) {
+            // Empty map
+            MapCreationLiteralExpression mapExpr = new MapCreationLiteralExpression(entries);
+            mapExpr.setTokenRange(createTokenRange(ctx));
+            return mapExpr;
+        }
+
+        // Process each map entry
+        if (ctx.mapEntry() != null) {
+            for (Mvel3Parser.MapEntryContext entryCtx : ctx.mapEntry()) {
+                Expression key = (Expression) visit(entryCtx.expression(0));
+                Expression value = (Expression) visit(entryCtx.expression(1));
+
+                // Wrap in MapCreationLiteralExpressionKeyValuePair as per mvel.jj
+                MapCreationLiteralExpressionKeyValuePair pair =
+                    new MapCreationLiteralExpressionKeyValuePair(key, value);
+                pair.setTokenRange(createTokenRange(entryCtx));
+                entries.add(pair);
+            }
+        }
+
+        MapCreationLiteralExpression mapExpr = new MapCreationLiteralExpression(entries);
+        mapExpr.setTokenRange(createTokenRange(ctx));
+        return mapExpr;
     }
 
     @Override
