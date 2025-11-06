@@ -11,7 +11,9 @@ import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -56,6 +58,8 @@ import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
+import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
+import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.transpiler.context.TranspilerContext;
 
@@ -293,6 +297,56 @@ public class MVELToJavaRewriter {
                         keysAndValues
                     );
                     node.replace(mapOf);
+                }
+                break;
+            }
+            case "NullSafeFieldAccessExpr" : {
+                // TODO: Implement proper null-safe field access rewriting
+                // For now, just leave it as-is to avoid breaking other tests
+                break;
+            }
+            case "NullSafeMethodCallExpr" : {
+                NullSafeMethodCallExpr nullSafeExpr = (NullSafeMethodCallExpr) node;
+                Expression scope = nullSafeExpr.getScope().orElse(null);
+                String methodName = nullSafeExpr.getName().asString();
+                NodeList<Expression> arguments = nullSafeExpr.getArguments();
+
+                if (scope != null) {
+                    // Rewrite the scope first
+                    rewriteNode(scope);
+
+                    // Clone arguments and rewrite them
+                    NodeList<Expression> clonedArgs = new NodeList<>();
+                    for (Expression arg : arguments) {
+                        Expression clonedArg = arg.clone();
+                        rewriteNode(clonedArg);
+                        clonedArgs.add(clonedArg);
+                    }
+
+                    // Create the method call expression with cloned scope
+                    MethodCallExpr methodCall = new MethodCallExpr(
+                        scope.clone(),
+                        methodName
+                    );
+                    methodCall.setArguments(clonedArgs);
+                    if (nullSafeExpr.getTypeArguments().isPresent()) {
+                        methodCall.setTypeArguments(nullSafeExpr.getTypeArguments().get());
+                    }
+
+                    // Create ternary: scope != null ? scope.method() : null
+                    BinaryExpr condition = new BinaryExpr(
+                        scope.clone(),
+                        new NullLiteralExpr(),
+                        BinaryExpr.Operator.NOT_EQUALS
+                    );
+                    ConditionalExpr ternary = new ConditionalExpr(
+                        condition,
+                        methodCall,
+                        new NullLiteralExpr()
+                    );
+                    node.replace(ternary);
+                } else {
+                    throw new IllegalStateException("NullSafeMethodCallExpr should always have a scope");
                 }
                 break;
             }

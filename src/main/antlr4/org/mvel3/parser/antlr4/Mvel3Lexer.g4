@@ -16,6 +16,7 @@ WITH      : 'with';
 
 // MVEL-specific operators
 HASH      : '#';
+EXCL_DOT  : '!.';
 
 // MVEL-specific literals (defined to avoid conflicts with imported tokens)
 // BigDecimal literals with 'B' suffix

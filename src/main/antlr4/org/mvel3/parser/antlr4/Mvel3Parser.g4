@@ -65,6 +65,9 @@ expression
     // Mvel 3
     | expression HASH typeType HASH (identifier arguments? | '[' expression ']')? #InlineCastExpression
 
+    // MVEL null-safe operator
+    | expression EXCL_DOT typeArguments? identifier arguments?      #NullSafeExpression
+
     | expression bop = '.' (
         identifier
         | methodCall

@@ -95,4 +95,38 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
         test("var map = [:];",
              "var map = java.util.Collections.emptyMap();");
     }
+
+    // TODO: Revisit null-safe operator transpilation.
+    //  Should we return null? Do we use this only for expression (= returns boolean), so returning false in case of null?
+
+    @Ignore("TODO: Implement NullSafeFieldAccessExpr rewriting")
+    @Test
+    public void testNullSafeFieldAccess() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "return $p!.name;",
+             "return $p != null ? $p.getName() : null;");
+    }
+
+    @Test
+    public void testNullSafeMethodCall() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "return $p!.getName();",
+             "return $p != null ? $p.getName() : null;");
+    }
+
+    @Ignore("TODO: Implement chained null-safe access")
+    @Test
+    public void testNullSafeChainedMethodCall() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "return $p!.getAddresses()!.get(0);",
+             "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
+    }
+
+    @Ignore("TODO: Implement chained null-safe access")
+    @Test
+    public void testNullSafeChainedMix() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "return $p!.addresses!.get(0);",
+             "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
+    }
 }

@@ -69,6 +69,8 @@ import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
+import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
+import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
 
 import java.util.ArrayList;
@@ -352,6 +354,48 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         MapCreationLiteralExpression mapExpr = new MapCreationLiteralExpression(entries);
         mapExpr.setTokenRange(createTokenRange(ctx));
         return mapExpr;
+    }
+
+    @Override
+    public Node visitNullSafeExpression(Mvel3Parser.NullSafeExpressionContext ctx) {
+        // Extract the scope (left side of !.)
+        Expression scope = (Expression) visit(ctx.expression());
+
+        // Extract the identifier name
+        String name = ctx.identifier().getText();
+
+        // Check if there are arguments (method call) or not (field access)
+        if (ctx.arguments() != null) {
+            // Method call: $p!.getName()
+            NodeList<Expression> arguments = new NodeList<>();
+            if (ctx.arguments().expressionList() != null) {
+                for (Mvel3Parser.ExpressionContext argCtx : ctx.arguments().expressionList().expression()) {
+                    arguments.add((Expression) visit(argCtx));
+                }
+            }
+
+            // Extract type arguments if present
+            NodeList<Type> typeArguments = new NodeList<>();
+            if (ctx.typeArguments() != null) {
+                for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
+                    typeArguments.add((Type) visit(typeArgCtx));
+                }
+            }
+
+            NullSafeMethodCallExpr methodCall = new NullSafeMethodCallExpr(
+                scope,
+                typeArguments.isEmpty() ? null : typeArguments,
+                name,
+                arguments
+            );
+            methodCall.setTokenRange(createTokenRange(ctx));
+            return methodCall;
+        } else {
+            // Field access: $p!.name
+            NullSafeFieldAccessExpr fieldAccess = new NullSafeFieldAccessExpr(scope, name);
+            fieldAccess.setTokenRange(createTokenRange(ctx));
+            return fieldAccess;
+        }
     }
 
     @Override
