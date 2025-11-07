@@ -192,4 +192,12 @@ public class Person {
     public void setCanDrinkLambda(Supplier s) {
         s.get();
     }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
 }

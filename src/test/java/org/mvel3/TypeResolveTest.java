@@ -23,10 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -283,12 +286,27 @@ public class TypeResolveTest {
         assertThat(resolvedType.describe()).isEqualTo("java.util.Map.Entry<K, V>");
     }
 
-    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
+    // Useful to debug how type resolution works with FieldAccessExpr
+    @Test
+    public void testFieldAccessExpr() {
+
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
+                                                       "{ return person.address == null; }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        FieldAccessExpr fieldAccessExpr = body.findFirst(FieldAccessExpr.class)
+                .orElseThrow(() -> new AssertionError("Missing FieldAccessExpr"));
+
+        ResolvedType resolvedType = fieldAccessExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
+    }
+
+    @Ignore("Need some enhancements in javaparser TypeExtractor")
     @Test
     public void testNullSafeFieldAccessExpr() {
 
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
-                                                                      "{ return value?.address == null }");
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
+                                                                      "{ return person!.address == null; }");
         BlockStmt body = getFirstMethodBody(unit);
 
         NullSafeFieldAccessExpr nullSafeFieldAccessExpr = body.findFirst(NullSafeFieldAccessExpr.class)
@@ -298,11 +316,28 @@ public class TypeResolveTest {
         assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
     }
 
-    @Ignore("NullSafe is not yet implemented even in legacy JavaCC. Clarify `?.` or `!.`")
+    // Useful to debug how type resolution works with MethodCallExpr
+    @Test
+    public void testMethodCallExpr() {
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
+                                                       "{ return person.getAddress(); }");
+        BlockStmt body = getFirstMethodBody(unit);
+
+        MethodCallExpr methodCallExpr = body.findAll(MethodCallExpr.class)
+                .stream()
+                .filter(m -> m.getName().asString().equals("getAddress"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Missing MethodCallExpr"));
+
+        ResolvedType resolvedType = methodCallExpr.calculateResolvedType();
+        assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
+    }
+
+    @Ignore("Need some enhancements in javaparser TypeExtractor")
     @Test
     public void testNullSafeMethodCallExpr() {
-        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Person.class),
-                                                                      "{ return value?.getAddress(); }");
+        CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
+                                                                      "{ return person!.getAddress(); }");
         BlockStmt body = getFirstMethodBody(unit);
 
         NullSafeMethodCallExpr nullSafeMethodCallExpr = body.findFirst(NullSafeMethodCallExpr.class)
