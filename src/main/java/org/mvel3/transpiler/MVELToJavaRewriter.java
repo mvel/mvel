@@ -308,31 +308,14 @@ public class MVELToJavaRewriter {
 
                 // Rewrite the scope first
                 rewriteNode(scope);
+                Expression rewrittenScope = nullSafeExpr.getScope();
 
-                // Create field access and convert to getter
-                FieldAccessExpr fieldAccess = new FieldAccessExpr(
-                    scope.clone(),
-                    fieldName
+                Expression replacement = wrapNullSafe(
+                    rewrittenScope,
+                    safeScope -> buildFieldAccessExpression(safeScope, fieldName, nullSafeExpr)
                 );
 
-                // Convert field access to getter method call
-                Node maybeGetter = maybeRewriteToGetterWithParentBlockStmt(fieldAccess, node);
-
-                Expression accessExpression = (Expression) (maybeGetter != null ? maybeGetter : fieldAccess);
-
-                // Create ternary: scope != null ? scope.getField() : null
-                BinaryExpr condition = new BinaryExpr(
-                    scope.clone(),
-                    new NullLiteralExpr(),
-                    BinaryExpr.Operator.NOT_EQUALS
-                );
-                ConditionalExpr ternary = new ConditionalExpr(
-                    condition,
-                    accessExpression,
-                    new NullLiteralExpr()
-                );
-
-                node.replace(ternary);
+                node.replace(replacement);
                 break;
             }
             case "NullSafeMethodCallExpr" : {
@@ -344,37 +327,38 @@ public class MVELToJavaRewriter {
                 if (scope != null) {
                     // Rewrite the scope first
                     rewriteNode(scope);
+                    Expression rewrittenScope = nullSafeExpr.getScope().orElse(null);
 
-                    // Clone arguments and rewrite them
-                    NodeList<Expression> clonedArgs = new NodeList<>();
+                    // Clone arguments and rewrite them once, reuse clones when building the method call
+                    List<Expression> preparedArgs = new ArrayList<>();
                     for (Expression arg : arguments) {
                         Expression clonedArg = arg.clone();
                         rewriteNode(clonedArg);
-                        clonedArgs.add(clonedArg);
+                        preparedArgs.add(clonedArg);
                     }
 
-                    // Create the method call expression with cloned scope
-                    MethodCallExpr methodCall = new MethodCallExpr(
-                        scope.clone(),
-                        methodName
+                    Expression replacement = wrapNullSafe(
+                        rewrittenScope,
+                        safeScope -> {
+                            NodeList<Expression> argsForCall = new NodeList<>();
+                            for (Expression preparedArg : preparedArgs) {
+                                argsForCall.add(preparedArg.clone());
+                            }
+                            MethodCallExpr methodCall = new MethodCallExpr(
+                                safeScope,
+                                methodName
+                            );
+                            methodCall.setArguments(argsForCall);
+                            nullSafeExpr.getTypeArguments().ifPresent(typeArgs -> {
+                                NodeList<Type> clonedTypeArgs = new NodeList<>();
+                                typeArgs.forEach(arg -> clonedTypeArgs.add(arg.clone()));
+                                methodCall.setTypeArguments(clonedTypeArgs);
+                            });
+                            return methodCall;
+                        }
                     );
-                    methodCall.setArguments(clonedArgs);
-                    if (nullSafeExpr.getTypeArguments().isPresent()) {
-                        methodCall.setTypeArguments(nullSafeExpr.getTypeArguments().get());
-                    }
 
-                    // Create ternary: scope != null ? scope.method() : null
-                    BinaryExpr condition = new BinaryExpr(
-                        scope.clone(),
-                        new NullLiteralExpr(),
-                        BinaryExpr.Operator.NOT_EQUALS
-                    );
-                    ConditionalExpr ternary = new ConditionalExpr(
-                        condition,
-                        methodCall,
-                        new NullLiteralExpr()
-                    );
-                    node.replace(ternary);
+                    node.replace(replacement);
                 } else {
                     throw new IllegalStateException("NullSafeMethodCallExpr should always have a scope");
                 }
@@ -1314,6 +1298,78 @@ public class MVELToJavaRewriter {
         return null;
     }
 
+    private Expression buildFieldAccessExpression(Expression safeScope, String fieldName, Node originalNode) {
+        FieldAccessExpr fieldAccess = new FieldAccessExpr(safeScope, fieldName);
+        Node maybeGetter = maybeRewriteToGetterWithParentBlockStmt(fieldAccess, originalNode);
+        if (maybeGetter instanceof Expression) {
+            return (Expression) maybeGetter;
+        }
+        return fieldAccess;
+    }
+
+    private Expression wrapNullSafe(Expression scopeExpression, Function<Expression, Expression> onNotNull) {
+        return wrapNullSafeInternal(scopeExpression.clone(), onNotNull);
+    }
+
+    private Expression wrapNullSafeInternal(Expression currentScope, Function<Expression, Expression> onNotNull) {
+        if (isNullSafeConditional(currentScope)) {
+            ConditionalExpr conditionalExpr = (ConditionalExpr) currentScope;
+            Expression wrappedThen = wrapNullSafeInternal(conditionalExpr.getThenExpr().clone(), onNotNull);
+            if (wrappedThen instanceof ConditionalExpr) {
+                wrappedThen = new EnclosedExpr(wrappedThen);
+            }
+            return new ConditionalExpr(
+                conditionalExpr.getCondition().clone(),
+                wrappedThen,
+                conditionalExpr.getElseExpr().clone()
+            );
+        }
+
+        Expression conditionScope = currentScope.clone();
+        BinaryExpr condition = new BinaryExpr(
+            conditionScope,
+            new NullLiteralExpr(),
+            BinaryExpr.Operator.NOT_EQUALS
+        );
+        Expression thenExpr = onNotNull.apply(currentScope);
+        return new ConditionalExpr(
+            condition,
+            thenExpr,
+            new NullLiteralExpr()
+        );
+    }
+
+    private boolean isNullSafeConditional(Expression expression) {
+        if (!(expression instanceof ConditionalExpr)) {
+            return false;
+        }
+        ConditionalExpr conditionalExpr = (ConditionalExpr) expression;
+        if (!isNullLiteralExpression(conditionalExpr.getElseExpr())) {
+            return false;
+        }
+        if (!(conditionalExpr.getCondition() instanceof BinaryExpr)) {
+            return false;
+        }
+        BinaryExpr condition = (BinaryExpr) conditionalExpr.getCondition();
+        if (condition.getOperator() != BinaryExpr.Operator.NOT_EQUALS) {
+            return false;
+        }
+        return condition.getRight() instanceof NullLiteralExpr || condition.getLeft() instanceof NullLiteralExpr;
+    }
+
+    private boolean isNullLiteralExpression(Expression expression) {
+        if (expression == null) {
+            return false;
+        }
+        if (expression.isNullLiteralExpr()) {
+            return true;
+        }
+        if (expression instanceof EnclosedExpr) {
+            return isNullLiteralExpression(((EnclosedExpr) expression).getInner());
+        }
+        return false;
+    }
+
     public Node rewriteArrayAccessExpr(ArrayAccessExpr n) {
         if (n.getParentNode().get() instanceof  AssignExpr && ((AssignExpr)n.getParentNode().get()).getTarget() == n) {
             // do not rewrite the setter part of the ArrayAccessExpr, but getting is fine.
@@ -1495,4 +1551,3 @@ public class MVELToJavaRewriter {
         return handleParserResult(context.getParser().parseClassOrInterfaceType(resolved.describe()));
     }
 }
-

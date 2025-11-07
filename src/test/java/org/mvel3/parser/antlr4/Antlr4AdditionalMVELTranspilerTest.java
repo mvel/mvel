@@ -113,7 +113,6 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
              "return $p != null ? $p.getName() : null;");
     }
 
-    @Ignore("TODO: Implement chained null-safe access")
     @Test
     public void testNullSafeChainedMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
@@ -121,7 +120,6 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
              "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
     }
 
-    @Ignore("TODO: Implement chained null-safe access")
     @Test
     public void testNullSafeChainedMix() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
