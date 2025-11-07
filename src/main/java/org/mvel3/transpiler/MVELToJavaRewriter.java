@@ -70,6 +70,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -301,8 +302,37 @@ public class MVELToJavaRewriter {
                 break;
             }
             case "NullSafeFieldAccessExpr" : {
-                // TODO: Implement proper null-safe field access rewriting
-                // For now, just leave it as-is to avoid breaking other tests
+                NullSafeFieldAccessExpr nullSafeExpr = (NullSafeFieldAccessExpr) node;
+                Expression scope = nullSafeExpr.getScope();
+                String fieldName = nullSafeExpr.getName().asString();
+
+                // Rewrite the scope first
+                rewriteNode(scope);
+
+                // Create field access and convert to getter
+                FieldAccessExpr fieldAccess = new FieldAccessExpr(
+                    scope.clone(),
+                    fieldName
+                );
+
+                // Convert field access to getter method call
+                Node maybeGetter = maybeRewriteToGetterWithParentBlockStmt(fieldAccess, node);
+
+                Expression accessExpression = (Expression) (maybeGetter != null ? maybeGetter : fieldAccess);
+
+                // Create ternary: scope != null ? scope.getField() : null
+                BinaryExpr condition = new BinaryExpr(
+                    scope.clone(),
+                    new NullLiteralExpr(),
+                    BinaryExpr.Operator.NOT_EQUALS
+                );
+                ConditionalExpr ternary = new ConditionalExpr(
+                    condition,
+                    accessExpression,
+                    new NullLiteralExpr()
+                );
+
+                node.replace(ternary);
                 break;
             }
             case "NullSafeMethodCallExpr" : {
@@ -1216,6 +1246,22 @@ public class MVELToJavaRewriter {
               .forEach(children::add);
         }
         return children;
+    }
+
+    // Generated node may not have a parent, so temporarily add the node to its parent BlockStmt, so that maybeRewriteToGetter can resolve its type.
+    private Node maybeRewriteToGetterWithParentBlockStmt(FieldAccessExpr fieldAccess, Node originalNode) {
+        Optional<BlockStmt> blockStmtOpt = originalNode.findAncestor(BlockStmt.class);
+        if (blockStmtOpt.isEmpty()) {
+            return fieldAccess;
+        }
+        BlockStmt blockStmt = blockStmtOpt.get();
+        ExpressionStmt tempStmt = new ExpressionStmt(fieldAccess);
+        try {
+            blockStmt.addStatement(tempStmt);
+            return maybeRewriteToGetter(fieldAccess);
+        } finally {
+            blockStmt.remove(tempStmt);
+        }
     }
 
     public Node maybeRewriteToGetter(FieldAccessExpr n) {

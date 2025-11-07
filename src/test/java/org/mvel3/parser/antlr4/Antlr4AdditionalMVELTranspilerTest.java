@@ -99,7 +99,6 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
     // TODO: Revisit null-safe operator transpilation.
     //  Should we return null? Do we use this only for expression (= returns boolean), so returning false in case of null?
 
-    @Ignore("TODO: Implement NullSafeFieldAccessExpr rewriting")
     @Test
     public void testNullSafeFieldAccess() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
