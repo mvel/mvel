@@ -71,7 +71,12 @@ import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
+import org.mvel3.parser.ast.expr.TemporalChunkExpr;
 import org.mvel3.parser.antlr4.Mvel3Parser.ExpressionContext;
+
+import java.util.concurrent.TimeUnit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -495,9 +500,43 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             String text = ctx.BigIntegerLiteral().getText();
             // Create BigIntegerLiteralExpr node (transformation happens in MVELToJavaRewriter)
             return new BigIntegerLiteralExpr(createTokenRange(ctx), text);
+        } else if (ctx.temporalLiteral() != null) {
+            return buildTemporalLiteral(ctx.temporalLiteral());
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
+    }
+
+    private TemporalLiteralExpr buildTemporalLiteral(Mvel3Parser.TemporalLiteralContext ctx) {
+        NodeList<TemporalChunkExpr> chunks = new NodeList<>();
+        for (Mvel3Parser.TemporalLiteralChunkContext chunkCtx : ctx.temporalLiteralChunk()) {
+            chunks.add(buildTemporalLiteralChunk(chunkCtx));
+        }
+        TemporalLiteralExpr temporalLiteralExpr = new TemporalLiteralExpr(createTokenRange(ctx), chunks);
+        return temporalLiteralExpr;
+    }
+
+    private TemporalLiteralChunkExpr buildTemporalLiteralChunk(Mvel3Parser.TemporalLiteralChunkContext ctx) {
+        Token token;
+        TimeUnit timeUnit;
+
+        if (ctx.MILLISECOND_LITERAL() != null) {
+            token = ctx.MILLISECOND_LITERAL().getSymbol();
+            timeUnit = TimeUnit.MILLISECONDS;
+        } else if (ctx.SECOND_LITERAL() != null) {
+            token = ctx.SECOND_LITERAL().getSymbol();
+            timeUnit = TimeUnit.SECONDS;
+        } else if (ctx.MINUTE_LITERAL() != null) {
+            token = ctx.MINUTE_LITERAL().getSymbol();
+            timeUnit = TimeUnit.MINUTES;
+        } else if (ctx.HOUR_LITERAL() != null) {
+            token = ctx.HOUR_LITERAL().getSymbol();
+            timeUnit = TimeUnit.HOURS;
+        } else {
+            throw new IllegalArgumentException("Unsupported temporal literal chunk: " + ctx.getText());
+        }
+
+        return new TemporalLiteralChunkExpr(createTokenRange(ctx), token.getText(), timeUnit);
     }
 
     @Override

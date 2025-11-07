@@ -16,6 +16,8 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.concurrent.TimeUnit;
+
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -24,6 +26,8 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.junit.Test;
+import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.printer.PrintUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +84,29 @@ public class Antlr4MvelParserJavaParserASTTest {
         Type type = result.getResult().get();
         assertThat(type).isInstanceOf(ClassOrInterfaceType.class);
         assertThat(type.toString()).isEqualTo("java.lang.Void");
+    }
+
+    @Test
+    public void testTemporalLiteral() {
+        String expr = "1m5s";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        Expression expression = result.getResult().get();
+        assertThat(expression).isInstanceOf(TemporalLiteralExpr.class);
+
+        System.out.println(expression);
+        System.out.println(toString(expression));
+
+        TemporalLiteralExpr temporalLiteralExpr = (TemporalLiteralExpr) expression;
+        assertThat(temporalLiteralExpr.getChunks().size()).isEqualTo(2);
+        TemporalLiteralChunkExpr chunk0 = (TemporalLiteralChunkExpr) temporalLiteralExpr.getChunks().get(0);
+        assertThat(chunk0.getValue()).isEqualTo(1);
+        assertThat(chunk0.getTimeUnit()).isEqualTo(TimeUnit.MINUTES);
+        TemporalLiteralChunkExpr chunk1 = (TemporalLiteralChunkExpr) temporalLiteralExpr.getChunks().get(1);
+        assertThat(chunk1.getValue()).isEqualTo(5);
+        assertThat(chunk1.getTimeUnit()).isEqualTo(TimeUnit.SECONDS);
     }
 
     private String toString(Node n) {

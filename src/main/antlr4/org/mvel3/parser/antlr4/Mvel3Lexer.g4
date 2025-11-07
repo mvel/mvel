@@ -30,3 +30,19 @@ BigIntegerLiteral
     : ('0' | [1-9] (Digits? | '_'+ Digits)) [iI]
     ;
 
+// Temporal literals
+MILLISECOND_LITERAL
+    : Digits 'ms'
+    ;
+
+SECOND_LITERAL
+    : Digits 's'
+    ;
+
+MINUTE_LITERAL
+    : Digits 'm'
+    ;
+
+HOUR_LITERAL
+    : Digits 'h'
+    ;

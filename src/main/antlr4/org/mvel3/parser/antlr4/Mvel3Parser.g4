@@ -33,6 +33,18 @@ literal
     | NULL_LITERAL
     | BigDecimalLiteral
     | BigIntegerLiteral
+    | temporalLiteral
+    ;
+
+temporalLiteral
+    : temporalLiteralChunk+
+    ;
+
+temporalLiteralChunk
+    : MILLISECOND_LITERAL
+    | SECOND_LITERAL
+    | MINUTE_LITERAL
+    | HOUR_LITERAL
     ;
 
 // MVEL list/map literal expressions

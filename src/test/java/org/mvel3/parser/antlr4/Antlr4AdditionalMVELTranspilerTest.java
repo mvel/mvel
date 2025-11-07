@@ -17,7 +17,6 @@
 package org.mvel3.parser.antlr4;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
