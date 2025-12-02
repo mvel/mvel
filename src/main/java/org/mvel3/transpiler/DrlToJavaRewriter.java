@@ -1,5 +1,12 @@
 package org.mvel3.transpiler;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -14,24 +21,16 @@ import org.drools.base.rule.ContextEntry;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
+import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.base.rule.constraint.Constraint;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.common.BetaConstraints;
-import org.drools.core.common.ReteEvaluator;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.util.bitmask.BitMask;
 import org.kie.api.runtime.rule.FactHandle;
 import org.mvel3.parser.ast.expr.RuleDeclaration;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 
 public class DrlToJavaRewriter {
     private CompilationUnit compUnit;
@@ -118,11 +117,6 @@ public class DrlToJavaRewriter {
         }
 
         @Override
-        public BitMask getListenedPropertyMask(ObjectType objectType, List<String> settableProperties) {
-            return AlphaNodeFieldConstraint.super.getListenedPropertyMask(objectType, settableProperties);
-        }
-
-        @Override
         public BitMask getListenedPropertyMask(Optional<Pattern> pattern, ObjectType objectType, List<String> settableProperties) {
             return AlphaNodeFieldConstraint.super.getListenedPropertyMask(pattern, objectType, settableProperties);
         }
@@ -153,19 +147,19 @@ public class DrlToJavaRewriter {
         }
     }
 
-    public static abstract class MarkBetaConstraint implements BetaConstraints {
+    public static abstract class MarkBetaConstraint implements BetaConstraints<ContextEntry[]> {
         @Override
         public ContextEntry[] createContext() {
             return new MarkContextEntry[]  {new MarkContextEntry()};
         }
 
         @Override
-        public void updateFromTuple(ContextEntry[] contextEntries, ReteEvaluator reteEvaluator, Tuple tuple) {
+        public void updateFromTuple(ContextEntry[] contextEntries, ValueResolver valueResolver, Tuple tuple) {
             ((MarkContextEntry)contextEntries[0]).tp = tuple;
         }
 
         @Override
-        public void updateFromFactHandle(ContextEntry[] contextEntries, ReteEvaluator reteEvaluator, FactHandle factHandle) {
+        public void updateFromFactHandle(ContextEntry[] contextEntries, ValueResolver valueResolver, FactHandle factHandle) {
             ((MarkContextEntry)contextEntries[0]).fh = factHandle;
         }
 
@@ -175,12 +169,12 @@ public class DrlToJavaRewriter {
         }
 
         @Override
-        public boolean isAllowedCachedRight(ContextEntry[] contextEntries, Tuple tuple) {
+        public boolean isAllowedCachedRight(BaseTuple tuple, ContextEntry[] contextEntries) {
             return false;
         }
 
         @Override
-        public BetaNodeFieldConstraint[] getConstraints() {
+        public BetaConstraint[] getConstraints() {
             throw new UnsupportedOperationException();
         }
 
@@ -205,7 +199,7 @@ public class DrlToJavaRewriter {
         }
 
         @Override
-        public BetaMemory createBetaMemory(RuleBaseConfiguration ruleBaseConfiguration, short i) {
+        public BetaMemory createBetaMemory(RuleBaseConfiguration ruleBaseConfiguration, int nodeType) {
             return null;
         }
 
@@ -225,12 +219,12 @@ public class DrlToJavaRewriter {
         }
 
         @Override
-        public void init(BuildContext buildContext, short i) {
+        public void init(BuildContext buildContext, int betaNodeType) {
 
         }
 
         @Override
-        public void initIndexes(int i, short i1, RuleBaseConfiguration ruleBaseConfiguration) {
+        public void initIndexes(int depth, int betaNodeType, RuleBaseConfiguration config) {
 
         }
 
@@ -276,12 +270,12 @@ public class DrlToJavaRewriter {
 
         @Override
         public void updateFromTuple(ValueResolver valueResolver, BaseTuple baseTuple) {
-            this.tp = tp;
+            this.tp = (Tuple) baseTuple;
         }
 
         @Override
         public void updateFromFactHandle(ValueResolver valueResolver, FactHandle factHandle) {
-            this.fh = fh;
+            this.fh = factHandle;
         }
 
         public void isAllowedCachedLeft(FactHandle fh) {
