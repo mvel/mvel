@@ -86,7 +86,7 @@ public class MVELTranspiler {
     public <T, K, R> TranspiledBlockResult transpileContent(CompilerParameters<T, K, R> evalInfo, EvalPre evalPre) {
         BlockStmt blockStmt;
         String content = evalInfo.expression();
-        System.out.println(content);
+        logger.debug("transpile content: {}", content);
 
 
         if (evalInfo.contentType() == ContentType.BLOCK) {

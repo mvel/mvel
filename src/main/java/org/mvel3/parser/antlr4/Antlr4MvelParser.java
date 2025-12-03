@@ -78,6 +78,8 @@ public class Antlr4MvelParser implements MvelParser {
 
     public Antlr4MvelParser(ParserConfiguration configuration) {
         this.configuration = configuration;
+
+        logger.info("*** Antlr4MvelParser ***");
     }
 
     // Simple parse to return Antlr AST. For testing purposes only.
@@ -125,8 +127,6 @@ public class Antlr4MvelParser implements MvelParser {
     // The main parse method
     public ParseResult parse(Antlr4ParseStart start, final Provider provider) {
         try {
-            logger.info("*** Antlr4MvelParser ***");
-
             String input = ProviderUtils.readAll(provider);
             logger.trace("Parsing with input: {}", input);
             
