@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class LambdaRegistry {
+public class LambdaRegistry {
 
     // hash -> logical IDs (group of conflicting hashes)
     private final Map<Integer, List<Integer>> hashToLogicalIds = new HashMap<>();
@@ -21,7 +21,16 @@ class LambdaRegistry {
 
     private int nextPhysicalId = 0;
 
-    int registerLambda(int logicalId, LambdaKey key, int hash) {
+    private static final LambdaRegistry INSTANCE = new LambdaRegistry();
+
+    private LambdaRegistry() {
+    }
+
+    public static LambdaRegistry getInstance() {
+        return INSTANCE;
+    }
+
+    public int registerLambda(int logicalId, LambdaKey key, int hash) {
         hashToLogicalIds
                 .computeIfAbsent(hash, h -> new ArrayList<>())
                 .add(logicalId);
@@ -36,7 +45,7 @@ class LambdaRegistry {
         return physicalId;
     }
 
-    int getPhysicalId(int logicalId) {
+    public int getPhysicalId(int logicalId) {
         return logicalToPhysical.get(logicalId);
     }
 
@@ -44,7 +53,7 @@ class LambdaRegistry {
         return hashToLogicalIds.getOrDefault(hash, List.of());
     }
 
-    void registerPhysicalPath(int physicalId, String path) {
+    public void registerPhysicalPath(int physicalId, String path) {
         physicalIdToPath.put(physicalId, path);
     }
 }

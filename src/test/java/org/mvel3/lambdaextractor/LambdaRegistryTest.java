@@ -1,52 +1,14 @@
 package org.mvel3.lambdaextractor;
 
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import org.junit.Test;
-import org.mvel3.methodutils.Murmur3F;
-
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.junit.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
+import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKey;
 
 public class LambdaRegistryTest {
-
-    /**
-     * Helper method to create a LambdaKey from a method declaration string
-     */
-    private LambdaKey createLambdaKey(String methodDeclaration) {
-        MethodDeclaration methodDecl = StaticJavaParser.parseMethodDeclaration(methodDeclaration);
-        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDecl);
-        String normalizedStr = normalized.toString();
-        String signature = extractSignature(normalized);
-        return new LambdaKey(normalizedStr, signature);
-    }
-
-    /**
-     * Extract method signature from normalized method declaration
-     */
-    private String extractSignature(MethodDeclaration method) {
-        // Extract return type and parameters (without method body)
-        StringBuilder sig = new StringBuilder();
-        sig.append(method.getType().asString()).append(" ");
-        sig.append(method.getNameAsString()).append("(");
-        for (int i = 0; i < method.getParameters().size(); i++) {
-            if (i > 0) sig.append(", ");
-            sig.append(method.getParameter(i).toString());
-        }
-        sig.append(")");
-        return sig.toString();
-    }
-
-    /**
-     * Calculate hash from normalized method string
-     */
-    private int calculateHash(String normalizedMethod) {
-        Murmur3F hasher = new Murmur3F();
-        hasher.update(normalizedMethod.getBytes(StandardCharsets.UTF_8));
-        return (int) hasher.getValue();
-    }
 
     @Test
     public void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {
@@ -54,7 +16,7 @@ public class LambdaRegistryTest {
         // After normalization, both become v1.getAge() > 20
         // They should get the SAME physical ID
 
-        LambdaRegistry registry = new LambdaRegistry();
+        LambdaRegistry registry = LambdaRegistry.getInstance();
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
@@ -95,7 +57,7 @@ public class LambdaRegistryTest {
         // Even if the body looks the same, the signature is different
         // They should get DIFFERENT physical IDs
 
-        LambdaRegistry registry = new LambdaRegistry();
+        LambdaRegistry registry = LambdaRegistry.getInstance();
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Employee employee) { return employee.getAge() > 20; }";
@@ -132,7 +94,7 @@ public class LambdaRegistryTest {
         // 1. Both be tracked in hashToLogicalIds (under the same hash)
         // 2. Get DIFFERENT physical IDs (because keys are different)
 
-        LambdaRegistry registry = new LambdaRegistry();
+        LambdaRegistry registry = LambdaRegistry.getInstance();
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person person) { return person.getAge() < 20; }";
@@ -169,7 +131,7 @@ public class LambdaRegistryTest {
         // scenario: logical IDs 5, 9, 10 all point to physical ID 4
         // This happens when we have 3 rules with identical constraints
 
-        LambdaRegistry registry = new LambdaRegistry();
+        LambdaRegistry registry = LambdaRegistry.getInstance();
 
         // Now register the SAME lambda 3 times with logical IDs 5, 9, 10
         String method = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
