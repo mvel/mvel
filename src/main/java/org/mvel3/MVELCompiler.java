@@ -35,6 +35,9 @@ import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.mvel3.javacompiler.KieMemoryCompiler;
+import org.mvel3.lambdaextractor.LambdaKey;
+import org.mvel3.lambdaextractor.LambdaRegistry;
+import org.mvel3.lambdaextractor.LambdaUtils;
 import org.mvel3.transpiler.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.EvalPre;
@@ -45,12 +48,19 @@ import org.mvel3.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELCompiler {
+
+    private static final boolean LAMBDA_PERSISTENCE_ENABLED = Boolean.parseBoolean(System.getProperty("mvel3.compiler.lambda.persistence", "true"));
+
+    private static final Path LAMBDA_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
 
     public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
@@ -223,10 +233,43 @@ public class MVELCompiler {
     }
 
     private void compileEvaluatorClass(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
+        if (LAMBDA_PERSISTENCE_ENABLED) {
+            compileEvaluatorClassWithPersistence(classManager, classLoader, compilationUnit, javaFQN);
+            return;
+        }
+
         Map<String, String> sources = Collections.singletonMap(
                 javaFQN,
                 PrintUtil.printNode(compilationUnit)
         );
         KieMemoryCompiler.compile(classManager, sources, classLoader);
+    }
+
+    private void compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
+        String source = PrintUtil.printNode(compilationUnit);
+        Map<String, String> sources = Collections.singletonMap(
+                javaFQN,
+                source
+        );
+        LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromCompilationUnit(source);
+        int hash = LambdaUtils.calculateHash(lambdaKey.getNormalisedBody());
+        int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
+        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey, hash);
+        if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
+            if (classManager.getClasses().containsKey(javaFQN)) {
+                // already loaded
+                return;
+            }
+            Path persistedFile = LambdaRegistry.INSTANCE.getPhysicalPath(physicalId);
+            try {
+                byte[] bytes = Files.readAllBytes(persistedFile);
+                classManager.define(Collections.singletonMap(javaFQN, bytes));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
+            }
+        } else {
+            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LAMBDA_PERSISTENCE_PATH);
+            LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
+        }
     }
 }

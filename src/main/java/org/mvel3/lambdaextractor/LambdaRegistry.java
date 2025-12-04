@@ -1,11 +1,14 @@
 package org.mvel3.lambdaextractor;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LambdaRegistry {
+public enum LambdaRegistry {
+
+    INSTANCE;
 
     // hash -> logical IDs (group of conflicting hashes)
     private final Map<Integer, List<Integer>> hashToLogicalIds = new HashMap<>();
@@ -17,17 +20,18 @@ public class LambdaRegistry {
     private final Map<Integer, Integer> logicalToPhysical = new HashMap<>();
 
     // physical ID -> path to complied lambda class
-    private final Map<Integer, String> physicalIdToPath = new HashMap<>();
+    private final Map<Integer, Path> physicalIdToPath = new HashMap<>();
 
     private int nextPhysicalId = 0;
 
-    private static final LambdaRegistry INSTANCE = new LambdaRegistry();
+    private int nextLogicalId = 0;
 
     private LambdaRegistry() {
+        // singleton
     }
 
-    public static LambdaRegistry getInstance() {
-        return INSTANCE;
+    public int getNextLogicalId() {
+        return nextLogicalId++;
     }
 
     public int registerLambda(int logicalId, LambdaKey key, int hash) {
@@ -53,7 +57,15 @@ public class LambdaRegistry {
         return hashToLogicalIds.getOrDefault(hash, List.of());
     }
 
-    public void registerPhysicalPath(int physicalId, String path) {
+    public void registerPhysicalPath(int physicalId, Path path) {
         physicalIdToPath.put(physicalId, path);
+    }
+
+    public Path getPhysicalPath(int physicalId) {
+        return physicalIdToPath.get(physicalId);
+    }
+
+    public boolean isPersisted(int physicalId) {
+        return physicalIdToPath.containsKey(physicalId);
     }
 }

@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
-import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKey;
+import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclaration;
 
 public class LambdaRegistryTest {
 
@@ -16,24 +16,24 @@ public class LambdaRegistryTest {
         // After normalization, both become v1.getAge() > 20
         // They should get the SAME physical ID
 
-        LambdaRegistry registry = LambdaRegistry.getInstance();
+        LambdaRegistry registry = LambdaRegistry.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
 
-        LambdaKey key1 = createLambdaKey(method1);
-        LambdaKey key2 = createLambdaKey(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
 
-        System.out.println("Key1 body: " + key1.normalisedBody);
-        System.out.println("Key2 body: " + key2.normalisedBody);
-        System.out.println("Key1 signature: " + key1.signature);
-        System.out.println("Key2 signature: " + key2.signature);
+        System.out.println("Key1 body: " + key1.getNormalisedBody());
+        System.out.println("Key2 body: " + key2.getNormalisedBody());
+        System.out.println("Key1 signature: " + key1.getSignature());
+        System.out.println("Key2 signature: " + key2.getSignature());
 
         // Keys should be equal
         assertThat(key1).isEqualTo(key2);
 
-        int hash1 = calculateHash(key1.normalisedBody);
-        int hash2 = calculateHash(key2.normalisedBody);
+        int hash1 = calculateHash(key1.getNormalisedBody());
+        int hash2 = calculateHash(key2.getNormalisedBody());
 
         // Register both lambdas with different logical IDs
         int physicalId1 = registry.registerLambda(1, key1, hash1);
@@ -57,22 +57,22 @@ public class LambdaRegistryTest {
         // Even if the body looks the same, the signature is different
         // They should get DIFFERENT physical IDs
 
-        LambdaRegistry registry = LambdaRegistry.getInstance();
+        LambdaRegistry registry = LambdaRegistry.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Employee employee) { return employee.getAge() > 20; }";
 
-        LambdaKey key1 = createLambdaKey(method1);
-        LambdaKey key2 = createLambdaKey(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
 
-        System.out.println("Key1 signature: " + key1.signature);
-        System.out.println("Key2 signature: " + key2.signature);
+        System.out.println("Key1 signature: " + key1.getSignature());
+        System.out.println("Key2 signature: " + key2.getSignature());
 
         // Keys should NOT be equal (different signatures)
         assertThat(key1).isNotEqualTo(key2);
 
-        int hash1 = calculateHash(key1.normalisedBody);
-        int hash2 = calculateHash(key2.normalisedBody);
+        int hash1 = calculateHash(key1.getNormalisedBody());
+        int hash2 = calculateHash(key2.getNormalisedBody());
 
         // Register both lambdas
         int physicalId1 = registry.registerLambda(1, key1, hash1);
@@ -94,13 +94,13 @@ public class LambdaRegistryTest {
         // 1. Both be tracked in hashToLogicalIds (under the same hash)
         // 2. Get DIFFERENT physical IDs (because keys are different)
 
-        LambdaRegistry registry = LambdaRegistry.getInstance();
+        LambdaRegistry registry = LambdaRegistry.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person person) { return person.getAge() < 20; }";
 
-        LambdaKey key1 = createLambdaKey(method1);
-        LambdaKey key2 = createLambdaKey(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
 
         // Keys are different (different operators)
         assertThat(key1).isNotEqualTo(key2);
@@ -131,22 +131,22 @@ public class LambdaRegistryTest {
         // scenario: logical IDs 5, 9, 10 all point to physical ID 4
         // This happens when we have 3 rules with identical constraints
 
-        LambdaRegistry registry = LambdaRegistry.getInstance();
+        LambdaRegistry registry = LambdaRegistry.INSTANCE;
 
         // Now register the SAME lambda 3 times with logical IDs 5, 9, 10
         String method = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String methodVariant1 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
         String methodVariant2 = "public boolean eval(org.example.Person p) { return p.getAge() > 20; }";
 
-        LambdaKey key = createLambdaKey(method);
-        LambdaKey key1 = createLambdaKey(methodVariant1);
-        LambdaKey key2 = createLambdaKey(methodVariant2);
+        LambdaKey key = createLambdaKeyFromMethodDeclaration(method);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(methodVariant1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(methodVariant2);
 
         // All keys should be equal (same normalized body and signature)
         assertThat(key).isEqualTo(key1);
         assertThat(key).isEqualTo(key2);
 
-        int hash = calculateHash(key.normalisedBody);
+        int hash = calculateHash(key.getNormalisedBody());
 
         // Register logical IDs 5, 9, 10 with the same lambda
         int physicalId5 = registry.registerLambda(5, key, hash);
