@@ -253,11 +253,11 @@ public class MVELCompiler {
 
         if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
             if (classManager.getClasses().containsKey(newJavaFQN)) {
-                log.debug("Lambda class {} already loaded in ClassManager", newJavaFQN);
+                log.info("Lambda class {} already loaded in ClassManager", newJavaFQN);
                 return newJavaFQN;
             }
             Path persistedFile = LambdaRegistry.INSTANCE.getPhysicalPath(physicalId);
-            log.debug("Reading the persisted lambda class {}", newJavaFQN);
+            log.info("Reading the persisted lambda class {}", newJavaFQN);
             try {
                 byte[] bytes = Files.readAllBytes(persistedFile);
                 classManager.define(Collections.singletonMap(newJavaFQN, bytes));
@@ -265,6 +265,7 @@ public class MVELCompiler {
                 throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
             }
         } else {
+            log.info("Persisting lambda class {}", newJavaFQN);
             List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
         }
