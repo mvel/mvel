@@ -1,26 +1,48 @@
 package org.mvel3.lambdaextractor;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public enum LambdaRegistry {
 
     INSTANCE;
 
+    public static final boolean PERSISTENCE_ENABLED = Boolean.parseBoolean(System.getProperty("mvel3.compiler.lambda.persistence", "true"));
+    public static final Path DEFAULT_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
+    private static final Path REGISTRY_FILE = Path.of(System.getProperty("mvel3.compiler.lambda.registry.file",
+            DEFAULT_PERSISTENCE_PATH.resolve("lambda-registry.dat").toString()));
+    private static final String REGISTRY_VERSION = "v1";
+
+    static {
+        if (PERSISTENCE_ENABLED) {
+            INSTANCE.loadFromDisk();
+        }
+        if (Boolean.getBoolean("mvel3.compiler.lambda.resetOnTestStartup")) {
+            INSTANCE.resetAndRemoveAllPersistedFiles();
+        }
+    }
+
     // hash -> logical IDs (group of conflicting hashes)
     private final Map<Integer, List<Integer>> hashToLogicalIds = new HashMap<>();
 
-    // LambdaKey -> physical ID
-    private final Map<LambdaKey, Integer> keyToPhysicalId = new HashMap<>();
+    // LambdaKey -> entry (physical ID + optional persisted path)
+    private final Map<LambdaKey, RegistryEntry> entriesByKey = new HashMap<>();
+
+    // physical ID -> entry
+    private final Map<Integer, RegistryEntry> entriesByPhysicalId = new HashMap<>();
 
     // logical ID -> physical ID
     private final Map<Integer, Integer> logicalToPhysical = new HashMap<>();
-
-    // physical ID -> path to complied lambda class
-    private final Map<Integer, Path> physicalIdToPath = new HashMap<>();
 
     private int nextPhysicalId = 0;
 
@@ -39,14 +61,17 @@ public enum LambdaRegistry {
                 .computeIfAbsent(hash, h -> new ArrayList<>())
                 .add(logicalId);
 
-        Integer physicalId = keyToPhysicalId.get(key);
-        if (physicalId == null) {
-            physicalId = nextPhysicalId++;
-            keyToPhysicalId.put(key, physicalId);
+        RegistryEntry entry = entriesByKey.get(key);
+        if (entry == null) {
+            entry = new RegistryEntry(key, nextPhysicalId++);
+            entriesByKey.put(key, entry);
+            entriesByPhysicalId.put(entry.physicalId, entry);
+        } else {
+            entriesByPhysicalId.putIfAbsent(entry.physicalId, entry);
         }
 
-        logicalToPhysical.put(logicalId, physicalId);
-        return physicalId;
+        logicalToPhysical.put(logicalId, entry.physicalId);
+        return entry.physicalId;
     }
 
     public int getPhysicalId(int logicalId) {
@@ -58,14 +83,154 @@ public enum LambdaRegistry {
     }
 
     public void registerPhysicalPath(int physicalId, Path path) {
-        physicalIdToPath.put(physicalId, path);
+        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
+        if (entry == null) {
+            throw new IllegalStateException("Unknown physical ID " + physicalId);
+        }
+        entry.path = path;
+        if (PERSISTENCE_ENABLED) {
+            persistToDisk(); // TODO: We may call this explicitly at the end of whole build
+        }
     }
 
     public Path getPhysicalPath(int physicalId) {
-        return physicalIdToPath.get(physicalId);
+        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
+        return entry == null ? null : entry.path;
     }
 
     public boolean isPersisted(int physicalId) {
-        return physicalIdToPath.containsKey(physicalId);
+        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
+        return entry != null && entry.path != null && Files.exists(entry.path);
+    }
+
+    /**
+     * Clear all in-memory registry state and remove any persisted class files and registry file.
+     * Intended for use in test setup to ensure a clean slate.
+     */
+    public synchronized void resetAndRemoveAllPersistedFiles() {
+        // remove persisted class files we know about
+        entriesByPhysicalId.values().forEach(entry -> {
+            if (entry.path != null) {
+                try {
+                    Files.deleteIfExists(entry.path);
+                } catch (IOException ignored) {
+                    // best-effort cleanup
+                }
+            }
+        });
+        try {
+            Files.deleteIfExists(REGISTRY_FILE);
+        } catch (IOException ignored) {
+            // best-effort cleanup
+        }
+
+        hashToLogicalIds.clear();
+        entriesByKey.clear();
+        entriesByPhysicalId.clear();
+        logicalToPhysical.clear();
+        nextPhysicalId = 0;
+        nextLogicalId = 0;
+    }
+
+    private void loadFromDisk() {
+        if (!Files.exists(REGISTRY_FILE)) {
+            return;
+        }
+        try (BufferedReader reader = Files.newBufferedReader(REGISTRY_FILE, StandardCharsets.UTF_8)) {
+            String versionLine = reader.readLine();
+            if (!REGISTRY_VERSION.equals(versionLine)) {
+                return;
+            }
+            String countersLine = reader.readLine();
+            if (countersLine != null) {
+                String[] counters = countersLine.split("\\|", -1);
+                if (counters.length >= 2) {
+                    nextPhysicalId = parseIntSafe(counters[0], nextPhysicalId);
+                    nextLogicalId = parseIntSafe(counters[1], nextLogicalId);
+                }
+            }
+
+            String line;
+            int maxPhysicalId = -1;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+                String[] parts = line.split("\\|", -1);
+                if (parts.length < 4) {
+                    continue;
+                }
+                int physicalId = parseIntSafe(parts[0], -1);
+                if (physicalId < 0) {
+                    continue;
+                }
+                String pathString = decode(parts[1]);
+                String normalisedBody = decode(parts[2]);
+                String signature = decode(parts[3]);
+                LambdaKey key = new LambdaKey(normalisedBody, signature);
+                RegistryEntry entry = new RegistryEntry(key, physicalId);
+                if (!pathString.isEmpty()) {
+                    entry.path = Path.of(pathString);
+                }
+                entriesByKey.put(key, entry);
+                entriesByPhysicalId.put(physicalId, entry);
+                maxPhysicalId = Math.max(maxPhysicalId, physicalId);
+            }
+            nextPhysicalId = Math.max(nextPhysicalId, maxPhysicalId + 1);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load lambda registry from " + REGISTRY_FILE, e);
+        }
+    }
+
+    private void persistToDisk() {
+        try {
+            Files.createDirectories(REGISTRY_FILE.getParent());
+            try (BufferedWriter writer = Files.newBufferedWriter(REGISTRY_FILE, StandardCharsets.UTF_8)) {
+                writer.write(REGISTRY_VERSION);
+                writer.newLine();
+                writer.write(nextPhysicalId + "|" + nextLogicalId);
+                writer.newLine();
+
+                List<RegistryEntry> entries = entriesByPhysicalId.values().stream()
+                        .filter(e -> e.path != null)
+                        .sorted((a, b) -> Integer.compare(a.physicalId, b.physicalId))
+                        .collect(Collectors.toList());
+
+                for (RegistryEntry entry : entries) {
+                    writer.write(entry.physicalId + "|" + encode(entry.path.toString()) + "|" +
+                            encode(entry.key.getNormalisedBody()) + "|" + encode(entry.key.getSignature()));
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to persist lambda registry to " + REGISTRY_FILE, e);
+        }
+    }
+
+    private static int parseIntSafe(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private static String encode(String value) {
+        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String decode(String value) {
+        return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+    }
+
+    private static final class RegistryEntry {
+        private final LambdaKey key;
+        private final int physicalId;
+        private Path path;
+
+        private RegistryEntry(LambdaKey key, int physicalId) {
+            this.key = key;
+            this.physicalId = physicalId;
+        }
     }
 }

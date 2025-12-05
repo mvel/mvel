@@ -19,14 +19,15 @@
 
 package org.mvel3;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.transpiler.context.Declaration;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;

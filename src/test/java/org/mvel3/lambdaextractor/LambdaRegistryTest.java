@@ -2,6 +2,7 @@ package org.mvel3.lambdaextractor;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,6 +10,12 @@ import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
 import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclaration;
 
 public class LambdaRegistryTest {
+
+    @Before
+    public void setup() {
+        // Reset before each test, because the tests assert IDs from 0 upwards
+        LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
+    }
 
     @Test
     public void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {

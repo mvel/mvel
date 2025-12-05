@@ -58,10 +58,6 @@ import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELCompiler {
 
-    private static final boolean LAMBDA_PERSISTENCE_ENABLED = Boolean.parseBoolean(System.getProperty("mvel3.compiler.lambda.persistence", "true"));
-
-    private static final Path LAMBDA_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
-
     public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
         Evaluator<T, K, R> evaluator = compileEvaluator(unit, info);
@@ -233,7 +229,7 @@ public class MVELCompiler {
     }
 
     private void compileEvaluatorClass(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
-        if (LAMBDA_PERSISTENCE_ENABLED) {
+        if (LambdaRegistry.PERSISTENCE_ENABLED) {
             compileEvaluatorClassWithPersistence(classManager, classLoader, compilationUnit, javaFQN);
             return;
         }
@@ -268,7 +264,7 @@ public class MVELCompiler {
                 throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
             }
         } else {
-            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LAMBDA_PERSISTENCE_PATH);
+            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH, physicalId);
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
         }
     }

@@ -199,6 +199,10 @@
                             <name>mvel.tests.quick</name>
                             <value>true</value>
                         </property>
+                        <property>
+                            <name>mvel3.compiler.lambda.resetOnTestStartup</name>
+                            <value>true</value>
+                        </property>
                     </systemProperties>
                     <includes>
                         <include>**/*Test.java</include>
