@@ -68,17 +68,17 @@ public class KieMemoryCompiler {
      */
     public static List<Path> compileAndPersist(ClassManager classManager, Map<String, String> classNameSourceMap,
                                                ClassLoader classLoader, JavaCompilerSettings compilerSettings,
-                                               Path outputDirectory, int physicalId) {
+                                               Path outputDirectory) {
         Map<String, byte[]> byteCode = compileNoLoad(classNameSourceMap, classLoader, compilerSettings);
-        List<Path> persistedFiles = persistByteCode(byteCode, outputDirectory, physicalId);
+        List<Path> persistedFiles = persistByteCode(byteCode, outputDirectory);
         classManager.define(byteCode);
         return persistedFiles;
     }
 
-    private static List<Path> persistByteCode(Map<String, byte[]> byteCode, Path outputDirectory, int physicalId) {
+    private static List<Path> persistByteCode(Map<String, byte[]> byteCode, Path outputDirectory) {
         List<Path> persistedFiles = new ArrayList<>();
         byteCode.forEach((className, bytes) -> {
-            String fileName = className.replace('.', '/') + "-" + physicalId + ".class";
+            String fileName = className.replace('.', '/') + ".class";
             Path classFile = outputDirectory.resolve(fileName);
             try {
                 Files.createDirectories(classFile.getParent());

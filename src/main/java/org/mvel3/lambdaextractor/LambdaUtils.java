@@ -15,7 +15,7 @@ public class LambdaUtils {
 
     /**
      * Helper method to create a LambdaKey from a full compilation unit string
-     * Note: LambdaKey contains only the normalized method declaration
+     * Note: LambdaKey contains only the normalized method declaration. So the class name does not affect the equality.
      */
     public static LambdaKey createLambdaKeyFromCompilationUnit(String compilationUnitStr) {
         CompilationUnit compilationUnit = StaticJavaParser.parse(compilationUnitStr);
@@ -27,11 +27,21 @@ public class LambdaUtils {
     }
 
     /**
+     * Helper method to create a LambdaKey from a method declaration AST node
+     */
+    public static LambdaKey createLambdaKeyFromMethodDeclaration(MethodDeclaration methodDeclaration) {
+        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDeclaration);
+        String normalizedStr = normalized.toString();
+        String signature = extractSignature(normalized);
+        return new LambdaKey(normalizedStr, signature);
+    }
+
+    /**
      * Helper method to create a LambdaKey from a method declaration string
      */
-    public static LambdaKey createLambdaKeyFromMethodDeclaration(String methodDeclaration) {
-        MethodDeclaration methodDecl = StaticJavaParser.parseMethodDeclaration(methodDeclaration);
-        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDecl);
+    public static LambdaKey createLambdaKeyFromMethodDeclarationString(String methodDeclarationString) {
+        MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(methodDeclarationString);
+        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDeclaration);
         String normalizedStr = normalized.toString();
         String signature = extractSignature(normalized);
         return new LambdaKey(normalizedStr, signature);

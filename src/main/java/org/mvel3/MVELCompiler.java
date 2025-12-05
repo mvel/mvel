@@ -20,6 +20,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -45,6 +46,8 @@ import org.mvel3.transpiler.MVELTranspiler;
 import org.mvel3.transpiler.TranspiledResult;
 import org.mvel3.transpiler.context.Declaration;
 import org.mvel3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,6 +60,8 @@ import java.util.Map;
 import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELCompiler {
+
+    private static final Logger log = LoggerFactory.getLogger(MVELCompiler.class);
 
     public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
@@ -167,23 +172,16 @@ public class MVELCompiler {
             clsManager = new ClassManager();
         }
 
-        compileEvaluatorClass(clsManager, info.classLoader(), unit, javaFQN);
+        if (LambdaRegistry.PERSISTENCE_ENABLED) {
+            // return the new class name
+            javaFQN = compileEvaluatorClassWithPersistence(clsManager, info.classLoader(), unit, javaFQN);
+        } else {
+            compileEvaluatorClass(clsManager, info.classLoader(), unit, javaFQN);
+        }
 
         Class<Evaluator<C, W, O>> evaluatorDefinition = clsManager.getClass(javaFQN);
 
         Evaluator<C, W, O> evaluator = createEvaluatorInstance(evaluatorDefinition);
-
-        return evaluator;
-    }
-
-
-    private <T> T compileEvaluator(ClassManager classManager, ClassLoader classLoader, CompilationUnit unit) {
-        String javaFQN = evaluatorFullQualifiedName(unit);
-
-        compileEvaluatorClass(classManager, classLoader, unit, javaFQN);
-
-        Class<T> evaluatorDefinition = classManager.getClass(javaFQN);
-        T evaluator = createEvaluatorInstance(evaluatorDefinition);
 
         return evaluator;
     }
@@ -229,11 +227,6 @@ public class MVELCompiler {
     }
 
     private void compileEvaluatorClass(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
-        if (LambdaRegistry.PERSISTENCE_ENABLED) {
-            compileEvaluatorClassWithPersistence(classManager, classLoader, compilationUnit, javaFQN);
-            return;
-        }
-
         Map<String, String> sources = Collections.singletonMap(
                 javaFQN,
                 PrintUtil.printNode(compilationUnit)
@@ -241,31 +234,41 @@ public class MVELCompiler {
         KieMemoryCompiler.compile(classManager, sources, classLoader);
     }
 
-    private void compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
-        String source = PrintUtil.printNode(compilationUnit);
-        Map<String, String> sources = Collections.singletonMap(
-                javaFQN,
-                source
-        );
-        LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromCompilationUnit(source);
+    private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
+        MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
+        LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
         int hash = LambdaUtils.calculateHash(lambdaKey.getNormalisedBody());
         int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
         int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey, hash);
+        String oldClassName = javaFQN.substring(javaFQN.lastIndexOf('.') + 1);
+        String newClassName = oldClassName + "_" + physicalId; // The default class name is "GeneratorEvaluator__", but adding extra '_' just in case
+        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = compilationUnit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
+        classOrInterfaceDeclaration.setName(newClassName);
+        String newSource = PrintUtil.printNode(compilationUnit);
+        String newJavaFQN = javaFQN.substring(0, javaFQN.lastIndexOf('.') + 1) + newClassName;
+        Map<String, String> sources = Collections.singletonMap(
+                newJavaFQN,
+                newSource
+        );
+
         if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
-            if (classManager.getClasses().containsKey(javaFQN)) {
-                // already loaded
-                return;
+            if (classManager.getClasses().containsKey(newJavaFQN)) {
+                log.debug("Lambda class {} already loaded in ClassManager", newJavaFQN);
+                return newJavaFQN;
             }
             Path persistedFile = LambdaRegistry.INSTANCE.getPhysicalPath(physicalId);
+            log.debug("Reading the persisted lambda class {}", newJavaFQN);
             try {
                 byte[] bytes = Files.readAllBytes(persistedFile);
-                classManager.define(Collections.singletonMap(javaFQN, bytes));
+                classManager.define(Collections.singletonMap(newJavaFQN, bytes));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
             }
         } else {
-            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH, physicalId);
+            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
         }
+
+        return newJavaFQN;
     }
 }

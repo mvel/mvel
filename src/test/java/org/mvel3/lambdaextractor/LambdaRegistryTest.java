@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
-import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclaration;
+import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclarationString;
 
 public class LambdaRegistryTest {
 
@@ -28,8 +28,8 @@ public class LambdaRegistryTest {
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
 
-        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
-        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(method2);
 
         System.out.println("Key1 body: " + key1.getNormalisedBody());
         System.out.println("Key2 body: " + key2.getNormalisedBody());
@@ -69,8 +69,8 @@ public class LambdaRegistryTest {
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Employee employee) { return employee.getAge() > 20; }";
 
-        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
-        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(method2);
 
         System.out.println("Key1 signature: " + key1.getSignature());
         System.out.println("Key2 signature: " + key2.getSignature());
@@ -106,8 +106,8 @@ public class LambdaRegistryTest {
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person person) { return person.getAge() < 20; }";
 
-        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(method1);
-        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(method2);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(method1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(method2);
 
         // Keys are different (different operators)
         assertThat(key1).isNotEqualTo(key2);
@@ -145,9 +145,9 @@ public class LambdaRegistryTest {
         String methodVariant1 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
         String methodVariant2 = "public boolean eval(org.example.Person p) { return p.getAge() > 20; }";
 
-        LambdaKey key = createLambdaKeyFromMethodDeclaration(method);
-        LambdaKey key1 = createLambdaKeyFromMethodDeclaration(methodVariant1);
-        LambdaKey key2 = createLambdaKeyFromMethodDeclaration(methodVariant2);
+        LambdaKey key = createLambdaKeyFromMethodDeclarationString(method);
+        LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(methodVariant1);
+        LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(methodVariant2);
 
         // All keys should be equal (same normalized body and signature)
         assertThat(key).isEqualTo(key1);

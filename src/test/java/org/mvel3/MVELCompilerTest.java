@@ -26,11 +26,6 @@ public class MVELCompilerTest {
         MvelParser.Factory.USE_ANTLR = true;
     }
 
-//    @Before
-//    public void setup() {
-//        LambdaRegistry.INSTANCE.resetAndremoveAllPersistedFiles();
-//    }
-
     public static class ContextCamelCase {
 
         private Foo foo;
