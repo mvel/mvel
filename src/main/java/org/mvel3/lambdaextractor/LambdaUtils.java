@@ -20,10 +20,7 @@ public class LambdaUtils {
     public static LambdaKey createLambdaKeyFromCompilationUnit(String compilationUnitStr) {
         CompilationUnit compilationUnit = StaticJavaParser.parse(compilationUnitStr);
         MethodDeclaration methodDecl = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
-        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDecl);
-        String normalizedStr = normalized.toString();
-        String signature = extractSignature(normalized);
-        return new LambdaKey(normalizedStr, signature);
+        return createLambdaKeyFromMethodDeclaration(methodDecl);
     }
 
     /**
@@ -32,8 +29,7 @@ public class LambdaUtils {
     public static LambdaKey createLambdaKeyFromMethodDeclaration(MethodDeclaration methodDeclaration) {
         MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDeclaration);
         String normalizedStr = normalized.toString();
-        String signature = extractSignature(normalized);
-        return new LambdaKey(normalizedStr, signature);
+        return new LambdaKey(normalizedStr);
     }
 
     /**
@@ -41,26 +37,7 @@ public class LambdaUtils {
      */
     public static LambdaKey createLambdaKeyFromMethodDeclarationString(String methodDeclarationString) {
         MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(methodDeclarationString);
-        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDeclaration);
-        String normalizedStr = normalized.toString();
-        String signature = extractSignature(normalized);
-        return new LambdaKey(normalizedStr, signature);
-    }
-
-    /**
-     * Extract method signature from normalized method declaration
-     */
-    private static String extractSignature(MethodDeclaration method) {
-        // Extract return type and parameters (without method body)
-        StringBuilder sig = new StringBuilder();
-        sig.append(method.getType().asString()).append(" ");
-        sig.append(method.getNameAsString()).append("(");
-        for (int i = 0; i < method.getParameters().size(); i++) {
-            if (i > 0) sig.append(", ");
-            sig.append(method.getParameter(i).toString());
-        }
-        sig.append(")");
-        return sig.toString();
+        return createLambdaKeyFromMethodDeclaration(methodDeclaration);
     }
 
     /**

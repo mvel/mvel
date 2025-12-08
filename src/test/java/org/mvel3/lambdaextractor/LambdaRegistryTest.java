@@ -31,16 +31,14 @@ public class LambdaRegistryTest {
         LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(method1);
         LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(method2);
 
-        System.out.println("Key1 body: " + key1.getNormalisedBody());
-        System.out.println("Key2 body: " + key2.getNormalisedBody());
-        System.out.println("Key1 signature: " + key1.getSignature());
-        System.out.println("Key2 signature: " + key2.getSignature());
+        System.out.println("Key1 body: " + key1.getNormalisedSource());
+        System.out.println("Key2 body: " + key2.getNormalisedSource());
 
         // Keys should be equal
         assertThat(key1).isEqualTo(key2);
 
-        int hash1 = calculateHash(key1.getNormalisedBody());
-        int hash2 = calculateHash(key2.getNormalisedBody());
+        int hash1 = calculateHash(key1.getNormalisedSource());
+        int hash2 = calculateHash(key2.getNormalisedSource());
 
         // Register both lambdas with different logical IDs
         int physicalId1 = registry.registerLambda(1, key1, hash1);
@@ -72,14 +70,11 @@ public class LambdaRegistryTest {
         LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(method1);
         LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(method2);
 
-        System.out.println("Key1 signature: " + key1.getSignature());
-        System.out.println("Key2 signature: " + key2.getSignature());
-
-        // Keys should NOT be equal (different signatures)
+        // Keys should NOT be equal (different types)
         assertThat(key1).isNotEqualTo(key2);
 
-        int hash1 = calculateHash(key1.getNormalisedBody());
-        int hash2 = calculateHash(key2.getNormalisedBody());
+        int hash1 = calculateHash(key1.getNormalisedSource());
+        int hash2 = calculateHash(key2.getNormalisedSource());
 
         // Register both lambdas
         int physicalId1 = registry.registerLambda(1, key1, hash1);
@@ -149,11 +144,11 @@ public class LambdaRegistryTest {
         LambdaKey key1 = createLambdaKeyFromMethodDeclarationString(methodVariant1);
         LambdaKey key2 = createLambdaKeyFromMethodDeclarationString(methodVariant2);
 
-        // All keys should be equal (same normalized body and signature)
+        // All keys should be equal after normalization
         assertThat(key).isEqualTo(key1);
         assertThat(key).isEqualTo(key2);
 
-        int hash = calculateHash(key.getNormalisedBody());
+        int hash = calculateHash(key.getNormalisedSource());
 
         // Register logical IDs 5, 9, 10 with the same lambda
         int physicalId5 = registry.registerLambda(5, key, hash);

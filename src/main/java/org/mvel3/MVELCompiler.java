@@ -237,7 +237,7 @@ public class MVELCompiler {
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
         MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
         LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
-        int hash = LambdaUtils.calculateHash(lambdaKey.getNormalisedBody());
+        int hash = LambdaUtils.calculateHash(lambdaKey.getNormalisedSource());
         int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
         int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey, hash);
         String oldClassName = javaFQN.substring(javaFQN.lastIndexOf('.') + 1);

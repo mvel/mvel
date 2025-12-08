@@ -1,25 +1,19 @@
 package org.mvel3.lambdaextractor;
 
 public final class LambdaKey {
-    private final String normalisedBody;
-    private final String signature;
+    private final String normalisedSource;
 
-    LambdaKey(String normalisedBody, String signature) {
-        this.normalisedBody = normalisedBody;
-        this.signature = signature;
+    LambdaKey(String normalisedSource) {
+        this.normalisedSource = normalisedSource;
     }
 
-    public String getNormalisedBody() {
-        return normalisedBody;
-    }
-
-    public String getSignature() {
-        return signature;
+    public String getNormalisedSource() {
+        return normalisedSource;
     }
 
     @Override
     public int hashCode() {
-        return normalisedBody.hashCode() + signature.hashCode();
+        return normalisedSource.hashCode();
     }
 
     @Override
@@ -31,6 +25,6 @@ public final class LambdaKey {
             return false;
         }
         LambdaKey other = (LambdaKey) obj;
-        return normalisedBody.equals(other.normalisedBody) && signature.equals(other.signature);
+        return normalisedSource.equals(other.normalisedSource);
     }
 }

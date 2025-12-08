@@ -30,7 +30,7 @@ public class LambdaRegistryPersistenceTest {
         MethodDeclaration methodDecl = StaticJavaParser.parseMethodDeclaration(
                 "public boolean eval(java.util.Map m) { return m != null; }");
         LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDecl);
-        int hash = LambdaUtils.calculateHash(key.getNormalisedBody());
+        int hash = LambdaUtils.calculateHash(key.getNormalisedSource());
 
         // First registration + persist
         int logicalId1 = registry.getNextLogicalId();

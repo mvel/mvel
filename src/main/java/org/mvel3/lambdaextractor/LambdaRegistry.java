@@ -175,8 +175,8 @@ public enum LambdaRegistry {
                 }
                 String pathString = decode(parts[1]);
                 String normalisedBody = decode(parts[2]);
-                String signature = decode(parts[3]);
-                LambdaKey key = new LambdaKey(normalisedBody, signature);
+                LambdaKey key = new LambdaKey(normalisedBody);
+
                 RegistryEntry entry = new RegistryEntry(key, physicalId);
                 if (!pathString.isEmpty()) {
                     entry.path = Path.of(pathString);
@@ -207,7 +207,7 @@ public enum LambdaRegistry {
 
                 for (RegistryEntry entry : entries) {
                     writer.write(entry.physicalId + "|" + encode(entry.path.toString()) + "|" +
-                            encode(entry.key.getNormalisedBody()) + "|" + encode(entry.key.getSignature()));
+                            encode(entry.key.getNormalisedSource()));
                     writer.newLine();
                 }
             }
