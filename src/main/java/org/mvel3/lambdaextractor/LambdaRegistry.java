@@ -12,10 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum LambdaRegistry {
 
     INSTANCE;
+
+    private static final Logger LOG = LoggerFactory.getLogger(LambdaRegistry.class);
 
     public static final boolean PERSISTENCE_ENABLED = Boolean.parseBoolean(System.getProperty("mvel3.compiler.lambda.persistence", "true"));
     public static final Path DEFAULT_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
@@ -60,6 +66,9 @@ public enum LambdaRegistry {
         hashToLogicalIds
                 .computeIfAbsent(hash, h -> new ArrayList<>())
                 .add(logicalId);
+
+        // TODO: revisit to utilize the murmur3 hash
+        // currently, we rely on usual HashMap `entriesByKey` (so String.hashCode) for Lambda equality
 
         RegistryEntry entry = entriesByKey.get(key);
         if (entry == null) {
@@ -108,20 +117,20 @@ public enum LambdaRegistry {
      * Intended for use in test setup to ensure a clean slate.
      */
     public synchronized void resetAndRemoveAllPersistedFiles() {
-        // remove persisted class files we know about
-        entriesByPhysicalId.values().forEach(entry -> {
-            if (entry.path != null) {
-                try {
-                    Files.deleteIfExists(entry.path);
-                } catch (IOException ignored) {
-                    // best-effort cleanup
-                }
+        LOG.info("Clean up Lambda Registry and persisted files at {}", DEFAULT_PERSISTENCE_PATH);
+        if (Files.exists(DEFAULT_PERSISTENCE_PATH)) {
+            try (Stream<Path> walk = Files.walk(DEFAULT_PERSISTENCE_PATH)) {
+                walk.sorted((a, b) -> b.getNameCount() - a.getNameCount())
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (Exception ignored) {
+                                // best-effort cleanup
+                            }
+                        });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        });
-        try {
-            Files.deleteIfExists(REGISTRY_FILE);
-        } catch (IOException ignored) {
-            // best-effort cleanup
         }
 
         hashToLogicalIds.clear();

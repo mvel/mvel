@@ -1,10 +1,5 @@
 package org.mvel3;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mvel3.lambdaextractor.LambdaRegistry;
-import org.mvel3.Type;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -13,28 +8,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mvel3.lambdaextractor.LambdaRegistry;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mvel3.lambdaextractor.LambdaRegistry.DEFAULT_PERSISTENCE_PATH;
 
 public class MVELPersistenceTest {
 
-    private final Path persistenceDir = LambdaRegistry.DEFAULT_PERSISTENCE_PATH;
-
     @Before
-    public void cleanRegistryAndDir() throws Exception {
+    public void cleanRegistryAndDir() {
         LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
-        if (Files.exists(persistenceDir)) {
-            try (Stream<Path> walk = Files.walk(persistenceDir)) {
-                walk.sorted((a, b) -> b.getNameCount() - a.getNameCount())
-                        .forEach(path -> {
-                            try {
-                                Files.deleteIfExists(path);
-                            } catch (Exception ignored) {
-                                // best-effort cleanup
-                            }
-                        });
-            }
-        }
-        Files.createDirectories(persistenceDir);
     }
 
     @Test
@@ -66,7 +51,7 @@ public class MVELPersistenceTest {
     }
 
     private List<Path> listClassFiles() throws Exception {
-        try (Stream<Path> walk = Files.walk(persistenceDir)) {
+        try (Stream<Path> walk = Files.walk(DEFAULT_PERSISTENCE_PATH)) {
             return walk
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".class"))
