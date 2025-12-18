@@ -247,7 +247,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
       Type parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
       pCtx.setLastTypeParameters(null);
-      return parm instanceof ParameterizedType ? Object.class : (Class) parm;
+      return parm instanceof Class ? (Class) parm : Object.class;
     }
 
     if (pCtx != null && "length".equals(property) && ctx.isArray()) {
