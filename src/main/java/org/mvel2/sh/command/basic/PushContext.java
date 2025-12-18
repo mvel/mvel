@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.mvel2.sh.command.basic;
 
 import org.mvel2.MVEL;
@@ -23,13 +22,34 @@ import org.mvel2.sh.Command;
 import org.mvel2.sh.ShellSession;
 
 public class PushContext implements Command {
+
   public Object execute(ShellSession session, String[] args) {
-    session.setCtxObject(MVEL.eval(args[0], session.getCtxObject(), session.getVariables()));
-    return "Changed Context";
+    boolean changed = false;
+    Object ctx;
+
+    if (args.length == 0) {
+      changed = session.pushCtxObject(null);
+    }
+    else {
+      try {
+        ctx = MVEL.eval(String.join(" ", args), session.getCtxObject(), session.getVariables());
+        if (ctx != null) {
+          changed = session.pushCtxObject(ctx);
+        }
+      }
+      catch (Exception ex) {
+        System.err.println(ex.getMessage());
+      }
+    }
+    ctx = session.getCtxObject();
+    if (changed) {
+      System.out.println("Pushed context to " + ctx);
+    }
+    return ctx;
   }
 
   public String getDescription() {
-    return null;
+    return "pushes the given variable to the current context";
   }
 
   public String getHelp() {

@@ -15,50 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.mvel2.sh.command.basic;
 
 import org.mvel2.sh.Command;
 import org.mvel2.sh.ShellSession;
-import org.mvel2.util.StringAppender;
 
 import java.util.Map;
 
-public class Set implements Command {
+public class ShowEnv implements Command {
+
   public Object execute(ShellSession session, String[] args) {
 
     Map<String, String> env = session.getEnv();
 
-    switch (args.length) {
-      case 0:
-        for (String var : env.keySet()) {
-          System.out.println(var + " = " + env.get(var));
-        }
-        break;
-      case 1:
-        String removed = env.remove(args[0]);
-        if (removed != null) {
-          System.out.println("Removed " + args[0] + " = " + removed);
-        }
-        break;
-      default:
-        StringAppender sbuf = new StringAppender();
-        for (int i = 1; i < args.length; i++) {
-          sbuf.append(args[i]);
-          if (i < args.length) sbuf.append(" ");
-        }		  env.put(args[0], sbuf.toString().trim());
-        break;
-	  }
+    System.out.println("Printing Environment ...");
+    for (String key : env.keySet()) {
+      System.out.println(key + " => " + env.get(key));
+    }
+
+    System.out.println(" ** " + env.size() + " environment variables total.");
 
     return null;
   }
 
-
   public String getDescription() {
-    return "sets an environment variable";
+    return "shows current environment";
   }
 
   public String getHelp() {
-    return null;
+    return "no help yet";
   }
 }
