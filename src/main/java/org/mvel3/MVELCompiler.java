@@ -39,6 +39,9 @@ import org.mvel3.javacompiler.KieMemoryCompiler;
 import org.mvel3.lambdaextractor.LambdaKey;
 import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.lambdaextractor.LambdaUtils;
+import org.mvel3.lambdaextractor.extended.LambdaKeyEx;
+import org.mvel3.lambdaextractor.extended.LambdaRegistryEx;
+import org.mvel3.lambdaextractor.extended.LambdaUtilsEx;
 import org.mvel3.transpiler.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
 import org.mvel3.transpiler.EvalPre;
@@ -235,6 +238,12 @@ public class MVELCompiler {
     }
 
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
+        // experimental
+        boolean EX_TEST = true;
+        if (EX_TEST) {
+            return compileEvaluatorClassWithPersistenceEx(classManager, classLoader, compilationUnit, javaFQN);
+        }
+
         MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
         LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
         int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
@@ -267,6 +276,44 @@ public class MVELCompiler {
             log.info("Persisting lambda class {}", newJavaFQN);
             List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
+        }
+
+        return newJavaFQN;
+    }
+
+    private String compileEvaluatorClassWithPersistenceEx(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
+        MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
+        LambdaKeyEx lambdaKey = LambdaUtilsEx.createLambdaKeyFromMethodDeclaration(methodDeclaration);
+        int logicalId = LambdaRegistryEx.INSTANCE.getNextLogicalId();
+        int physicalId = LambdaRegistryEx.INSTANCE.registerLambda(logicalId, lambdaKey);
+        String oldClassName = javaFQN.substring(javaFQN.lastIndexOf('.') + 1);
+        String newClassName = oldClassName + "_" + physicalId; // The default class name is "GeneratorEvaluator__", but adding extra '_' just in case
+        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = compilationUnit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
+        classOrInterfaceDeclaration.setName(newClassName);
+        String newSource = PrintUtil.printNode(compilationUnit);
+        String newJavaFQN = javaFQN.substring(0, javaFQN.lastIndexOf('.') + 1) + newClassName;
+        Map<String, String> sources = Collections.singletonMap(
+                newJavaFQN,
+                newSource
+        );
+
+        if (LambdaRegistryEx.INSTANCE.isPersisted(physicalId)) {
+            if (classManager.getClasses().containsKey(newJavaFQN)) {
+                log.info("Lambda class {} already loaded in ClassManager", newJavaFQN);
+                return newJavaFQN;
+            }
+            Path persistedFile = LambdaRegistryEx.INSTANCE.getPhysicalPath(physicalId);
+            log.info("Reading the persisted lambda class {}", newJavaFQN);
+            try {
+                byte[] bytes = Files.readAllBytes(persistedFile);
+                classManager.define(Collections.singletonMap(newJavaFQN, bytes));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
+            }
+        } else {
+            log.info("Persisting lambda class {}", newJavaFQN);
+            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistryEx.DEFAULT_PERSISTENCE_PATH);
+            LambdaRegistryEx.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
         }
 
         return newJavaFQN;
