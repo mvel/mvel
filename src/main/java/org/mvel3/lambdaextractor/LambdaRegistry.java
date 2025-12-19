@@ -62,13 +62,10 @@ public enum LambdaRegistry {
         return nextLogicalId++;
     }
 
-    public int registerLambda(int logicalId, LambdaKey key, int hash) {
+    public int registerLambda(int logicalId, LambdaKey key) {
         hashToLogicalIds
-                .computeIfAbsent(hash, h -> new ArrayList<>())
+                .computeIfAbsent(key.hashCode(), h -> new ArrayList<>())
                 .add(logicalId);
-
-        // TODO: revisit to utilize the murmur3 hash
-        // currently, we rely on usual HashMap `entriesByKey` (so String.hashCode) for Lambda equality
 
         RegistryEntry entry = entriesByKey.get(key);
         if (entry == null) {

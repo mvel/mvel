@@ -3,8 +3,11 @@ package org.mvel3.lambdaextractor;
 public final class LambdaKey {
     private final String normalisedSource;
 
+    private int hash; // murmur3 hash
+
     LambdaKey(String normalisedSource) {
         this.normalisedSource = normalisedSource;
+        this.hash = LambdaUtils.calculateHash(normalisedSource);
     }
 
     public String getNormalisedSource() {
@@ -13,7 +16,9 @@ public final class LambdaKey {
 
     @Override
     public int hashCode() {
-        return normalisedSource.hashCode();
+        // TODO: revisit if normalisedSource.hashCode() is better than using the murmur3 hash (e.g. performance test)
+        // note that String.hashCode() may have higher collision rate, but it's faster to compute
+        return hash;
     }
 
     @Override
@@ -26,5 +31,10 @@ public final class LambdaKey {
         }
         LambdaKey other = (LambdaKey) obj;
         return normalisedSource.equals(other.normalisedSource);
+    }
+
+    // test only
+    void forceHash(int newHash) {
+        this.hash = newHash;
     }
 }

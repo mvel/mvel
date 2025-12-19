@@ -1,13 +1,12 @@
 package org.mvel3.lambdaextractor;
 
+import java.nio.charset.StandardCharsets;
+
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Expression;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mvel3.methodutils.Murmur3F;
-
-import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

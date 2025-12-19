@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
 import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclarationString;
 
 public class LambdaRegistryTest {
@@ -37,12 +36,9 @@ public class LambdaRegistryTest {
         // Keys should be equal
         assertThat(key1).isEqualTo(key2);
 
-        int hash1 = calculateHash(key1.getNormalisedSource());
-        int hash2 = calculateHash(key2.getNormalisedSource());
-
         // Register both lambdas with different logical IDs
-        int physicalId1 = registry.registerLambda(1, key1, hash1);
-        int physicalId2 = registry.registerLambda(2, key2, hash2);
+        int physicalId1 = registry.registerLambda(1, key1);
+        int physicalId2 = registry.registerLambda(2, key2);
 
         // Should get the SAME physical ID (deduplication)
         assertThat(physicalId1).isEqualTo(physicalId2);
@@ -73,12 +69,9 @@ public class LambdaRegistryTest {
         // Keys should NOT be equal (different types)
         assertThat(key1).isNotEqualTo(key2);
 
-        int hash1 = calculateHash(key1.getNormalisedSource());
-        int hash2 = calculateHash(key2.getNormalisedSource());
-
         // Register both lambdas
-        int physicalId1 = registry.registerLambda(1, key1, hash1);
-        int physicalId2 = registry.registerLambda(2, key2, hash2);
+        int physicalId1 = registry.registerLambda(1, key1);
+        int physicalId2 = registry.registerLambda(2, key2);
 
         // Should get DIFFERENT physical IDs
         assertThat(physicalId1).isNotEqualTo(physicalId2);
@@ -109,10 +102,12 @@ public class LambdaRegistryTest {
 
         // Force the same hash (simulate collision)
         int forcedHash = 12345;
+        key1.forceHash(forcedHash);
+        key2.forceHash(forcedHash);
 
         // Register both with the same hash but different keys
-        int physicalId1 = registry.registerLambda(1, key1, forcedHash);
-        int physicalId2 = registry.registerLambda(2, key2, forcedHash);
+        int physicalId1 = registry.registerLambda(1, key1);
+        int physicalId2 = registry.registerLambda(2, key2);
 
         // Should get DIFFERENT physical IDs (keys are different)
         assertThat(physicalId1).isNotEqualTo(physicalId2);
@@ -148,12 +143,10 @@ public class LambdaRegistryTest {
         assertThat(key).isEqualTo(key1);
         assertThat(key).isEqualTo(key2);
 
-        int hash = calculateHash(key.getNormalisedSource());
-
         // Register logical IDs 5, 9, 10 with the same lambda
-        int physicalId5 = registry.registerLambda(5, key, hash);
-        int physicalId9 = registry.registerLambda(9, key1, hash);
-        int physicalId10 = registry.registerLambda(10, key2, hash);
+        int physicalId5 = registry.registerLambda(5, key);
+        int physicalId9 = registry.registerLambda(9, key1);
+        int physicalId10 = registry.registerLambda(10, key2);
 
         // All should map to physical ID 0
         assertThat(physicalId5).isEqualTo(0);

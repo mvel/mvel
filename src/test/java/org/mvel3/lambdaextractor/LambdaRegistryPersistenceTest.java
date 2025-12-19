@@ -30,11 +30,10 @@ public class LambdaRegistryPersistenceTest {
         MethodDeclaration methodDecl = StaticJavaParser.parseMethodDeclaration(
                 "public boolean eval(java.util.Map m) { return m != null; }");
         LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDecl);
-        int hash = LambdaUtils.calculateHash(key.getNormalisedSource());
 
         // First registration + persist
         int logicalId1 = registry.getNextLogicalId();
-        int physicalId1 = registry.registerLambda(logicalId1, key, hash);
+        int physicalId1 = registry.registerLambda(logicalId1, key);
         ClassManager classManager = new ClassManager();
         Path persistedPath1 = KieMemoryCompiler
                 .compileAndPersist(classManager,
@@ -47,7 +46,7 @@ public class LambdaRegistryPersistenceTest {
 
         // Second registration of the same lambda
         int logicalId2 = registry.getNextLogicalId();
-        int physicalId2 = registry.registerLambda(logicalId2, key, hash);
+        int physicalId2 = registry.registerLambda(logicalId2, key);
 
         assertThat(physicalId2).isEqualTo(physicalId1);
         assertThat(registry.isPersisted(physicalId2)).isTrue();

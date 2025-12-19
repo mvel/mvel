@@ -237,9 +237,8 @@ public class MVELCompiler {
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
         MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
         LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
-        int hash = LambdaUtils.calculateHash(lambdaKey.getNormalisedSource());
         int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
-        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey, hash);
+        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey);
         String oldClassName = javaFQN.substring(javaFQN.lastIndexOf('.') + 1);
         String newClassName = oldClassName + "_" + physicalId; // The default class name is "GeneratorEvaluator__", but adding extra '_' just in case
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = compilationUnit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
