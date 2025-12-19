@@ -1,25 +1,14 @@
 package org.mvel3.lambdaextractor;
 
-import java.nio.charset.StandardCharsets;
-
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Expression;
 import org.junit.Test;
-import org.mvel3.methodutils.Murmur3F;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
 
 public class VariableNameNormalizerVisitorTest {
-
-    /**
-     * Helper method to calculate hash of a string
-     */
-    private String calculateHash(String code) {
-        Murmur3F hasher = new Murmur3F();
-        hasher.update(code.getBytes(StandardCharsets.UTF_8));
-        return hasher.getValueHexString();
-    }
 
     private String normalizeMethod(String methodSource) {
         MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(methodSource);
@@ -57,8 +46,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
@@ -150,8 +139,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
@@ -187,8 +176,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
@@ -224,8 +213,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
@@ -256,8 +245,8 @@ public class VariableNameNormalizerVisitorTest {
         String normalizedStr2 = normalized2.toString();
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Method 1: " + normalizedStr1 + " -> Hash: " + hash1);
         System.out.println("Method 2: " + normalizedStr2 + " -> Hash: " + hash2);
@@ -293,8 +282,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
@@ -333,8 +322,8 @@ public class VariableNameNormalizerVisitorTest {
         System.out.println("Normalized 2: " + normalizedStr2);
 
         // Calculate hashes
-        String hash1 = calculateHash(normalizedStr1);
-        String hash2 = calculateHash(normalizedStr2);
+        int hash1 = calculateHash(normalizedStr1);
+        int hash2 = calculateHash(normalizedStr2);
 
         System.out.println("Hash 1: " + hash1);
         System.out.println("Hash 2: " + hash2);
