@@ -8,7 +8,6 @@
     <version>3.0.0-SNAPSHOT</version>
 
     <name>mvel</name>
-    <url>http://mvel.codehaus.org/</url>
     <description>
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
@@ -22,63 +21,18 @@
         </license>
     </licenses>
     <inceptionYear>2001</inceptionYear>
-    <organization>
-        <name>JBoss by Red Hat</name>
-        <url>http://www.jboss.org/</url>
-    </organization>
 
     <scm>
         <connection>scm:git:git@github.com:mvel/mvel.git</connection>
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
-        <tag>mvel2-2.4.9.Final</tag>
+        <tag>HEAD</tag>
     </scm>
-    <issueManagement>
-        <system>jira</system>
-        <url>http://jira.codehaus.org/browse/MVEL</url>
-    </issueManagement>
-    <developers>
-        <developer>
-            <name>All developers are listed on the team website</name>
-            <url>http://www.jboss.org/drools/team</url>
-        </developer>
-    </developers>
-    <contributors>
-        <contributor>
-            <name>All contributors are listed on the team website</name>
-            <url>http://www.jboss.org/drools/team</url>
-        </contributor>
-    </contributors>
-    <mailingLists>
-        <mailingList>
-            <name>user</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-users</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-users</unsubscribe>
-            <archive>http://dir.gmane.org/gmane.comp.java.drools.user</archive>
-            <otherArchives>
-                <otherArchive>http://drools.46999.n3.nabble.com/Drools-User-forum-f47000.html</otherArchive>
-            </otherArchives>
-        </mailingList>
-        <mailingList>
-            <name>dev</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/rules-dev</unsubscribe>
-            <archive>http://dir.gmane.org/gmane.comp.java.drools.devel</archive>
-        </mailingList>
-    </mailingLists>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav</artifactId>
-                <version>1.0-beta-2</version>
-            </extension>
-        </extensions>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -93,11 +47,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[1.8.0,)</version>
+                                    <version>[1.17.0,)</version>
                                 </requireJavaVersion>
-                                <!--<requireMavenVersion>-->
-                                <!--<version>[3.0.3,)</version>-->
-                                <!--</requireMavenVersion>-->
                             </rules>
                         </configuration>
                     </execution>
@@ -106,7 +57,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.14.1</version>
                 <configuration>
                     <source>17</source>
                     <target>17</target>
@@ -116,59 +67,8 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifestFile>META-INF/MANIFEST.MF</manifestFile>
-                        <manifest>
-                            <mainClass>org.mvel2.sh.Main</mainClass>
-                            <packageName>org.mvel2</packageName>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createSourcesJar>true</createSourcesJar>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.ow2.asm:asm</include>
-                                </includes>
-                            </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>org.mvel2.asm</shadedPattern>
-                                </relocation>
-                            </relocations>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -182,22 +82,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
+                <version>3.5.4</version>
                 <configuration>
                     <runOrder>alphabetical</runOrder>
                     <childDelegation>true</childDelegation>
                     <systemProperties>
                         <property>
-                            <name>mvel.disable.jit</name>
-                            <value>true</value>
-                        </property>
-                        <property>
                             <name>file.encoding</name>
                             <value>UTF-8</value>
-                        </property>
-                        <property>
-                            <name>mvel.tests.quick</name>
-                            <value>true</value>
                         </property>
                         <property>
                             <name>mvel3.compiler.lambda.resetOnTestStartup</name>
@@ -207,17 +99,7 @@
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Tests.java</include>
-                        <include>**/UsageDemos.java</include>
                     </includes>
-                    <excludes>
-                        <exclude>**/CompiledUnitTestEx.java</exclude>
-                        <exclude>**/PerfTest.java</exclude>
-                        <exclude>**/DroolsTest.java</exclude>
-                        <exclude>**/FailureTests.java</exclude>
-                        <exclude>**/PerformanceTest.java</exclude>
-                        <exclude>**/CompiledPerformanceTests.java</exclude>
-                        <exclude>**/MVELThreadTest.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
 
@@ -225,35 +107,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.1</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.9</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <manifestLocation>META-INF</manifestLocation>
-                    <instructions>
-                        <Bundle-SymbolicName>org.mvel2</Bundle-SymbolicName>
-                        <Bundle-Name>mvel2</Bundle-Name>
-                        <Import-Package>
-                            sun.*;resolution:=optional, *
-                        </Import-Package>
-                        <Export-Package>
-                            org.mvel2.*
-                        </Export-Package>
-                    </instructions>
-                </configuration>
             </plugin>
 
             <!-- finally, this javacc plugin will be removed -->
@@ -299,6 +152,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -316,29 +170,7 @@
                 </executions>
             </plugin>
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>.</directory>
-                <includes>
-                    <include>build.properties</include>
-                </includes>
-            </resource>
-            <resource>
-              <directory>src/main/resources</directory>
-            </resource>
-        </resources>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.8.1</version>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <dependencies>
         <dependency>
@@ -356,20 +188,21 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.20.0</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- javaparser needs to be a fork which contains mvel3 AST nodes -->
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.25.5</version>
+            <version>3.25.5-mvel3-1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
-            <version>3.25.5</version>
+            <version>3.25.5-mvel3-1</version>
         </dependency>
 
         <dependency>
@@ -386,17 +219,11 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- probably we can/should remove drools dependency -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
             <version>999-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.19</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -408,10 +235,9 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version>
+            <version>1.5.23</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <distributionManagement>
