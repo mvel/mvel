@@ -64,6 +64,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.parser.DrlxParser.parseExpression;
 import static org.mvel3.parser.printer.PrintUtil.printNode;
 
+@Ignore("TBD : This test is specific to javaparser. Fully migrate to Antlr4MvelParserTest")
 public class MvelParserTest implements TranspilerTest {
 
     private static final Collection<String> operators = new HashSet<>();
