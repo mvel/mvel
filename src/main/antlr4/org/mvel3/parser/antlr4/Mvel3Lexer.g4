@@ -36,13 +36,18 @@ MILLISECOND_LITERAL
     ;
 
 SECOND_LITERAL
-    : Digits 's'
+    : Digits ('s' | 'sec')
     ;
 
 MINUTE_LITERAL
-    : Digits 'm'
+    : Digits ('m' | 'min')
     ;
 
 HOUR_LITERAL
-    : Digits 'h'
+    : Digits ('h' | 'hr')
+    ;
+
+// 'd' conflicts with Java double 'd' suffix
+DAY_LITERAL
+    : Digits 'day'
     ;

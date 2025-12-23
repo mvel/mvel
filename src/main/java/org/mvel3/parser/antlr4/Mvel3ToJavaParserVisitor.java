@@ -541,11 +541,19 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.HOUR_LITERAL() != null) {
             token = ctx.HOUR_LITERAL().getSymbol();
             timeUnit = TimeUnit.HOURS;
+        } else if (ctx.DAY_LITERAL() != null) {
+            token = ctx.DAY_LITERAL().getSymbol();
+            timeUnit = TimeUnit.DAYS;
         } else {
             throw new IllegalArgumentException("Unsupported temporal literal chunk: " + ctx.getText());
         }
 
-        return new TemporalLiteralChunkExpr(createTokenRange(ctx), token.getText(), timeUnit);
+        return new TemporalLiteralChunkExpr(createTokenRange(ctx), stripTimeUnit(token.getText()), timeUnit);
+    }
+
+    private String stripTimeUnit(String text) {
+        // Remove the time unit suffix (e.g., "m", "s", "h", "d", "ms")
+        return text.replaceAll("[a-zA-Z]+$", "");
     }
 
     @Override

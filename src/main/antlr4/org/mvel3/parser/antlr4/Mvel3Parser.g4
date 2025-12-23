@@ -45,6 +45,7 @@ temporalLiteralChunk
     | SECOND_LITERAL
     | MINUTE_LITERAL
     | HOUR_LITERAL
+    | DAY_LITERAL
     ;
 
 // MVEL list/map literal expressions
