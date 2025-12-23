@@ -16,6 +16,16 @@ public class ParserTestUtil {
         }
     }
 
+    static Mvel3Parser.TemporalLiteralContext getTemporalLiteralContext(Mvel3Parser.MvelStartContext tree) {
+        Mvel3Parser.MvelExpressionContext exprCtx = tree.mvelExpression();
+        Mvel3Parser.ExpressionContext expression = exprCtx.expression();
+        if (expression instanceof Mvel3Parser.PrimaryExpressionContext primaryExpressionContext) {
+            return primaryExpressionContext.primary().literal().temporalLiteral();
+        } else {
+            throw new IllegalStateException("Expected PrimaryExpressionContext, but got: " + expression.getClass().getSimpleName());
+        }
+    }
+
     static void assertParsedExpressionRoundTrip(String expr) {
         ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
         Mvel3Parser.MvelStartContext startCtx = (Mvel3Parser.MvelStartContext) tree;

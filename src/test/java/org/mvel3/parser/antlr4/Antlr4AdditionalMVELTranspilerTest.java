@@ -125,4 +125,10 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
              "return $p!.addresses!.get(0);",
              "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
     }
+
+    @Test
+    public void testTemporalLiteral() {
+        test("var duration = 1m5s;",
+             "var duration = java.time.Duration.ofMinutes(1).plusSeconds(5);");
+    }
 }

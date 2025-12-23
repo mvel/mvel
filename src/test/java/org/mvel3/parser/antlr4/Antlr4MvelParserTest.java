@@ -16,13 +16,20 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.concurrent.TimeUnit;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mvel3.parser.DrlxParser;
+import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.parser.antlr4.ParserTestUtil.assertParsedExpressionRoundTrip;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpressionContext;
+import static org.mvel3.parser.antlr4.ParserTestUtil.getTemporalLiteralContext;
+import static org.mvel3.parser.printer.PrintUtil.printNode;
 
 /**
  * Tests for the MVEL parser using ANTLR4.
@@ -171,5 +178,25 @@ public class Antlr4MvelParserTest {
     public void testBigDecimalLiteral() {
         String expr = "12.111B";
         assertParsedExpressionRoundTrip(expr);
+    }
+
+    @Test
+    public void testTemporalLiteral() {
+        String expr = "5s";
+        ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
+        Mvel3Parser.TemporalLiteralContext temporalLiteralContext = getTemporalLiteralContext((Mvel3Parser.MvelStartContext) tree);
+        Mvel3Parser.TemporalLiteralChunkContext temporalLiteralChunkContext = temporalLiteralContext.temporalLiteralChunk(0);
+        assertThat(temporalLiteralChunkContext.SECOND_LITERAL().getText()).isEqualTo("5s");
+    }
+
+    @Test
+    public void testTemporalLiteralOf2Chunks() {
+        String expr = "1m5s";
+        ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
+        Mvel3Parser.TemporalLiteralContext temporalLiteralContext = getTemporalLiteralContext((Mvel3Parser.MvelStartContext) tree);
+        Mvel3Parser.TemporalLiteralChunkContext temporalLiteralChunkContext0 = temporalLiteralContext.temporalLiteralChunk(0);
+        assertThat(temporalLiteralChunkContext0.MINUTE_LITERAL().getText()).isEqualTo("1m");
+        Mvel3Parser.TemporalLiteralChunkContext temporalLiteralChunkContext1 = temporalLiteralContext.temporalLiteralChunk(1);
+        assertThat(temporalLiteralChunkContext1.SECOND_LITERAL().getText()).isEqualTo("5s");
     }
 }

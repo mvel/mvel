@@ -57,6 +57,9 @@ import org.mvel3.parser.ast.expr.InlineCastExpr;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
+import org.mvel3.parser.ast.expr.TemporalChunkExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
+import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
@@ -72,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -190,6 +194,58 @@ public class MVELToJavaRewriter {
                 Node mce = new MethodCallExpr(n.getTokenRange().get(), new NameExpr("BigInteger"),  null,
                                               new SimpleName(n.getTokenRange().get(),"valueOf"), arg);
                 node.replace(mce);
+                break;
+            }
+            case "TemporalLiteralExpr" : {
+                TemporalLiteralExpr temporalExpr = (TemporalLiteralExpr) node;
+                NodeList<TemporalChunkExpr> chunks = temporalExpr.getChunks();
+                Expression durationExpr = null;
+
+                for (TemporalChunkExpr chunk : chunks) {
+                    TemporalLiteralChunkExpr literalChunk = (TemporalLiteralChunkExpr) chunk;
+                    String value = String.valueOf(literalChunk.getValue());
+                    String methodName;
+                    TimeUnit unit = literalChunk.getTimeUnit();
+                    boolean firstMethod = durationExpr == null;
+                    switch (unit) {
+                        case MILLISECONDS:
+                            methodName = firstMethod ? "ofMillis" : "plusMillis";
+                            break;
+                        case SECONDS:
+                            methodName = firstMethod ? "ofSeconds" : "plusSeconds";
+                            break;
+                        case MINUTES:
+                            methodName = firstMethod ? "ofMinutes" : "plusMinutes";
+                            break;
+                        case HOURS:
+                            methodName = firstMethod ? "ofHours" : "plusHours";
+                            break;
+                        case DAYS:
+                            methodName = firstMethod ? "ofDays" : "plusDays";
+                            break;
+                        default:
+                            throw new UnsupportedOperationException("Unsupported temporal unit: " + unit);
+                    }
+
+                    if (firstMethod) {
+                        durationExpr = new MethodCallExpr(
+                                temporalExpr.getTokenRange().orElse(null),
+                                new FieldAccessExpr(
+                                        new FieldAccessExpr(new NameExpr("java"), "time"),
+                                        "Duration"
+                                ),
+                                null,
+                                new SimpleName(methodName),
+                                NodeList.nodeList(new LongLiteralExpr(literalChunk.getTokenRange().orElse(null), value))
+                        );
+                    } else {
+                        durationExpr = new MethodCallExpr(durationExpr, methodName, NodeList.nodeList(new LongLiteralExpr(literalChunk.getTokenRange().orElse(null), value)));
+                    }
+                }
+
+                if (durationExpr != null) {
+                    node.replace(durationExpr);
+                }
                 break;
             }
             case "ListCreationLiteralExpression" : {
