@@ -5,7 +5,8 @@ MVFLEX Expression Language (MVEL) is a hybrid dynamic/statically typed, embeddab
 
 This is mvel version 3.x codebase, which is experimental.
 
-mvel2 is still maintained in `mvel2` branch. If you contribute to mvel2, please submit PRs to `mvel2` branch.
+Currently, mvel3 is being developed in `mvel3-dev` branch. mvel2 is still maintained in `master` branch. The branch names may be changed in the future.
+<!-- AFTER THE CHANGE : mvel2 is still maintained in `mvel2` branch. If you contribute to mvel2, please submit PRs to `mvel2` branch. -->
 
 ## How to build
 
@@ -19,5 +20,6 @@ Then, you can clone and build mvel3 as follows:
 ```
 git clone https://github.com/mvel/mvel.git
 cd mvel
+git checkout mvel3-dev
 mvn clean install
 ```
