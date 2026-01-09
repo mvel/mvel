@@ -25,10 +25,16 @@ import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.ArrayCreationLevel;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
@@ -47,6 +53,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -75,6 +82,7 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VarType;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -91,6 +99,7 @@ import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
+import org.mvel3.parser.ast.expr.RuleDeclaration;
 import org.mvel3.parser.ast.expr.TemporalChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
@@ -153,6 +162,178 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         javaToken.setRange(range);
         
         return new TokenRange(javaToken, javaToken);
+    }
+
+    @Override
+    public Node visitCompilationUnit(Mvel3Parser.CompilationUnitContext ctx) {
+        CompilationUnit cu = new CompilationUnit();
+
+        if (ctx.packageDeclaration() != null) {
+            Name pkg = StaticJavaParser.parseName(ctx.packageDeclaration().qualifiedName().getText());
+            cu.setPackageDeclaration(new PackageDeclaration(pkg));
+        }
+
+        if (ctx.importDeclaration() != null) {
+            for (Mvel3Parser.ImportDeclarationContext importDecl : ctx.importDeclaration()) {
+                ImportDeclaration importDeclaration = (ImportDeclaration) visit(importDecl);
+                if (importDeclaration != null) {
+                    cu.addImport(importDeclaration);
+                }
+            }
+        }
+
+        // Handle type declarations
+        if (ctx.typeDeclaration() != null) {
+            for (Mvel3Parser.TypeDeclarationContext typeDecl : ctx.typeDeclaration()) {
+                Node node = visit(typeDecl);
+                if (node instanceof TypeDeclaration) {
+                    cu.addType((TypeDeclaration<?>) node);
+                }
+            }
+        }
+
+        return cu;
+    }
+    
+    @Override
+    public Node visitImportDeclaration(Mvel3Parser.ImportDeclarationContext ctx) {
+        String importName = ctx.qualifiedName().getText();
+        boolean isStatic = ctx.STATIC() != null;
+        boolean isAsterisk = ctx.getChildCount() > 3 && "*".equals(ctx.getChild(ctx.getChildCount() - 2).getText());
+        return new ImportDeclaration(importName, isStatic, isAsterisk);
+    }
+
+    @Override
+    public Node visitTypeDeclaration(Mvel3Parser.TypeDeclarationContext ctx) {
+        // Handle class declarations for now
+        if (ctx.classDeclaration() != null) {
+            return visit(ctx.classDeclaration());
+        }
+        // TODO: Handle other type declarations (interface, enum, etc.)
+        throw new UnsupportedOperationException("Type declaration not yet implemented: " + ctx.getText());
+    }
+    
+    @Override
+    public Node visitClassDeclaration(Mvel3Parser.ClassDeclarationContext ctx) {
+        String className = ctx.identifier().getText();
+        ClassOrInterfaceDeclaration classDecl = new ClassOrInterfaceDeclaration();
+        classDecl.setName(className);
+        classDecl.setInterface(false);
+
+        // Handle modifiers
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                for (Mvel3Parser.ClassOrInterfaceModifierContext modifier : parent.classOrInterfaceModifier()) {
+                    if (modifier.PUBLIC() != null) {
+                        classDecl.addModifier(Modifier.Keyword.PUBLIC);
+                    }
+                    // TODO: Handle other modifiers
+                }
+            }
+        }
+
+        // Handle class body
+        if (ctx.classBody() != null) {
+            visitClassBody(ctx.classBody(), classDecl);
+        }
+
+        return classDecl;
+    }
+
+    private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
+        if (ctx.classBodyDeclaration() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            classDecl.addMember((MethodDeclaration) method);
+                        }
+                    }
+                    // TODO: Handle other member types (fields, nested classes, etc.)
+                }
+            }
+        }
+    }
+    
+    @Override
+    public Node visitMethodDeclaration(Mvel3Parser.MethodDeclarationContext ctx) {
+        // Get method name
+        String methodName = ctx.identifier().getText();
+
+        // Create method declaration
+        MethodDeclaration methodDecl = new MethodDeclaration();
+        methodDecl.setName(methodName);
+
+        // Handle return type
+        if (ctx.typeTypeOrVoid() != null) {
+            if (ctx.typeTypeOrVoid().VOID() != null) {
+                methodDecl.setType(new VoidType());
+            } else if (ctx.typeTypeOrVoid().typeType() != null) {
+                // TODO: Handle other types
+                throw new UnsupportedOperationException("Non-void return types not yet implemented");
+            }
+        }
+
+        // Handle modifiers (from parent context)
+        if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    for (Mvel3Parser.ModifierContext modifier : bodyDeclCtx.modifier()) {
+                        if (modifier.classOrInterfaceModifier() != null) {
+                            if (modifier.classOrInterfaceModifier().PUBLIC() != null) {
+                                methodDecl.addModifier(Modifier.Keyword.PUBLIC);
+                            }
+                            // TODO: Handle other modifiers
+                        }
+                    }
+                }
+            }
+        }
+
+        // Handle method body
+        if (ctx.methodBody() != null) {
+            if (ctx.methodBody().block() != null) {
+                BlockStmt body = (BlockStmt) visit(ctx.methodBody().block());
+                methodDecl.setBody(body);
+            }
+        }
+
+        return methodDecl;
+    }
+
+    @Override
+    public Node visitMethodCallExpression(Mvel3Parser.MethodCallExpressionContext ctx) {
+        // Handle method call without scope
+        return visitMethodCallWithScope(ctx.methodCall(), null);
+    }
+
+    private MethodCallExpr visitMethodCallWithScope(Mvel3Parser.MethodCallContext ctx, Expression scope) {
+        String methodName;
+        if (ctx.identifier() != null) {
+            methodName = ctx.identifier().getText();
+        } else if (ctx.THIS() != null) {
+            methodName = "this";
+        } else if (ctx.SUPER() != null) {
+            methodName = "super";
+        } else {
+            throw new IllegalArgumentException("Unknown method call type: " + ctx.getText());
+        }
+
+        MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
+
+        // Handle arguments
+        if (ctx.arguments() != null && ctx.arguments().expressionList() != null) {
+            methodCall.setArguments(parseArguments(ctx.arguments()));
+        }
+
+        methodCall.setTokenRange(createTokenRange(ctx));
+
+        return methodCall;
     }
 
     @Override
@@ -1146,20 +1327,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // Handle diamond operator: <> - return empty NodeList to represent diamond
             return new NodeList<>();
         }
-    }
-
-
-    @Override
-    public Node visitMethodCall(Mvel3Parser.MethodCallContext ctx) {
-        String methodName = ctx.identifier().getText();
-        NodeList<Expression> args = parseArguments(ctx.arguments());
-        
-        // For method calls in member reference, we need the scope from the parent context
-        // This will be handled by visitMemberReferenceExpression
-        MethodCallExpr methodCall = new MethodCallExpr(null, methodName);
-        methodCall.setTokenRange(createTokenRange(ctx));
-        methodCall.setArguments(args);
-        return methodCall;
     }
 
     protected NodeList<Expression> parseArguments(Mvel3Parser.ArgumentsContext ctx) {

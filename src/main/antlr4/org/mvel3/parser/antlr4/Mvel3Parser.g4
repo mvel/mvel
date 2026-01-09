@@ -11,6 +11,7 @@ options {
 // Start rule for MVEL expressions
 mvelStart
     : mvelExpression SEMI? EOF
+    | block EOF
     ;
 
 // MVEL expression - start with simple expression support
@@ -191,4 +192,8 @@ withStatement
 // Override block without any changes. Just for ANTLR plugin conveinience. We may remove this later.
 block
     : '{' blockStatement* '}'
+    ;
+
+mvelCompilationUnit
+    : compilationUnit
     ;

@@ -324,7 +324,7 @@ public class Antlr4MvelParser implements MvelParser {
      */
     @Override
     public ParseResult<CompilationUnit> parse(String code) {
-        throw new UnsupportedOperationException();
+        return parse(Antlr4ParseStart.COMPILATION_UNIT, provider(code));
     }
 
     /**

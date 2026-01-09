@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -84,6 +85,26 @@ public class Antlr4MvelParserJavaParserASTTest {
         Type type = result.getResult().get();
         assertThat(type).isInstanceOf(ClassOrInterfaceType.class);
         assertThat(type.toString()).isEqualTo("java.lang.Void");
+    }
+
+    @Test
+    public void testCompilationUnit() {
+        String code = "package org.example;\n"
+                + "import java.util.List;\n"
+                + "public class Sample { void hello() {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit compilationUnit = result.getResult().get();
+        assertThat(compilationUnit.getPackageDeclaration()).isPresent();
+        assertThat(compilationUnit.getPackageDeclaration().get().getNameAsString()).isEqualTo("org.example");
+        assertThat(compilationUnit.getImports()).hasSize(1);
+        assertThat(compilationUnit.getImports().get(0).getNameAsString()).isEqualTo("java.util.List");
+        assertThat(compilationUnit.getType(0).getNameAsString()).isEqualTo("Sample");
+        assertThat(compilationUnit.getType(0).isPublic()).isTrue();
+        assertThat(compilationUnit.getType(0).getMethods()).hasSize(1);
+        assertThat(compilationUnit.getType(0).getMethods().get(0).getNameAsString()).isEqualTo("hello");
     }
 
     @Test
