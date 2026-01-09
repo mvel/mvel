@@ -90,8 +90,8 @@ public class Antlr4MvelParserJavaParserASTTest {
     @Test
     public void testCompilationUnit() {
         String code = "package org.example;\n"
-                + "import java.util.List;\n"
-                + "public class Sample { void hello() {} }";
+                + "import org.example.util.MyUtil;\n"
+                + "public class Sample { void hello() { MyUtil.doSomething(); } }";
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<CompilationUnit> result = parser.parse(code);
         assertThat(result.getResult()).isPresent();
@@ -100,7 +100,7 @@ public class Antlr4MvelParserJavaParserASTTest {
         assertThat(compilationUnit.getPackageDeclaration()).isPresent();
         assertThat(compilationUnit.getPackageDeclaration().get().getNameAsString()).isEqualTo("org.example");
         assertThat(compilationUnit.getImports()).hasSize(1);
-        assertThat(compilationUnit.getImports().get(0).getNameAsString()).isEqualTo("java.util.List");
+        assertThat(compilationUnit.getImports().get(0).getNameAsString()).isEqualTo("org.example.util.MyUtil");
         assertThat(compilationUnit.getType(0).getNameAsString()).isEqualTo("Sample");
         assertThat(compilationUnit.getType(0).isPublic()).isTrue();
         assertThat(compilationUnit.getType(0).getMethods()).hasSize(1);

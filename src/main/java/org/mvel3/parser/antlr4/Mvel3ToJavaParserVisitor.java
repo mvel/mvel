@@ -16,7 +16,9 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.github.javaparser.JavaToken;
@@ -112,7 +114,14 @@ import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
  * This implementation can return various types of nodes (Expression, Type, etc.).
  */
 public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
-    
+
+    // Associate antlr tokenId with a JavaParser node for identifier, so it can be used for code completion.
+    protected final Map<Integer, Node> tokenIdJPNodeMap = new HashMap<>();
+
+    public Map<Integer, Node> getTokenIdJPNodeMap() {
+        return tokenIdJPNodeMap;
+    }
+
     /**
      * Create a JavaParser TokenRange from ANTLR ParserRuleContext.
      * This provides proper source location information instead of using TokenRange.INVALID.
@@ -461,6 +470,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
         InlineCastExpr inlineCastExpr = new InlineCastExpr(type, scope);
         inlineCastExpr.setTokenRange(createTokenRange(ctx));
+
+        // Antlr token <-> JavaParser node mapping for code completion
+        // TODO: refactor as a utility method
+        ParseTree lastNode = ctx.children.get(ctx.children.size() - 1);
+        if (lastNode instanceof TerminalNode terminalNode) {
+            tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), inlineCastExpr);
+        }
+
 
         if (ctx.identifier() != null) {
             String name = ctx.identifier().getText();
