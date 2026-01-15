@@ -31,6 +31,7 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 
 /**
@@ -160,6 +161,7 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
             String fieldName = ctx.identifier().getText();
             FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
             fieldAccess.setTokenRange(createTokenRange(ctx));
+            associateAntlrTokenWithJPNode(ctx.identifier(), fieldAccess);
             return fieldAccess;
         } else if (ctx.methodCall() != null) {
             // Method call: expression.methodCall()
@@ -193,11 +195,6 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
             FieldAccessExpr completionField = new FieldAccessExpr(scope, COMPLETION_FIELD);
             scope.setParentNode(completionField);
             completionField.setTokenRange(createTokenRange(ctx));
-            ParseTree dot = ctx.children.get(ctx.children.size() - 1);
-            if (dot instanceof TerminalNodeImpl dotTerminalNodeImpl) {
-                // store the scope for the token ID (= right before the dot)
-                tokenIdJPNodeMap.put(dotTerminalNodeImpl.getSymbol().getTokenIndex() - 1, scope);
-            }
             return completionField;
         }
 

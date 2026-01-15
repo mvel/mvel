@@ -101,7 +101,6 @@ import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
-import org.mvel3.parser.ast.expr.RuleDeclaration;
 import org.mvel3.parser.ast.expr.TemporalChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
@@ -404,6 +403,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             String fieldName = ctx.identifier().getText();
             FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
             fieldAccess.setTokenRange(createTokenRange(ctx));
+            associateAntlrTokenWithJPNode(ctx.identifier(), fieldAccess);
             return fieldAccess;
         } else if (ctx.methodCall() != null) {
             // Method call: expression.methodCall()
@@ -432,6 +432,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
+    protected void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
+        // Antlr token <-> JavaParser node mapping for code completion
+        ParseTree lastNode = ctx.children.get(ctx.children.size() - 1); // take the last terminal node
+        if (lastNode instanceof TerminalNode terminalNode) {
+            tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), jpNode);
+        }
+    }
+
     @Override
     public Node visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {
         return visit(ctx.primary());
@@ -446,6 +454,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // backReferencesCount defaults to 0 for normal identifiers
             DrlNameExpr nameExpr = new DrlNameExpr(ctx.identifier().getText());
             nameExpr.setTokenRange(createTokenRange(ctx));
+            associateAntlrTokenWithJPNode(ctx.identifier(), nameExpr);
             return nameExpr;
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
             // Parenthesized expression
@@ -471,13 +480,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         InlineCastExpr inlineCastExpr = new InlineCastExpr(type, scope);
         inlineCastExpr.setTokenRange(createTokenRange(ctx));
 
-        // Antlr token <-> JavaParser node mapping for code completion
-        // TODO: refactor as a utility method
-        ParseTree lastNode = ctx.children.get(ctx.children.size() - 1);
-        if (lastNode instanceof TerminalNode terminalNode) {
-            tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), inlineCastExpr);
-        }
-
+        associateAntlrTokenWithJPNode(ctx, inlineCastExpr);
 
         if (ctx.identifier() != null) {
             String name = ctx.identifier().getText();
