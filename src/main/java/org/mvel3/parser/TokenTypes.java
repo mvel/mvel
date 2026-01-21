@@ -18,7 +18,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-package org.mvel3.parser;;
+package org.mvel3.parser;
 
 import com.github.javaparser.JavaToken;
 import com.github.javaparser.utils.LineSeparator;

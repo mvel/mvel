@@ -1,21 +1,21 @@
 package org.mvel3.lambdaextractor.extended;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.extended.LambdaUtilsEx.createLambdaKeyFromMethodDeclarationString;
 
-public class LambdaRegistryExTest {
+class LambdaRegistryExTest {
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         // Reset before each test, because the tests assert IDs from 0 upwards
         LambdaRegistryEx.INSTANCE.resetAndRemoveAllPersistedFiles();
     }
 
     @Test
-    public void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {
+    void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {
         LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
@@ -37,7 +37,7 @@ public class LambdaRegistryExTest {
     }
 
     @Test
-    public void testRegisterLambda_DifferentTypes_ShouldHaveDifferentPhysicalIds() {
+    void testRegisterLambda_DifferentTypes_ShouldHaveDifferentPhysicalIds() {
         LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
@@ -56,7 +56,7 @@ public class LambdaRegistryExTest {
     }
 
     @Test
-    public void testRegisterLambda_HashCollision_ShouldStillCreateDistinctPhysicalIds() {
+    void testRegisterLambda_HashCollision_ShouldStillCreateDistinctPhysicalIds() {
         LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
 
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
@@ -83,7 +83,7 @@ public class LambdaRegistryExTest {
     }
 
     @Test
-    public void testRegisterLambda_MultipleLogicalToOnePhysical() {
+    void testRegisterLambda_MultipleLogicalToOnePhysical() {
         LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
 
         String method = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";

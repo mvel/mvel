@@ -7,8 +7,8 @@ import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.test.TestClassManager;
 import org.mvel3.transpiler.context.Declaration;
@@ -25,11 +25,11 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mvel3.MVELCompilerTest.getImports;
 
-public class ResolvedStaticImportTest {
+class ResolvedStaticImportTest {
 
     // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
-    @BeforeClass
-    public static void enableAntlrParser() {
+    @BeforeAll
+    static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = true;
     }
 
@@ -49,7 +49,7 @@ public class ResolvedStaticImportTest {
     }
 
     @Test
-    public void testResolveMethod() {
+    void testResolveMethod() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -69,7 +69,7 @@ public class ResolvedStaticImportTest {
     }
 
     @Test
-    public void testStaticImportMethodCall() {
+    void testStaticImportMethodCall() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -93,7 +93,7 @@ public class ResolvedStaticImportTest {
     }
 
     @Test
-    public void testMemberInstanceMethodCall() {
+    void testMemberInstanceMethodCall() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -117,7 +117,7 @@ public class ResolvedStaticImportTest {
 
 
     @Test
-    public void testMemberStaticMethodCall() {
+    void testMemberStaticMethodCall() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -139,7 +139,7 @@ public class ResolvedStaticImportTest {
         assertThat(evaluator.eval(vars)).isEqualTo("xxxyyystatic_int1");
     }
     @Test
-    public void testMemberMethodCallDoesNotExist() {
+    void testMemberMethodCallDoesNotExist() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -163,7 +163,7 @@ public class ResolvedStaticImportTest {
     }
 
     @Test
-    public void testMemberMethod() {
+    void testMemberMethod() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));

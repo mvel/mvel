@@ -26,7 +26,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.printer.PrintUtil;
@@ -37,10 +37,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests for the MVEL parser using ANTLR4.
  * Assertions are based on the JavaParser AST which are created by Mvel3ToJavaParserVisitor.
  */
-public class Antlr4MvelParserJavaParserASTTest {
+class Antlr4MvelParserJavaParserASTTest {
 
     @Test
-    public void testExpression() {
+    void testExpression() {
         String expr = "name == \"Mark\"";
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<Expression> result = parser.parseExpression(expr);

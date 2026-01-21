@@ -19,9 +19,9 @@
 
 package org.mvel3;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.transpiler.context.Declaration;
 
@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.within;
  * 
  */
 
-public class ArithmeticTest {
+class ArithmeticTest {
 
   public static Set<String> getImports() {
 
@@ -123,7 +123,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath() {
+  void testMath() {
     String expression = "pi#double# * hour"; // must cast pi to double, otherwise it uses the hour type, which is Integer for the coercion
     double result = 188.4;
 
@@ -131,12 +131,12 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath2() {
+  void testMath2() {
     assertThat(executeExpressionWithDefaultVariables("foo.number-1")).isEqualTo(3);
   }
 
   @Test
-  public void testMath3() {
+  void testMath3() {
     String expression = "(10 * 5) * 2 / 3";
 	var result = (10 * 5) * 2 / 3;
 
@@ -144,7 +144,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath4() {
+  void testMath4() {
 	String expression = "(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)";
     var result = ((100 % 3) * 2 - 1 / 1 + 8 + (5 * 2));
 
@@ -152,7 +152,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath4a() {
+  void testMath4a() {
     String expression = "(100 % 90) * 20 - 15 / 16 + 80 + (50 * 21)";
     var result = (100 % 90) * 20 - 15 / 16 + 80 + (50 * 21);
 
@@ -160,7 +160,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath5() {
+  void testMath5() {
     String expression = "300.5 / 5.3 / 2.1 / 1.5";
 	double result = 300.5 / 5.3 / 2.1 / 1.5;
 
@@ -168,7 +168,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath5a() {
+  void testMath5a() {
     String expression = "300.5 / 5.3 / 2.1 / 1.5";
     double result = 300.5 / 5.3 / 2.1 / 1.5;
 
@@ -176,7 +176,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath6() {
+  void testMath6() {
     String expression = "(300 * five + 1) + (100 / 2 * 2)";
     var result = (300 * 5 + 1) + 100 / 2 * 2;
 
@@ -184,7 +184,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath7() {
+  void testMath7() {
 	String expression = "(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)";
     var result = ((100 % 3) * 2 - 1 / 1 + 8 + (5 * 2));
 
@@ -192,28 +192,28 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath8() {
+  void testMath8() {
 	String expression = "5 * (100.56 * 30.1)";
     double result = 5d * (100.56d * 30.1d);
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testPowerOf() {
+  void testPowerOf() {
     assertThat(executeExpressionWithDefaultVariables("5 ** 2")).isEqualTo(25);
   }
 
   @Test
-  public void testSignOperator() {
+  void testSignOperator() {
     String expr = "int x = 15; return -x;";
 
     assertThat(executeExpressionWithDefaultVariables(expr)).isEqualTo(-15);
   }
 
   @Test
-  public void testMath14() {
+  void testMath14() {
 	String expression = "10-5*2 + 5*8-4";
     int result = 10 - 5 * 2 + 5 * 8 - 4;
 
@@ -221,7 +221,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath15() {
+  void testMath15() {
     String expression = "100-500*200 + 500*800-400";
     int result = 100 - 500 * 200 + 500 * 800 - 400;
 
@@ -229,7 +229,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath16() {
+  void testMath16() {
     String expression = "100-500*200*150 + 500*800-400";
     int result = 100 - 500 * 200 * 150 + 500 * 800 - 400;
 
@@ -237,7 +237,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath17() {
+  void testMath17() {
     String expression = "(100d * 50d) * 20d / 30d * 2d";
     double result = (100d * 50d) * 20d / 30d * 2d;
 
@@ -245,7 +245,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath18() {
+  void testMath18() {
     String expression = "var a = 100d; var b = 50d; var c = 20d; var d = 30d; var e = 2d; return (a * b) * c / d * e;";
     var result = (100d * 50d) * 20d / 30d * 2d;
 
@@ -253,14 +253,14 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath19() {
+  void testMath19() {
     String expression = "var a = 100; var b = 500; var c = 200; var d = 150; var e = 500; var f = 800; var g = 400; return a-b*c*d + e*f-g;";
     int result = 100 - 500 * 200 * 150 + 500 * 800 - 400;
     assertThat(executeExpression(expression, Collections.emptyMap())).isEqualTo(result);
   }
 
   @Test
-  public void testMath32() {
+  void testMath32() {
     String expression = "var x = 20; var y = 10; var z = 5; return x-y-z;";
     int result = 20 - 10 - 5;
 
@@ -268,7 +268,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath33() {
+  void testMath33() {
     String expression = "var x = 20; var y = 2; var z = 2; return x/y/z;";
     int result = 20 / 2 / 2;
 
@@ -276,7 +276,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath20() {
+  void testMath20() {
     String expression = "10-5*7-3*8-6";
     int result = 10 - 5 * 7 - 3 * 8 - 6;
 
@@ -284,34 +284,34 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath21() {
+  void testMath21() {
     String expression = "100-50*70-30*80-60";
     int expected = 100 - 50 * 70 - 30 * 80 - 60;
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(expected);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath22() {
+  void testMath22() {
     String expression = "(100-50)*70-30*(20-9)**3";
     int result = (int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3));
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath22b() {
+  void testMath22b() {
     String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
     int result = (int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3));
 
     assertThat(executeExpression(expression, Collections.emptyMap())).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath23() {
+  void testMath23() {
     String expression = "10 ** (3)*10**3";
     int result = (int) (Math.pow(10, 3) * Math.pow(10, 3));
 
@@ -319,7 +319,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath24() {
+  void testMath24() {
     String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
     var result = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
 
@@ -327,34 +327,34 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath25() {
+  void testMath25() {
     String expression = "51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80";
     var result = 51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80;
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath26() {
+  void testMath26() {
     String expression = "5 + 3 * 8 * 2 ** 2";
     int result = (int) (5d + 3d * 8d * Math.pow(2, 2));
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath27() {
+  void testMath27() {
     String expression = "50 + 30 * 80 * 20 ** 3 * 51";
     double result = 50 + 30 * 80 * Math.pow(20, 3) * 51;
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo((int) result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath28() {
+  void testMath28() {
     String expression = "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
     double result = 50 + 30 + 80 + Math.pow(Math.pow(11, 2), 2) * 51;
 
@@ -362,7 +362,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath29() {
+  void testMath29() {
     String expression = "10 + 20 / 4 / 4";
     var result = 10 + 20 / 4 / 4;
 
@@ -370,16 +370,16 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath30() {
+  void testMath30() {
     String expression = "40 / 20 + 10 + 60 / 21";
     var result = 40 / 20 + 10 + 60 / 21;
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(result);
   }
 
-  @Ignore("DROOLS-6572 - Unable to parse **")
+  @Disabled("DROOLS-6572 - Unable to parse **")
   @Test
-  public void testMath31() {
+  void testMath31() {
     String expression = "40 / 20 + 5 - 4 + 8 / 2 * 2 * 6 ** 2 + 6 - 8";
     double result = 40f / 20f + 5f - 4f + 8f / 2f * 2f * Math.pow(6, 2) + 6f - 8f;
 
@@ -387,7 +387,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath34() {
+  void testMath34() {
     String expression = "a+b-c*d*x/y-z+10";
     int result = 200 + 100 - 150 * 2 * 400 / 300 - 75 + 10;
 
@@ -404,7 +404,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath34_Interpreted() {
+  void testMath34_Interpreted() {
     String expression = "a+b-c*x/y-z";
     int result = (int) 200 + 100 - 150 * 400 / 300 - 75;
 
@@ -420,7 +420,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath35() {
+  void testMath35() {
     String expression = "b/x/b/b*y+a";
     double result = 20d / 40d / 20d / 20d * 50d + 10d;
 
@@ -436,7 +436,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath35_Interpreted() {
+  void testMath35_Interpreted() {
     String expression = "b/x/b/b*y+a";
     double result = 20d / 40d / 20d / 20d * 50d + 10d;
 
@@ -452,7 +452,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath36() {
+  void testMath36() {
     String expression = "b/x*z/a+x-b+x-b/z+y";
     double result = 20d / 40d * 60d / 10d + 40d - 20d + 40d - 20d / 60d + 50d;
 
@@ -468,7 +468,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath37() {
+  void testMath37() {
     String expression = "x+a*a*c/x*b*z+x/y-b";
     double result = 2d + 10d * 10d * 30d / 2d * 20d * 60d + 2d / 2d - 20d;
 
@@ -484,7 +484,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath38() {
+  void testMath38() {
     String expression = "100d + 200d - 300d + 400d - 500d + 105d / 205d - 405d + 305d * 206d";
     double result = 100d + 200d - 300d + 400d - 500d + 105d / 205d - 405d + 305d * 206d;
 
@@ -492,7 +492,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath39() {
+  void testMath39() {
     String expression = "147d + 60d / 167d % 448d + 36d * 23d / 166d";
     double result = 147d + 60d / 167d % 448d + 36d * 23d / 166d;
 
@@ -500,7 +500,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath40() {
+  void testMath40() {
     String expression = "228 - 338d % 375d - 103d + 260d + 412d * 177d + 121d";
     double result = 228d - 338d % 375d - 103d + 260d + 412d * 177d + 121d;
 
@@ -508,7 +508,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath41() {
+  void testMath41() {
     String expression = "304d - 246d / 242d % 235d / 425d - 326d + 355d * 264d % 308d";
     double result = 304d - 246d / 242d % 235d / 425d - 326d + 355d * 264d % 308d;
 
@@ -516,7 +516,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath42() {
+  void testMath42() {
     String expression = "11d - 7d / 3d * 18d % 14d * 8d * 11d - 2d - 11d / 13d + 14d";
     double result = 11d - 7d / 3d * 18d % 14d * 8d * 11d - 2d - 11d / 13d + 14d;
 
@@ -524,7 +524,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath43() {
+  void testMath43() {
     String expression = "4d/3d*6d%8d*5d*8d+7d+9d*1d";
     double result = 4d / 3d * 6d % 8d * 5d * 8d + 7d + 9d * 1d;
 
@@ -532,7 +532,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath44() {
+  void testMath44() {
     String expression = "6d+8d/9d*1d*9d*10d%4d*4d-4d*6d*3d";
     double result = 6d + 8d / 9d * 1d * 9d * 10d % 4d * 4d - 4d * 6d * 3d;
 
@@ -540,7 +540,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMath44b() {
+  void testMath44b() {
     String expression = "a+b/c*d*e*f%g*h-i*j*k";
     double result = 6d + 8d / 9d * 1d * 9d * 10d % 4d * 4d - 4d * 6d * 3d;
 
@@ -561,33 +561,33 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testOperatorPrecedence() {
+  void testOperatorPrecedence() {
     String expression = "var _x_001 = 500.2; var _x_002 = 200.8; var _r_001 = 701; return _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1;";
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(true);
   }
 
-  //@Ignore("DROOLS-6572 - Unable to parse")
+  //@Disabled("DROOLS-6572 - Unable to parse")
   @Test
-  public void testOperatorPrecedence2() {
+  void testOperatorPrecedence2() {
     String expression = "var _x_001 = 500.2; var _x_002 = 200.8; var _r_001 = 701; return _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2;";
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(true);
   }
 
   @Test
-  public void testOperatorPrecedence3() {
+  void testOperatorPrecedence3() {
     String expression = "var _x_001 = 500.2; var _x_002 = 200.9; var _r_001 = 701; return _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2;";
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(false);
   }
 
   @Test
-  public void testOperatorPrecedence4() {
+  void testOperatorPrecedence4() {
     String expression = "var _x_001 = 500.2; var _x_002 = 200.9; var _r_001 = 701; return _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2;";
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(true);
   }
 
   @Test
-  public void testOperatorPrecedence5() {
+  void testOperatorPrecedence5() {
     String expression = "_x_001 == _x_001 / 2 - _x_001 + _x_001 + _x_001 / 2 && _x_002 / 2 == _x_002 / 2";
 
     Map<String, Object> vars = new HashMap<>();
@@ -599,125 +599,125 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testModulus() {
+  void testModulus() {
     assertThat(executeExpressionWithDefaultVariables("38392 % 2")).isEqualTo(38392 % 2);
   }
 
   @Test
-  public void testBitwiseOr1() {
+  void testBitwiseOr1() {
     assertThat(executeExpressionWithDefaultVariables("2|4")).isEqualTo(6);
   }
 
   @Test
-  public void testBitwiseOr2() {
+  void testBitwiseOr2() {
     assertThat(executeExpressionWithDefaultVariables("(2 | 1) > 0")).isEqualTo(true);
   }
 
   @Test
-  public void testBitwiseOr3() {
+  void testBitwiseOr3() {
     assertThat(executeExpressionWithDefaultVariables("(2|1) == 3")).isEqualTo(true);
   }
 
   @Test
-  public void testBitwiseOr4() {
+  void testBitwiseOr4() {
     assertThat(executeExpressionWithDefaultVariables("2|five")).isEqualTo(2 | 5);
   }
 
   @Test
-  public void testBitwiseAnd1() {
+  void testBitwiseAnd1() {
     assertThat(executeExpressionWithDefaultVariables("2 & 3")).isEqualTo(2);
   }
 
   @Test
-  public void testBitwiseAnd2() {
+  void testBitwiseAnd2() {
     assertThat(executeExpressionWithDefaultVariables("five & 3")).isEqualTo(5 & 3);
   }
 
   @Test
-  public void testShiftLeft() {
+  void testShiftLeft() {
     assertThat(executeExpressionWithDefaultVariables("2 << 1")).isEqualTo(4);
   }
 
   @Test
-  public void testShiftLeft2() {
+  void testShiftLeft2() {
     assertThat(executeExpressionWithDefaultVariables("five << 1")).isEqualTo(5 << 1);
   }
 
-  @Ignore("DROOLS-6572 - Generates wrong code - unable to parse <<<")
+  @Disabled("DROOLS-6572 - Generates wrong code - unable to parse <<<")
   @Test
-  public void testUnsignedShiftLeft() {
+  void testUnsignedShiftLeft() {
     assertThat(executeExpressionWithDefaultVariables("-2 <<< 0")).isEqualTo(2);
   }
 
   @Test
-  public void testShiftRight() {
+  void testShiftRight() {
     assertThat(executeExpressionWithDefaultVariables("256 >> 1")).isEqualTo(128);
   }
 
   @Test
-  public void testShiftRight2() {
+  void testShiftRight2() {
     assertThat(executeExpressionWithDefaultVariables("five >> 1")).isEqualTo(5 >> 1);
   }
 
   @Test
-  public void testUnsignedShiftRight() {
+  void testUnsignedShiftRight() {
     assertThat(executeExpressionWithDefaultVariables("-5 >>> 1")).isEqualTo(-5 >>> 1);
   }
 
   @Test
-  public void testUnsignedShiftRight2() {
+  void testUnsignedShiftRight2() {
     assertThat(executeExpressionWithDefaultVariables("(five - 10) >>> 1")).isEqualTo(-5 >>> 1);
   }
 
   @Test
-  public void testShiftRightAssign() {
+  void testShiftRightAssign() {
     assertThat(executeExpressionWithDefaultVariables("var _zZz = 5; return _zZz >>= 2;")).isEqualTo(5 >> 2);
   }
 
   @Test
-  public void testShiftLeftAssign() {
+  void testShiftLeftAssign() {
     assertThat(executeExpressionWithDefaultVariables("var _yYy = 10; return _yYy <<= 2;")).isEqualTo(10 << 2);
   }
 
   @Test
-  public void testUnsignedShiftRightAssign() {
+  void testUnsignedShiftRightAssign() {
     String expression = "var _xXx = -5; return _xXx >>>= 2;";
 
     assertThat(executeExpression(expression, Collections.emptyMap())).isEqualTo(-5 >>> 2);
   }
 
   @Test
-  public void testXOR() {
+  void testXOR() {
     assertThat(executeExpressionWithDefaultVariables("1 ^ 2")).isEqualTo(3);
   }
 
   @Test
-  public void testXOR2() {
+  void testXOR2() {
     assertThat(executeExpressionWithDefaultVariables("five ^ 2")).isEqualTo(5 ^ 2);
   }
 
   @Test
-  public void testInvert() {
+  void testInvert() {
     assertThat(executeExpressionWithDefaultVariables("~10")).isEqualTo(~10);
   }
 
   @Test
-  public void testInvert2() {
+  void testInvert2() {
     assertThat(executeExpressionWithDefaultVariables("~(10 + 1)")).isEqualTo(~(10 + 1));
   }
 
   @Test
-  public void testInvert3() {
+  void testInvert3() {
     assertThat(executeExpressionWithDefaultVariables("~10 + (1 + ~50)")).isEqualTo(~10 + (1 + ~50));
   }
 
   @Test
-  public void testDeepPropertyAdd() {
+  void testDeepPropertyAdd() {
     assertThat(executeExpressionWithDefaultVariables("foo.countTest+ 10")).isEqualTo(10);
   }
 
   @Test
-  public void testDeepAssignmentIncrement() {
+  void testDeepAssignmentIncrement() {
     String expression = "foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
         " else { foo.countTest = 0; return false; }";
 
@@ -727,9 +727,9 @@ public class ArithmeticTest {
               " else { foo.countTest = 0; return false; }")).isEqualTo(true);
   }
 
-  //@Ignore("DROOLS-6572 - Generates wrong code - check for statements")
+  //@Disabled("DROOLS-6572 - Generates wrong code - check for statements")
   @Test
-  public void testDeepAssignmentWithBlock() {
+  void testDeepAssignmentWithBlock() {
     String expression = "with (foo) { countTest += 5; }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
         " else { foo.countTest = 0; return false; }";
 
@@ -740,50 +740,50 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testOperativeAssignMod() {
+  void testOperativeAssignMod() {
     int val = 5;
     assertThat(executeExpressionWithDefaultVariables("int val = 5; val %= 2; return val;")).isEqualTo(val %= 2);
   }
 
   @Test
-  public void testOperativeAssignDiv() {
+  void testOperativeAssignDiv() {
     int val = 10;
     assertThat(executeExpressionWithDefaultVariables("int val = 10; val /= 2; return val;")).isEqualTo(val /= 2);
   }
 
   @Test
-  public void testOperativeAssignShift1() {
+  void testOperativeAssignShift1() {
     int val = 5;
     assertThat(executeExpressionWithDefaultVariables("int val = 5; val <<= 2; return val;")).isEqualTo(val <<= 2);
   }
 
   @Test
-  public void testOperativeAssignShift2() {
+  void testOperativeAssignShift2() {
     int val = 5;
     assertThat(executeExpressionWithDefaultVariables("int val = 5; val >>= 2; return val;")).isEqualTo(val >>= 2);
   }
 
   @Test
-  public void testOperativeAssignShift3() {
+  void testOperativeAssignShift3() {
     int val = -5;
     assertThat(executeExpressionWithDefaultVariables("int val = -5; val >>>= 2; return val;")).isEqualTo(val >>>= 2);
   }
 
   @Test
-  public void testAssignPlus() {
+  void testAssignPlus() {
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; xx0 += 4; return xx0 + 1;")).isEqualTo(10);
   }
 
   @Test
-  public void testAssignPlus2() {
+  void testAssignPlus2() {
     var xx0 = 5; xx0 += 4;
     assertThat(xx0 += 1).isEqualTo(10);
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; xx0 += 4; return xx0 += 1;")).isEqualTo(10);
   }
 
-  //@Ignore("DROOLS-6572 - Rounding error")
+  //@Disabled("DROOLS-6572 - Rounding error")
   @Test
-  public void testAssignDiv() {
+  void testAssignDiv() {
     var xx0 = 20; xx0 /= 10;
     assertThat(xx0).isNotEqualTo(2.0);
     assertThat(xx0).isEqualTo(2);
@@ -791,43 +791,43 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testAssignMult() {
+  void testAssignMult() {
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 6; xx0 *= 6; return xx0;")).isEqualTo(36);
   }
 
   @Test
-  public void testAssignSub() {
+  void testAssignSub() {
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 15; xx0 -= 4; return xx0;")).isEqualTo(11);
   }
 
   @Test
-  public void testAssignSub2() {
+  void testAssignSub2() {
     var xx0 = 5;
     xx0 =- 100;
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; return xx0 =- 100;")).isEqualTo(xx0);
   }
 
   @Test
-  public void testBooleanStrAppend() {
+  void testBooleanStrAppend() {
     assertThat(executeExpressionWithDefaultVariables("\"foo\" + true")).isEqualTo("footrue");
   }
 
   
-  @Ignore("DROOLS-6572 - Unable to parse")
+  @Disabled("DROOLS-6572 - Unable to parse")
   @Test
-  public void testStringAppend() {
+  void testStringAppend() {
     String expression = "c + 'bar'";
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo("catbar");
   }
 
   @Test
-  public void testNegation() {
+  void testNegation() {
     assertThat(executeExpressionWithDefaultVariables("-(-1)")).isEqualTo(1);
   }
 
   @Test
-  public void testStrongTypingModeComparison() {
+  void testStrongTypingModeComparison() {
     Map<String, Object> variables = new HashMap<>();
     variables.put("a", 0l);
     
@@ -835,16 +835,16 @@ public class ArithmeticTest {
   }
 
   
-  //@Ignore("DROOLS-6572 - Rounding error")
+  //@Disabled("DROOLS-6572 - Rounding error")
   @Test
-  public void testJIRA158() {
+  void testJIRA158() {
     String expression = "(float) (4/2 + Math.sin(1))";
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo((float) (4 / 2 + Math.sin(1)));
   }
 
   @Test
-  public void testJIRA162() {
+  void testJIRA162() {
     String expression = "1d - 2d + (3d * var1) * var1";
     double result = 1 - 2 + (3 * 1d) * 1;
     
@@ -855,7 +855,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA161() {
+  void testJIRA161() {
     String expression = "1==-(-1)";
 
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(1 == -(-1));
@@ -863,7 +863,7 @@ public class ArithmeticTest {
 
   
   @Test
-  public void testJIRA163() {
+  void testJIRA163() {
     String expression = "1d - 2d + (3d * 4d) * var1";
     double result = 1 - 2 + (3 * 4) * 1d;
 
@@ -873,9 +873,9 @@ public class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164() {
+  void testJIRA164() {
     String expression = "1 / (var1 + var1) * var1";
 
     double var1 = 1d;
@@ -888,9 +888,9 @@ public class ArithmeticTest {
 
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164b() {
+  void testJIRA164b() {
     String expression = "1 + 1 / (var1 + var1) * var1";
 
     double var1 = 1d;
@@ -901,9 +901,9 @@ public class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164c() {
+  void testJIRA164c() {
 	double var1 = 1d;
     String expression = "1 + 1 / (var1 + var1 + 2 + 3) * var1";
 
@@ -915,9 +915,9 @@ public class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164d() {
+  void testJIRA164d() {
 	double var1 = 1d;
     String expression = "1 + 1 + 1 / (var1 + var1) * var1";
     double result = 1 + 1 + 1 / (var1 + var1) * var1;
@@ -928,9 +928,9 @@ public class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164e() {
+  void testJIRA164e() {
     String expression = "10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14";
     Map<String, Object> vars = new HashMap<>();
 
@@ -940,9 +940,9 @@ public class ArithmeticTest {
     assertThat(((Double) executeExpression(expression, vars)).floatValue()).isCloseTo((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14), within(0.01f));
   }
 
-  //@Ignore("DROOLS-6572 - Wrong value calculated")
+  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
-  public void testJIRA164f() {
+  void testJIRA164f() {
     String expression = "10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14";
     double var1 = 1d;
     float result = (float) (10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14);
@@ -956,7 +956,7 @@ public class ArithmeticTest {
 
 
   @Test
-  public void testJIRA164g() {
+  void testJIRA164g() {
     String expression = "1 - 2 + (3 * var1) * var1";
     double var1 = 1d;
     float result = (float) (1 - 2 + (3 * var1) * var1);
@@ -968,7 +968,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA164h() {
+  void testJIRA164h() {
     String expression = "1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1";
 
     Map<String, Object> vars = new HashMap<>();
@@ -980,12 +980,12 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA180() {
+  void testJIRA180() {
     executeExpressionWithDefaultVariables("-Math.sin(0)");
   }
 
   @Test
-  public void testJIRA208() {
+  void testJIRA208() {
     Map<String, Object> vars = new LinkedHashMap<>();
     vars.put("bal", 999);
 
@@ -1002,14 +1002,14 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA1208a() {
+  void testJIRA1208a() {
     Map<String, Object> bal = new HashMap<>();
     bal.put("bal", 999);
     assertThat(executeExpression("bal - 80 - 90 - 30", bal)).isEqualTo(799);
   }
 
   @Test
-  public void testJIRA208b() {
+  void testJIRA208b() {
     Map<String, Object> vars = new LinkedHashMap<>();
     vars.put("bal", 999);
 
@@ -1030,7 +1030,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA210() {
+  void testJIRA210() {
     Map<String, Object> vars = new LinkedHashMap<>();
     vars.put("bal", new BigDecimal("999.99"));
 
@@ -1046,9 +1046,9 @@ public class ArithmeticTest {
     }
   }
 
-  //@Ignore("DROOLS-6572 - Generates wrong code - missing symbol")
+  //@Disabled("DROOLS-6572 - Generates wrong code - missing symbol")
   @Test
-  public void testMathDec30() {
+  void testMathDec30() {
     Map<String, Object> params = new HashMap<>();
     params.put("value", 10);
     Map<String, Object> vars = new HashMap<>();
@@ -1059,7 +1059,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA99_Interpreted() {
+  void testJIRA99_Interpreted() {
     Map<String, Object> map = new HashMap<>();
     map.put("x", 20);
     map.put("y", 10);
@@ -1069,7 +1069,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testJIRA99_Compiled() {
+  void testJIRA99_Compiled() {
     Map<String, Object> map = new HashMap<>();
     map.put("x", 20);
     map.put("y", 10);
@@ -1078,9 +1078,9 @@ public class ArithmeticTest {
     assertThat(executeExpression("x - y - z", map)).isEqualTo(20 - 10 - 5);
   }
 
-  @Ignore("temporary disabled for performance reasons")
+  @Disabled("temporary disabled for performance reasons")
   @Test()
-  public void testModExpr() {
+  void testModExpr() {
     String str = "$y % 4 == 0 && $y % 100 != 0 || $y % 400 == 0 ";
     Map<String, Object> vars = new HashMap<>();
 
@@ -1095,7 +1095,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testIntsWithDivision() {
+  void testIntsWithDivision() {
     String expression = "0 == x - (y/2)";
 
     Map<String, Object> vars = new HashMap<>();
@@ -1106,7 +1106,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testMathCeil() {
+  void testMathCeil() {
     String expression = "Math.ceil( x/3 ) == 1";
     Map<String, Object> vars = new HashMap<>();
     vars.put("x", 4);
@@ -1115,7 +1115,7 @@ public class ArithmeticTest {
   }
 
   @Test
-  public void testStaticMathCeil() {      
+  void testStaticMathCeil() {      
     int x = 4;
     int m = (int) Math.ceil( x/3 ); // demonstrating it's perfectly valid java
 
@@ -1127,7 +1127,7 @@ public class ArithmeticTest {
   }  
 
   @Test
-  public void testStaticMathCeilWithJavaClassStyleLiterals() {            
+  void testStaticMathCeilWithJavaClassStyleLiterals() {            
 	String expression = "java.lang.Math.ceil((double) x/3 )";
 	double result = Math.ceil((double) 4 / 3);
 
@@ -1137,7 +1137,7 @@ public class ArithmeticTest {
   }
   
   @Test
-  public void testMathCeilWithDoubleCast() {
+  void testMathCeilWithDoubleCast() {
     String expression = "Math.ceil( (double) x / 3 )";
     double result = Math.ceil((double) 4 / 3);
 
@@ -1147,7 +1147,7 @@ public class ArithmeticTest {
   }
   
   @Test
-  public void testBigDecimalAssignmentIncrement() {
+  void testBigDecimalAssignmentIncrement() {
     String expression = "var s1=0B;s1+=1;s1+=1; return s1;";
     BigDecimal result = new BigDecimal(2);
 
@@ -1158,7 +1158,7 @@ public class ArithmeticTest {
    * The following caused a ClassCastException because the compiler optimized for integers
    */
   @Test
-  public void testIssue249() {
+  void testIssue249() {
     String expression = "70 + 30 *  x1";
     Map<String, Object> expressionVars = new HashMap<>();
     expressionVars.put("x1", 128.33);

@@ -34,10 +34,10 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.resolution.types.ResolvedType;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
@@ -65,21 +65,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test class for type resolution with mvel3 custom AST nodes, without rewriting.
  * Note: DrlxExpression specific nodes (PointFreeExpr, HalfPointFreeExpr) are tested in TypeResolveTestDrlxExpression
  */
-public class TypeResolveTest {
+class TypeResolveTest {
 
     // At the moment, I want to test legacy JavaParser first to check how type resolution works with custom AST nodes.
-    @BeforeClass
+    @BeforeAll
     public static void chooseParser() {
 //        MvelParser.Factory.USE_ANTLR = false;
         MvelParser.Factory.USE_ANTLR = true;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void disableRewrite() {
         MVELTranspiler.ENABLE_REWRITE = false;
     }
 
-    @AfterClass
+    @AfterAll
     public static void restoreRewrite() {
         MVELTranspiler.ENABLE_REWRITE = true;
     }
@@ -123,7 +123,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testString() {
+    void testString() {
         // plain Java. Rewrite doesn't matter here
         String input = "{ String str = \"Hello\";\n" +
                 "return str.length(); }";
@@ -139,7 +139,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testCast() {
+    void testCast() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("l", List.class),
                                                        "{ ((ArrayList)l).removeRange(0, 10); }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -153,7 +153,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testInlineCast() {
+    void testInlineCast() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("l", List.class),
                                             "{ l#ArrayList#removeRange(0, 10); }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -167,13 +167,13 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testFullyQualifiedInlineCast() {
+    void testFullyQualifiedInlineCast() {
         // FullyQualifiedInlineCast is not actually created. We will eventually remove the class
     }
 
-    @Ignore("HalfBinaryExpr rewriting is not yet implemented. Also not parsed by ANTLR yet.")
+    @Disabled("HalfBinaryExpr rewriting is not yet implemented. Also not parsed by ANTLR yet.")
     @Test
-    public void testHalfBinaryExpr() {
+    void testHalfBinaryExpr() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("value", Integer.class),
                                                        "{ return value > 1 && < 5; }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -186,7 +186,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testBigDecimalLiteral() {
+    void testBigDecimalLiteral() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10.5B; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -200,7 +200,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testBigIntegerLiteral() {
+    void testBigIntegerLiteral() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return 10I; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -214,7 +214,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testDrlNameExpr() {
+    void testDrlNameExpr() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                        "{ return person; }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -233,7 +233,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testListCreationLiteralExpression() {
+    void testListCreationLiteralExpression() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [1, 2, 3]; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -246,7 +246,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testListCreationLiteralExpressionElement() {
+    void testListCreationLiteralExpressionElement() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\"]; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -260,7 +260,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testMapCreationLiteralExpression() {
+    void testMapCreationLiteralExpression() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\": 1, \"b\": 2]; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -273,7 +273,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testMapCreationLiteralExpressionKeyValuePair() {
+    void testMapCreationLiteralExpressionKeyValuePair() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> {}, "{ return [\"a\": \"b\"]; }");
         BlockStmt body = getFirstMethodBody(unit);
 
@@ -288,7 +288,7 @@ public class TypeResolveTest {
 
     // Useful to debug how type resolution works with FieldAccessExpr
     @Test
-    public void testFieldAccessExpr() {
+    void testFieldAccessExpr() {
 
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                        "{ return person.address == null; }");
@@ -301,9 +301,9 @@ public class TypeResolveTest {
         assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
     }
 
-    @Ignore("Need some enhancements in javaparser TypeExtractor")
+    @Disabled("Need some enhancements in javaparser TypeExtractor")
     @Test
-    public void testNullSafeFieldAccessExpr() {
+    void testNullSafeFieldAccessExpr() {
 
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                                       "{ return person!.address == null; }");
@@ -318,7 +318,7 @@ public class TypeResolveTest {
 
     // Useful to debug how type resolution works with MethodCallExpr
     @Test
-    public void testMethodCallExpr() {
+    void testMethodCallExpr() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                        "{ return person.getAddress(); }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -333,9 +333,9 @@ public class TypeResolveTest {
         assertThat(resolvedType.describe()).isEqualTo(Address.class.getCanonicalName());
     }
 
-    @Ignore("Need some enhancements in javaparser TypeExtractor")
+    @Disabled("Need some enhancements in javaparser TypeExtractor")
     @Test
-    public void testNullSafeMethodCallExpr() {
+    void testNullSafeMethodCallExpr() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("person", Person.class),
                                                                       "{ return person!.getAddress(); }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -348,7 +348,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testModifyStatement() {
+    void testModifyStatement() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("$p", Person.class),
                                                        "{ modify($p) { setAge(1); } }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -365,7 +365,7 @@ public class TypeResolveTest {
     }
 
     @Test
-    public void testWithStatement() {
+    void testWithStatement() {
         CompilationUnit unit = transpileWithoutRewrite(ctx -> ctx.addDeclaration("$p", Person.class),
                                                        "{ with($p) { setAge(1); } }");
         BlockStmt body = getFirstMethodBody(unit);

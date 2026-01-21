@@ -16,129 +16,129 @@
 
 package org.mvel3;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.transpiler.TranspiledResult;
 import org.mvel3.transpiler.context.Declaration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ConstraintTranspilerTest implements TranspilerTest {
+class ConstraintTranspilerTest implements TranspilerTest {
 
     // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
-    @BeforeClass
-    public static void enableAntlrParser() {
+    @BeforeAll
+    static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = true;
     }
 
     @Test
-    public void testBigDecimalPromotion() {
+    void testBigDecimalPromotion() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary + salary;}",
                        "{var x = _this.getSalary().add(_this.getSalary(), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalStringEquality() {
+    void testBigDecimalStringEquality() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary == \"90\";}",
                        "{var x = _this.getSalary().compareTo(new BigDecimal(\"90\")) == 0;}");
     }
 
     @Test
-    public void testBigDecimalPromotionToIntMethod() {
+    void testBigDecimalPromotionToIntMethod() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = isEvenInt(salary.intValue());}",
                        "{var x = _this.isEvenInt(_this.getSalary().intValue());}");
     }
 
     @Test
-    public void testConversionConstructorArgument() {
+    void testConversionConstructorArgument() {
         testExpression(c -> c.addDeclaration("$p", Person.class), "{var x = new Person($p.name, $p);}",
                        "{var x = new Person($p.getName(), $p);}");
     }
 
     @Test
-    public void testBigDecimalMultiplyInt() {
+    void testBigDecimalMultiplyInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 * 10;}",
                        "{var x = $bd1.multiply(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalMultiplyNegativeInt() {
+    void testBigDecimalMultiplyNegativeInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 * -1;}",
                        "{var x = $bd1.multiply(BigDecimal.valueOf(-1), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalAddInt() {
+    void testBigDecimalAddInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 + 10;}",
                        "{var x = $bd1.add(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalAddIntWithDecimal() {
+    void testBigDecimalAddIntWithDecimal() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 + 10.0;}",
                        "{var x = $bd1.add(new BigDecimal(\"10.0\"), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalSubtractInt() {
+    void testBigDecimalSubtractInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 - 10;}",
                        "{var x = $bd1.subtract(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalDivideInt() {
+    void testBigDecimalDivideInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 / 10;}",
                        "{var x = $bd1.divide(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalModInt() {
+    void testBigDecimalModInt() {
         testExpression(c -> c.addDeclaration("$bd1", BigDecimal.class), "{var x = $bd1 % 10;}",
                        "{var x = $bd1.remainder(BigDecimal.valueOf(10), java.math.MathContext.DECIMAL128);}");
     }
 
     @Test
-    public void testBigDecimalStringNonEquality() {
+    void testBigDecimalStringNonEquality() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != \"90\";}",
                        "{var x = _this.getSalary().compareTo(new BigDecimal(\"90\")) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithPropertyAndBigRewrite() {
+    void testRootObjectWithPropertyAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = salary != 90;}",
                        "{var x = _this.getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithNestedPropertiesAndBigRewrite() {
+    void testRootObjectWithNestedPropertiesAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.salary != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithPropertyAndNestedMethdAndBigRewrite() {
+    void testRootObjectWithPropertyAndNestedMethdAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.getSalary() != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithMethodAndBigRewrite() {
+    void testRootObjectWithMethodAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getSalary() != 90;}",
                        "{var x = _this.getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithMethodAndNestedPropertyAndBigRewrite() {
+    void testRootObjectWithMethodAndNestedPropertyAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().salary != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
     @Test
-    public void testRootObjectWithMethodAndNestedMethodAndBigRewrite() {
+    void testRootObjectWithMethodAndNestedMethodAndBigRewrite() {
         testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = getParent().getSalary() != 90;}",
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }

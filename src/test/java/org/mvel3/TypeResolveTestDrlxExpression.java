@@ -44,10 +44,10 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mvel3.parser.DrlxParser;
 import org.mvel3.parser.ParseStart;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -77,7 +77,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test class for type resolution with mvel3 custom AST nodes, without rewriting.
  * Specific to DrlxExpression-related nodes.
  */
-public class TypeResolveTestDrlxExpression {
+class TypeResolveTestDrlxExpression {
 
     private static final Collection<String> operators = new HashSet<>();
     static {
@@ -157,14 +157,14 @@ public class TypeResolveTestDrlxExpression {
     }
 
     @Test
-    public void testDrlxExpression() {
+    void testDrlxExpression() {
         // TODO: DrlxExpression is not created when using legacy/ANTLR parser. Leave it for later
         //       DrlsParser can create DrlxExpression, but rather, we will do it in drlx-parser project
     }
 
-    @Ignore("Not yet implemented in legacy JavaCC DrlxParser") // PointFreeExpr is inside DrlxExpression
+    @Disabled("Not yet implemented in legacy JavaCC DrlxParser") // PointFreeExpr is inside DrlxExpression
     @Test
-    public void testPointFreeExpr() {
+    void testPointFreeExpr() {
         CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(ctx -> ctx.addDeclaration("value", String.class),
                                                        "value matches \"[A-Z]*\"");
         BlockStmt body = getFirstMethodBody(unit);
@@ -176,9 +176,9 @@ public class TypeResolveTestDrlxExpression {
         assertThat(resolvedType.describe()).isEqualTo("boolean");
     }
 
-    @Ignore("Not yet implemented in legacy JavaCC DrlxParser") // PointFreeExpr is inside DrlxExpression
+    @Disabled("Not yet implemented in legacy JavaCC DrlxParser") // PointFreeExpr is inside DrlxExpression
     @Test
-    public void testHalfPointFreeExpr() {
+    void testHalfPointFreeExpr() {
         CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(ctx -> ctx.addDeclaration("value", String.class),
                                                        "{ return matches \"[A-Z]*\"; }");
         BlockStmt body = getFirstMethodBody(unit);
@@ -190,9 +190,9 @@ public class TypeResolveTestDrlxExpression {
         assertThat(resolvedType.describe()).isEqualTo("boolean");
     }
 
-    @Ignore("Not yet implemented in legacy JavaCC DrlxParser")
+    @Disabled("Not yet implemented in legacy JavaCC DrlxParser")
     @Test
-    public void testTemporalLiteralExpr() {
+    void testTemporalLiteralExpr() {
         // Parse temporal literal directly using DrlxParser
         CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(ctx -> {}, "this after[5,8] $a");
         BlockStmt body = getFirstMethodBody(unit);
@@ -205,7 +205,7 @@ public class TypeResolveTestDrlxExpression {
     }
 
     @Test
-    public void testOOPathExpr() {
+    void testOOPathExpr() {
         // Test OOPath navigation through object graph
         CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(ctx -> {}, "/addresses/city");
         BlockStmt body = getFirstMethodBody(unit);
@@ -221,7 +221,7 @@ public class TypeResolveTestDrlxExpression {
     }
 
     @Test
-    public void testOOPathChunk() {
+    void testOOPathChunk() {
         // Test OOPath chunk with condition
         CompilationUnit unit = parseDrlxExpressionWithCompilationUnit(
                 ctx -> {}, "/addresses[city == \"Tokyo\"]/city");

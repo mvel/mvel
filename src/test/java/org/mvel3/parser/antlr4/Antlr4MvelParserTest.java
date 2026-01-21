@@ -19,8 +19,8 @@ package org.mvel3.parser.antlr4;
 import java.util.concurrent.TimeUnit;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mvel3.parser.DrlxParser;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
@@ -35,10 +35,10 @@ import static org.mvel3.parser.printer.PrintUtil.printNode;
  * Tests for the MVEL parser using ANTLR4.
  * Assertions are based on the generated Antlr AST.
  */
-public class Antlr4MvelParserTest {
+class Antlr4MvelParserTest {
 
     @Test
-    public void testParseSimpleExpr() {
+    void testParseSimpleExpr() {
         String expr = "name == \"Mark\"";
         ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
 
@@ -57,7 +57,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBinaryWithNewLine() {
+    void testBinaryWithNewLine() {
         String orExpr = "(addresses == 2 ||\n" +
                 "                   addresses == 3  )";
         assertParsedExpressionRoundTrip(orExpr);
@@ -67,7 +67,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBinaryWithWindowsNewLine() {
+    void testBinaryWithWindowsNewLine() {
         String orExpr = "(addresses == 2 ||\r\n" +
                 "                   addresses == 3  )";
         assertParsedExpressionRoundTrip(orExpr);
@@ -77,7 +77,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBinaryWithNewLineBeginning() {
+    void testBinaryWithNewLineBeginning() {
         String orExpr = "(" + System.lineSeparator() + "addresses == 2 || addresses == 3  )";
         assertParsedExpressionRoundTrip(orExpr);
 
@@ -86,7 +86,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBinaryWithNewLineEnd() {
+    void testBinaryWithNewLineEnd() {
         String orExpr = "(addresses == 2 || addresses == 3 " + System.lineSeparator() + ")";
         assertParsedExpressionRoundTrip(orExpr);
 
@@ -95,7 +95,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBinaryWithNewLineBeforeOperator() {
+    void testBinaryWithNewLineBeforeOperator() {
         String andExpr = "(addresses == 2" + System.lineSeparator() + "&& addresses == 3  )";
         assertParsedExpressionRoundTrip(andExpr);
 
@@ -104,69 +104,64 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testParseSafeCastExpr() {
+    void testParseSafeCastExpr() {
         String expr = "this instanceof Person && ((Person) this).name == \"Mark\"";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast : TBD")
     @Test
-    public void testParseInlineCastExpr() {
-        String expr = "this#Person.name == \"Mark\"";
+    void testParseInlineCastExpr() {
+        String expr = "this#Person#.name == \"Mark\"";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast : TBD")
     @Test
-    public void testParseInlineCastExpr2() {
-        String expr = "address#com.pkg.InternationalAddress.state.length == 5";
+    void testParseInlineCastExpr2() {
+        String expr = "address#com.pkg.InternationalAddress#.state.length == 5";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast : TBD")
     @Test
-    public void testParseInlineCastExpr3() {
-        String expr = "address#org.mvel3.compiler.LongAddress.country.substring(1)";
+    void testParseInlineCastExpr3() {
+        String expr = "address#org.mvel3.compiler.LongAddress#.country.substring(1)";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Inline Cast : TBD")
     @Test
-    public void testParseInlineCastExpr4() {
-        String expr = "address#com.pkg.InternationalAddress.getState().length == 5";
+    void testParseInlineCastExpr4() {
+        String expr = "address#com.pkg.InternationalAddress#.getState().length == 5";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("`!.` Null Safe Dereferencing : TBD. Mvel2 has `.?` syntax, but skipping for now")
     @Test
-    public void testParseNullSafeFieldAccessExpr() {
+    void testParseNullSafeFieldAccessExpr() {
         String expr = "person!.name == \"Mark\"";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator : TBD")
+    @Disabled("Custom Operator : TBD")
     @Test
-    public void testDotFreeExpr() {
+    void testDotFreeExpr() {
         String expr = "this after $a";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator : TBD")
+    @Disabled("Custom Operator : TBD")
     @Test
-    public void testDotFreeEnclosed() {
+    void testDotFreeEnclosed() {
         String expr = "(this after $a)";
         assertParsedExpressionRoundTrip(expr);
     }
 
-    @Ignore("Custom Operator : TBD")
+    @Disabled("Custom Operator : TBD")
     @Test
-    public void testDotFreeEnclosedWithNameExpr() {
+    void testDotFreeEnclosedWithNameExpr() {
         String expr = "(something after $a)";
         assertParsedExpressionRoundTrip(expr);
     }
 
     @Test
-    public void testLiteral() {
+    void testLiteral() {
         String bigDecimalLiteral = "bigDecimal < 50B";
         assertParsedExpressionRoundTrip(bigDecimalLiteral);
 
@@ -175,13 +170,13 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testBigDecimalLiteral() {
+    void testBigDecimalLiteral() {
         String expr = "12.111B";
         assertParsedExpressionRoundTrip(expr);
     }
 
     @Test
-    public void testTemporalLiteral() {
+    void testTemporalLiteral() {
         String expr = "5s";
         ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
         Mvel3Parser.TemporalLiteralContext temporalLiteralContext = getTemporalLiteralContext((Mvel3Parser.MvelStartContext) tree);
@@ -190,7 +185,7 @@ public class Antlr4MvelParserTest {
     }
 
     @Test
-    public void testTemporalLiteralOf2Chunks() {
+    void testTemporalLiteralOf2Chunks() {
         String expr = "1m5s";
         ParseTree tree = Antlr4MvelParser.parseExpressionAsAntlrAST(expr);
         Mvel3Parser.TemporalLiteralContext temporalLiteralContext = getTemporalLiteralContext((Mvel3Parser.MvelStartContext) tree);

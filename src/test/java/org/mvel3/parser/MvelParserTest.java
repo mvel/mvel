@@ -39,8 +39,8 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.Type;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 import org.mvel3.parser.ast.expr.DrlxExpression;
@@ -53,9 +53,11 @@ import org.mvel3.parser.ast.expr.PointFreeExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.printer.PrintUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -64,8 +66,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.parser.DrlxParser.parseExpression;
 import static org.mvel3.parser.printer.PrintUtil.printNode;
 
-@Ignore("TBD : This test is specific to javaparser. Fully migrate to Antlr4MvelParserTest")
-public class MvelParserTest implements TranspilerTest {
+@Disabled("TBD : This test is specific to javaparser. Fully migrate to Antlr4MvelParserTest")
+class MvelParserTest implements TranspilerTest {
 
     private static final Collection<String> operators = new HashSet<>();
     static {
@@ -75,13 +77,13 @@ public class MvelParserTest implements TranspilerTest {
     final ParseStart<DrlxExpression> parser = DrlxParser.buildDrlxParserWithArguments(operators);
 
     // This test is only for JavaParser AST. So USE_ANTLR is set to false.
-    @BeforeClass
-    public static void enableAntlrParser() {
+    @BeforeAll
+    static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = false;
     }
 
     @Test
-    public void testParseSimpleExpr() {
+    void testParseSimpleExpr() {
         String expr = "name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -93,7 +95,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBinaryWithNewLine() {
+    void testBinaryWithNewLine() {
         Expression or = parseExpression(parser, "(addresses == 2 ||\n" +
                 "                   addresses == 3  )").getExpr();
         assertThat(printNode(or)).isEqualTo("(addresses == 2 || addresses == 3)");
@@ -103,7 +105,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBinaryWithWindowsNewLine() {
+    void testBinaryWithWindowsNewLine() {
         Expression or = parseExpression(parser, "(addresses == 2 ||\r\n" +
                 "                   addresses == 3  )").getExpr();
         assertThat(printNode(or)).isEqualTo("(addresses == 2 || addresses == 3)");
@@ -113,7 +115,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBinaryWithNewLineBeginning() {
+    void testBinaryWithNewLineBeginning() {
         Expression or = parseExpression(parser, "(" + newLine() + "addresses == 2 || addresses == 3  )").getExpr();
         assertThat(printNode(or)).isEqualTo("(addresses == 2 || addresses == 3)");
 
@@ -122,7 +124,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBinaryWithNewLineEnd() {
+    void testBinaryWithNewLineEnd() {
         Expression or = parseExpression(parser, "(addresses == 2 || addresses == 3 " + newLine() + ")").getExpr();
         assertThat(printNode(or)).isEqualTo("(addresses == 2 || addresses == 3)");
 
@@ -131,7 +133,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBinaryWithNewLineBeforeOperator() {
+    void testBinaryWithNewLineBeforeOperator() {
         String andExpr = "(addresses == 2" + newLine() + "&& addresses == 3  )";
         StaticMvelParser mvelParser1 = new StaticMvelParser(new ParserConfiguration(), true);
         Expression and2 = mvelParser1.parse(GeneratedMvelParser::Expression, new StringProvider(andExpr)).getResult().get();
@@ -144,49 +146,49 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testParseSafeCastExpr() {
+    void testParseSafeCastExpr() {
         String expr = "this instanceof Person && ((Person) this).name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         verifyBodyWithBetterDiff(printNode(expression),expr);
     }
 
     @Test
-    public void testParseInlineCastExpr() {
+    void testParseInlineCastExpr() {
         String expr = "this#Person#.name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testParseInlineCastExpr2() {
+    void testParseInlineCastExpr2() {
         String expr = "address#com.pkg.InternationalAddress#.state.length == 5";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testParseInlineCastExpr3() {
+    void testParseInlineCastExpr3() {
         String expr = "address#org.mvel3.compiler.LongAddress#.country.substring(1)";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testParseInlineCastExpr4() {
+    void testParseInlineCastExpr4() {
         String expr = "address#com.pkg.InternationalAddress#.getState().length == 5";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testParseNullSafeFieldAccessExpr() {
+    void testParseNullSafeFieldAccessExpr() {
         String expr = "person?.name == \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testDotFreeExpr() {
+    void testDotFreeExpr() {
         String expr = "this after $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -194,14 +196,14 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeEnclosed() {
+    void testDotFreeEnclosed() {
         String expr = "(this after $a)";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testDotFreeEnclosedWithNameExpr() {
+    void testDotFreeEnclosedWithNameExpr() {
         String expr = "(something after $a)";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(printNode(expression)).isEqualTo(expr);
@@ -209,7 +211,7 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testLiteral() {
+    void testLiteral() {
         String bigDecimalLiteral = "bigInteger < (50B)";
         Expression bigDecimalExpr = parseExpression( parser, bigDecimalLiteral ).getExpr();
         assertThat(printNode(bigDecimalExpr)).isEqualTo(bigDecimalLiteral);
@@ -220,14 +222,14 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBigDecimalLiteral() {
+    void testBigDecimalLiteral() {
         String bigDecimalLiteralWithDecimals = "12.111B";
         Expression bigDecimalExprWithDecimals = parseExpression( parser, bigDecimalLiteralWithDecimals ).getExpr();
         assertThat(printNode(bigDecimalExprWithDecimals)).isEqualTo(bigDecimalLiteralWithDecimals);
     }
 
     @Test
-    public void testDotFreeExprWithOr() {
+    void testDotFreeExprWithOr() {
         String expr = "this after $a || this after $b";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof BinaryExpr).isTrue();
@@ -235,7 +237,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeExprWithArgs() {
+    void testDotFreeExprWithArgs() {
         String expr = "this after[5,8] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -244,7 +246,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeExprWithArgsInfinite() {
+    void testDotFreeExprWithArgsInfinite() {
         String expr = "this after[5s,*] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -253,7 +255,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeExprWithThreeArgsInfinite() {
+    void testDotFreeExprWithThreeArgsInfinite() {
         String expr = "this after[*,*,*,2s] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -263,7 +265,7 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testDotFreeExprWithArgsNegated() {
+    void testDotFreeExprWithArgsNegated() {
         String expr = "this not after[5,8] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression).isInstanceOf(PointFreeExpr.class);
@@ -272,7 +274,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeExprWithTemporalArgs() {
+    void testDotFreeExprWithTemporalArgs() {
         String expr = "this after[5ms,8d] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -280,7 +282,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testDotFreeExprWithFourTemporalArgs() {
+    void testDotFreeExprWithFourTemporalArgs() {
         String expr = "this includes[1s,1m,1h,1d] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -288,21 +290,23 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testHalfDotFreeExprWithFourTemporalArgs() {
+    void testHalfDotFreeExprWithFourTemporalArgs() {
         String expr = "includes[1s,1m,1h,1d] $a";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression).isInstanceOf(HalfPointFreeExpr.class);
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
-    @Test(expected = ParseProblemException.class)
-    public void testInvalidTemporalArgs() {
-        String expr = "this after[5ms,8f] $a";
-        Expression expression = parseExpression( parser, expr ).getExpr();
+    @Test
+    void testInvalidTemporalArgs() {
+        assertThrows(ParseProblemException.class, () -> {
+            String expr = "this after[5ms,8f] $a";
+            Expression expression = parseExpression( parser, expr ).getExpr();
+        });
     }
 
     @Test
-    public void testOOPathExpr() {
+    void testOOPathExpr() {
         String expr = "/wife/children[age > 10]/toys";
         DrlxExpression drlx = parseExpression( parser, expr );
         Expression expression = drlx.getExpr();
@@ -311,7 +315,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testOOPathExprWithDot() {
+    void testOOPathExprWithDot() {
         String expr = "/wife.children/toys";
         DrlxExpression drlx = parseExpression( parser, expr );
         Expression expression = drlx.getExpr();
@@ -320,7 +324,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testOOPathExprWithMultipleCondition() {
+    void testOOPathExprWithMultipleCondition() {
         String expr = "$address : /address[street == \"Elm\",city == \"Big City\"]";
         DrlxExpression drlx = parseExpression( parser, expr );
         Expression expression = drlx.getExpr();
@@ -329,7 +333,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testOOPathExprWithDeclaration() {
+    void testOOPathExprWithDeclaration() {
         String expr = "$toy : /wife/children[age > 10]/toys";
         DrlxExpression drlx = parseExpression( parser, expr );
         assertThat(drlx.getBind().asString()).isEqualTo("$toy");
@@ -339,7 +343,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testOOPathExprWithBackReference() {
+    void testOOPathExprWithBackReference() {
         String expr = "$toy : /wife/children/toys[name.length == ../../name.length]";
         DrlxExpression drlx = parseExpression( parser, expr );
         assertThat(drlx.getBind().asString()).isEqualTo("$toy");
@@ -354,21 +358,21 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testMapInitializationEmpty() {
+    void testMapInitializationEmpty() {
         String expr = "countItems([])";
         DrlxExpression drlx = parseExpression( parser, expr );
         assertThat(printNode(drlx)).isEqualTo(expr);
     }
 
     @Test
-    public void testMapInitializationLiteralAsArgument() {
+    void testMapInitializationLiteralAsArgument() {
         String expr = "countItems([123 : 456, 789 : 1011])";
         DrlxExpression drlx = parseExpression( parser, expr );
         assertThat(printNode(drlx)).isEqualTo(expr);
     }
 
     @Test
-    public void testParseTemporalLiteral() {
+    void testParseTemporalLiteral() {
         String expr = "5s";
         TemporalLiteralExpr drlx = DrlxParser.parseTemporalLiteral(expr);
         assertThat(printNode(drlx)).isEqualTo(expr);
@@ -379,7 +383,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testParseTemporalLiteralOf2Chunks() {
+    void testParseTemporalLiteralOf2Chunks() {
         String expr = "1m5s";
         TemporalLiteralExpr drlx = DrlxParser.parseTemporalLiteral(expr);
         assertThat(printNode(drlx)).isEqualTo(expr);
@@ -393,7 +397,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testInExpression() {
+    void testInExpression() {
         String expr = "this in ()";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof PointFreeExpr).isTrue();
@@ -402,7 +406,7 @@ public class MvelParserTest implements TranspilerTest {
 
     @Test
     /* This shouldn't be supported, an HalfBinaryExpr should be valid only after a && or a || */
-    public void testUnsupportedImplicitParameter() {
+    void testUnsupportedImplicitParameter() {
         String expr = "== \"Mark\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
         assertThat(expression instanceof HalfBinaryExpr).isTrue();
@@ -410,7 +414,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitNegativeParameter() {
+    void testAndWithImplicitNegativeParameter() {
         String expr = "value > -2 && < -1";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -428,7 +432,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesis() {
+    void testAndWithImplicitParameterAndParenthesis() {
         String expr = "value (> 1 && < 2)";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -446,7 +450,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisOnThis() {
+    void testAndWithImplicitParameterAndParenthesisOnThis() {
         String expr = "this (> 1 && < 2)";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -464,7 +468,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisComplex() {
+    void testAndWithImplicitParameterAndParenthesisComplex() {
         String expr = "value ((> 1 && < 2) || (> 3 && < 4))";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -497,7 +501,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisComplexOnField() {
+    void testAndWithImplicitParameterAndParenthesisComplexOnField() {
         String expr = "value.length ((> 1 && < 2) || (> 3 && < 4))";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -531,7 +535,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisComplexOnNullSafeField() {
+    void testAndWithImplicitParameterAndParenthesisComplexOnNullSafeField() {
         String expr = "value!.length ((> 1 && < 2) || (> 3 && < 4))";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -565,7 +569,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisMixedLeft() {
+    void testAndWithImplicitParameterAndParenthesisMixedLeft() {
         String expr = "value ((> 1 && < 2) || > 3)";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -591,7 +595,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameterAndParenthesisMixedRight() {
+    void testAndWithImplicitParameterAndParenthesisMixedRight() {
         String expr = "value (< 1 || (> 2 && < 3))";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -617,7 +621,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testOrWithImplicitParameter() {
+    void testOrWithImplicitParameter() {
         String expr = "name == \"Mark\" || == \"Mario\" || == \"Luca\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -639,7 +643,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameter() {
+    void testAndWithImplicitParameter() {
         String expr = "name == \"Mark\" && == \"Mario\" && == \"Luca\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -662,7 +666,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameter2() {
+    void testAndWithImplicitParameter2() {
         String expr = "name == \"Mark\" && == \"Mario\" || == \"Luca\"";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -686,7 +690,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testAndWithImplicitParameter3() {
+    void testAndWithImplicitParameter3() {
         String expr = "age == 2 && == 3 || == 4";
         Expression expression = parseExpression( parser, expr ).getExpr();
 
@@ -774,21 +778,21 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testLambda() {
+    void testLambda() {
         String expr = "x -> y";
         DrlxExpression expression = parseExpression(parser, expr);
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testLambdaParameter() {
+    void testLambdaParameter() {
         String expr = "($p).setCanDrinkLambda(() -> true)";
         DrlxExpression expression = parseExpression(parser, expr);
         assertThat(printNode(expression)).isEqualTo(expr);
     }
 
     @Test
-    public void testModifyStatement() {
+    void testModifyStatement() {
         String expr = "{ modify ( $p )  { name = \"Luca\"; age = \"35\"; } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -797,14 +801,16 @@ public class MvelParserTest implements TranspilerTest {
                 "}");
     }
 
-    @Test(expected = ParseProblemException.class)
-    public void testModifyFailing() {
-        String expr = "{ modify  { name = \"Luca\", age = \"35\" }; }";
-        StaticMvelParser.parseBlock(expr);
+    @Test
+    void testModifyFailing() {
+        assertThrows(ParseProblemException.class, () -> {
+            String expr = "{ modify  { name = \"Luca\", age = \"35\" }; }";
+            StaticMvelParser.parseBlock(expr);
+        });
     }
 
     @Test
-    public void testModifyStatementSemicolon() {
+    void testModifyStatementSemicolon() {
         String expr = "{ modify ( $p )  { name = \"Luca\"; }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -812,7 +818,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testModifySemiColon() {
+    void testModifySemiColon() {
         String expr = "{ modify($p) { setAge(1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -821,7 +827,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testModifyMultiple() {
+    void testModifyMultiple() {
         String expr = "{ modify($p) { setAge(1);" + newLine() + " setAge(2); setAge(3);" + newLine() + "setAge(4); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -831,7 +837,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testModifyEmptyBlock() {
+    void testModifyEmptyBlock() {
         String expr = "{ modify( $s ) { } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -841,7 +847,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testModifyWithoutSemicolon() {
+    void testModifyWithoutSemicolon() {
         String expr = "{modify($p) { setAge($p.getAge()+1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -852,7 +858,7 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testModifyWithCast() {
+    void testModifyWithCast() {
         String expr = "{modify( (BooleanEvent)$toEdit.get(0) ){  }}";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -863,7 +869,7 @@ public class MvelParserTest implements TranspilerTest {
     
     
     @Test
-    public void testWithStatement() {
+    void testWithStatement() {
         String expr = "{ with ( $p )  { name = \"Luca\"; age = \"35\"; }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -872,14 +878,16 @@ public class MvelParserTest implements TranspilerTest {
                                                        "}");
     }
 
-    @Test(expected = ParseProblemException.class)
-    public void testWithFailing() {
-        String expr = "{ with  { name = \"Luca\", age = \"35\" }; }";
-        StaticMvelParser.parseBlock(expr);
+    @Test
+    void testWithFailing() {
+        assertThrows(ParseProblemException.class, () -> {
+            String expr = "{ with  { name = \"Luca\", age = \"35\" }; }";
+            StaticMvelParser.parseBlock(expr);
+        });
     }
 
     @Test
-    public void testWithStatementSemicolon() {
+    void testWithStatementSemicolon() {
         String expr = "{ with ( $p )  { name = \"Luca\"; }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -890,7 +898,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testWithSemiColon() {
+    void testWithSemiColon() {
         String expr = "{ with($p) { setAge(1); }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -901,7 +909,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testWithEmptyBlock() {
+    void testWithEmptyBlock() {
         String expr = "{ with( $s ) { } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -912,7 +920,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testWithWithoutSemicolon() {
+    void testWithWithoutSemicolon() {
         String expr = "{with($p) { setAge($p.getAge()+1); } }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -924,7 +932,7 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testWithWithCast() {
+    void testWithWithCast() {
         String expr = "{with( (BooleanEvent)$toEdit.get(0) ){  }}";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -934,7 +942,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testWithConstructor() {
+    void testWithConstructor() {
         String expr = "{ with(s1 = new Some()) { }; }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -945,7 +953,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testSemicolon() {
+    void testSemicolon() {
         String expr = "{             " +
                         "a();" + newLine() +
                         "b();" + newLine() +
@@ -959,7 +967,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testSemicolonMethod() {
+    void testSemicolonMethod() {
         String expr = "{             " +
                 "delete($person);" + newLine() +
                 "delete($pet);" + newLine() +
@@ -973,7 +981,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testSemicolonMethodComment() {
+    void testSemicolonMethodComment() {
         String expr = "{             " +
                 "delete($person); // comment" + newLine() +
                 "delete($pet); // comment " + newLine() +
@@ -987,7 +995,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testSemicolonMethodCommentOppositeOSLineEndings() {
+    void testSemicolonMethodCommentOppositeOSLineEndings() {
         final String oppositeLineEnding = SystemUtils.IS_OS_WINDOWS ? "\n" : "\r\n";
         String expr = "{             " +
                 "delete($person); // comment" + oppositeLineEnding +
@@ -1089,7 +1097,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testModifyLambda() {
+    void testModifyLambda() {
         String expr = "{  modify($p) {  setCanDrinkLambda(() -> true); } }";
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
         verifyBodyWithBetterDiff(printNode(expression),"{" + newLine() +
@@ -1098,7 +1106,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testNewExpression() {
+    void testNewExpression() {
         String expr = "money == new BigInteger(\"3\")";
 
         Expression expression = parseExpression(parser, expr).getExpr();
@@ -1106,7 +1114,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testArrayCreation() {
+    void testArrayCreation() {
         String expr = "new Object[] { \"getMessageId\", ($s != null ? $s : \"42103\") }";
 
         Expression expression = parseExpression(parser, expr).getExpr();
@@ -1115,7 +1123,7 @@ public class MvelParserTest implements TranspilerTest {
 
 
     @Test
-    public void testArrayCreation2() {
+    void testArrayCreation2() {
     String expr = "functions.arrayContainsInstanceWithParameters((Object[]) $f.getPersons())";
 
         Expression expression = parseExpression(parser, expr).getExpr();
@@ -1123,7 +1131,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testSpecialNewlineHandling() {
+    void testSpecialNewlineHandling() {
         String expr = "{ a(); \nprint(1); }";
 
         BlockStmt expression = StaticMvelParser.parseBlock(expr);
@@ -1132,7 +1140,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testLineBreakAtTheEndOfStatementWithoutSemicolon() {
+    void testLineBreakAtTheEndOfStatementWithoutSemicolon() {
         String expr =
                 "{  Person p2 = new Person(\"John\");\n" +
                 "  p2.age = 30\n" + // a line break at the end of the statement without a semicolon
@@ -1165,7 +1173,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBindVariable() {
+    void testBindVariable() {
         String expr = "$n : name == \"Mark\"";
         DrlxExpression drlxExpression = parseExpression( parser, expr );
         SimpleName bind = drlxExpression.getBind();
@@ -1179,7 +1187,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testEnclosedBindVariable() {
+    void testEnclosedBindVariable() {
         String expr = "($n : name == \"Mario\")";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);
@@ -1200,7 +1208,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testComplexEnclosedBindVariable() {
+    void testComplexEnclosedBindVariable() {
         String expr = "($n : name == \"Mario\") && (age > 20)";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);
@@ -1233,7 +1241,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBindingOnRight() {
+    void testBindingOnRight() {
         String expr = "$n : name == \"Mario\" && $a : age > 20";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);
@@ -1267,7 +1275,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void test3BindingOn3Conditions() {
+    void test3BindingOn3Conditions() {
         String expr = "$n : name == \"Mario\" && $a : age > 20 && $l : likes != null";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);
@@ -1305,7 +1313,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void testBindingOnRightWithOr() {
+    void testBindingOnRightWithOr() {
         String expr = "$n : name == \"Mario\" || $a : age > 20";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);
@@ -1340,7 +1348,7 @@ public class MvelParserTest implements TranspilerTest {
     }
 
     @Test
-    public void test3BindingOn3ConditionsWithOrAnd() {
+    void test3BindingOn3ConditionsWithOrAnd() {
         String expr = "$n : name == \"Mario\" || $a : age > 20 && $l : likes != null";
 
         DrlxExpression drlxExpression = parseExpression(parser, expr);

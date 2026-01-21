@@ -8,23 +8,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.transpiler.context.Declaration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.LambdaRegistry.DEFAULT_PERSISTENCE_PATH;
 
-public class MVELPersistenceTest {
+class MVELPersistenceTest {
 
-    @Before
-    public void cleanRegistryAndDir() {
+    @BeforeEach
+    void cleanRegistryAndDir() {
         LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
     }
 
     @Test
-    public void sameMapExpressionReusesPhysicalClassFile() {
+    void sameMapExpressionReusesPhysicalClassFile() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -94,7 +94,7 @@ public class MVELPersistenceTest {
     }
 
     @Test
-    public void samePojoExpressionReusesPhysicalClassFile() {
+    void samePojoExpressionReusesPhysicalClassFile() {
         CompilerParameters<MyPerson, Void, Boolean> evalInfo1 = MVEL.<MyPerson>pojo(MyPerson.class,
                                                                                    Declaration.of("age", int.class)
                 )
@@ -127,7 +127,7 @@ public class MVELPersistenceTest {
     }
 
     @Test
-    public void samePojoExpressionWithReusesPhysicalClassFile_SubClass() {
+    void samePojoExpressionWithReusesPhysicalClassFile_SubClass() {
         CompilerParameters<MyPerson, Void, Boolean> evalInfo1 = MVEL.<MyPerson>pojo(MyPerson.class,
                                                                                     Declaration.of("age", int.class)
                 )

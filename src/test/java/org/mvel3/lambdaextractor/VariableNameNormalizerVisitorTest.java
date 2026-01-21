@@ -3,12 +3,12 @@ package org.mvel3.lambdaextractor;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Expression;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.LambdaUtils.calculateHash;
 
-public class VariableNameNormalizerVisitorTest {
+class VariableNameNormalizerVisitorTest {
 
     private String normalizeMethod(String methodSource) {
         MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(methodSource);
@@ -23,7 +23,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeSimpleExpressionWithSameType() {
+    void testNormalizeSimpleExpressionWithSameType() {
         // Two methods with different parameter names but same type and structure
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person employee) { return employee.getAge() > 20; }";
@@ -60,7 +60,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testInnerBlockRedeclarationProducesDeterministicNames() {
+    void testInnerBlockRedeclarationProducesDeterministicNames() {
         String method1 = "public void eval(org.example.Person person) { int age = person.getAge(); if (age > 20) { int tmp = age; person.setAge(tmp); } }";
         String method2 = "public void eval(org.example.Person someone) { int years = someone.getAge(); if (years > 20) { int copy = years; someone.setAge(copy); } }";
 
@@ -68,7 +68,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testSequentialIdsAcrossNestedScopes() {
+    void testSequentialIdsAcrossNestedScopes() {
         String method1 = "public void eval(org.example.Person person) { int age = person.getAge(); { int age = 10; person.setAge(age); } int olderAge = age + 1; }";
         String method2 = "public void eval(org.example.Person somebody) { int years = somebody.getAge(); { int years = 10; somebody.setAge(years); } int newerAge = years + 1; }";
 
@@ -79,7 +79,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testForLoopVariableScope() {
+    void testForLoopVariableScope() {
         String method1 = "public int sum(java.util.List<Integer> values) { int total = 0; for (int i = 0; i < values.size(); i++) { total += values.get(i); } return total; }";
         String method2 = "public int sum(java.util.List<Integer> numbers) { int accumulator = 0; for (int index = 0; index < numbers.size(); index++) { accumulator += numbers.get(index); } return accumulator; }";
 
@@ -87,7 +87,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testForEachLoopVariableScope() {
+    void testForEachLoopVariableScope() {
         String method1 = "public int sum(java.util.List<Integer> values) { int total = 0; for (Integer value : values) { total += value; } return total; }";
         String method2 = "public int sum(java.util.List<Integer> numbers) { int accumulator = 0; for (Integer element : numbers) { accumulator += element; } return accumulator; }";
 
@@ -95,7 +95,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testTryCatchResourcesAreScoped() {
+    void testTryCatchResourcesAreScoped() {
         String method1 = "public void run() { try (java.io.Reader reader = open()) { reader.read(); } catch (java.io.IOException ex) { log(ex.getMessage()); } }";
         String method2 = "public void run() { try (java.io.Reader input = open()) { input.read(); } catch (java.io.IOException error) { log(error.getMessage()); } }";
 
@@ -106,7 +106,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testLambdaParametersAreNormalized() {
+    void testLambdaParametersAreNormalized() {
         String method1 = "public java.util.function.Function<org.example.Person, Integer> make() { return person -> person.getAge(); }";
         String method2 = "public java.util.function.Function<org.example.Person, Integer> make() { return candidate -> candidate.getAge(); }";
 
@@ -116,7 +116,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeExpressionWithDifferentTypes() {
+    void testNormalizeExpressionWithDifferentTypes() {
         // Two methods with different parameter types - should produce DIFFERENT hashes
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Employee employee) { return employee.getAge() > 20; }";
@@ -153,7 +153,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeVoidMethodWithSameType() {
+    void testNormalizeVoidMethodWithSameType() {
         // Two void methods with different parameter names but same type and structure
         String method1 = "public void eval(org.example.Person person) { person.setAge(21); update(person); }";
         String method2 = "public void eval(org.example.Person employee) { employee.setAge(21); update(employee); }";
@@ -190,7 +190,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeMethodWithLocalVariables() {
+    void testNormalizeMethodWithLocalVariables() {
         // Two methods with local variable declarations using different names but same structure
         String method1 = "public void eval(org.example.Person person) { int age = person.getAge(); age = age + 1; person.setAge(age); }";
         String method2 = "public void eval(org.example.Person employee) { int years = employee.getAge(); years = years + 1; employee.setAge(years); }";
@@ -227,7 +227,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testDifferentStructureProducesDifferentHash() {
+    void testDifferentStructureProducesDifferentHash() {
         // Two methods with different operations (> vs <)
         String method1 = "public boolean eval(org.example.Person person) { return person.getAge() > 20; }";
         String method2 = "public boolean eval(org.example.Person person) { return person.getAge() < 20; }";
@@ -259,7 +259,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeMethodWithMultipleParameters() {
+    void testNormalizeMethodWithMultipleParameters() {
         // Method with multiple parameters - should normalize in order
         String method1 = "public int eval(org.example.Person person, org.example.Account account) { return person.getAge() + account.getBalance(); }";
         String method2 = "public int eval(org.example.Person employee, org.example.Account savings) { return employee.getAge() + savings.getBalance(); }";
@@ -298,7 +298,7 @@ public class VariableNameNormalizerVisitorTest {
     }
 
     @Test
-    public void testNormalizeSimpleExpressionWithoutType_hashShouldBeDifferent() {
+    void testNormalizeSimpleExpressionWithoutType_hashShouldBeDifferent() {
         // Two expressions with different variable names but same structure
         // Type is not specified in variable names
         String expression1 = "person.getAge() > 20";
