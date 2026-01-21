@@ -2,22 +2,22 @@ package org.mvel3.lambdaextractor;
 
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mvel3.lambdaextractor.LambdaUtils.createLambdaKeyFromMethodDeclarationString;
 
-public class LambdaRegistryTest {
+class LambdaRegistryTest {
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         // Reset before each test, because the tests assert IDs from 0 upwards
         LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
     }
 
     @Test
-    public void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {
+    void testRegisterLambda_SameLambdaDifferentVariableNames_ShouldSharePhysicalId() {
         // Case: person.getAge() > 20 and employee.getAge() > 20
         // After normalization, both become v1.getAge() > 20
         // They should get the SAME physical ID
@@ -53,7 +53,7 @@ public class LambdaRegistryTest {
     }
 
     @Test
-    public void testRegisterLambda_DifferentTypes_ShouldHaveDifferentPhysicalIds() {
+    void testRegisterLambda_DifferentTypes_ShouldHaveDifferentPhysicalIds() {
         // Case: Person vs Employee (different types)
         // Even if the body looks the same, the signature is different
         // They should get DIFFERENT physical IDs
@@ -82,7 +82,7 @@ public class LambdaRegistryTest {
     }
 
     @Test
-    public void testRegisterLambda_HashCollision_ShouldTrackBothLogicalIds() {
+    void testRegisterLambda_HashCollision_ShouldTrackBothLogicalIds() {
         // Case: Simulate hash collision
         // Two different LambdaKeys that happen to have the same hash
         // They should:
@@ -124,7 +124,7 @@ public class LambdaRegistryTest {
     }
 
     @Test
-    public void testRegisterLambda_MultipleLogicalToOnePhysical() {
+    void testRegisterLambda_MultipleLogicalToOnePhysical() {
         // scenario: logical IDs 5, 9, 10 all point to physical ID 4
         // This happens when we have 3 rules with identical constraints
 

@@ -1,15 +1,15 @@
 package org.mvel3;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mvel3.MVELBuilder.TypesBuilder;
 import org.mvel3.MVELBuilder.TypesBuilderCollector;
 
 import java.util.Map;
 
-public class DSLTest {
+class DSLTest {
 
     @Test
-    public void test1() {
+    void test1() {
         MVEL.map(TypesBuilder.add("name", String.class)
                              .add("age", int.class))
             .with(Person.class)

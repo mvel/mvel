@@ -1,8 +1,8 @@
 package org.mvel3;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.parser.MvelParser;
@@ -18,11 +18,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MVELCompilerTest {
+class MVELCompilerTest {
 
     // To switch between JavaParser and ANTLR4 parsers. This will be removed once ANTLR4 is the only parser.
-    @BeforeClass
-    public static void enableAntlrParser() {
+    @BeforeAll
+    static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = true;
     }
 
@@ -159,7 +159,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testMapEvaluator() {
+    void testMapEvaluator() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foo", Type.type(Foo.class));
         types.put("bar", Type.type(Bar.class));
@@ -179,7 +179,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testMapEvaluatorWithGenerics() {
+    void testMapEvaluatorWithGenerics() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("foos", Type.type(List.class, "<Foo>"));
 
@@ -202,7 +202,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testMapEvaluatorReturns() {
+    void testMapEvaluatorReturns() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("a", Type.type(int.class));
         types.put("b", Type.type(int.class));
@@ -232,7 +232,7 @@ public class MVELCompilerTest {
 
     // @TODO this should assign back to the context (mdp)
     @Test
-    public void testMapEvalutorInputs() {
+    void testMapEvalutorInputs() {
         Map<String, Type<?>> types = new HashMap<>();
         types.put("a", Type.type(int.class));
         types.put("b", Type.type(int.class));
@@ -251,7 +251,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testListEvaluator() {
+    void testListEvaluator() {
         Declaration[] declrs = new Declaration[]{new Declaration("foo", Foo.class),
                 new Declaration("bar", Bar.class)};
 
@@ -268,7 +268,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testListEvaluatorWithGenerics() {
+    void testListEvaluatorWithGenerics() {
         Declaration[] types = new Declaration[]{new Declaration("foos", List.class, "<Foo>")};
 
         Foo foo1 = new Foo();
@@ -287,7 +287,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testListEvaluatorReturns() {
+    void testListEvaluatorReturns() {
         Declaration[] types = new Declaration[]{
                 new Declaration("a", int.class),
                 new Declaration("b", int.class),
@@ -308,7 +308,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testRootObjectWithMapEvaluator() {
+    void testRootObjectWithMapEvaluator() {
         Foo foo1 = new Foo();
         foo1.setName("xxx");
 
@@ -346,7 +346,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoEvalutorInputs() {
+    void testPojoEvalutorInputs() {
         ContextWithInts context = new ContextWithInts();
         context.setA(1);
         context.setB(1);
@@ -368,7 +368,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoContextCamelCaseEvaluator() {
+    void testPojoContextCamelCaseEvaluator() {
         Foo foo = new Foo();
         foo.setName("xxx");
 
@@ -392,7 +392,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoContextRecordEvaluator() {
+    void testPojoContextRecordEvaluator() {
         Foo foo = new Foo();
         foo.setName("xxx");
 
@@ -412,7 +412,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoContextRecordEvaluatorWithGenerics() {
+    void testPojoContextRecordEvaluatorWithGenerics() {
         Foo foo1 = new Foo();
         foo1.setName("foo1");
 
@@ -431,7 +431,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoContextMixed() {
+    void testPojoContextMixed() {
         Foo foo = new Foo();
         foo.setName("xxx");
 
@@ -451,7 +451,7 @@ public class MVELCompilerTest {
     }
 
     @Test
-    public void testPojoEvaluatorReturns() {
+    void testPojoEvaluatorReturns() {
 //        ContextWithInts context = new ContextWithInts(1, 2, 3, -4);
 //
 //

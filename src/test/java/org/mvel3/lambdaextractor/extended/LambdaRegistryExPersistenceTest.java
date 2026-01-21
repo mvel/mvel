@@ -2,7 +2,7 @@ package org.mvel3.lambdaextractor.extended;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mvel3.ClassManager;
 import org.mvel3.javacompiler.KieMemoryCompiler;
 
@@ -12,10 +12,10 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LambdaRegistryExPersistenceTest {
+class LambdaRegistryExPersistenceTest {
 
     @Test
-    public void sameLambdaContentReusesPhysicalClassFile() throws Exception {
+    void sameLambdaContentReusesPhysicalClassFile() throws Exception {
         LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
         registry.resetAndRemoveAllPersistedFiles();
 

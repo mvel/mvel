@@ -16,31 +16,31 @@
 
 package org.mvel3.parser.antlr4;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mvel3.Person;
 import org.mvel3.TranspilerTest;
 import org.mvel3.parser.MvelParser;
 
-public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
+class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
 
     // Use 'false' when you want to test the legacy JavaCC parser
-    @BeforeClass
-    public static void enableAntlrParser() {
+    @BeforeAll
+    static void enableAntlrParser() {
         MvelParser.Factory.USE_ANTLR = true;
     }
 
     // --- additional tests for Antlr based transpiler. Basically, smaller and more focused tests
 
     @Test
-    public void testSimpleExpression() {
+    void testSimpleExpression() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "return $p.age == 20;",
              "return $p.getAge() == 20;");
     }
 
     @Test
-    public void testListAccess() {
+    void testListAccess() {
         // The city rewrite wouldn't work, if it didn't know the generics
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "var x = $p.addresses[0];",
@@ -48,49 +48,49 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
     }
 
     @Test
-    public void testStaticMethod() {
+    void testStaticMethod() {
         test("System.out.println(\"Hello World\");",
              "System.out.println(\"Hello World\");");
     }
 
     @Test
-    public void testBigDecimalLiteral() {
+    void testBigDecimalLiteral() {
         test("var x = 10B;",
              "var x = BigDecimal.valueOf(10);");
     }
 
     @Test
-    public void testBigIntegerLiteral() {
+    void testBigIntegerLiteral() {
         test("var x = 10I;",
              "var x = BigInteger.valueOf(10);");
     }
 
     @Test
-    public void testBigDecimalDecimalLiteral() {
+    void testBigDecimalDecimalLiteral() {
         test("var x = 10.5B;",
              "var x = new BigDecimal(\"10.5\");");
     }
 
     @Test
-    public void testListCreationLiteral() {
+    void testListCreationLiteral() {
         test("var list = [1, 2, 3];",
              "var list = java.util.Arrays.asList(1, 2, 3);");
     }
 
     @Test
-    public void testListCreationLiteralEmpty() {
+    void testListCreationLiteralEmpty() {
         test("var list = [];",
              "var list = java.util.Collections.emptyList();");
     }
 
     @Test
-    public void testMapCreationLiteral() {
+    void testMapCreationLiteral() {
         test("var map = [\"a\": 1, \"b\": 2];",
              "var map = java.util.Map.of(\"a\", 1, \"b\", 2);");
     }
 
     @Test
-    public void testMapCreationLiteralEmpty() {
+    void testMapCreationLiteralEmpty() {
         test("var map = [:];",
              "var map = java.util.Collections.emptyMap();");
     }
@@ -99,41 +99,41 @@ public class Antlr4AdditionalMVELTranspilerTest implements TranspilerTest {
     //  Should we return null? Do we use this only for expression (= returns boolean), so returning false in case of null?
 
     @Test
-    public void testNullSafeFieldAccess() {
+    void testNullSafeFieldAccess() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "return $p!.name;",
              "return $p != null ? $p.getName() : null;");
     }
 
     @Test
-    public void testNullSafeMethodCall() {
+    void testNullSafeMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "return $p!.getName();",
              "return $p != null ? $p.getName() : null;");
     }
 
     @Test
-    public void testNullSafeChainedMethodCall() {
+    void testNullSafeChainedMethodCall() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "return $p!.getAddresses()!.get(0);",
              "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
     }
 
     @Test
-    public void testNullSafeChainedMix() {
+    void testNullSafeChainedMix() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "return $p!.addresses!.get(0);",
              "return $p != null ? ($p.getAddresses() != null ? $p.getAddresses().get(0) : null) : null;");
     }
 
     @Test
-    public void testTemporalLiteral() {
+    void testTemporalLiteral() {
         test("var duration = 1m5s;",
              "var duration = java.time.Duration.ofMinutes(1).plusSeconds(5);");
     }
 
     @Test
-    public void testTemporalLiteralDay() {
+    void testTemporalLiteralDay() {
         test("var duration = 1day10min30sec;",
              "var duration = java.time.Duration.ofDays(1).plusMinutes(10).plusSeconds(30);");
     }
