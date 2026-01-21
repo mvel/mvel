@@ -29,5 +29,17 @@ jobs:
           distribution: 'temurin'
           maven-version: ${{ matrix.maven-version }}
 
+      # mvel3 requires a custom javaparser for mvel AST nodes
+      - name: Checkout javaparser-mvel
+        uses: actions/checkout@v2
+        with:
+          repository: mvel/javaparser-mvel
+          ref: main
+          path: javaparser-mvel
+
+      - name: Build and install javaparser-mvel
+        run: mvn -B clean install -DskipTests
+        working-directory: javaparser-mvel
+
       - name: Build with Maven
         run: mvn -B clean verify
