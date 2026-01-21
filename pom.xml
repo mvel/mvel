@@ -224,7 +224,7 @@
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
-            <version>999-SNAPSHOT</version>
+            <version>10.1.0</version>
         </dependency>
 
         <dependency>
