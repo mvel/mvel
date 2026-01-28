@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.transpiler.context.Declaration;
 

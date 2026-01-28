@@ -22,7 +22,6 @@ package org.mvel3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mvel3.lambdaextractor.LambdaRegistry;
 import org.mvel3.transpiler.context.Declaration;
 
 import java.math.BigDecimal;
