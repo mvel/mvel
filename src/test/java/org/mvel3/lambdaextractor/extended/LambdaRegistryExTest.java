@@ -109,4 +109,39 @@ class LambdaRegistryExTest {
         assertThat(registry.getPhysicalId(9)).isEqualTo(0);
         assertThat(registry.getPhysicalId(10)).isEqualTo(0);
     }
+
+    @Test
+    void testRegisterLambda_SubtypeParameter_ShouldReusePhysicalId() {
+        // This tests the subtype overload detection feature unique to LambdaRegistryEx.
+        // When a lambda has the same body and a parameter type that is a subtype of
+        // an already registered lambda's parameter type, it should reuse the physical ID.
+
+        LambdaRegistryEx registry = LambdaRegistryEx.INSTANCE;
+
+        // First lambda with Object parameter (must use FQCN for type resolution)
+        String methodWithObject = "public boolean eval(java.lang.Object obj) { return obj != null; }";
+        // Second lambda with String parameter (String is a subtype of Object)
+        String methodWithString = "public boolean eval(java.lang.String str) { return str != null; }";
+
+        LambdaKeyEx keyObject = createLambdaKeyFromMethodDeclarationString(methodWithObject);
+        LambdaKeyEx keyString = createLambdaKeyFromMethodDeclarationString(methodWithString);
+
+        // Keys are NOT equal because signatures differ (Object vs String)
+        assertThat(keyObject).isNotEqualTo(keyString);
+
+        // But normalized bodies should be the same
+        assertThat(keyObject.getNormalisedBody()).isEqualTo(keyString.getNormalisedBody());
+
+        // Register the Object version first
+        int physicalIdObject = registry.registerLambda(1, keyObject);
+
+        // Register the String version - should reuse the Object version's physical ID
+        // because String is a subtype of Object and the body is identical
+        int physicalIdString = registry.registerLambda(2, keyString);
+
+        // Both should share the SAME physical ID due to subtype overload detection
+        assertThat(physicalIdString).isEqualTo(physicalIdObject);
+        assertThat(registry.getPhysicalId(1)).isEqualTo(physicalIdObject);
+        assertThat(registry.getPhysicalId(2)).isEqualTo(physicalIdObject);
+    }
 }
