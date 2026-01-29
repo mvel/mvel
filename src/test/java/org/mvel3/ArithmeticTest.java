@@ -19,11 +19,6 @@
 
 package org.mvel3;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.mvel3.transpiler.context.Declaration;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
@@ -33,6 +28,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.mvel3.transpiler.context.Declaration;
 
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -565,7 +564,6 @@ class ArithmeticTest {
     assertThat(executeExpressionWithDefaultVariables(expression)).isEqualTo(true);
   }
 
-  //@Disabled("DROOLS-6572 - Unable to parse")
   @Test
   void testOperatorPrecedence2() {
     String expression = "var _x_001 = 500.2; var _x_002 = 200.8; var _r_001 = 701; return _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2;";
@@ -726,7 +724,6 @@ class ArithmeticTest {
               " else { foo.countTest = 0; return false; }")).isEqualTo(true);
   }
 
-  //@Disabled("DROOLS-6572 - Generates wrong code - check for statements")
   @Test
   void testDeepAssignmentWithBlock() {
     String expression = "with (foo) { countTest += 5; }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
@@ -780,7 +777,6 @@ class ArithmeticTest {
     assertThat(executeExpressionWithDefaultVariables("var xx0 = 5; xx0 += 4; return xx0 += 1;")).isEqualTo(10);
   }
 
-  //@Disabled("DROOLS-6572 - Rounding error")
   @Test
   void testAssignDiv() {
     var xx0 = 20; xx0 /= 10;
@@ -812,7 +808,7 @@ class ArithmeticTest {
   }
 
   
-  @Disabled("DROOLS-6572 - Unable to parse")
+  @Disabled("DROOLS-6572 - Unable to parse : Confirm if single quotes are supported")
   @Test
   void testStringAppend() {
     String expression = "c + 'bar'";
@@ -834,7 +830,6 @@ class ArithmeticTest {
   }
 
   
-  //@Disabled("DROOLS-6572 - Rounding error")
   @Test
   void testJIRA158() {
     String expression = "(float) (4/2 + Math.sin(1))";
@@ -872,7 +867,6 @@ class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164() {
     String expression = "1 / (var1 + var1) * var1";
@@ -887,7 +881,6 @@ class ArithmeticTest {
 
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164b() {
     String expression = "1 + 1 / (var1 + var1) * var1";
@@ -900,7 +893,6 @@ class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164c() {
 	double var1 = 1d;
@@ -914,7 +906,6 @@ class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164d() {
 	double var1 = 1d;
@@ -927,7 +918,6 @@ class ArithmeticTest {
     assertThat(executeExpression(expression, vars)).isEqualTo(result);
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164e() {
     String expression = "10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14";
@@ -939,7 +929,6 @@ class ArithmeticTest {
     assertThat(((Double) executeExpression(expression, vars)).floatValue()).isCloseTo((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14), within(0.01f));
   }
 
-  //@Disabled("DROOLS-6572 - Wrong value calculated")
   @Test
   void testJIRA164f() {
     String expression = "10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14";
@@ -1045,7 +1034,6 @@ class ArithmeticTest {
     }
   }
 
-  //@Disabled("DROOLS-6572 - Generates wrong code - missing symbol")
   @Test
   void testMathDec30() {
     Map<String, Object> params = new HashMap<>();

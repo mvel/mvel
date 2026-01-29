@@ -21,6 +21,7 @@ MVEL3 is a complete rewrite of MVEL. Instead of interpreting expressions at runt
 
 ### Known Limitations
 
+- Custom operators (e.g. `after`, `before`, `in`, `matches`) are not yet supported
 - Power operator (`**`) is not yet supported (DROOLS-6572)
 - Left shift operator (`<<<`) generates incorrect code
 - Method expression handling is not yet supported in some cases
