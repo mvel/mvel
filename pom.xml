@@ -132,7 +132,7 @@
                 <version>${maven-release-plugin.version}</version>
             </plugin>
 
-            <!-- finally, this javacc plugin will be removed -->
+            <!-- Legacy JavaCC parser - kept for compatibility during alpha. ANTLR4 is the primary parser. -->
             <plugin>
                 <groupId>com.helger.maven</groupId>
                 <artifactId>ph-javacc-maven-plugin</artifactId>
@@ -243,7 +243,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- probably we can/should remove drools dependency -->
+        <!-- Drools dependency - required for DrlToJavaRewriter, which is likely out of this project scope. Consider removing in a future release. -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>

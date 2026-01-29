@@ -35,6 +35,13 @@ import java.util.function.Function;
 
 import static org.mvel3.parser.Providers.provider;
 
+/**
+ * Parse DRLX expressions.
+ *
+ * @deprecated DRLX parsing is out of scope for MVEL and will be removed in future releases.
+ */
+
+@Deprecated(since = "3.0.0-alpha1", forRemoval = true)
 public class DrlxParser {
 
     private DrlxParser() {
