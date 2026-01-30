@@ -34,6 +34,8 @@ public enum LambdaRegistry {
     public static final Path DEFAULT_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
     private static final Path REGISTRY_FILE = Path.of(System.getProperty("mvel3.compiler.lambda.registry.file",
                                                                          DEFAULT_PERSISTENCE_PATH.resolve("lambda-registry.dat").toString()));
+
+    // This version has to be incremented when the registry file format changes
     private static final String REGISTRY_VERSION = "v1";
 
     static {
@@ -111,26 +113,38 @@ public enum LambdaRegistry {
                         targetInfo.methodName.equals(currentInfo.methodName) &&
                         targetInfo.parameterTypes.size() == currentInfo.parameterTypes.size()) {
                     // 3. method name, return type, and the number of parameters match found
-                    for (int i = 0; i < targetInfo.parameterTypes.size(); i++) {
-                        Class<?> targetParamType = targetInfo.parameterTypes.get(i);
-                        Class<?> currentParamType = currentInfo.parameterTypes.get(i);
-                        if (!targetParamType.isAssignableFrom(currentParamType)) {
-                            // current parameter type is not the same nor a subtype
-                            return false;
-                        }
+                    if (!isAllParamsAssignable(targetInfo, currentInfo)) {
+                        continue;
                     }
                     // 4. all parameter types are either same or subtypes
                     // No need to add to hashToKeys, because target is already there
-                    // Reuse the physical ID of the target
-                    RegistryEntry entry = new RegistryEntry(key, entriesByKey.get(target).physicalId);
-                    entriesByKey.put(key, entry);
-                    entriesByPhysicalId.put(entry.physicalId, entry);
-                    logicalToPhysical.put(logicalId, entry.physicalId);
+                    // Reuse the physical ID of the target by reusing the existing RegistryEntry
+                    RegistryEntry existingEntry = entriesByKey.get(target);
+                    if (existingEntry == null) {
+                        // Should not happen if targetLambdaKeys and entriesByKey are kept in sync,
+                        throw new IllegalStateException("Inconsistent state: RegistryEntry not found for existing LambdaKey");
+                    }
+                    entriesByKey.put(key, existingEntry);
+                    logicalToPhysical.put(logicalId, existingEntry.physicalId);
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private static boolean isAllParamsAssignable(LambdaKey.MethodSignatureInfo targetInfo, LambdaKey.MethodSignatureInfo currentInfo) {
+        boolean allParamsAssignable = true;
+        for (int i = 0; i < targetInfo.parameterTypes.size(); i++) {
+            Class<?> targetParamType = targetInfo.parameterTypes.get(i);
+            Class<?> currentParamType = currentInfo.parameterTypes.get(i);
+            if (!targetParamType.isAssignableFrom(currentParamType)) {
+                // current parameter type is not the same nor a subtype
+                allParamsAssignable = false;
+                break;
+            }
+        }
+        return allParamsAssignable;
     }
 
     public int getPhysicalId(int logicalId) {

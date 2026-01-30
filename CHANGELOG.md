@@ -24,7 +24,8 @@ MVEL3 is a complete rewrite of MVEL. Instead of interpreting expressions at runt
 - Custom operators (e.g. `after`, `before`, `in`, `matches`) are not yet supported
 - Power operator (`**`) is not yet supported (DROOLS-6572)
 - Left shift operator (`<<<`) generates incorrect code
-- Method expression handling is not yet supported in some cases
+- Method expression in modify parameter is not yet supported
+- Lambda extractor doesn't support generics and array yet
 - `JavaSymbolResolver` doesn't work with text blocks
 - `HalfBinaryExpr` rewriting is not implemented
 - Legacy JavaCC parser is included but being phased out in favor of ANTLR4

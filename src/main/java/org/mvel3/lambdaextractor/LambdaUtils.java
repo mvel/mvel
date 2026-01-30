@@ -62,6 +62,7 @@ public class LambdaUtils {
     private static Class<?> resolveType(Type type) {
         // this resolution relies on the mvel implementation that FQCN is retained in source code
         // to be generic resolution, SymbolResolver will be required, but it would be slow
+        // TODO: support generic types and arrays e.g. using Type.getCanonicalGenericsName()
         String fqcn = type.asString();
         if (PRIMITIVES.containsKey(fqcn)) {
             return PRIMITIVES.get(fqcn);
