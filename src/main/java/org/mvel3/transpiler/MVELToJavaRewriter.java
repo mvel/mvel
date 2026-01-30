@@ -79,9 +79,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 
 public class MVELToJavaRewriter {
+    private static final Logger logger = LoggerFactory.getLogger(MVELToJavaRewriter.class);
+
     public static class LanguageFeatures {
         public boolean autoWrapPrimitiveWithMethod = true;
     }
@@ -697,7 +702,7 @@ public class MVELToJavaRewriter {
             int callArgSize = methodCall.getArguments().size();
             if ( declrParamSize > 0) {
                 if ( methodDeclr.getName().startsWith("process")) {
-                    System.out.println(methodDeclr);
+                    logger.debug("methodDeclr: {}", methodDeclr);
                 }
                 isVariadic = methodDeclr.getLastParam().getType().isArray();
                 declrParamSize = isVariadic ? methodDeclr.getNumberOfParams()-1 : methodDeclr.getNumberOfParams();

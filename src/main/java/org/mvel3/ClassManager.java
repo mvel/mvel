@@ -56,7 +56,7 @@ public class ClassManager {
                     classes.put(entry.getKey(), c);
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Unbale to instantiate Lamda", e);
+                throw new RuntimeException("Unable to instantiate Lambda", e);
             }
         }
     }

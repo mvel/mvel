@@ -1,13 +1,29 @@
 package org.mvel3.lambdaextractor;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.type.Type;
 import org.mvel3.methodutils.Murmur3F;
 
 public class LambdaUtils {
+
+    private static final Map<String, Class<?>> PRIMITIVES = Map.of(
+            "boolean", boolean.class,
+            "byte", byte.class,
+            "short", short.class,
+            "int", int.class,
+            "long", long.class,
+            "float", float.class,
+            "double", double.class,
+            "char", char.class,
+            "void", void.class
+    );
 
     private LambdaUtils() {
         // Prevent instantiation
@@ -27,9 +43,42 @@ public class LambdaUtils {
      * Helper method to create a LambdaKey from a method declaration AST node
      */
     public static LambdaKey createLambdaKeyFromMethodDeclaration(MethodDeclaration methodDeclaration) {
-        MethodDeclaration normalized = VariableNameNormalizerVisitor.normalize(methodDeclaration);
-        String normalizedStr = normalized.toString();
-        return new LambdaKey(normalizedStr);
+        MethodDeclaration normalizedMethodDeclaration = VariableNameNormalizerVisitor.normalize(methodDeclaration);
+        String methodSignature = normalizedMethodDeclaration.getDeclarationAsString(true, true, true);
+        BlockStmt normalizedBody = normalizedMethodDeclaration.getBody().orElseThrow(() -> new IllegalStateException("MethodDeclaration has no body"));
+        String normalizedStr = normalizedBody.toString();
+        Type returnType = methodDeclaration.getType();
+        Class<?> returnClass = resolveType(returnType);
+        List<Class<?>> parameterTypes = methodDeclaration.getParameters().stream().<Class<?>>map(p -> resolveType(p.getType())).toList();
+        LambdaKey.MethodSignatureInfo methodSignatureInfo =
+                new LambdaKey.MethodSignatureInfo(
+                        returnClass,
+                        methodDeclaration.getNameAsString(),
+                        parameterTypes
+                );
+        return new LambdaKey(methodSignature, normalizedStr, methodSignatureInfo);
+    }
+
+    private static Class<?> resolveType(Type type) {
+        // this resolution relies on the mvel implementation that FQCN is retained in source code
+        // to be generic resolution, SymbolResolver will be required, but it would be slow
+        // TODO: support generic types and arrays e.g. using Type.getCanonicalGenericsName()
+        String fqcn = type.asString();
+        if (PRIMITIVES.containsKey(fqcn)) {
+            return PRIMITIVES.get(fqcn);
+        }
+        try {
+            return Class.forName(fqcn);
+        } catch (ClassNotFoundException e) {
+            try {
+                // replace the last `.` with `$` to handle inner class
+                int lastDot = fqcn.lastIndexOf('.');
+                String possibleInnerClassName = fqcn.substring(0, lastDot) + '$' + fqcn.substring(lastDot + 1);
+                return Class.forName(possibleInnerClassName);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex); // we may change this to a warning
+            }
+        }
     }
 
     /**

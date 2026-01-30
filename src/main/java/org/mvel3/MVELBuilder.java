@@ -187,7 +187,7 @@ public class MVELBuilder<C, W, O> {
 
     private String[] outVars = new String[0];
 
-    private String generatedClassName = "GeneratorEvaluaor__";
+    private String generatedClassName = "GeneratorEvaluator__";
 
     private String generatedMethodName = "eval";
 
@@ -263,7 +263,7 @@ public class MVELBuilder<C, W, O> {
 
     private MVELBuilder<C, W, O> outType(Type<O> outType) {
         if (outType.getClazz().isPrimitive()) {
-            throw new RuntimeException("Return type must match generics and cannot be a primiive");
+            throw new RuntimeException("Return type must match generics and cannot be a primitive");
         }
         this.outType = outType;
         return this;

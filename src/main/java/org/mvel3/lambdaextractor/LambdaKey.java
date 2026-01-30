@@ -1,17 +1,38 @@
 package org.mvel3.lambdaextractor;
 
+import java.util.List;
+
 public final class LambdaKey {
-    private final String normalisedSource;
 
-    private int hash; // murmur3 hash
+    private final String methodSignature;
+    private final String normalisedBody;
 
-    LambdaKey(String normalisedSource) {
-        this.normalisedSource = normalisedSource;
-        this.hash = LambdaUtils.calculateHash(normalisedSource);
+    private MethodSignatureInfo methodSignatureInfo;
+
+    private int hash; // murmur3 hash of normalisedBody
+
+    LambdaKey(String methodSignature, String normalisedBody) {
+        this.methodSignature = methodSignature;
+        this.normalisedBody = normalisedBody;
+        this.hash = LambdaUtils.calculateHash(normalisedBody);
     }
 
-    public String getNormalisedSource() {
-        return normalisedSource;
+    LambdaKey(String methodSignature, String normalisedBody, MethodSignatureInfo methodSignatureInfo) {
+        this(methodSignature, normalisedBody);
+        this.methodSignatureInfo = methodSignatureInfo;
+    }
+
+    public String getMethodSignature() {
+        return methodSignature;
+    }
+
+    public String getNormalisedBody() {
+        return normalisedBody;
+    }
+
+    // maybe change to Optional
+    public MethodSignatureInfo getMethodSignatureInfo() {
+        return methodSignatureInfo;
     }
 
     @Override
@@ -30,11 +51,29 @@ public final class LambdaKey {
             return false;
         }
         LambdaKey other = (LambdaKey) obj;
-        return normalisedSource.equals(other.normalisedSource);
+        return normalisedBody.equals(other.normalisedBody) && methodSignature.equals(other.methodSignature);
     }
 
     // test only
     void forceHash(int newHash) {
         this.hash = newHash;
+    }
+
+    public static class MethodSignatureInfo {
+
+        // omit modifiers and throws clause, because they don't affect in mvel use cases
+
+        Class<?> returnType;
+        String methodName;
+        List<Class<?>> parameterTypes;
+
+        MethodSignatureInfo(Class<?> returnType, String methodName, List<Class<?>> parameterTypes) {
+            this.returnType = returnType;
+            this.methodName = methodName;
+            this.parameterTypes = parameterTypes;
+        }
+
+        // We do not need "equals", because the comparison is done in LambdaKey.equals()
+        // This info is used for "subtype overload" analysis
     }
 }
