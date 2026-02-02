@@ -218,13 +218,13 @@
 
         <!-- javaparser needs to be a fork which contains mvel3 AST nodes -->
         <dependency>
-            <groupId>com.github.javaparser</groupId>
+            <groupId>org.mvel.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
             <version>${javaparser.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.github.javaparser</groupId>
+            <groupId>org.mvel.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
             <version>${javaparser.version}</version>
         </dependency>
