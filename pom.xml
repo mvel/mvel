@@ -10,6 +10,7 @@
     <version>3.0.0-SNAPSHOT</version>
 
     <name>mvel</name>
+    <url>https://github.com/mvel/mvel</url>
     <description>
         MVEL is a powerful expression language for Java-based applications.
         It provides a plethora of features and is suited for everything
@@ -30,6 +31,34 @@
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
+    <developers>
+        <developer>
+            <name>Mark Proctor</name>
+            <email>mdproctor@gmail.com</email>
+            <url>https://github.com/mdproctor</url>
+            <id>mdproctor</id>
+        </developer>
+        <developer>
+            <name>Mario Fusco</name>
+            <email>mario.fusco@gmail.com</email>
+            <url>https://github.com/mariofusco</url>
+            <id>mariofusco</id>
+        </developer>
+        <developer>
+            <name>Toshiya Kobayashi</name>
+            <email>toshiyakobayashi@gmail.com</email>
+            <url>https://github.com/tkobayas</url>
+            <id>tkobayas</id>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>MVEL Project Contributors</name>
+            <url>https://github.com/mvel/mvel/graphs/contributors</url>
+        </contributor>
+    </contributors>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
