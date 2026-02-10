@@ -32,6 +32,8 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.BreakStmt;
+import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -295,6 +297,39 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(toString(conditionalExpr.getCondition())).isEqualTo("x > 0");
         assertThat(toString(conditionalExpr.getThenExpr())).isEqualTo("x");
         assertThat(toString(conditionalExpr.getElseExpr())).isEqualTo("-x");
+    }
+
+    @Test
+    void testBreakStatement() {
+        String block = "{ for (int i = 0; i < 10; i++) { break; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        // The break is inside the for loop's body block
+        BlockStmt forBody = (BlockStmt) result.getResult().get().getStatement(0).asForStmt().getBody();
+        BreakStmt breakStmt = (BreakStmt) forBody.getStatement(0);
+        assertThat(breakStmt.getLabel()).isEmpty();
+    }
+
+    @Test
+    void testBreakWithLabel() {
+        String block = "{ outer: for (int i = 0; i < 10; i++) { break outer; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+    }
+
+    @Test
+    void testContinueStatement() {
+        String block = "{ for (int i = 0; i < 10; i++) { continue; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        BlockStmt forBody = (BlockStmt) result.getResult().get().getStatement(0).asForStmt().getBody();
+        ContinueStmt continueStmt = (ContinueStmt) forBody.getStatement(0);
+        assertThat(continueStmt.getLabel()).isEmpty();
     }
 
     @Test

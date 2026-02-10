@@ -72,7 +72,9 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
@@ -1222,6 +1224,22 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             ThrowStmt throwStmt = new ThrowStmt(expr);
             throwStmt.setTokenRange(createTokenRange(ctx));
             return throwStmt;
+        } else if (ctx.BREAK() != null) {
+            // Handle break statement: BREAK identifier? ';'
+            BreakStmt breakStmt = new BreakStmt();
+            if (ctx.identifier() != null) {
+                breakStmt.setLabel(new SimpleName(ctx.identifier().getText()));
+            }
+            breakStmt.setTokenRange(createTokenRange(ctx));
+            return breakStmt;
+        } else if (ctx.CONTINUE() != null) {
+            // Handle continue statement: CONTINUE identifier? ';'
+            ContinueStmt continueStmt = new ContinueStmt();
+            if (ctx.identifier() != null) {
+                continueStmt.setLabel(new SimpleName(ctx.identifier().getText()));
+            }
+            continueStmt.setTokenRange(createTokenRange(ctx));
+            return continueStmt;
         }
         // For now, fall back to default behavior
         return visitChildren(ctx);
