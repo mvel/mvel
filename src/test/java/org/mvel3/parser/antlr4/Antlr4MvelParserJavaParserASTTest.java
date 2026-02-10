@@ -26,6 +26,7 @@ import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.junit.jupiter.api.Test;
@@ -157,6 +158,40 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(instanceOfExpr.getPattern()).isPresent();
         assertThat(instanceOfExpr.getName()).isPresent();
         assertThat(instanceOfExpr.getName().get().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testMethodReferenceWithExpression() {
+        String expr = "System.out::println";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodReferenceExpr methodRef = (MethodReferenceExpr) result.getResult().get();
+        assertThat(toString(methodRef.getScope())).isEqualTo("System.out");
+        assertThat(methodRef.getIdentifier()).isEqualTo("println");
+    }
+
+    @Test
+    void testMethodReferenceWithType() {
+        String expr = "String::valueOf";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodReferenceExpr methodRef = (MethodReferenceExpr) result.getResult().get();
+        assertThat(methodRef.getIdentifier()).isEqualTo("valueOf");
+    }
+
+    @Test
+    void testConstructorReference() {
+        String expr = "ArrayList::new";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodReferenceExpr methodRef = (MethodReferenceExpr) result.getResult().get();
+        assertThat(methodRef.getIdentifier()).isEqualTo("new");
     }
 
     @Test

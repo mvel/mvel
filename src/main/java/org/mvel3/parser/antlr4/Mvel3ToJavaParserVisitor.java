@@ -58,6 +58,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -65,6 +66,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
+import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
@@ -439,6 +441,41 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             instanceOfExpr.setTokenRange(createTokenRange(ctx));
             return instanceOfExpr;
         }
+    }
+
+    @Override
+    public Node visitMethodReferenceExpression(Mvel3Parser.MethodReferenceExpressionContext ctx) {
+        Expression scope;
+        if (ctx.expression() != null) {
+            // expression '::' typeArguments? identifier
+            scope = (Expression) visit(ctx.expression());
+        } else if (ctx.classType() != null) {
+            // classType '::' typeArguments? NEW
+            Type type = (Type) visit(ctx.classType());
+            scope = new TypeExpr(type);
+        } else if (ctx.typeType() != null) {
+            // typeType '::' (typeArguments? identifier | NEW)
+            Type type = (Type) visit(ctx.typeType());
+            scope = new TypeExpr(type);
+        } else {
+            throw new IllegalArgumentException("Unsupported method reference: " + ctx.getText());
+        }
+
+        // Identifier is the method name, or "new" for constructor references
+        String identifier = ctx.NEW() != null ? "new" : ctx.identifier().getText();
+
+        // Handle type arguments if present
+        NodeList<Type> typeArguments = null;
+        if (ctx.typeArguments() != null) {
+            typeArguments = new NodeList<>();
+            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
+                typeArguments.add((Type) visit(typeArgCtx));
+            }
+        }
+
+        MethodReferenceExpr methodRef = new MethodReferenceExpr(scope, typeArguments, identifier);
+        methodRef.setTokenRange(createTokenRange(ctx));
+        return methodRef;
     }
 
     @Override
@@ -1619,6 +1656,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    @Override
+    public Node visitClassType(Mvel3Parser.ClassTypeContext ctx) {
+        // classType: (classOrInterfaceType '.')? annotation* identifier typeArguments?
+        ClassOrInterfaceType scope = null;
+        if (ctx.classOrInterfaceType() != null) {
+            scope = (ClassOrInterfaceType) visit(ctx.classOrInterfaceType());
+        }
+
+        String name = ctx.identifier().getText();
+        ClassOrInterfaceType type = new ClassOrInterfaceType(scope, name);
+
+        if (ctx.typeArguments() != null) {
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
+                typeArgs.add((Type) visit(typeArgCtx));
+            }
+            type.setTypeArguments(typeArgs);
+        }
+
+        type.setTokenRange(createTokenRange(ctx));
+        return type;
     }
 
     @Override
