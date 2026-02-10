@@ -72,6 +72,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
@@ -81,7 +82,9 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
+import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
@@ -1186,8 +1189,33 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             returnStmt.setTokenRange(createTokenRange(ctx));
             return returnStmt;
+        } else if (ctx.TRY() != null) {
+            // Handle try statement
+            // Grammar: TRY block (catchClause+ finallyBlock? | finallyBlock)
+            //        | TRY resourceSpecification block catchClause* finallyBlock?
+            NodeList<Expression> resources = new NodeList<>();
+            if (ctx.resourceSpecification() != null) {
+                resources = parseResources(ctx.resourceSpecification());
+            }
+
+            BlockStmt tryBlock = (BlockStmt) visit(ctx.block());
+
+            NodeList<CatchClause> catchClauses = new NodeList<>();
+            if (ctx.catchClause() != null) {
+                for (Mvel3Parser.CatchClauseContext catchCtx : ctx.catchClause()) {
+                    catchClauses.add(parseCatchClause(catchCtx));
+                }
+            }
+
+            BlockStmt finallyBlock = null;
+            if (ctx.finallyBlock() != null) {
+                finallyBlock = (BlockStmt) visit(ctx.finallyBlock().block());
+            }
+
+            TryStmt tryStmt = new TryStmt(resources, tryBlock, catchClauses, finallyBlock);
+            tryStmt.setTokenRange(createTokenRange(ctx));
+            return tryStmt;
         }
-        // TODO: Handle other statement types as needed (TRY, THROW, BREAK, CONTINUE, etc.)
         // For now, fall back to default behavior
         return visitChildren(ctx);
     }
@@ -1708,6 +1736,72 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    private CatchClause parseCatchClause(Mvel3Parser.CatchClauseContext ctx) {
+        // catchClause: CATCH '(' variableModifier* catchType identifier ')' block
+        // catchType: qualifiedName ('|' qualifiedName)*
+        ModifiersAnnotations modifiersAnnotations = parseVariableModifiers(ctx.variableModifier());
+
+        // Parse catch type (may be a union type like IOException | NullPointerException)
+        Mvel3Parser.CatchTypeContext catchTypeCtx = ctx.catchType();
+        Type catchType;
+        if (catchTypeCtx.qualifiedName().size() == 1) {
+            // Single type
+            catchType = new ClassOrInterfaceType(null, catchTypeCtx.qualifiedName(0).getText());
+        } else {
+            // Union type: IOException | NullPointerException
+            NodeList<ReferenceType> types = new NodeList<>();
+            for (Mvel3Parser.QualifiedNameContext qn : catchTypeCtx.qualifiedName()) {
+                types.add(new ClassOrInterfaceType(null, qn.getText()));
+            }
+            catchType = new UnionType(types);
+        }
+
+        SimpleName name = new SimpleName(ctx.identifier().getText());
+        Parameter parameter = new Parameter(modifiersAnnotations.modifiers,
+                modifiersAnnotations.annotations,
+                catchType,
+                false,
+                new NodeList<>(),
+                name);
+        parameter.setTokenRange(createTokenRange(ctx));
+
+        BlockStmt body = (BlockStmt) visit(ctx.block());
+
+        CatchClause catchClause = new CatchClause(parameter, body);
+        catchClause.setTokenRange(createTokenRange(ctx));
+        return catchClause;
+    }
+
+    private NodeList<Expression> parseResources(Mvel3Parser.ResourceSpecificationContext ctx) {
+        NodeList<Expression> resources = new NodeList<>();
+        if (ctx.resources() != null) {
+            for (Mvel3Parser.ResourceContext resourceCtx : ctx.resources().resource()) {
+                if (resourceCtx.qualifiedName() != null && resourceCtx.expression() == null) {
+                    // Simple name reference: try (existingResource) { ... }
+                    resources.add(new NameExpr(resourceCtx.qualifiedName().getText()));
+                } else {
+                    // Variable declaration: try (Type var = expr) or try (var x = expr)
+                    Type type;
+                    String varName;
+                    if (resourceCtx.VAR() != null) {
+                        type = new VarType();
+                        varName = resourceCtx.identifier().getText();
+                    } else {
+                        type = (Type) visit(resourceCtx.classOrInterfaceType());
+                        varName = resourceCtx.variableDeclaratorId().identifier().getText();
+                    }
+                    VariableDeclarator declarator = new VariableDeclarator(type, varName);
+                    Expression initializer = (Expression) visit(resourceCtx.expression());
+                    declarator.setInitializer(initializer);
+                    VariableDeclarationExpr varDecl = new VariableDeclarationExpr(declarator);
+                    varDecl.setTokenRange(createTokenRange(resourceCtx));
+                    resources.add(varDecl);
+                }
+            }
+        }
+        return resources;
     }
 
     @Override

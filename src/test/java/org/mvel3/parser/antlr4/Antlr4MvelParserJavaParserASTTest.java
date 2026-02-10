@@ -31,6 +31,8 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.junit.jupiter.api.Test;
@@ -292,6 +294,44 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(toString(conditionalExpr.getCondition())).isEqualTo("x > 0");
         assertThat(toString(conditionalExpr.getThenExpr())).isEqualTo("x");
         assertThat(toString(conditionalExpr.getElseExpr())).isEqualTo("-x");
+    }
+
+    @Test
+    void testTryCatchFinally() {
+        String block = "{ try { x = 1; } catch (Exception e) { x = 2; } finally { x = 3; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
+        assertThat(tryStmt.getCatchClauses()).hasSize(1);
+        assertThat(tryStmt.getCatchClauses().get(0).getParameter().getNameAsString()).isEqualTo("e");
+        assertThat(tryStmt.getCatchClauses().get(0).getParameter().getType().asString()).isEqualTo("Exception");
+        assertThat(tryStmt.getFinallyBlock()).isPresent();
+    }
+
+    @Test
+    void testTryMultiCatch() {
+        String block = "{ try { x = 1; } catch (IOException | NullPointerException e) { x = 2; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
+        assertThat(tryStmt.getCatchClauses()).hasSize(1);
+        assertThat(tryStmt.getCatchClauses().get(0).getParameter().getType().asString()).isEqualTo("IOException|NullPointerException");
+    }
+
+    @Test
+    void testTryWithResources() {
+        String block = "{ try (InputStream is = new FileInputStream(\"f\")) { x = 1; } catch (Exception e) { x = 2; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
+        assertThat(tryStmt.getResources()).hasSize(1);
+        assertThat(tryStmt.getCatchClauses()).hasSize(1);
     }
 
     private String toString(Node n) {
