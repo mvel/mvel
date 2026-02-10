@@ -25,6 +25,7 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.junit.jupiter.api.Test;
@@ -129,6 +130,33 @@ class Antlr4MvelParserJavaParserASTTest {
         TemporalLiteralChunkExpr chunk1 = (TemporalLiteralChunkExpr) temporalLiteralExpr.getChunks().get(1);
         assertThat(chunk1.getValue()).isEqualTo(5);
         assertThat(chunk1.getTimeUnit()).isEqualTo(TimeUnit.SECONDS);
+    }
+
+    @Test
+    void testInstanceOf() {
+        String expr = "obj instanceof String";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        InstanceOfExpr instanceOfExpr = (InstanceOfExpr) result.getResult().get();
+        assertThat(toString(instanceOfExpr.getExpression())).isEqualTo("obj");
+        assertThat(instanceOfExpr.getType().asString()).isEqualTo("String");
+        assertThat(instanceOfExpr.getPattern()).isEmpty();
+    }
+
+    @Test
+    void testInstanceOfPatternMatching() {
+        String expr = "obj instanceof String s";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        InstanceOfExpr instanceOfExpr = (InstanceOfExpr) result.getResult().get();
+        assertThat(toString(instanceOfExpr.getExpression())).isEqualTo("obj");
+        assertThat(instanceOfExpr.getPattern()).isPresent();
+        assertThat(instanceOfExpr.getName()).isPresent();
+        assertThat(instanceOfExpr.getName().get().asString()).isEqualTo("s");
     }
 
     @Test

@@ -52,6 +52,8 @@ import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.InstanceOfExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
@@ -403,6 +405,40 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         ConditionalExpr conditionalExpr = new ConditionalExpr(condition, thenExpr, elseExpr);
         conditionalExpr.setTokenRange(createTokenRange(ctx));
         return conditionalExpr;
+    }
+
+    @Override
+    public Node visitInstanceOfOperatorExpression(Mvel3Parser.InstanceOfOperatorExpressionContext ctx) {
+        Expression expression = (Expression) visit(ctx.expression());
+
+        if (ctx.pattern() != null) {
+            // Java 14+ pattern matching: expr instanceof Type varName
+            Mvel3Parser.PatternContext patternCtx = ctx.pattern();
+            ReferenceType type = (ReferenceType) visit(patternCtx.typeType());
+            SimpleName name = new SimpleName(patternCtx.identifier().getText());
+
+            NodeList<Modifier> modifiers = new NodeList<>();
+            if (patternCtx.variableModifier() != null) {
+                for (Mvel3Parser.VariableModifierContext modCtx : patternCtx.variableModifier()) {
+                    if (modCtx.FINAL() != null) {
+                        modifiers.add(Modifier.finalModifier());
+                    }
+                }
+            }
+
+            PatternExpr patternExpr = new PatternExpr(modifiers, type, name);
+            patternExpr.setTokenRange(createTokenRange(patternCtx));
+
+            InstanceOfExpr instanceOfExpr = new InstanceOfExpr(expression, type, patternExpr);
+            instanceOfExpr.setTokenRange(createTokenRange(ctx));
+            return instanceOfExpr;
+        } else {
+            // Classic instanceof: expr instanceof Type
+            ReferenceType type = (ReferenceType) visit(ctx.typeType());
+            InstanceOfExpr instanceOfExpr = new InstanceOfExpr(expression, type);
+            instanceOfExpr.setTokenRange(createTokenRange(ctx));
+            return instanceOfExpr;
+        }
     }
 
     @Override
