@@ -46,6 +46,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
@@ -550,8 +551,22 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             ThisExpr thisExpr = new ThisExpr();
             thisExpr.setTokenRange(createTokenRange(ctx));
             return thisExpr;
+        } else if (ctx.SUPER() != null) {
+            // super as primary expression
+            return new com.github.javaparser.ast.expr.SuperExpr();
+        } else if (ctx.typeTypeOrVoid() != null && ctx.CLASS() != null) {
+            // Class literal: typeTypeOrVoid '.' CLASS  (e.g. String.class, int.class, void.class)
+            Type type;
+            if (ctx.typeTypeOrVoid().VOID() != null) {
+                type = new VoidType();
+            } else {
+                type = (Type) visit(ctx.typeTypeOrVoid().typeType());
+            }
+            ClassExpr classExpr = new ClassExpr(type);
+            classExpr.setTokenRange(createTokenRange(ctx));
+            return classExpr;
         }
-        
+
         // Handle other primary cases that might be needed
         return visitChildren(ctx);
     }

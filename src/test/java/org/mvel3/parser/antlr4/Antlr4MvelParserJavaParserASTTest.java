@@ -22,6 +22,7 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -158,6 +159,39 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(instanceOfExpr.getPattern()).isPresent();
         assertThat(instanceOfExpr.getName()).isPresent();
         assertThat(instanceOfExpr.getName().get().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testClassLiteral() {
+        String expr = "String.class";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ClassExpr classExpr = (ClassExpr) result.getResult().get();
+        assertThat(classExpr.getType().asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testPrimitiveClassLiteral() {
+        String expr = "int.class";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ClassExpr classExpr = (ClassExpr) result.getResult().get();
+        assertThat(classExpr.getType().asString()).isEqualTo("int");
+    }
+
+    @Test
+    void testVoidClassLiteral() {
+        String expr = "void.class";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ClassExpr classExpr = (ClassExpr) result.getResult().get();
+        assertThat(classExpr.getType().asString()).isEqualTo("void");
     }
 
     @Test
