@@ -22,6 +22,9 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -159,6 +162,56 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(instanceOfExpr.getPattern()).isPresent();
         assertThat(instanceOfExpr.getName()).isPresent();
         assertThat(instanceOfExpr.getName().get().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testHexLiteral() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("0xFF");
+        assertThat(result.getResult()).isPresent();
+
+        IntegerLiteralExpr intExpr = (IntegerLiteralExpr) result.getResult().get();
+        assertThat(intExpr.getValue()).isEqualTo("0xFF");
+    }
+
+    @Test
+    void testHexLongLiteral() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("0xFFL");
+        assertThat(result.getResult()).isPresent();
+
+        LongLiteralExpr longExpr = (LongLiteralExpr) result.getResult().get();
+        assertThat(longExpr.getValue()).isEqualTo("0xFFL");
+    }
+
+    @Test
+    void testOctalLiteral() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("077");
+        assertThat(result.getResult()).isPresent();
+
+        IntegerLiteralExpr intExpr = (IntegerLiteralExpr) result.getResult().get();
+        assertThat(intExpr.getValue()).isEqualTo("077");
+    }
+
+    @Test
+    void testBinaryLiteral() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("0b1010");
+        assertThat(result.getResult()).isPresent();
+
+        IntegerLiteralExpr intExpr = (IntegerLiteralExpr) result.getResult().get();
+        assertThat(intExpr.getValue()).isEqualTo("0b1010");
+    }
+
+    @Test
+    void testHexFloatLiteral() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("0x1.0p10");
+        assertThat(result.getResult()).isPresent();
+
+        DoubleLiteralExpr doubleExpr = (DoubleLiteralExpr) result.getResult().get();
+        assertThat(doubleExpr.getValue()).isEqualTo("0x1.0p10");
     }
 
     @Test

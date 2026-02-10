@@ -774,8 +774,45 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 integerLiteral.setTokenRange(createTokenRange(ctx));
                 return integerLiteral;
             }
+        } else if (ctx.HEX_LITERAL() != null) {
+            String text = ctx.HEX_LITERAL().getText();
+            if (text.endsWith("L") || text.endsWith("l")) {
+                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
+                longLiteral.setTokenRange(createTokenRange(ctx));
+                return longLiteral;
+            } else {
+                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
+                integerLiteral.setTokenRange(createTokenRange(ctx));
+                return integerLiteral;
+            }
+        } else if (ctx.OCT_LITERAL() != null) {
+            String text = ctx.OCT_LITERAL().getText();
+            if (text.endsWith("L") || text.endsWith("l")) {
+                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
+                longLiteral.setTokenRange(createTokenRange(ctx));
+                return longLiteral;
+            } else {
+                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
+                integerLiteral.setTokenRange(createTokenRange(ctx));
+                return integerLiteral;
+            }
+        } else if (ctx.BINARY_LITERAL() != null) {
+            String text = ctx.BINARY_LITERAL().getText();
+            if (text.endsWith("L") || text.endsWith("l")) {
+                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
+                longLiteral.setTokenRange(createTokenRange(ctx));
+                return longLiteral;
+            } else {
+                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
+                integerLiteral.setTokenRange(createTokenRange(ctx));
+                return integerLiteral;
+            }
         } else if (ctx.FLOAT_LITERAL() != null) {
             DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
+            doubleLiteral.setTokenRange(createTokenRange(ctx));
+            return doubleLiteral;
+        } else if (ctx.HEX_FLOAT_LITERAL() != null) {
+            DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.HEX_FLOAT_LITERAL().getText());
             doubleLiteral.setTokenRange(createTokenRange(ctx));
             return doubleLiteral;
         } else if (ctx.BOOL_LITERAL() != null) {
