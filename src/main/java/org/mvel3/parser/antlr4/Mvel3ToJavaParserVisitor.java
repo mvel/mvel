@@ -82,6 +82,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.type.UnionType;
@@ -1215,6 +1216,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             TryStmt tryStmt = new TryStmt(resources, tryBlock, catchClauses, finallyBlock);
             tryStmt.setTokenRange(createTokenRange(ctx));
             return tryStmt;
+        } else if (ctx.THROW() != null) {
+            // Handle throw statement: THROW expression ';'
+            Expression expr = (Expression) visit(ctx.expression(0));
+            ThrowStmt throwStmt = new ThrowStmt(expr);
+            throwStmt.setTokenRange(createTokenRange(ctx));
+            return throwStmt;
         }
         // For now, fall back to default behavior
         return visitChildren(ctx);

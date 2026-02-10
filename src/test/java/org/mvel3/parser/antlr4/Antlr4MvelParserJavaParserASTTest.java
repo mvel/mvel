@@ -32,6 +32,7 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
@@ -294,6 +295,17 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(toString(conditionalExpr.getCondition())).isEqualTo("x > 0");
         assertThat(toString(conditionalExpr.getThenExpr())).isEqualTo("x");
         assertThat(toString(conditionalExpr.getElseExpr())).isEqualTo("-x");
+    }
+
+    @Test
+    void testThrowStatement() {
+        String block = "{ throw new RuntimeException(\"error\"); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        ThrowStmt throwStmt = (ThrowStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(throwStmt.getExpression())).isEqualTo("new RuntimeException(\"error\")");
     }
 
     @Test
