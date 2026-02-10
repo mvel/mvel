@@ -47,6 +47,7 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -391,6 +392,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             case ">>>=": return AssignExpr.Operator.UNSIGNED_RIGHT_SHIFT;
             default: return null;
         }
+    }
+
+    @Override
+    public Node visitTernaryExpression(Mvel3Parser.TernaryExpressionContext ctx) {
+        Expression condition = (Expression) visit(ctx.expression(0));
+        Expression thenExpr = (Expression) visit(ctx.expression(1));
+        Expression elseExpr = (Expression) visit(ctx.expression(2));
+
+        ConditionalExpr conditionalExpr = new ConditionalExpr(condition, thenExpr, elseExpr);
+        conditionalExpr.setTokenRange(createTokenRange(ctx));
+        return conditionalExpr;
     }
 
     @Override

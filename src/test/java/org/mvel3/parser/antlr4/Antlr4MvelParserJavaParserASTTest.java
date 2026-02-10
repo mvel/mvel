@@ -22,6 +22,7 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -128,6 +129,19 @@ class Antlr4MvelParserJavaParserASTTest {
         TemporalLiteralChunkExpr chunk1 = (TemporalLiteralChunkExpr) temporalLiteralExpr.getChunks().get(1);
         assertThat(chunk1.getValue()).isEqualTo(5);
         assertThat(chunk1.getTimeUnit()).isEqualTo(TimeUnit.SECONDS);
+    }
+
+    @Test
+    void testTernaryExpression() {
+        String expr = "x > 0 ? x : -x";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ConditionalExpr conditionalExpr = (ConditionalExpr) result.getResult().get();
+        assertThat(toString(conditionalExpr.getCondition())).isEqualTo("x > 0");
+        assertThat(toString(conditionalExpr.getThenExpr())).isEqualTo("x");
+        assertThat(toString(conditionalExpr.getElseExpr())).isEqualTo("-x");
     }
 
     private String toString(Node n) {
