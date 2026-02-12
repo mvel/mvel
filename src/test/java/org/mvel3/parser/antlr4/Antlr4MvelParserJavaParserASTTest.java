@@ -30,6 +30,7 @@ import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
@@ -381,6 +382,36 @@ class Antlr4MvelParserJavaParserASTTest {
         TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
         assertThat(tryStmt.getResources()).hasSize(1);
         assertThat(tryStmt.getCatchClauses()).hasSize(1);
+    }
+
+    @Test
+    void testExplicitGenericInvocation() {
+        // expr.<Type>method(args)
+        String expr = "list.<String>stream()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("stream");
+        assertThat(toString(methodCall.getScope().get())).isEqualTo("list");
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(1);
+        assertThat(methodCall.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testExplicitGenericInvocationMultipleTypeArgs() {
+        // expr.<K, V>method(args)
+        String expr = "map.<String, Integer>entrySet()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("entrySet");
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(2);
     }
 
     @Test

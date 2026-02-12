@@ -546,8 +546,31 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // expression.new InnerClass()
             // TODO: Implement inner class creation
             throw new UnsupportedOperationException("Inner class creation not yet implemented");
+        } else if (ctx.explicitGenericInvocation() != null) {
+            // expression.<Type>method(args) — explicit generic invocation
+            Mvel3Parser.ExplicitGenericInvocationContext egiCtx = ctx.explicitGenericInvocation();
+
+            // Parse type arguments from nonWildcardTypeArguments: '<' typeList '>'
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeTypeContext typeCtx : egiCtx.nonWildcardTypeArguments().typeList().typeType()) {
+                typeArgs.add((Type) visit(typeCtx));
+            }
+
+            Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = egiCtx.explicitGenericInvocationSuffix();
+            if (suffixCtx.identifier() != null) {
+                // <Type>method(args)
+                String methodName = suffixCtx.identifier().getText();
+                NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                MethodCallExpr methodCall = new MethodCallExpr(scope, typeArgs, methodName, args);
+                methodCall.setTokenRange(createTokenRange(ctx));
+                return methodCall;
+            } else if (suffixCtx.SUPER() != null) {
+                // <Type>super(args) or <Type>super.method(args)
+                // TODO: Handle super suffix with type arguments
+                throw new UnsupportedOperationException("Generic super invocation not yet implemented");
+            }
         }
-        
+
         throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
