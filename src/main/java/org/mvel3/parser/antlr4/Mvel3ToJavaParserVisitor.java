@@ -84,7 +84,9 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.ThrowStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.type.UnionType;
@@ -448,6 +450,31 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             instanceOfExpr.setTokenRange(createTokenRange(ctx));
             return instanceOfExpr;
         }
+    }
+
+    @Override
+    public Node visitExpressionSwitch(Mvel3Parser.ExpressionSwitchContext ctx) {
+        return visit(ctx.switchExpression());
+    }
+
+    @Override
+    public Node visitSwitchExpression(Mvel3Parser.SwitchExpressionContext ctx) {
+        // switchExpression: SWITCH parExpression '{' switchLabeledRule* '}'
+        Expression selector = (Expression) visit(ctx.parExpression().expression());
+
+        NodeList<SwitchEntry> entries = new NodeList<>();
+        if (ctx.switchLabeledRule() != null) {
+            for (Mvel3Parser.SwitchLabeledRuleContext ruleCtx : ctx.switchLabeledRule()) {
+                SwitchEntry entry = processSwitchLabeledRule(ruleCtx);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            }
+        }
+
+        SwitchExpr switchExpr = new SwitchExpr(selector, entries);
+        switchExpr.setTokenRange(createTokenRange(ctx));
+        return switchExpr;
     }
 
     @Override
@@ -1240,6 +1267,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             continueStmt.setTokenRange(createTokenRange(ctx));
             return continueStmt;
+        } else if (ctx.switchExpression() != null) {
+            // Handle switch expression used as statement: switchExpression ';'?
+            SwitchExpr switchExpr = (SwitchExpr) visit(ctx.switchExpression());
+            ExpressionStmt exprStmt = new ExpressionStmt(switchExpr);
+            exprStmt.setTokenRange(createTokenRange(ctx));
+            return exprStmt;
         }
         // For now, fall back to default behavior
         return visitChildren(ctx);
@@ -1761,6 +1794,83 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    private SwitchEntry processSwitchLabeledRule(Mvel3Parser.SwitchLabeledRuleContext ruleCtx) {
+        // switchLabeledRule: CASE (expressionList | NULL_LITERAL | guardedPattern) (ARROW | COLON) switchRuleOutcome
+        //                 | DEFAULT (ARROW | COLON) switchRuleOutcome
+
+        NodeList<Expression> labels = new NodeList<>();
+        boolean isArrow = ruleCtx.ARROW() != null;
+
+        if (ruleCtx.CASE() != null) {
+            if (ruleCtx.expressionList() != null) {
+                // case expr1, expr2, ... ->
+                for (Mvel3Parser.ExpressionContext exprCtx : ruleCtx.expressionList().expression()) {
+                    labels.add((Expression) visit(exprCtx));
+                }
+            } else if (ruleCtx.NULL_LITERAL() != null) {
+                labels.add(new NullLiteralExpr());
+            }
+            // TODO: Handle guardedPattern if needed
+        }
+        // DEFAULT has empty labels
+
+        // Determine entry type and process switchRuleOutcome
+        Mvel3Parser.SwitchRuleOutcomeContext outcomeCtx = ruleCtx.switchRuleOutcome();
+        NodeList<Statement> statements = new NodeList<>();
+        SwitchEntry.Type entryType;
+
+        if (outcomeCtx.block() != null) {
+            entryType = isArrow ? SwitchEntry.Type.BLOCK : SwitchEntry.Type.STATEMENT_GROUP;
+            BlockStmt block = (BlockStmt) visit(outcomeCtx.block());
+            statements.addAll(block.getStatements());
+        } else {
+            // blockStatement*
+            if (isArrow) {
+                // For arrow cases with a single expression, determine the type
+                if (outcomeCtx.blockStatement() != null && outcomeCtx.blockStatement().size() == 1) {
+                    Node node = visit(outcomeCtx.blockStatement(0));
+                    if (node instanceof Statement) {
+                        Statement stmt = (Statement) node;
+                        if (stmt instanceof ThrowStmt) {
+                            entryType = SwitchEntry.Type.THROWS_STATEMENT;
+                        } else if (stmt instanceof ExpressionStmt) {
+                            entryType = SwitchEntry.Type.EXPRESSION;
+                        } else {
+                            entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                        }
+                        statements.add(stmt);
+                    } else {
+                        entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                    }
+                } else {
+                    entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                    if (outcomeCtx.blockStatement() != null) {
+                        for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
+                            Node node = visit(blockStmtCtx);
+                            if (node instanceof Statement) {
+                                statements.add((Statement) node);
+                            }
+                        }
+                    }
+                }
+            } else {
+                entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                if (outcomeCtx.blockStatement() != null) {
+                    for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
+                        Node node = visit(blockStmtCtx);
+                        if (node instanceof Statement) {
+                            statements.add((Statement) node);
+                        }
+                    }
+                }
+            }
+        }
+
+        SwitchEntry entry = new SwitchEntry(labels, entryType, statements);
+        entry.setTokenRange(createTokenRange(ruleCtx));
+        return entry;
     }
 
     private CatchClause parseCatchClause(Mvel3Parser.CatchClauseContext ctx) {
