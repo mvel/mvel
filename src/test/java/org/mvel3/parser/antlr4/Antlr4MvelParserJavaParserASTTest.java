@@ -386,6 +386,33 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testSuperSuffixMethodCall() {
+        // Outer.super.method()
+        String expr = "Outer.super.toString()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("toString");
+        assertThat(methodCall.getScope()).isPresent();
+        assertThat(toString(methodCall.getScope().get())).isEqualTo("Outer.super");
+    }
+
+    @Test
+    void testSuperSuffixFieldAccess() {
+        // Outer.super.field
+        String expr = "Outer.super.value";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        FieldAccessExpr fieldAccess = (FieldAccessExpr) result.getResult().get();
+        assertThat(fieldAccess.getNameAsString()).isEqualTo("value");
+        assertThat(toString(fieldAccess.getScope())).isEqualTo("Outer.super");
+    }
+
+    @Test
     void testInnerClassCreation() {
         // expr.new Inner(args)
         String expr = "outer.new Inner(1, 2)";

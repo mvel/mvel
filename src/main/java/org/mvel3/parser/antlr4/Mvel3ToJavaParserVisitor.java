@@ -559,9 +559,46 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             fieldAccess.setTokenRange(createTokenRange(ctx));
             return fieldAccess;
         } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
-            // expression.super.something
-            // TODO: Implement super handling
-            throw new UnsupportedOperationException("Super references not yet implemented");
+            // expression.super(args) or expression.super.method(args) or expression.super.field
+            Mvel3Parser.SuperSuffixContext suffixCtx = ctx.superSuffix();
+
+            // Build SuperExpr with the scope as type name (e.g., Outer.super)
+            // The scope expression should be a name (e.g., NameExpr("Outer"))
+            Name typeName = new Name(scope.toString());
+            com.github.javaparser.ast.expr.SuperExpr superExpr = new com.github.javaparser.ast.expr.SuperExpr(typeName);
+
+            if (suffixCtx.arguments() != null && suffixCtx.identifier() == null) {
+                // expression.super(args) — super constructor invocation
+                // Represented as MethodCallExpr with super as scope
+                NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                MethodCallExpr methodCall = new MethodCallExpr(superExpr, "super");
+                methodCall.setArguments(args);
+                methodCall.setTokenRange(createTokenRange(ctx));
+                return methodCall;
+            } else if (suffixCtx.identifier() != null) {
+                String memberName = suffixCtx.identifier().getText();
+                if (suffixCtx.arguments() != null) {
+                    // expression.super.method(args)
+                    NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                    MethodCallExpr methodCall = new MethodCallExpr(superExpr, memberName);
+                    methodCall.setArguments(args);
+                    // Handle type arguments if present
+                    if (suffixCtx.typeArguments() != null) {
+                        NodeList<Type> typeArgs = new NodeList<>();
+                        for (Mvel3Parser.TypeArgumentContext typeArgCtx : suffixCtx.typeArguments().typeArgument()) {
+                            typeArgs.add((Type) visit(typeArgCtx));
+                        }
+                        methodCall.setTypeArguments(typeArgs);
+                    }
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                } else {
+                    // expression.super.field
+                    FieldAccessExpr fieldAccess = new FieldAccessExpr(superExpr, memberName);
+                    fieldAccess.setTokenRange(createTokenRange(ctx));
+                    return fieldAccess;
+                }
+            }
         } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
             // expression.new InnerClass(args) [classBody]
             Mvel3Parser.InnerCreatorContext innerCtx = ctx.innerCreator();
