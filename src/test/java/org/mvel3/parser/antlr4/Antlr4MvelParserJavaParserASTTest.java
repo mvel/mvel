@@ -386,6 +386,35 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testInnerClassCreation() {
+        // expr.new Inner(args)
+        String expr = "outer.new Inner(1, 2)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Inner");
+        assertThat(toString(objectCreation.getScope().get())).isEqualTo("outer");
+        assertThat(objectCreation.getArguments()).hasSize(2);
+        assertThat(objectCreation.getAnonymousClassBody()).isEmpty();
+    }
+
+    @Test
+    void testInnerClassCreationWithDiamond() {
+        // expr.new Inner<>()
+        String expr = "outer.new Inner<>()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Inner");
+        assertThat(toString(objectCreation.getScope().get())).isEqualTo("outer");
+        assertThat(objectCreation.getType().getTypeArguments()).isPresent();
+    }
+
+    @Test
     void testAnonymousClassCreation() {
         // new Runnable() { public void run() { } }
         String expr = "new Runnable() { public void run() { } }";

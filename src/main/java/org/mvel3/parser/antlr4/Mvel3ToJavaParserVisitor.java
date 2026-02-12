@@ -563,9 +563,44 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // TODO: Implement super handling
             throw new UnsupportedOperationException("Super references not yet implemented");
         } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
-            // expression.new InnerClass()
-            // TODO: Implement inner class creation
-            throw new UnsupportedOperationException("Inner class creation not yet implemented");
+            // expression.new InnerClass(args) [classBody]
+            Mvel3Parser.InnerCreatorContext innerCtx = ctx.innerCreator();
+            String className = innerCtx.identifier().getText();
+            ClassOrInterfaceType type = new ClassOrInterfaceType(null, className);
+
+            // Handle type arguments if present (e.g., expr.new Inner<String>())
+            if (innerCtx.nonWildcardTypeArgumentsOrDiamond() != null) {
+                Mvel3Parser.NonWildcardTypeArgumentsOrDiamondContext diamondCtx = innerCtx.nonWildcardTypeArgumentsOrDiamond();
+                if (diamondCtx.nonWildcardTypeArguments() != null) {
+                    NodeList<Type> typeArgs = new NodeList<>();
+                    for (Mvel3Parser.TypeTypeContext typeCtx : diamondCtx.nonWildcardTypeArguments().typeList().typeType()) {
+                        typeArgs.add((Type) visit(typeCtx));
+                    }
+                    type.setTypeArguments(typeArgs);
+                } else {
+                    // Diamond operator <>
+                    type.setTypeArguments(new NodeList<>());
+                }
+            }
+
+            // Parse constructor arguments
+            NodeList<Expression> arguments = new NodeList<>();
+            if (innerCtx.classCreatorRest().arguments() != null &&
+                innerCtx.classCreatorRest().arguments().expressionList() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : innerCtx.classCreatorRest().arguments().expressionList().expression()) {
+                    arguments.add((Expression) visit(exprCtx));
+                }
+            }
+
+            // Handle anonymous class body if present
+            NodeList<BodyDeclaration<?>> anonymousClassBody = null;
+            if (innerCtx.classCreatorRest().classBody() != null) {
+                anonymousClassBody = parseAnonymousClassBody(innerCtx.classCreatorRest().classBody());
+            }
+
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(scope, type, null, arguments, anonymousClassBody);
+            objectCreation.setTokenRange(createTokenRange(ctx));
+            return objectCreation;
         } else if (ctx.explicitGenericInvocation() != null) {
             // expression.<Type>method(args) — explicit generic invocation
             Mvel3Parser.ExplicitGenericInvocationContext egiCtx = ctx.explicitGenericInvocation();
