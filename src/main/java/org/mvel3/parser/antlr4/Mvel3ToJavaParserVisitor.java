@@ -33,6 +33,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -280,6 +281,25 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
     }
     
+    private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
+        NodeList<BodyDeclaration<?>> members = new NodeList<>();
+        if (ctx.classBodyDeclaration() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            members.add((MethodDeclaration) method);
+                        }
+                    }
+                    // TODO: Handle other member types (fields, nested classes, etc.)
+                }
+            }
+        }
+        return members;
+    }
+
     @Override
     public Node visitMethodDeclaration(Mvel3Parser.MethodDeclarationContext ctx) {
         // Get method name
@@ -1517,8 +1537,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 }
             }
 
+            // Handle anonymous class body if present
+            NodeList<BodyDeclaration<?>> anonymousClassBody = null;
+            if (ctx.classCreatorRest().classBody() != null) {
+                anonymousClassBody = parseAnonymousClassBody(ctx.classCreatorRest().classBody());
+            }
+
             // Create ObjectCreationExpr
-            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, arguments);
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, null, arguments, anonymousClassBody);
             objectCreation.setTokenRange(createTokenRange(ctx));
             return objectCreation;
         }

@@ -32,6 +32,7 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -382,6 +383,36 @@ class Antlr4MvelParserJavaParserASTTest {
         TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
         assertThat(tryStmt.getResources()).hasSize(1);
         assertThat(tryStmt.getCatchClauses()).hasSize(1);
+    }
+
+    @Test
+    void testAnonymousClassCreation() {
+        // new Runnable() { public void run() { } }
+        String expr = "new Runnable() { public void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Runnable");
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(1);
+        // The anonymous class body should contain a method declaration
+        assertThat(objectCreation.getAnonymousClassBody().get().get(0).isMethodDeclaration()).isTrue();
+        assertThat(objectCreation.getAnonymousClassBody().get().get(0).asMethodDeclaration().getNameAsString()).isEqualTo("run");
+    }
+
+    @Test
+    void testAnonymousClassCreationNoBody() {
+        // new ArrayList() — no anonymous body
+        String expr = "new ArrayList()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("ArrayList");
+        assertThat(objectCreation.getAnonymousClassBody()).isEmpty();
     }
 
     @Test
