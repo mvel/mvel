@@ -623,6 +623,34 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return classExpr;
         }
 
+        if (ctx.nonWildcardTypeArguments() != null) {
+            // nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.nonWildcardTypeArguments().typeList().typeType()) {
+                typeArgs.add((Type) visit(typeCtx));
+            }
+
+            if (ctx.explicitGenericInvocationSuffix() != null) {
+                Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = ctx.explicitGenericInvocationSuffix();
+                if (suffixCtx.identifier() != null) {
+                    // <Type>method(args) — generic method call without scope
+                    String methodName = suffixCtx.identifier().getText();
+                    NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                    MethodCallExpr methodCall = new MethodCallExpr(null, typeArgs, methodName, args);
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                }
+                // <Type>super(...) — handled as explicit constructor invocation
+                // Falls through to visitChildren for now
+            } else if (ctx.THIS() != null && ctx.arguments() != null) {
+                // <Type>this(args) — explicit constructor invocation with type arguments
+                NodeList<Expression> args = parseArguments(ctx.arguments());
+                MethodCallExpr thisCall = new MethodCallExpr(null, typeArgs, "this", args);
+                thisCall.setTokenRange(createTokenRange(ctx));
+                return thisCall;
+            }
+        }
+
         // Handle other primary cases that might be needed
         return visitChildren(ctx);
     }

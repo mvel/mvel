@@ -385,6 +385,22 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testGenericMethodCallInPrimary() {
+        // <Type>method(args) — generic method call without scope (in primary)
+        String expr = "<String>valueOf(42)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("valueOf");
+        assertThat(methodCall.getScope()).isEmpty();
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(1);
+        assertThat(methodCall.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
     void testExplicitGenericInvocation() {
         // expr.<Type>method(args)
         String expr = "list.<String>stream()";
