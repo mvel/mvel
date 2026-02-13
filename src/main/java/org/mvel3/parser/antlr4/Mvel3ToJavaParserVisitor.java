@@ -81,6 +81,7 @@ import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
+import com.github.javaparser.ast.stmt.EmptyStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
@@ -1449,6 +1450,11 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             ExpressionStmt exprStmt = new ExpressionStmt(switchExpr);
             exprStmt.setTokenRange(createTokenRange(ctx));
             return exprStmt;
+        } else if (ctx.SEMI() != null) {
+            // Handle empty statement: SEMI (bare ';')
+            EmptyStmt emptyStmt = new EmptyStmt();
+            emptyStmt.setTokenRange(createTokenRange(ctx));
+            return emptyStmt;
         }
         // For now, fall back to default behavior
         return visitChildren(ctx);
