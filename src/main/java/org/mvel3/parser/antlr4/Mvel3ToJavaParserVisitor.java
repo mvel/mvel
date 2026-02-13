@@ -78,6 +78,7 @@ import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -1428,6 +1429,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             AssertStmt assertStmt = new AssertStmt(check, message);
             assertStmt.setTokenRange(createTokenRange(ctx));
             return assertStmt;
+        } else if (ctx.YIELD() != null) {
+            // Handle yield statement: YIELD expression ';' (Java 17)
+            Expression expr = (Expression) visit(ctx.expression(0));
+            YieldStmt yieldStmt = new YieldStmt(expr);
+            yieldStmt.setTokenRange(createTokenRange(ctx));
+            return yieldStmt;
         } else if (ctx.switchExpression() != null) {
             // Handle switch expression used as statement: switchExpression ';'?
             SwitchExpr switchExpr = (SwitchExpr) visit(ctx.switchExpression());

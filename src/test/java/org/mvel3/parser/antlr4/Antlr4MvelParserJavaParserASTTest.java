@@ -36,6 +36,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -578,6 +579,18 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
         Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
         assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testYieldStatement() {
+        // yield is used inside switch expression blocks (Java 17)
+        String block = "{ yield 42; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        YieldStmt yieldStmt = (YieldStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(yieldStmt.getExpression())).isEqualTo("42");
     }
 
     @Test
