@@ -19,21 +19,30 @@ package org.mvel3.parser.antlr4;
 import java.util.concurrent.TimeUnit;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.DoubleLiteralExpr;
-import com.github.javaparser.ast.expr.IntegerLiteralExpr;
-import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
+import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.SynchronizedStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
+import com.github.javaparser.ast.stmt.EmptyStmt;
+import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -379,6 +388,270 @@ class Antlr4MvelParserJavaParserASTTest {
         TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
         assertThat(tryStmt.getResources()).hasSize(1);
         assertThat(tryStmt.getCatchClauses()).hasSize(1);
+    }
+
+    @Test
+    void testSuperSuffixMethodCall() {
+        // Outer.super.method()
+        String expr = "Outer.super.toString()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("toString");
+        assertThat(methodCall.getScope()).isPresent();
+        assertThat(toString(methodCall.getScope().get())).isEqualTo("Outer.super");
+    }
+
+    @Test
+    void testSuperSuffixFieldAccess() {
+        // Outer.super.field
+        String expr = "Outer.super.value";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        FieldAccessExpr fieldAccess = (FieldAccessExpr) result.getResult().get();
+        assertThat(fieldAccess.getNameAsString()).isEqualTo("value");
+        assertThat(toString(fieldAccess.getScope())).isEqualTo("Outer.super");
+    }
+
+    @Test
+    void testInnerClassCreation() {
+        // expr.new Inner(args)
+        String expr = "outer.new Inner(1, 2)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Inner");
+        assertThat(toString(objectCreation.getScope().get())).isEqualTo("outer");
+        assertThat(objectCreation.getArguments()).hasSize(2);
+        assertThat(objectCreation.getAnonymousClassBody()).isEmpty();
+    }
+
+    @Test
+    void testInnerClassCreationWithDiamond() {
+        // expr.new Inner<>()
+        String expr = "outer.new Inner<>()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Inner");
+        assertThat(toString(objectCreation.getScope().get())).isEqualTo("outer");
+        assertThat(objectCreation.getType().getTypeArguments()).isPresent();
+    }
+
+    @Test
+    void testAnonymousClassCreation() {
+        // new Runnable() { public void run() { } }
+        String expr = "new Runnable() { public void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Runnable");
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(1);
+        // The anonymous class body should contain a method declaration
+        assertThat(objectCreation.getAnonymousClassBody().get().get(0).isMethodDeclaration()).isTrue();
+        assertThat(objectCreation.getAnonymousClassBody().get().get(0).asMethodDeclaration().getNameAsString()).isEqualTo("run");
+    }
+
+    @Test
+    void testAnonymousClassCreationNoBody() {
+        // new ArrayList() — no anonymous body
+        String expr = "new ArrayList()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("ArrayList");
+        assertThat(objectCreation.getAnonymousClassBody()).isEmpty();
+    }
+
+    @Test
+    void testGenericMethodCallInPrimary() {
+        // <Type>method(args) — generic method call without scope (in primary)
+        String expr = "<String>valueOf(42)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("valueOf");
+        assertThat(methodCall.getScope()).isEmpty();
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(1);
+        assertThat(methodCall.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testExplicitGenericInvocation() {
+        // expr.<Type>method(args)
+        String expr = "list.<String>stream()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("stream");
+        assertThat(toString(methodCall.getScope().get())).isEqualTo("list");
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(1);
+        assertThat(methodCall.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testExplicitGenericInvocationMultipleTypeArgs() {
+        // expr.<K, V>method(args)
+        String expr = "map.<String, Integer>entrySet()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        MethodCallExpr methodCall = (MethodCallExpr) result.getResult().get();
+        assertThat(methodCall.getNameAsString()).isEqualTo("entrySet");
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(2);
+    }
+
+    @Test
+    void testSwitchExpressionArrow() {
+        // Switch expression as an expression (Java 17)
+        String expr = "switch (day) { case 1 -> \"Monday\"; case 2 -> \"Tuesday\"; default -> \"Other\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        assertThat(toString(switchExpr.getSelector())).isEqualTo("day");
+        assertThat(switchExpr.getEntries()).hasSize(3);
+        // case 1 -> "Monday"
+        assertThat(switchExpr.getEntry(0).getLabels()).hasSize(1);
+        assertThat(switchExpr.getEntry(0).getType()).isEqualTo(SwitchEntry.Type.EXPRESSION);
+        // case 2 -> "Tuesday"
+        assertThat(switchExpr.getEntry(1).getLabels()).hasSize(1);
+        // default -> "Other"
+        assertThat(switchExpr.getEntry(2).getLabels()).isEmpty(); // default has empty labels
+    }
+
+    @Test
+    void testSwitchExpressionMultipleLabels() {
+        // Switch expression with multiple labels per case
+        String expr = "switch (day) { case 1, 7 -> \"Weekend\"; default -> \"Weekday\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        assertThat(switchExpr.getEntries()).hasSize(2);
+        // case 1, 7 has 2 labels
+        assertThat(switchExpr.getEntry(0).getLabels()).hasSize(2);
+    }
+
+    @Test
+    void testSwitchExpressionBlock() {
+        // Switch expression with block outcome
+        String expr = "switch (x) { case 1 -> { int y = x + 1; } default -> { int y = 0; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        assertThat(switchExpr.getEntries()).hasSize(2);
+        assertThat(switchExpr.getEntry(0).getType()).isEqualTo(SwitchEntry.Type.BLOCK);
+    }
+
+    @Test
+    void testSwitchExpressionAsStatement() {
+        // Switch expression used as a statement
+        String block = "{ switch (x) { case 1 -> doSomething(); default -> doDefault(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        // It should be an ExpressionStmt wrapping a SwitchExpr
+        assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
+        Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
+        assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testEmptyStatement() {
+        String block = "{ ; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        assertThat(result.getResult().get().getStatement(0)).isInstanceOf(EmptyStmt.class);
+    }
+
+    @Test
+    void testLabeledStatement() {
+        String block = "{ outer: for (int i = 0; i < 10; i++) { break outer; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LabeledStmt labeledStmt = (LabeledStmt) result.getResult().get().getStatement(0);
+        assertThat(labeledStmt.getLabel().asString()).isEqualTo("outer");
+        assertThat(labeledStmt.getStatement().isForStmt()).isTrue();
+    }
+
+    @Test
+    void testYieldStatement() {
+        // yield is used inside switch expression blocks (Java 17)
+        String block = "{ yield 42; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        YieldStmt yieldStmt = (YieldStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(yieldStmt.getExpression())).isEqualTo("42");
+    }
+
+    @Test
+    void testSynchronizedBlock() {
+        String block = "{ synchronized (lock) { count++; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SynchronizedStmt syncStmt = (SynchronizedStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(syncStmt.getExpression())).isEqualTo("lock");
+        assertThat(syncStmt.getBody().getStatements()).hasSize(1);
+    }
+
+    @Test
+    void testAssertStatement() {
+        String block = "{ assert x > 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        AssertStmt assertStmt = (AssertStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
+        assertThat(assertStmt.getMessage()).isEmpty();
+    }
+
+    @Test
+    void testAssertStatementWithMessage() {
+        String block = "{ assert x > 0 : \"x must be positive\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        AssertStmt assertStmt = (AssertStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
+        assertThat(assertStmt.getMessage()).isPresent();
+        assertThat(toString(assertStmt.getMessage().get())).isEqualTo("\"x must be positive\"");
     }
 
     private String toString(Node n) {

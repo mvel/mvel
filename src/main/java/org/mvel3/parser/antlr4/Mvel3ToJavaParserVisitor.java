@@ -33,6 +33,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -46,15 +47,14 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
-import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
@@ -64,17 +64,24 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
-import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.SynchronizedStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
+import com.github.javaparser.ast.stmt.EmptyStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
@@ -87,13 +94,13 @@ import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
-import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.VoidType;
@@ -278,6 +285,25 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
     }
     
+    private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
+        NodeList<BodyDeclaration<?>> members = new NodeList<>();
+        if (ctx.classBodyDeclaration() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            members.add((MethodDeclaration) method);
+                        }
+                    }
+                    // TODO: Handle other member types (fields, nested classes, etc.)
+                }
+            }
+        }
+        return members;
+    }
+
     @Override
     public Node visitMethodDeclaration(Mvel3Parser.MethodDeclarationContext ctx) {
         // Get method name
@@ -451,6 +477,31 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitExpressionSwitch(Mvel3Parser.ExpressionSwitchContext ctx) {
+        return visit(ctx.switchExpression());
+    }
+
+    @Override
+    public Node visitSwitchExpression(Mvel3Parser.SwitchExpressionContext ctx) {
+        // switchExpression: SWITCH parExpression '{' switchLabeledRule* '}'
+        Expression selector = (Expression) visit(ctx.parExpression().expression());
+
+        NodeList<SwitchEntry> entries = new NodeList<>();
+        if (ctx.switchLabeledRule() != null) {
+            for (Mvel3Parser.SwitchLabeledRuleContext ruleCtx : ctx.switchLabeledRule()) {
+                SwitchEntry entry = processSwitchLabeledRule(ruleCtx);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            }
+        }
+
+        SwitchExpr switchExpr = new SwitchExpr(selector, entries);
+        switchExpr.setTokenRange(createTokenRange(ctx));
+        return switchExpr;
+    }
+
+    @Override
     public Node visitMethodReferenceExpression(Mvel3Parser.MethodReferenceExpressionContext ctx) {
         Expression scope;
         if (ctx.expression() != null) {
@@ -512,15 +563,110 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             fieldAccess.setTokenRange(createTokenRange(ctx));
             return fieldAccess;
         } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
-            // expression.super.something
-            // TODO: Implement super handling
-            throw new UnsupportedOperationException("Super references not yet implemented");
+            // expression.super(args) or expression.super.method(args) or expression.super.field
+            Mvel3Parser.SuperSuffixContext suffixCtx = ctx.superSuffix();
+
+            // Build SuperExpr with the scope as type name (e.g., Outer.super)
+            // The scope expression should be a name (e.g., NameExpr("Outer"))
+            Name typeName = new Name(scope.toString());
+            com.github.javaparser.ast.expr.SuperExpr superExpr = new com.github.javaparser.ast.expr.SuperExpr(typeName);
+
+            if (suffixCtx.arguments() != null && suffixCtx.identifier() == null) {
+                // expression.super(args) — super constructor invocation
+                // Represented as MethodCallExpr with super as scope
+                NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                MethodCallExpr methodCall = new MethodCallExpr(superExpr, "super");
+                methodCall.setArguments(args);
+                methodCall.setTokenRange(createTokenRange(ctx));
+                return methodCall;
+            } else if (suffixCtx.identifier() != null) {
+                String memberName = suffixCtx.identifier().getText();
+                if (suffixCtx.arguments() != null) {
+                    // expression.super.method(args)
+                    NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                    MethodCallExpr methodCall = new MethodCallExpr(superExpr, memberName);
+                    methodCall.setArguments(args);
+                    // Handle type arguments if present
+                    if (suffixCtx.typeArguments() != null) {
+                        NodeList<Type> typeArgs = new NodeList<>();
+                        for (Mvel3Parser.TypeArgumentContext typeArgCtx : suffixCtx.typeArguments().typeArgument()) {
+                            typeArgs.add((Type) visit(typeArgCtx));
+                        }
+                        methodCall.setTypeArguments(typeArgs);
+                    }
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                } else {
+                    // expression.super.field
+                    FieldAccessExpr fieldAccess = new FieldAccessExpr(superExpr, memberName);
+                    fieldAccess.setTokenRange(createTokenRange(ctx));
+                    return fieldAccess;
+                }
+            }
         } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
-            // expression.new InnerClass()
-            // TODO: Implement inner class creation
-            throw new UnsupportedOperationException("Inner class creation not yet implemented");
+            // expression.new InnerClass(args) [classBody]
+            Mvel3Parser.InnerCreatorContext innerCtx = ctx.innerCreator();
+            String className = innerCtx.identifier().getText();
+            ClassOrInterfaceType type = new ClassOrInterfaceType(null, className);
+
+            // Handle type arguments if present (e.g., expr.new Inner<String>())
+            if (innerCtx.nonWildcardTypeArgumentsOrDiamond() != null) {
+                Mvel3Parser.NonWildcardTypeArgumentsOrDiamondContext diamondCtx = innerCtx.nonWildcardTypeArgumentsOrDiamond();
+                if (diamondCtx.nonWildcardTypeArguments() != null) {
+                    NodeList<Type> typeArgs = new NodeList<>();
+                    for (Mvel3Parser.TypeTypeContext typeCtx : diamondCtx.nonWildcardTypeArguments().typeList().typeType()) {
+                        typeArgs.add((Type) visit(typeCtx));
+                    }
+                    type.setTypeArguments(typeArgs);
+                } else {
+                    // Diamond operator <>
+                    type.setTypeArguments(new NodeList<>());
+                }
+            }
+
+            // Parse constructor arguments
+            NodeList<Expression> arguments = new NodeList<>();
+            if (innerCtx.classCreatorRest().arguments() != null &&
+                innerCtx.classCreatorRest().arguments().expressionList() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : innerCtx.classCreatorRest().arguments().expressionList().expression()) {
+                    arguments.add((Expression) visit(exprCtx));
+                }
+            }
+
+            // Handle anonymous class body if present
+            NodeList<BodyDeclaration<?>> anonymousClassBody = null;
+            if (innerCtx.classCreatorRest().classBody() != null) {
+                anonymousClassBody = parseAnonymousClassBody(innerCtx.classCreatorRest().classBody());
+            }
+
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(scope, type, null, arguments, anonymousClassBody);
+            objectCreation.setTokenRange(createTokenRange(ctx));
+            return objectCreation;
+        } else if (ctx.explicitGenericInvocation() != null) {
+            // expression.<Type>method(args) — explicit generic invocation
+            Mvel3Parser.ExplicitGenericInvocationContext egiCtx = ctx.explicitGenericInvocation();
+
+            // Parse type arguments from nonWildcardTypeArguments: '<' typeList '>'
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeTypeContext typeCtx : egiCtx.nonWildcardTypeArguments().typeList().typeType()) {
+                typeArgs.add((Type) visit(typeCtx));
+            }
+
+            Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = egiCtx.explicitGenericInvocationSuffix();
+            if (suffixCtx.identifier() != null) {
+                // <Type>method(args)
+                String methodName = suffixCtx.identifier().getText();
+                NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                MethodCallExpr methodCall = new MethodCallExpr(scope, typeArgs, methodName, args);
+                methodCall.setTokenRange(createTokenRange(ctx));
+                return methodCall;
+            } else if (suffixCtx.SUPER() != null) {
+                // <Type>super(args) or <Type>super.method(args)
+                // TODO: Handle super suffix with type arguments
+                throw new UnsupportedOperationException("Generic super invocation not yet implemented");
+            }
         }
-        
+
         throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
@@ -571,6 +717,34 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             ClassExpr classExpr = new ClassExpr(type);
             classExpr.setTokenRange(createTokenRange(ctx));
             return classExpr;
+        }
+
+        if (ctx.nonWildcardTypeArguments() != null) {
+            // nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
+            NodeList<Type> typeArgs = new NodeList<>();
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.nonWildcardTypeArguments().typeList().typeType()) {
+                typeArgs.add((Type) visit(typeCtx));
+            }
+
+            if (ctx.explicitGenericInvocationSuffix() != null) {
+                Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = ctx.explicitGenericInvocationSuffix();
+                if (suffixCtx.identifier() != null) {
+                    // <Type>method(args) — generic method call without scope
+                    String methodName = suffixCtx.identifier().getText();
+                    NodeList<Expression> args = parseArguments(suffixCtx.arguments());
+                    MethodCallExpr methodCall = new MethodCallExpr(null, typeArgs, methodName, args);
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                }
+                // <Type>super(...) — handled as explicit constructor invocation
+                // Falls through to visitChildren for now
+            } else if (ctx.THIS() != null && ctx.arguments() != null) {
+                // <Type>this(args) — explicit constructor invocation with type arguments
+                NodeList<Expression> args = parseArguments(ctx.arguments());
+                MethodCallExpr thisCall = new MethodCallExpr(null, typeArgs, "this", args);
+                thisCall.setTokenRange(createTokenRange(ctx));
+                return thisCall;
+            }
         }
 
         // Handle other primary cases that might be needed
@@ -1240,6 +1414,47 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             continueStmt.setTokenRange(createTokenRange(ctx));
             return continueStmt;
+        } else if (ctx.SYNCHRONIZED() != null) {
+            // Handle synchronized block: SYNCHRONIZED parExpression block
+            Expression expression = (Expression) visit(ctx.parExpression().expression());
+            BlockStmt body = (BlockStmt) visit(ctx.block());
+            SynchronizedStmt synchronizedStmt = new SynchronizedStmt(expression, body);
+            synchronizedStmt.setTokenRange(createTokenRange(ctx));
+            return synchronizedStmt;
+        } else if (ctx.ASSERT() != null) {
+            // Handle assert statement: ASSERT expression (':' expression)? ';'
+            Expression check = (Expression) visit(ctx.expression(0));
+            Expression message = null;
+            if (ctx.expression().size() > 1) {
+                message = (Expression) visit(ctx.expression(1));
+            }
+            AssertStmt assertStmt = new AssertStmt(check, message);
+            assertStmt.setTokenRange(createTokenRange(ctx));
+            return assertStmt;
+        } else if (ctx.identifierLabel != null) {
+            // Handle labeled statement: identifierLabel = identifier ':' statement
+            SimpleName label = new SimpleName(ctx.identifierLabel.getText());
+            Statement innerStmt = (Statement) visit(ctx.statement(0));
+            LabeledStmt labeledStmt = new LabeledStmt(label, innerStmt);
+            labeledStmt.setTokenRange(createTokenRange(ctx));
+            return labeledStmt;
+        } else if (ctx.YIELD() != null) {
+            // Handle yield statement: YIELD expression ';' (Java 17)
+            Expression expr = (Expression) visit(ctx.expression(0));
+            YieldStmt yieldStmt = new YieldStmt(expr);
+            yieldStmt.setTokenRange(createTokenRange(ctx));
+            return yieldStmt;
+        } else if (ctx.switchExpression() != null) {
+            // Handle switch expression used as statement: switchExpression ';'?
+            SwitchExpr switchExpr = (SwitchExpr) visit(ctx.switchExpression());
+            ExpressionStmt exprStmt = new ExpressionStmt(switchExpr);
+            exprStmt.setTokenRange(createTokenRange(ctx));
+            return exprStmt;
+        } else if (ctx.SEMI() != null) {
+            // Handle empty statement: SEMI (bare ';')
+            EmptyStmt emptyStmt = new EmptyStmt();
+            emptyStmt.setTokenRange(createTokenRange(ctx));
+            return emptyStmt;
         }
         // For now, fall back to default behavior
         return visitChildren(ctx);
@@ -1433,8 +1648,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 }
             }
 
+            // Handle anonymous class body if present
+            NodeList<BodyDeclaration<?>> anonymousClassBody = null;
+            if (ctx.classCreatorRest().classBody() != null) {
+                anonymousClassBody = parseAnonymousClassBody(ctx.classCreatorRest().classBody());
+            }
+
             // Create ObjectCreationExpr
-            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, arguments);
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, null, arguments, anonymousClassBody);
             objectCreation.setTokenRange(createTokenRange(ctx));
             return objectCreation;
         }
@@ -1761,6 +1982,83 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    private SwitchEntry processSwitchLabeledRule(Mvel3Parser.SwitchLabeledRuleContext ruleCtx) {
+        // switchLabeledRule: CASE (expressionList | NULL_LITERAL | guardedPattern) (ARROW | COLON) switchRuleOutcome
+        //                 | DEFAULT (ARROW | COLON) switchRuleOutcome
+
+        NodeList<Expression> labels = new NodeList<>();
+        boolean isArrow = ruleCtx.ARROW() != null;
+
+        if (ruleCtx.CASE() != null) {
+            if (ruleCtx.expressionList() != null) {
+                // case expr1, expr2, ... ->
+                for (Mvel3Parser.ExpressionContext exprCtx : ruleCtx.expressionList().expression()) {
+                    labels.add((Expression) visit(exprCtx));
+                }
+            } else if (ruleCtx.NULL_LITERAL() != null) {
+                labels.add(new NullLiteralExpr());
+            }
+            // TODO: Handle guardedPattern if needed
+        }
+        // DEFAULT has empty labels
+
+        // Determine entry type and process switchRuleOutcome
+        Mvel3Parser.SwitchRuleOutcomeContext outcomeCtx = ruleCtx.switchRuleOutcome();
+        NodeList<Statement> statements = new NodeList<>();
+        SwitchEntry.Type entryType;
+
+        if (outcomeCtx.block() != null) {
+            entryType = isArrow ? SwitchEntry.Type.BLOCK : SwitchEntry.Type.STATEMENT_GROUP;
+            BlockStmt block = (BlockStmt) visit(outcomeCtx.block());
+            statements.addAll(block.getStatements());
+        } else {
+            // blockStatement*
+            if (isArrow) {
+                // For arrow cases with a single expression, determine the type
+                if (outcomeCtx.blockStatement() != null && outcomeCtx.blockStatement().size() == 1) {
+                    Node node = visit(outcomeCtx.blockStatement(0));
+                    if (node instanceof Statement) {
+                        Statement stmt = (Statement) node;
+                        if (stmt instanceof ThrowStmt) {
+                            entryType = SwitchEntry.Type.THROWS_STATEMENT;
+                        } else if (stmt instanceof ExpressionStmt) {
+                            entryType = SwitchEntry.Type.EXPRESSION;
+                        } else {
+                            entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                        }
+                        statements.add(stmt);
+                    } else {
+                        entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                    }
+                } else {
+                    entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                    if (outcomeCtx.blockStatement() != null) {
+                        for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
+                            Node node = visit(blockStmtCtx);
+                            if (node instanceof Statement) {
+                                statements.add((Statement) node);
+                            }
+                        }
+                    }
+                }
+            } else {
+                entryType = SwitchEntry.Type.STATEMENT_GROUP;
+                if (outcomeCtx.blockStatement() != null) {
+                    for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
+                        Node node = visit(blockStmtCtx);
+                        if (node instanceof Statement) {
+                            statements.add((Statement) node);
+                        }
+                    }
+                }
+            }
+        }
+
+        SwitchEntry entry = new SwitchEntry(labels, entryType, statements);
+        entry.setTokenRange(createTokenRange(ruleCtx));
+        return entry;
     }
 
     private CatchClause parseCatchClause(Mvel3Parser.CatchClauseContext ctx) {
