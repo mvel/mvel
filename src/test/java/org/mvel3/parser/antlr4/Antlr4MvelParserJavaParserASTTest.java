@@ -35,6 +35,7 @@ import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -577,6 +578,18 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
         Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
         assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testSynchronizedBlock() {
+        String block = "{ synchronized (lock) { count++; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SynchronizedStmt syncStmt = (SynchronizedStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(syncStmt.getExpression())).isEqualTo("lock");
+        assertThat(syncStmt.getBody().getStatements()).hasSize(1);
     }
 
     @Test

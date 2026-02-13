@@ -77,6 +77,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -1410,6 +1411,13 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             continueStmt.setTokenRange(createTokenRange(ctx));
             return continueStmt;
+        } else if (ctx.SYNCHRONIZED() != null) {
+            // Handle synchronized block: SYNCHRONIZED parExpression block
+            Expression expression = (Expression) visit(ctx.parExpression().expression());
+            BlockStmt body = (BlockStmt) visit(ctx.block());
+            SynchronizedStmt synchronizedStmt = new SynchronizedStmt(expression, body);
+            synchronizedStmt.setTokenRange(createTokenRange(ctx));
+            return synchronizedStmt;
         } else if (ctx.ASSERT() != null) {
             // Handle assert statement: ASSERT expression (':' expression)? ';'
             Expression check = (Expression) visit(ctx.expression(0));
