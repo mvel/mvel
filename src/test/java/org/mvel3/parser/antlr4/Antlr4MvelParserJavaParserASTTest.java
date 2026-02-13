@@ -23,6 +23,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
@@ -683,6 +684,38 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(method.getNameAsString()).isEqualTo("run");
         assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
                 .containsExactly(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+    }
+
+    @Test
+    void testMethodWithReturnType() {
+        String code = "public class Foo { public int getValue() { return 0; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getTypeAsString()).isEqualTo("int");
+        assertThat(method.getParameters()).isEmpty();
+    }
+
+    @Test
+    void testMethodWithParametersAndThrows() {
+        String code = "public class Foo { public String process(int x, String name) throws Exception { return name; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("process");
+        assertThat(method.getTypeAsString()).isEqualTo("String");
+        assertThat(method.getParameters()).hasSize(2);
+        assertThat(method.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(method.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(method.getParameter(1).getTypeAsString()).isEqualTo("String");
+        assertThat(method.getParameter(1).getNameAsString()).isEqualTo("name");
+        assertThat(method.getThrownExceptions()).hasSize(1);
+        assertThat(method.getThrownException(0).asString()).isEqualTo("Exception");
     }
 
     private String toString(Node n) {

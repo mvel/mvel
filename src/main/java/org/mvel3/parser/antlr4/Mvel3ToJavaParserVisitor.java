@@ -333,9 +333,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (ctx.typeTypeOrVoid().VOID() != null) {
                 methodDecl.setType(new VoidType());
             } else if (ctx.typeTypeOrVoid().typeType() != null) {
-                // TODO: Handle other types
-                throw new UnsupportedOperationException("Non-void return types not yet implemented");
+                Type returnType = (Type) visit(ctx.typeTypeOrVoid().typeType());
+                // Handle array dimensions after formal parameters: ('[' ']')*
+                int extraDims = ctx.LBRACK() != null ? ctx.LBRACK().size() : 0;
+                for (int i = 0; i < extraDims; i++) {
+                    returnType = new ArrayType(returnType);
+                }
+                methodDecl.setType(returnType);
             }
+        }
+
+        // Handle parameters
+        if (ctx.formalParameters() != null) {
+            methodDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
+            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(ctx.qualifiedNameList()));
         }
 
         // Handle modifiers (from parent context)
@@ -2221,6 +2236,25 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
 
         return new LambdaParametersResult(parameters, enclosingParameters);
+    }
+
+    private NodeList<Parameter> parseFormalParameters(Mvel3Parser.FormalParametersContext ctx) {
+        if (ctx == null || ctx.formalParameterList() == null) {
+            return new NodeList<>();
+        }
+        return collectFormalParameters(ctx.formalParameterList());
+    }
+
+    private NodeList<ReferenceType> parseQualifiedNameListAsTypes(Mvel3Parser.QualifiedNameListContext ctx) {
+        NodeList<ReferenceType> types = new NodeList<>();
+        if (ctx != null && ctx.qualifiedName() != null) {
+            for (Mvel3Parser.QualifiedNameContext qn : ctx.qualifiedName()) {
+                ClassOrInterfaceType type = new ClassOrInterfaceType(null, qn.getText());
+                type.setTokenRange(createTokenRange(qn));
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     private NodeList<Parameter> collectFormalParameters(Mvel3Parser.FormalParameterListContext ctx) {
