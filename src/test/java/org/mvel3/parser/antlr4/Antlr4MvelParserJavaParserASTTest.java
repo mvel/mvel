@@ -35,6 +35,7 @@ import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -579,6 +580,18 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
         Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
         assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testLabeledStatement() {
+        String block = "{ outer: for (int i = 0; i < 10; i++) { break outer; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LabeledStmt labeledStmt = (LabeledStmt) result.getResult().get().getStatement(0);
+        assertThat(labeledStmt.getLabel().asString()).isEqualTo("outer");
+        assertThat(labeledStmt.getStatement().isForStmt()).isTrue();
     }
 
     @Test
