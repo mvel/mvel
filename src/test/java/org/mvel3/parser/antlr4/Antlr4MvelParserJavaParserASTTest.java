@@ -34,6 +34,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
+import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -576,6 +577,31 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
         Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
         assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testAssertStatement() {
+        String block = "{ assert x > 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        AssertStmt assertStmt = (AssertStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
+        assertThat(assertStmt.getMessage()).isEmpty();
+    }
+
+    @Test
+    void testAssertStatementWithMessage() {
+        String block = "{ assert x > 0 : \"x must be positive\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        AssertStmt assertStmt = (AssertStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
+        assertThat(assertStmt.getMessage()).isPresent();
+        assertThat(toString(assertStmt.getMessage().get())).isEqualTo("\"x must be positive\"");
     }
 
     private String toString(Node n) {

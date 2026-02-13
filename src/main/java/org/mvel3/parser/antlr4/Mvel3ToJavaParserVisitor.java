@@ -76,6 +76,7 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -1409,6 +1410,16 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
             continueStmt.setTokenRange(createTokenRange(ctx));
             return continueStmt;
+        } else if (ctx.ASSERT() != null) {
+            // Handle assert statement: ASSERT expression (':' expression)? ';'
+            Expression check = (Expression) visit(ctx.expression(0));
+            Expression message = null;
+            if (ctx.expression().size() > 1) {
+                message = (Expression) visit(ctx.expression(1));
+            }
+            AssertStmt assertStmt = new AssertStmt(check, message);
+            assertStmt.setTokenRange(createTokenRange(ctx));
+            return assertStmt;
         } else if (ctx.switchExpression() != null) {
             // Handle switch expression used as statement: switchExpression ';'?
             SwitchExpr switchExpr = (SwitchExpr) visit(ctx.switchExpression());
