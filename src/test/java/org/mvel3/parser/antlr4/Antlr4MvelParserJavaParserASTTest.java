@@ -20,7 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
@@ -652,6 +654,35 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
         assertThat(assertStmt.getMessage()).isPresent();
         assertThat(toString(assertStmt.getMessage().get())).isEqualTo("\"x must be positive\"");
+    }
+
+    @Test
+    void testClassWithModifiers() {
+        String code = "public abstract class Foo { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC, Modifier.Keyword.ABSTRACT);
+    }
+
+    @Test
+    void testMethodWithModifiers() {
+        String expr = "new Runnable() { private static void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(1);
+        var method = objectCreation.getAnonymousClassBody().get().get(0).asMethodDeclaration();
+        assertThat(method.getNameAsString()).isEqualTo("run");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
     }
 
     private String toString(Node n) {

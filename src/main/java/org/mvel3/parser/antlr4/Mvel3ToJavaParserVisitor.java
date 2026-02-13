@@ -251,12 +251,27 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
             Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
             if (parent.classOrInterfaceModifier() != null) {
-                for (Mvel3Parser.ClassOrInterfaceModifierContext modifier : parent.classOrInterfaceModifier()) {
-                    if (modifier.PUBLIC() != null) {
-                        classDecl.addModifier(Modifier.Keyword.PUBLIC);
-                    }
-                    // TODO: Handle other modifiers
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                classDecl.setModifiers(ma.modifiers);
+                classDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            // Nested class inside a class body
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    classDecl.setModifiers(ma.modifiers);
+                    classDecl.setAnnotations(ma.annotations);
                 }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                classDecl.setModifiers(ma.modifiers);
+                classDecl.setAnnotations(ma.annotations);
             }
         }
 
@@ -329,14 +344,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
                 Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
                 if (bodyDeclCtx.modifier() != null) {
-                    for (Mvel3Parser.ModifierContext modifier : bodyDeclCtx.modifier()) {
-                        if (modifier.classOrInterfaceModifier() != null) {
-                            if (modifier.classOrInterfaceModifier().PUBLIC() != null) {
-                                methodDecl.addModifier(Modifier.Keyword.PUBLIC);
-                            }
-                            // TODO: Handle other modifiers
-                        }
-                    }
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    methodDecl.setModifiers(ma.modifiers);
+                    methodDecl.setAnnotations(ma.annotations);
                 }
             }
         }
@@ -2279,6 +2289,70 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         ExpressionStmt expressionStmt = new ExpressionStmt(expression);
         expressionStmt.setTokenRange(createTokenRange(ctx));
         return expressionStmt;
+    }
+
+    private ModifiersAnnotations parseClassOrInterfaceModifiers(List<Mvel3Parser.ClassOrInterfaceModifierContext> modifierContexts) {
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        if (modifierContexts != null) {
+            for (Mvel3Parser.ClassOrInterfaceModifierContext modCtx : modifierContexts) {
+                if (modCtx.annotation() != null) {
+                    annotations.add(parseAnnotationExpr(modCtx.annotation()));
+                } else if (modCtx.PUBLIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
+                } else if (modCtx.PROTECTED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PROTECTED, modCtx));
+                } else if (modCtx.PRIVATE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PRIVATE, modCtx));
+                } else if (modCtx.STATIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
+                } else if (modCtx.ABSTRACT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
+                } else if (modCtx.FINAL() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.FINAL, modCtx));
+                } else if (modCtx.STRICTFP() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
+                } else if (modCtx.SEALED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.SEALED, modCtx));
+                } else if (modCtx.NON_SEALED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.NON_SEALED, modCtx));
+                }
+            }
+        }
+
+        return new ModifiersAnnotations(modifiers, annotations);
+    }
+
+    private ModifiersAnnotations parseModifiers(List<Mvel3Parser.ModifierContext> modifierContexts) {
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        if (modifierContexts != null) {
+            for (Mvel3Parser.ModifierContext modCtx : modifierContexts) {
+                if (modCtx.classOrInterfaceModifier() != null) {
+                    ModifiersAnnotations inner = parseClassOrInterfaceModifiers(List.of(modCtx.classOrInterfaceModifier()));
+                    modifiers.addAll(inner.modifiers);
+                    annotations.addAll(inner.annotations);
+                } else if (modCtx.NATIVE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.NATIVE, modCtx));
+                } else if (modCtx.SYNCHRONIZED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.SYNCHRONIZED, modCtx));
+                } else if (modCtx.TRANSIENT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.TRANSIENT, modCtx));
+                } else if (modCtx.VOLATILE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.VOLATILE, modCtx));
+                }
+            }
+        }
+
+        return new ModifiersAnnotations(modifiers, annotations);
+    }
+
+    private Modifier createModifier(Modifier.Keyword keyword, ParserRuleContext ctx) {
+        Modifier modifier = new Modifier(keyword);
+        modifier.setTokenRange(createTokenRange(ctx));
+        return modifier;
     }
 
     private ModifiersAnnotations parseVariableModifiers(List<Mvel3Parser.VariableModifierContext> modifierContexts) {
