@@ -35,6 +35,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -297,6 +298,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     } else if (memberDecl.fieldDeclaration() != null) {
                         FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
                         classDecl.addMember(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        classDecl.addMember(constructor);
                     }
                     // TODO: Handle other member types (nested classes, etc.)
                 }
@@ -318,6 +322,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     } else if (memberDecl.fieldDeclaration() != null) {
                         FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
                         members.add(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        members.add(constructor);
                     }
                     // TODO: Handle other member types (nested classes, etc.)
                 }
@@ -362,6 +369,58 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
 
         return fieldDecl;
+    }
+
+    @Override
+    public Node visitConstructorDeclaration(Mvel3Parser.ConstructorDeclarationContext ctx) {
+        String name = ctx.identifier().getText();
+
+        ConstructorDeclaration constructorDecl = new ConstructorDeclaration(name);
+
+        // Handle parameters
+        if (ctx.formalParameters() != null) {
+            constructorDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
+            constructorDecl.setThrownExceptions(parseQualifiedNameListAsTypes(ctx.qualifiedNameList()));
+        }
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    constructorDecl.setModifiers(ma.modifiers);
+                    constructorDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.GenericConstructorDeclarationContext) {
+            Mvel3Parser.GenericConstructorDeclarationContext genericCtx = (Mvel3Parser.GenericConstructorDeclarationContext) ctx.getParent();
+            if (genericCtx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+                Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) genericCtx.getParent();
+                if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                    Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                    if (bodyDeclCtx.modifier() != null) {
+                        ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                        constructorDecl.setModifiers(ma.modifiers);
+                        constructorDecl.setAnnotations(ma.annotations);
+                    }
+                }
+            }
+        }
+
+        // Handle constructor body
+        if (ctx.block() != null) {
+            BlockStmt body = (BlockStmt) visit(ctx.block());
+            constructorDecl.setBody(body);
+        }
+
+        constructorDecl.setTokenRange(createTokenRange(ctx));
+        return constructorDecl;
     }
 
     @Override

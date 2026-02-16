@@ -23,6 +23,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -774,6 +775,44 @@ class Antlr4MvelParserJavaParserASTTest {
 
         var method = objectCreation.getAnonymousClassBody().get().get(1).asMethodDeclaration();
         assertThat(method.getNameAsString()).isEqualTo("run");
+    }
+
+    @Test
+    void testConstructorDeclaration() {
+        String code = "public class Foo { public Foo(int x) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(constructor.getParameters()).hasSize(1);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(constructor.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(constructor.getBody()).isNotNull();
+    }
+
+    @Test
+    void testConstructorDeclarationWithThrows() {
+        String code = "public class Foo { protected Foo(String name, int age) throws Exception, IOException { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PROTECTED);
+        assertThat(constructor.getParameters()).hasSize(2);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("String");
+        assertThat(constructor.getParameter(0).getNameAsString()).isEqualTo("name");
+        assertThat(constructor.getParameter(1).getTypeAsString()).isEqualTo("int");
+        assertThat(constructor.getParameter(1).getNameAsString()).isEqualTo("age");
+        assertThat(constructor.getThrownExceptions()).hasSize(2);
+        assertThat(constructor.getThrownException(0).asString()).isEqualTo("Exception");
+        assertThat(constructor.getThrownException(1).asString()).isEqualTo("IOException");
     }
 
     private String toString(Node n) {
