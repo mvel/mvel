@@ -278,6 +278,32 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
 
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            classDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle extends
+        if (ctx.EXTENDS() != null && ctx.typeType() != null) {
+            Type extendedType = (Type) visit(ctx.typeType());
+            if (extendedType instanceof ClassOrInterfaceType) {
+                classDecl.setExtendedTypes(new NodeList<>((ClassOrInterfaceType) extendedType));
+            }
+        }
+
+        // Handle implements
+        if (ctx.IMPLEMENTS() != null && !ctx.typeList().isEmpty()) {
+            classDecl.setImplementedTypes(parseTypeList(ctx.typeList(0)));
+        }
+
+        // Handle permits (Java 17)
+        if (ctx.PERMITS() != null) {
+            int permitsIndex = ctx.IMPLEMENTS() != null ? 1 : 0;
+            if (ctx.typeList().size() > permitsIndex) {
+                classDecl.setPermittedTypes(parseTypeList(ctx.typeList(permitsIndex)));
+            }
+        }
+
         // Handle class body
         if (ctx.classBody() != null) {
             visitClassBody(ctx.classBody(), classDecl);
@@ -2400,6 +2426,19 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 ClassOrInterfaceType type = new ClassOrInterfaceType(null, qn.getText());
                 type.setTokenRange(createTokenRange(qn));
                 types.add(type);
+            }
+        }
+        return types;
+    }
+
+    private NodeList<ClassOrInterfaceType> parseTypeList(Mvel3Parser.TypeListContext ctx) {
+        NodeList<ClassOrInterfaceType> types = new NodeList<>();
+        if (ctx != null && ctx.typeType() != null) {
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
+                Type type = (Type) visit(typeCtx);
+                if (type instanceof ClassOrInterfaceType) {
+                    types.add((ClassOrInterfaceType) type);
+                }
             }
         }
         return types;

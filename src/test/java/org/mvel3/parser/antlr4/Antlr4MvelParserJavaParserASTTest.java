@@ -864,6 +864,51 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("T");
     }
 
+    @Test
+    void testClassDeclarationWithExtends() {
+        String code = "public class Foo extends Bar { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getExtendedTypes()).hasSize(1);
+        assertThat(classDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("Bar");
+    }
+
+    @Test
+    void testClassDeclarationWithImplements() {
+        String code = "public class Foo implements Runnable, Comparable { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getImplementedTypes()).hasSize(2);
+        assertThat(classDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Runnable");
+        assertThat(classDecl.getImplementedTypes().get(1).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testClassDeclarationWithTypeParametersAndExtendsImplements() {
+        String code = "public class Foo<K, V> extends AbstractMap<K, V> implements Map<K, V> { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getTypeParameters()).hasSize(2);
+        assertThat(classDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("K");
+        assertThat(classDecl.getTypeParameters().get(1).getNameAsString()).isEqualTo("V");
+        assertThat(classDecl.getExtendedTypes()).hasSize(1);
+        assertThat(classDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("AbstractMap");
+        assertThat(classDecl.getImplementedTypes()).hasSize(1);
+        assertThat(classDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Map");
+    }
+
     private String toString(Node n) {
         return PrintUtil.printNode(n);
     }
