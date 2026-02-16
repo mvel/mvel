@@ -24,6 +24,8 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -907,6 +909,60 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(classDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("AbstractMap");
         assertThat(classDecl.getImplementedTypes()).hasSize(1);
         assertThat(classDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Map");
+    }
+
+    @Test
+    void testEnumDeclaration() {
+        String code = "public enum Color { RED, GREEN, BLUE }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Color");
+        assertThat(enumDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(enumDecl.getEntries()).hasSize(3);
+        assertThat(enumDecl.getEntries().get(0).getNameAsString()).isEqualTo("RED");
+        assertThat(enumDecl.getEntries().get(1).getNameAsString()).isEqualTo("GREEN");
+        assertThat(enumDecl.getEntries().get(2).getNameAsString()).isEqualTo("BLUE");
+    }
+
+    @Test
+    void testEnumDeclarationWithArgumentsAndBody() {
+        String code = "public enum Planet { EARTH(1), MARS(2); private int order; Planet(int order) { this.order = order; } public int getOrder() { return order; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Planet");
+        assertThat(enumDecl.getEntries()).hasSize(2);
+        assertThat(enumDecl.getEntries().get(0).getNameAsString()).isEqualTo("EARTH");
+        assertThat(enumDecl.getEntries().get(0).getArguments()).hasSize(1);
+        assertThat(enumDecl.getEntries().get(1).getNameAsString()).isEqualTo("MARS");
+        assertThat(enumDecl.getEntries().get(1).getArguments()).hasSize(1);
+        // Check body members: field, constructor, method
+        assertThat(enumDecl.getFields()).hasSize(1);
+        assertThat(enumDecl.getFields().get(0).getVariable(0).getNameAsString()).isEqualTo("order");
+        assertThat(enumDecl.getConstructors()).hasSize(1);
+        assertThat(enumDecl.getConstructors().get(0).getNameAsString()).isEqualTo("Planet");
+        assertThat(enumDecl.getMethods()).hasSize(1);
+        assertThat(enumDecl.getMethods().get(0).getNameAsString()).isEqualTo("getOrder");
+    }
+
+    @Test
+    void testEnumDeclarationWithImplements() {
+        String code = "public enum Direction implements Comparable<Direction> { NORTH, SOUTH }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Direction");
+        assertThat(enumDecl.getImplementedTypes()).hasSize(1);
+        assertThat(enumDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Comparable");
+        assertThat(enumDecl.getEntries()).hasSize(2);
     }
 
     private String toString(Node n) {

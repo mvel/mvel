@@ -36,6 +36,8 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -235,11 +237,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeDeclaration(Mvel3Parser.TypeDeclarationContext ctx) {
-        // Handle class declarations for now
         if (ctx.classDeclaration() != null) {
             return visit(ctx.classDeclaration());
+        } else if (ctx.enumDeclaration() != null) {
+            return visit(ctx.enumDeclaration());
         }
-        // TODO: Handle other type declarations (interface, enum, etc.)
+        // TODO: Handle other type declarations (interface, annotation, record)
         throw new UnsupportedOperationException("Type declaration not yet implemented: " + ctx.getText());
     }
     
@@ -310,6 +313,91 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
 
         return classDecl;
+    }
+
+    @Override
+    public Node visitEnumDeclaration(Mvel3Parser.EnumDeclarationContext ctx) {
+        String enumName = ctx.identifier().getText();
+        EnumDeclaration enumDecl = new EnumDeclaration(new NodeList<>(), enumName);
+
+        // Handle modifiers
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                enumDecl.setModifiers(ma.modifiers);
+                enumDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    enumDecl.setModifiers(ma.modifiers);
+                    enumDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                enumDecl.setModifiers(ma.modifiers);
+                enumDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle implements
+        if (ctx.IMPLEMENTS() != null && ctx.typeList() != null) {
+            enumDecl.setImplementedTypes(parseTypeList(ctx.typeList()));
+        }
+
+        // Handle enum constants
+        if (ctx.enumConstants() != null) {
+            NodeList<EnumConstantDeclaration> entries = new NodeList<>();
+            for (Mvel3Parser.EnumConstantContext constCtx : ctx.enumConstants().enumConstant()) {
+                String constName = constCtx.identifier().getText();
+                EnumConstantDeclaration constDecl = new EnumConstantDeclaration(constName);
+                constDecl.setTokenRange(createTokenRange(constCtx));
+
+                // Handle arguments
+                if (constCtx.arguments() != null) {
+                    constDecl.setArguments(parseArguments(constCtx.arguments()));
+                }
+
+                // Handle class body on enum constant
+                if (constCtx.classBody() != null) {
+                    constDecl.setClassBody(parseAnonymousClassBody(constCtx.classBody()));
+                }
+
+                entries.add(constDecl);
+            }
+            enumDecl.setEntries(entries);
+        }
+
+        // Handle enum body declarations (methods, fields after the semicolon)
+        if (ctx.enumBodyDeclarations() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.enumBodyDeclarations().classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            enumDecl.addMember((MethodDeclaration) method);
+                        }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        enumDecl.addMember(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        enumDecl.addMember(constructor);
+                    }
+                }
+            }
+        }
+
+        enumDecl.setTokenRange(createTokenRange(ctx));
+        return enumDecl;
     }
 
     private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
