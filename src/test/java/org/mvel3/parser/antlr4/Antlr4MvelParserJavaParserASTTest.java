@@ -23,6 +23,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
@@ -716,6 +717,63 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(method.getParameter(1).getNameAsString()).isEqualTo("name");
         assertThat(method.getThrownExceptions()).hasSize(1);
         assertThat(method.getThrownException(0).asString()).isEqualTo("Exception");
+    }
+
+    @Test
+    void testFieldDeclaration() {
+        String code = "public class Foo { private int count = 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE);
+        assertThat(field.getVariables()).hasSize(1);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("count");
+        assertThat(field.getVariable(0).getTypeAsString()).isEqualTo("int");
+        assertThat(field.getVariable(0).getInitializer()).isPresent();
+        assertThat(toString(field.getVariable(0).getInitializer().get())).isEqualTo("0");
+    }
+
+    @Test
+    void testFieldDeclarationMultipleDeclarators() {
+        String code = "public class Foo { private static int x = 1, y, z = 3; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        assertThat(field.getVariables()).hasSize(3);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("x");
+        assertThat(field.getVariable(0).getInitializer()).isPresent();
+        assertThat(field.getVariable(1).getNameAsString()).isEqualTo("y");
+        assertThat(field.getVariable(1).getInitializer()).isEmpty();
+        assertThat(field.getVariable(2).getNameAsString()).isEqualTo("z");
+        assertThat(field.getVariable(2).getInitializer()).isPresent();
+    }
+
+    @Test
+    void testFieldDeclarationInAnonymousClass() {
+        String expr = "new Runnable() { private String name = \"test\"; public void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(2);
+
+        FieldDeclaration field = objectCreation.getAnonymousClassBody().get().get(0).asFieldDeclaration();
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("name");
+        assertThat(field.getVariable(0).getTypeAsString()).isEqualTo("String");
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE);
+
+        var method = objectCreation.getAnonymousClassBody().get().get(1).asMethodDeclaration();
+        assertThat(method.getNameAsString()).isEqualTo("run");
     }
 
     private String toString(Node n) {

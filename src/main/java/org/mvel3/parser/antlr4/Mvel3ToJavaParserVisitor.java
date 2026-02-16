@@ -35,6 +35,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -293,13 +294,16 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                         if (method instanceof MethodDeclaration) {
                             classDecl.addMember((MethodDeclaration) method);
                         }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        classDecl.addMember(field);
                     }
-                    // TODO: Handle other member types (fields, nested classes, etc.)
+                    // TODO: Handle other member types (nested classes, etc.)
                 }
             }
         }
     }
-    
+
     private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
         NodeList<BodyDeclaration<?>> members = new NodeList<>();
         if (ctx.classBodyDeclaration() != null) {
@@ -311,12 +315,53 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                         if (method instanceof MethodDeclaration) {
                             members.add((MethodDeclaration) method);
                         }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        members.add(field);
                     }
-                    // TODO: Handle other member types (fields, nested classes, etc.)
+                    // TODO: Handle other member types (nested classes, etc.)
                 }
             }
         }
         return members;
+    }
+
+    @Override
+    public Node visitFieldDeclaration(Mvel3Parser.FieldDeclarationContext ctx) {
+        Type fieldType = (Type) visit(ctx.typeType());
+
+        NodeList<VariableDeclarator> declarators = new NodeList<>();
+        for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
+            String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
+
+            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+            varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
+
+            if (declaratorCtx.variableInitializer() != null) {
+                Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
+                varDeclarator.setInitializer(initializer);
+            }
+
+            declarators.add(varDeclarator);
+        }
+
+        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
+        fieldDecl.setTokenRange(createTokenRange(ctx));
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    fieldDecl.setModifiers(ma.modifiers);
+                    fieldDecl.setAnnotations(ma.annotations);
+                }
+            }
+        }
+
+        return fieldDecl;
     }
 
     @Override
