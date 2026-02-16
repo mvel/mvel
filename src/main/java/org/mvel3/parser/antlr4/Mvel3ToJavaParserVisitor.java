@@ -241,8 +241,10 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             return visit(ctx.classDeclaration());
         } else if (ctx.enumDeclaration() != null) {
             return visit(ctx.enumDeclaration());
+        } else if (ctx.interfaceDeclaration() != null) {
+            return visit(ctx.interfaceDeclaration());
         }
-        // TODO: Handle other type declarations (interface, annotation, record)
+        // TODO: Handle other type declarations (annotation, record)
         throw new UnsupportedOperationException("Type declaration not yet implemented: " + ctx.getText());
     }
     
@@ -398,6 +400,205 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
         enumDecl.setTokenRange(createTokenRange(ctx));
         return enumDecl;
+    }
+
+    @Override
+    public Node visitInterfaceDeclaration(Mvel3Parser.InterfaceDeclarationContext ctx) {
+        String interfaceName = ctx.identifier().getText();
+        ClassOrInterfaceDeclaration interfaceDecl = new ClassOrInterfaceDeclaration();
+        interfaceDecl.setName(interfaceName);
+        interfaceDecl.setInterface(true);
+
+        // Handle modifiers
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                interfaceDecl.setModifiers(ma.modifiers);
+                interfaceDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    interfaceDecl.setModifiers(ma.modifiers);
+                    interfaceDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.InterfaceMemberDeclarationContext) {
+            Mvel3Parser.InterfaceMemberDeclarationContext memberCtx = (Mvel3Parser.InterfaceMemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.InterfaceBodyDeclarationContext) {
+                Mvel3Parser.InterfaceBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.InterfaceBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    interfaceDecl.setModifiers(ma.modifiers);
+                    interfaceDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                interfaceDecl.setModifiers(ma.modifiers);
+                interfaceDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            interfaceDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle extends (interfaces can extend multiple interfaces)
+        if (ctx.EXTENDS() != null && !ctx.typeList().isEmpty()) {
+            interfaceDecl.setExtendedTypes(parseTypeList(ctx.typeList(0)));
+        }
+
+        // Handle permits (Java 17)
+        if (ctx.PERMITS() != null) {
+            int permitsIndex = ctx.EXTENDS() != null ? 1 : 0;
+            if (ctx.typeList().size() > permitsIndex) {
+                interfaceDecl.setPermittedTypes(parseTypeList(ctx.typeList(permitsIndex)));
+            }
+        }
+
+        // Handle interface body
+        if (ctx.interfaceBody() != null) {
+            visitInterfaceBody(ctx.interfaceBody(), interfaceDecl);
+        }
+
+        interfaceDecl.setTokenRange(createTokenRange(ctx));
+        return interfaceDecl;
+    }
+
+    private void visitInterfaceBody(Mvel3Parser.InterfaceBodyContext ctx, ClassOrInterfaceDeclaration interfaceDecl) {
+        if (ctx.interfaceBodyDeclaration() != null) {
+            for (Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl : ctx.interfaceBodyDeclaration()) {
+                if (bodyDecl.interfaceMemberDeclaration() != null) {
+                    Mvel3Parser.InterfaceMemberDeclarationContext memberDecl = bodyDecl.interfaceMemberDeclaration();
+                    if (memberDecl.interfaceMethodDeclaration() != null) {
+                        MethodDeclaration method = visitInterfaceMethodDeclaration(memberDecl.interfaceMethodDeclaration(), bodyDecl);
+                        interfaceDecl.addMember(method);
+                    } else if (memberDecl.constDeclaration() != null) {
+                        FieldDeclaration field = visitConstDeclaration(memberDecl.constDeclaration(), bodyDecl);
+                        interfaceDecl.addMember(field);
+                    }
+                    // TODO: Handle other interface member types (nested types, generic methods)
+                }
+            }
+        }
+    }
+
+    private MethodDeclaration visitInterfaceMethodDeclaration(
+            Mvel3Parser.InterfaceMethodDeclarationContext ctx,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
+        Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody = ctx.interfaceCommonBodyDeclaration();
+
+        String methodName = commonBody.identifier().getText();
+        MethodDeclaration methodDecl = new MethodDeclaration();
+        methodDecl.setName(methodName);
+
+        // Handle return type
+        if (commonBody.typeTypeOrVoid() != null) {
+            if (commonBody.typeTypeOrVoid().VOID() != null) {
+                methodDecl.setType(new VoidType());
+            } else if (commonBody.typeTypeOrVoid().typeType() != null) {
+                Type returnType = (Type) visit(commonBody.typeTypeOrVoid().typeType());
+                int extraDims = commonBody.LBRACK() != null ? commonBody.LBRACK().size() : 0;
+                for (int i = 0; i < extraDims; i++) {
+                    returnType = new ArrayType(returnType);
+                }
+                methodDecl.setType(returnType);
+            }
+        }
+
+        // Handle parameters
+        if (commonBody.formalParameters() != null) {
+            methodDecl.setParameters(parseFormalParameters(commonBody.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (commonBody.THROWS() != null && commonBody.qualifiedNameList() != null) {
+            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(commonBody.qualifiedNameList()));
+        }
+
+        // Handle method body (default methods have a body)
+        if (commonBody.methodBody() != null && commonBody.methodBody().block() != null) {
+            BlockStmt body = (BlockStmt) visit(commonBody.methodBody().block());
+            methodDecl.setBody(body);
+        }
+
+        // Handle modifiers from interfaceMethodModifier* and parent interfaceBodyDeclaration
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        // Modifiers from interfaceBodyDeclaration (modifier*)
+        if (bodyDecl.modifier() != null) {
+            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
+            modifiers.addAll(ma.modifiers);
+            annotations.addAll(ma.annotations);
+        }
+
+        // Modifiers from interfaceMethodModifier*
+        if (ctx.interfaceMethodModifier() != null) {
+            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : ctx.interfaceMethodModifier()) {
+                if (modCtx.PUBLIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
+                } else if (modCtx.ABSTRACT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
+                } else if (modCtx.DEFAULT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.DEFAULT, modCtx));
+                } else if (modCtx.STATIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
+                } else if (modCtx.STRICTFP() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
+                }
+            }
+        }
+
+        if (!modifiers.isEmpty()) {
+            methodDecl.setModifiers(modifiers);
+        }
+        if (!annotations.isEmpty()) {
+            methodDecl.setAnnotations(annotations);
+        }
+
+        methodDecl.setTokenRange(createTokenRange(ctx));
+        return methodDecl;
+    }
+
+    private FieldDeclaration visitConstDeclaration(
+            Mvel3Parser.ConstDeclarationContext ctx,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
+        Type fieldType = (Type) visit(ctx.typeType());
+
+        NodeList<VariableDeclarator> declarators = new NodeList<>();
+        for (Mvel3Parser.ConstantDeclaratorContext constCtx : ctx.constantDeclarator()) {
+            String varName = constCtx.identifier().getText();
+            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+            varDeclarator.setTokenRange(createTokenRange(constCtx));
+
+            if (constCtx.variableInitializer() != null) {
+                Expression initializer = (Expression) visit(constCtx.variableInitializer());
+                varDeclarator.setInitializer(initializer);
+            }
+
+            declarators.add(varDeclarator);
+        }
+
+        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
+        fieldDecl.setTokenRange(createTokenRange(ctx));
+
+        // Handle modifiers from parent context
+        if (bodyDecl.modifier() != null) {
+            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
+            fieldDecl.setModifiers(ma.modifiers);
+            fieldDecl.setAnnotations(ma.annotations);
+        }
+
+        return fieldDecl;
     }
 
     private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {

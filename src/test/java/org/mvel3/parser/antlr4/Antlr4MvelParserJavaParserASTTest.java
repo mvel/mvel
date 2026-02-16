@@ -965,6 +965,62 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(enumDecl.getEntries()).hasSize(2);
     }
 
+    @Test
+    void testInterfaceDeclaration() {
+        String code = "public interface Greeter { void greet(String name); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Greeter");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
+        assertThat(interfaceDecl.getMethods().get(0).getNameAsString()).isEqualTo("greet");
+        assertThat(interfaceDecl.getMethods().get(0).getParameters()).hasSize(1);
+    }
+
+    @Test
+    void testInterfaceDeclarationWithExtendsAndDefaultMethod() {
+        String code = "public interface Foo<T> extends Bar, Baz { default T getValue() { return null; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getTypeParameters()).hasSize(1);
+        assertThat(interfaceDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(interfaceDecl.getExtendedTypes()).hasSize(2);
+        assertThat(interfaceDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("Bar");
+        assertThat(interfaceDecl.getExtendedTypes().get(1).getNameAsString()).isEqualTo("Baz");
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
+        MethodDeclaration method = interfaceDecl.getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.DEFAULT);
+        assertThat(method.getBody()).isPresent();
+    }
+
+    @Test
+    void testInterfaceDeclarationWithConstant() {
+        String code = "public interface Constants { int MAX = 100; String NAME = \"test\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Constants");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getFields()).hasSize(2);
+        assertThat(interfaceDecl.getFields().get(0).getVariable(0).getNameAsString()).isEqualTo("MAX");
+        assertThat(interfaceDecl.getFields().get(0).getVariable(0).getTypeAsString()).isEqualTo("int");
+        assertThat(interfaceDecl.getFields().get(1).getVariable(0).getNameAsString()).isEqualTo("NAME");
+    }
+
     private String toString(Node n) {
         return PrintUtil.printNode(n);
     }
