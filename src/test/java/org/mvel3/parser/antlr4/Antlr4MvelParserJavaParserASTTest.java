@@ -815,6 +815,55 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(constructor.getThrownException(1).asString()).isEqualTo("IOException");
     }
 
+    @Test
+    void testGenericMethodDeclaration() {
+        String code = "public class Foo { public <T> T getValue(T input) { return input; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getTypeAsString()).isEqualTo("T");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeParameters().get(0).getTypeBound()).isEmpty();
+    }
+
+    @Test
+    void testGenericMethodDeclarationWithBounds() {
+        String code = "public class Foo { public <T extends Comparable> int compare(T a, T b) { return 0; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("compare");
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeParameters().get(0).getTypeBound()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getTypeBound().get(0).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testGenericConstructorDeclaration() {
+        String code = "public class Foo { public <T> Foo(T value) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(constructor.getTypeParameters()).hasSize(1);
+        assertThat(constructor.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(constructor.getParameters()).hasSize(1);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("T");
+    }
+
     private String toString(Node n) {
         return PrintUtil.printNode(n);
     }

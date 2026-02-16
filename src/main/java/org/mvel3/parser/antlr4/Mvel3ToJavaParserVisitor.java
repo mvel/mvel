@@ -102,6 +102,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VarType;
@@ -301,6 +302,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     } else if (memberDecl.constructorDeclaration() != null) {
                         ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
                         classDecl.addMember(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        classDecl.addMember(method);
+                    } else if (memberDecl.genericConstructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+                        classDecl.addMember(constructor);
                     }
                     // TODO: Handle other member types (nested classes, etc.)
                 }
@@ -324,6 +331,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                         members.add(field);
                     } else if (memberDecl.constructorDeclaration() != null) {
                         ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        members.add(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        members.add(method);
+                    } else if (memberDecl.genericConstructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
                         members.add(constructor);
                     }
                     // TODO: Handle other member types (nested classes, etc.)
@@ -424,6 +437,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitGenericMethodDeclaration(Mvel3Parser.GenericMethodDeclarationContext ctx) {
+        MethodDeclaration methodDecl = (MethodDeclaration) visitMethodDeclaration(ctx.methodDeclaration());
+        if (ctx.typeParameters() != null) {
+            methodDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+        return methodDecl;
+    }
+
+    @Override
+    public Node visitGenericConstructorDeclaration(Mvel3Parser.GenericConstructorDeclarationContext ctx) {
+        ConstructorDeclaration constructorDecl = (ConstructorDeclaration) visitConstructorDeclaration(ctx.constructorDeclaration());
+        if (ctx.typeParameters() != null) {
+            constructorDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+        return constructorDecl;
+    }
+
+    @Override
     public Node visitMethodDeclaration(Mvel3Parser.MethodDeclarationContext ctx) {
         // Get method name
         String methodName = ctx.identifier().getText();
@@ -466,6 +497,19 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
                     methodDecl.setModifiers(ma.modifiers);
                     methodDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.GenericMethodDeclarationContext) {
+            Mvel3Parser.GenericMethodDeclarationContext genericCtx = (Mvel3Parser.GenericMethodDeclarationContext) ctx.getParent();
+            if (genericCtx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+                Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) genericCtx.getParent();
+                if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                    Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                    if (bodyDeclCtx.modifier() != null) {
+                        ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                        methodDecl.setModifiers(ma.modifiers);
+                        methodDecl.setAnnotations(ma.annotations);
+                    }
                 }
             }
         }
@@ -2359,6 +2403,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
         return types;
+    }
+
+    private NodeList<TypeParameter> parseTypeParameters(Mvel3Parser.TypeParametersContext ctx) {
+        NodeList<TypeParameter> typeParams = new NodeList<>();
+        if (ctx == null || ctx.typeParameter() == null) {
+            return typeParams;
+        }
+        for (Mvel3Parser.TypeParameterContext tpCtx : ctx.typeParameter()) {
+            String name = tpCtx.identifier().getText();
+            NodeList<ClassOrInterfaceType> bounds = new NodeList<>();
+            if (tpCtx.typeBound() != null) {
+                for (Mvel3Parser.TypeTypeContext boundCtx : tpCtx.typeBound().typeType()) {
+                    Type boundType = (Type) visit(boundCtx);
+                    if (boundType instanceof ClassOrInterfaceType) {
+                        bounds.add((ClassOrInterfaceType) boundType);
+                    }
+                }
+            }
+            TypeParameter typeParam = new TypeParameter(name, bounds);
+            typeParam.setTokenRange(createTokenRange(tpCtx));
+            typeParams.add(typeParam);
+        }
+        return typeParams;
     }
 
     private NodeList<Parameter> collectFormalParameters(Mvel3Parser.FormalParameterListContext ctx) {
