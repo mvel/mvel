@@ -20,7 +20,18 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
@@ -36,6 +47,8 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -652,6 +665,625 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(toString(assertStmt.getCheck())).isEqualTo("x > 0");
         assertThat(assertStmt.getMessage()).isPresent();
         assertThat(toString(assertStmt.getMessage().get())).isEqualTo("\"x must be positive\"");
+    }
+
+    @Test
+    void testClassWithModifiers() {
+        String code = "public abstract class Foo { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC, Modifier.Keyword.ABSTRACT);
+    }
+
+    @Test
+    void testMethodWithModifiers() {
+        String expr = "new Runnable() { private static void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(1);
+        var method = objectCreation.getAnonymousClassBody().get().get(0).asMethodDeclaration();
+        assertThat(method.getNameAsString()).isEqualTo("run");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+    }
+
+    @Test
+    void testMethodWithReturnType() {
+        String code = "public class Foo { public int getValue() { return 0; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getTypeAsString()).isEqualTo("int");
+        assertThat(method.getParameters()).isEmpty();
+    }
+
+    @Test
+    void testMethodWithParametersAndThrows() {
+        String code = "public class Foo { public String process(int x, String name) throws Exception { return name; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("process");
+        assertThat(method.getTypeAsString()).isEqualTo("String");
+        assertThat(method.getParameters()).hasSize(2);
+        assertThat(method.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(method.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(method.getParameter(1).getTypeAsString()).isEqualTo("String");
+        assertThat(method.getParameter(1).getNameAsString()).isEqualTo("name");
+        assertThat(method.getThrownExceptions()).hasSize(1);
+        assertThat(method.getThrownException(0).asString()).isEqualTo("Exception");
+    }
+
+    @Test
+    void testFieldDeclaration() {
+        String code = "public class Foo { private int count = 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE);
+        assertThat(field.getVariables()).hasSize(1);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("count");
+        assertThat(field.getVariable(0).getTypeAsString()).isEqualTo("int");
+        assertThat(field.getVariable(0).getInitializer()).isPresent();
+        assertThat(toString(field.getVariable(0).getInitializer().get())).isEqualTo("0");
+    }
+
+    @Test
+    void testFieldDeclarationMultipleDeclarators() {
+        String code = "public class Foo { private static int x = 1, y, z = 3; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        assertThat(field.getVariables()).hasSize(3);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("x");
+        assertThat(field.getVariable(0).getInitializer()).isPresent();
+        assertThat(field.getVariable(1).getNameAsString()).isEqualTo("y");
+        assertThat(field.getVariable(1).getInitializer()).isEmpty();
+        assertThat(field.getVariable(2).getNameAsString()).isEqualTo("z");
+        assertThat(field.getVariable(2).getInitializer()).isPresent();
+    }
+
+    @Test
+    void testFieldDeclarationInAnonymousClass() {
+        String expr = "new Runnable() { private String name = \"test\"; public void run() { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getAnonymousClassBody()).isPresent();
+        assertThat(objectCreation.getAnonymousClassBody().get()).hasSize(2);
+
+        FieldDeclaration field = objectCreation.getAnonymousClassBody().get().get(0).asFieldDeclaration();
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("name");
+        assertThat(field.getVariable(0).getTypeAsString()).isEqualTo("String");
+        assertThat(field.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PRIVATE);
+
+        var method = objectCreation.getAnonymousClassBody().get().get(1).asMethodDeclaration();
+        assertThat(method.getNameAsString()).isEqualTo("run");
+    }
+
+    @Test
+    void testConstructorDeclaration() {
+        String code = "public class Foo { public Foo(int x) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(constructor.getParameters()).hasSize(1);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(constructor.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(constructor.getBody()).isNotNull();
+    }
+
+    @Test
+    void testConstructorDeclarationWithThrows() {
+        String code = "public class Foo { protected Foo(String name, int age) throws Exception, IOException { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PROTECTED);
+        assertThat(constructor.getParameters()).hasSize(2);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("String");
+        assertThat(constructor.getParameter(0).getNameAsString()).isEqualTo("name");
+        assertThat(constructor.getParameter(1).getTypeAsString()).isEqualTo("int");
+        assertThat(constructor.getParameter(1).getNameAsString()).isEqualTo("age");
+        assertThat(constructor.getThrownExceptions()).hasSize(2);
+        assertThat(constructor.getThrownException(0).asString()).isEqualTo("Exception");
+        assertThat(constructor.getThrownException(1).asString()).isEqualTo("IOException");
+    }
+
+    @Test
+    void testGenericMethodDeclaration() {
+        String code = "public class Foo { public <T> T getValue(T input) { return input; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getTypeAsString()).isEqualTo("T");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeParameters().get(0).getTypeBound()).isEmpty();
+    }
+
+    @Test
+    void testGenericMethodDeclarationWithBounds() {
+        String code = "public class Foo { public <T extends Comparable> int compare(T a, T b) { return 0; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("compare");
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeParameters().get(0).getTypeBound()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getTypeBound().get(0).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testGenericConstructorDeclaration() {
+        String code = "public class Foo { public <T> Foo(T value) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration constructor = result.getResult().get().getType(0).getConstructors().get(0);
+        assertThat(constructor.getNameAsString()).isEqualTo("Foo");
+        assertThat(constructor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(constructor.getTypeParameters()).hasSize(1);
+        assertThat(constructor.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(constructor.getParameters()).hasSize(1);
+        assertThat(constructor.getParameter(0).getTypeAsString()).isEqualTo("T");
+    }
+
+    @Test
+    void testClassDeclarationWithExtends() {
+        String code = "public class Foo extends Bar { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getExtendedTypes()).hasSize(1);
+        assertThat(classDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("Bar");
+    }
+
+    @Test
+    void testClassDeclarationWithImplements() {
+        String code = "public class Foo implements Runnable, Comparable { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getImplementedTypes()).hasSize(2);
+        assertThat(classDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Runnable");
+        assertThat(classDecl.getImplementedTypes().get(1).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testClassDeclarationWithTypeParametersAndExtendsImplements() {
+        String code = "public class Foo<K, V> extends AbstractMap<K, V> implements Map<K, V> { }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(classDecl.getTypeParameters()).hasSize(2);
+        assertThat(classDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("K");
+        assertThat(classDecl.getTypeParameters().get(1).getNameAsString()).isEqualTo("V");
+        assertThat(classDecl.getExtendedTypes()).hasSize(1);
+        assertThat(classDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("AbstractMap");
+        assertThat(classDecl.getImplementedTypes()).hasSize(1);
+        assertThat(classDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Map");
+    }
+
+    @Test
+    void testEnumDeclaration() {
+        String code = "public enum Color { RED, GREEN, BLUE }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Color");
+        assertThat(enumDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(enumDecl.getEntries()).hasSize(3);
+        assertThat(enumDecl.getEntries().get(0).getNameAsString()).isEqualTo("RED");
+        assertThat(enumDecl.getEntries().get(1).getNameAsString()).isEqualTo("GREEN");
+        assertThat(enumDecl.getEntries().get(2).getNameAsString()).isEqualTo("BLUE");
+    }
+
+    @Test
+    void testEnumDeclarationWithArgumentsAndBody() {
+        String code = "public enum Planet { EARTH(1), MARS(2); private int order; Planet(int order) { this.order = order; } public int getOrder() { return order; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Planet");
+        assertThat(enumDecl.getEntries()).hasSize(2);
+        assertThat(enumDecl.getEntries().get(0).getNameAsString()).isEqualTo("EARTH");
+        assertThat(enumDecl.getEntries().get(0).getArguments()).hasSize(1);
+        assertThat(enumDecl.getEntries().get(1).getNameAsString()).isEqualTo("MARS");
+        assertThat(enumDecl.getEntries().get(1).getArguments()).hasSize(1);
+        // Check body members: field, constructor, method
+        assertThat(enumDecl.getFields()).hasSize(1);
+        assertThat(enumDecl.getFields().get(0).getVariable(0).getNameAsString()).isEqualTo("order");
+        assertThat(enumDecl.getConstructors()).hasSize(1);
+        assertThat(enumDecl.getConstructors().get(0).getNameAsString()).isEqualTo("Planet");
+        assertThat(enumDecl.getMethods()).hasSize(1);
+        assertThat(enumDecl.getMethods().get(0).getNameAsString()).isEqualTo("getOrder");
+    }
+
+    @Test
+    void testEnumDeclarationWithImplements() {
+        String code = "public enum Direction implements Comparable<Direction> { NORTH, SOUTH }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getNameAsString()).isEqualTo("Direction");
+        assertThat(enumDecl.getImplementedTypes()).hasSize(1);
+        assertThat(enumDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Comparable");
+        assertThat(enumDecl.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testInterfaceDeclaration() {
+        String code = "public interface Greeter { void greet(String name); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Greeter");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
+        assertThat(interfaceDecl.getMethods().get(0).getNameAsString()).isEqualTo("greet");
+        assertThat(interfaceDecl.getMethods().get(0).getParameters()).hasSize(1);
+    }
+
+    @Test
+    void testInterfaceDeclarationWithExtendsAndDefaultMethod() {
+        String code = "public interface Foo<T> extends Bar, Baz { default T getValue() { return null; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Foo");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getTypeParameters()).hasSize(1);
+        assertThat(interfaceDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(interfaceDecl.getExtendedTypes()).hasSize(2);
+        assertThat(interfaceDecl.getExtendedTypes().get(0).getNameAsString()).isEqualTo("Bar");
+        assertThat(interfaceDecl.getExtendedTypes().get(1).getNameAsString()).isEqualTo("Baz");
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
+        MethodDeclaration method = interfaceDecl.getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("getValue");
+        assertThat(method.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.DEFAULT);
+        assertThat(method.getBody()).isPresent();
+    }
+
+    @Test
+    void testInterfaceDeclarationWithConstant() {
+        String code = "public interface Constants { int MAX = 100; String NAME = \"test\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Constants");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getFields()).hasSize(2);
+        assertThat(interfaceDecl.getFields().get(0).getVariable(0).getNameAsString()).isEqualTo("MAX");
+        assertThat(interfaceDecl.getFields().get(0).getVariable(0).getTypeAsString()).isEqualTo("int");
+        assertThat(interfaceDecl.getFields().get(1).getVariable(0).getNameAsString()).isEqualTo("NAME");
+    }
+
+    @Test
+    void testAnnotationTypeDeclaration() {
+        String code = "public @interface MyAnnotation { String value(); int count() default 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("MyAnnotation");
+        assertThat(annotationDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(annotationDecl.getMembers()).hasSize(2);
+
+        AnnotationMemberDeclaration valueMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(valueMember.getNameAsString()).isEqualTo("value");
+        assertThat(valueMember.getTypeAsString()).isEqualTo("String");
+        assertThat(valueMember.getDefaultValue()).isEmpty();
+
+        AnnotationMemberDeclaration countMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(1);
+        assertThat(countMember.getNameAsString()).isEqualTo("count");
+        assertThat(countMember.getTypeAsString()).isEqualTo("int");
+        assertThat(countMember.getDefaultValue()).isPresent();
+        assertThat(countMember.getDefaultValue().get().toString()).isEqualTo("0");
+    }
+
+    @Test
+    void testAnnotationTypeDeclarationWithConstantsAndNestedTypes() {
+        String code = "public @interface Config { String DEFAULT_NAME = \"test\"; int value(); enum Level { LOW, HIGH } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("Config");
+        assertThat(annotationDecl.getMembers()).hasSize(3);
+
+        // Constant field
+        FieldDeclaration fieldDecl = (FieldDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(fieldDecl.getVariable(0).getNameAsString()).isEqualTo("DEFAULT_NAME");
+        assertThat(fieldDecl.getVariable(0).getTypeAsString()).isEqualTo("String");
+
+        // Annotation method
+        AnnotationMemberDeclaration methodMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(1);
+        assertThat(methodMember.getNameAsString()).isEqualTo("value");
+        assertThat(methodMember.getTypeAsString()).isEqualTo("int");
+
+        // Nested enum
+        EnumDeclaration nestedEnum = (EnumDeclaration) annotationDecl.getMembers().get(2);
+        assertThat(nestedEnum.getNameAsString()).isEqualTo("Level");
+        assertThat(nestedEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testAnnotationTypeDeclarationWithArrayDefault() {
+        String code = "public @interface Tags { String[] value() default {\"a\", \"b\"}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("Tags");
+        assertThat(annotationDecl.getMembers()).hasSize(1);
+
+        AnnotationMemberDeclaration member = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(member.getNameAsString()).isEqualTo("value");
+        assertThat(member.getTypeAsString()).isEqualTo("String[]");
+        assertThat(member.getDefaultValue()).isPresent();
+    }
+
+    @Test
+    void testRecordDeclaration() {
+        String code = "public record Point(int x, int y) {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Point");
+        assertThat(recordDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("x");
+        assertThat(recordDecl.getParameters().get(0).getTypeAsString()).isEqualTo("int");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("y");
+        assertThat(recordDecl.getParameters().get(1).getTypeAsString()).isEqualTo("int");
+    }
+
+    @Test
+    void testRecordDeclarationWithTypeParametersAndImplements() {
+        String code = "public record Pair<A, B>(A first, B second) implements Comparable<Pair<A, B>> {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Pair");
+        assertThat(recordDecl.getTypeParameters()).hasSize(2);
+        assertThat(recordDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("A");
+        assertThat(recordDecl.getTypeParameters().get(1).getNameAsString()).isEqualTo("B");
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("first");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("second");
+        assertThat(recordDecl.getImplementedTypes()).hasSize(1);
+        assertThat(recordDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testRecordDeclarationWithCompactConstructorAndMethods() {
+        String code = "public record Name(String value) { public Name { if (value == null) throw new NullPointerException(); } public String upper() { return value.toUpperCase(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Name");
+        assertThat(recordDecl.getParameters()).hasSize(1);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("value");
+
+        // Compact constructor
+        assertThat(recordDecl.getCompactConstructors()).hasSize(1);
+        CompactConstructorDeclaration compactCtor = recordDecl.getCompactConstructors().get(0);
+        assertThat(compactCtor.getNameAsString()).isEqualTo("Name");
+        assertThat(compactCtor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+
+        // Regular method
+        assertThat(recordDecl.getMethods()).hasSize(1);
+        assertThat(recordDecl.getMethods().get(0).getNameAsString()).isEqualTo("upper");
+    }
+
+    @Test
+    void testLocalClassDeclaration() {
+        String block = "{ class Helper { int getValue() { return 42; } } Helper h = new Helper(); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalClassDeclarationStmt localStmt = (LocalClassDeclarationStmt) result.getResult().get().getStatement(0);
+        ClassOrInterfaceDeclaration classDecl = localStmt.getClassDeclaration();
+        assertThat(classDecl.getNameAsString()).isEqualTo("Helper");
+        assertThat(classDecl.isInterface()).isFalse();
+        assertThat(classDecl.getMethods()).hasSize(1);
+        assertThat(classDecl.getMethods().get(0).getNameAsString()).isEqualTo("getValue");
+    }
+
+    @Test
+    void testLocalRecordDeclaration() {
+        String block = "{ record Pair(int x, int y) {} Pair p = new Pair(1, 2); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalRecordDeclarationStmt localStmt = (LocalRecordDeclarationStmt) result.getResult().get().getStatement(0);
+        RecordDeclaration recordDecl = localStmt.getRecordDeclaration();
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Pair");
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("x");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("y");
+    }
+
+    @Test
+    void testLocalInterfaceDeclaration() {
+        String block = "{ interface Greeter { void greet(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalClassDeclarationStmt localStmt = (LocalClassDeclarationStmt) result.getResult().get().getStatement(0);
+        ClassOrInterfaceDeclaration interfaceDecl = localStmt.getClassDeclaration();
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Greeter");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
+    }
+
+    @Test
+    void testNestedClassInClass() {
+        String code = "public class Outer { private static class Inner { int value; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getNameAsString()).isEqualTo("Outer");
+        assertThat(outer.getMembers()).hasSize(1);
+
+        ClassOrInterfaceDeclaration inner = (ClassOrInterfaceDeclaration) outer.getMembers().get(0);
+        assertThat(inner.getNameAsString()).isEqualTo("Inner");
+        assertThat(inner.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactlyInAnyOrder(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        assertThat(inner.getFields()).hasSize(1);
+    }
+
+    @Test
+    void testNestedEnumInClass() {
+        String code = "public class Outer { public enum Status { ACTIVE, INACTIVE } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getMembers()).hasSize(1);
+
+        EnumDeclaration nestedEnum = (EnumDeclaration) outer.getMembers().get(0);
+        assertThat(nestedEnum.getNameAsString()).isEqualTo("Status");
+        assertThat(nestedEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testNestedInterfaceInClass() {
+        String code = "public class Outer { public interface Callback { void onComplete(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getMembers()).hasSize(1);
+
+        ClassOrInterfaceDeclaration nestedInterface = (ClassOrInterfaceDeclaration) outer.getMembers().get(0);
+        assertThat(nestedInterface.getNameAsString()).isEqualTo("Callback");
+        assertThat(nestedInterface.isInterface()).isTrue();
+        assertThat(nestedInterface.getMethods()).hasSize(1);
+    }
+
+    @Test
+    void testNestedTypesInInterface() {
+        String code = "public interface Container { class DefaultImpl {} enum Type { A, B } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration container = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(container.isInterface()).isTrue();
+        assertThat(container.getMembers()).hasSize(2);
+
+        ClassOrInterfaceDeclaration defaultImpl = (ClassOrInterfaceDeclaration) container.getMembers().get(0);
+        assertThat(defaultImpl.getNameAsString()).isEqualTo("DefaultImpl");
+
+        EnumDeclaration typeEnum = (EnumDeclaration) container.getMembers().get(1);
+        assertThat(typeEnum.getNameAsString()).isEqualTo("Type");
+        assertThat(typeEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testGenericInterfaceMethodDeclaration() {
+        String code = "public interface Converter { <T> T convert(Object input); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration converter = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(converter.getMethods()).hasSize(1);
+        MethodDeclaration method = converter.getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("convert");
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeAsString()).isEqualTo("T");
+        assertThat(method.getParameters()).hasSize(1);
     }
 
     private String toString(Node n) {

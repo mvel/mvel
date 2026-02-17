@@ -35,8 +35,16 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -78,6 +86,8 @@ import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -100,6 +110,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VarType;
@@ -232,11 +243,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeDeclaration(Mvel3Parser.TypeDeclarationContext ctx) {
-        // Handle class declarations for now
         if (ctx.classDeclaration() != null) {
             return visit(ctx.classDeclaration());
+        } else if (ctx.enumDeclaration() != null) {
+            return visit(ctx.enumDeclaration());
+        } else if (ctx.interfaceDeclaration() != null) {
+            return visit(ctx.interfaceDeclaration());
+        } else if (ctx.annotationTypeDeclaration() != null) {
+            return visitAnnotationTypeDeclaration(ctx.annotationTypeDeclaration());
+        } else if (ctx.recordDeclaration() != null) {
+            return visitRecordDeclaration(ctx.recordDeclaration());
         }
-        // TODO: Handle other type declarations (interface, enum, etc.)
         throw new UnsupportedOperationException("Type declaration not yet implemented: " + ctx.getText());
     }
     
@@ -251,12 +268,53 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
             Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
             if (parent.classOrInterfaceModifier() != null) {
-                for (Mvel3Parser.ClassOrInterfaceModifierContext modifier : parent.classOrInterfaceModifier()) {
-                    if (modifier.PUBLIC() != null) {
-                        classDecl.addModifier(Modifier.Keyword.PUBLIC);
-                    }
-                    // TODO: Handle other modifiers
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                classDecl.setModifiers(ma.modifiers);
+                classDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            // Nested class inside a class body
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    classDecl.setModifiers(ma.modifiers);
+                    classDecl.setAnnotations(ma.annotations);
                 }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                classDecl.setModifiers(ma.modifiers);
+                classDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            classDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle extends
+        if (ctx.EXTENDS() != null && ctx.typeType() != null) {
+            Type extendedType = (Type) visit(ctx.typeType());
+            if (extendedType instanceof ClassOrInterfaceType) {
+                classDecl.setExtendedTypes(new NodeList<>((ClassOrInterfaceType) extendedType));
+            }
+        }
+
+        // Handle implements
+        if (ctx.IMPLEMENTS() != null && !ctx.typeList().isEmpty()) {
+            classDecl.setImplementedTypes(parseTypeList(ctx.typeList(0)));
+        }
+
+        // Handle permits (Java 17)
+        if (ctx.PERMITS() != null) {
+            int permitsIndex = ctx.IMPLEMENTS() != null ? 1 : 0;
+            if (ctx.typeList().size() > permitsIndex) {
+                classDecl.setPermittedTypes(parseTypeList(ctx.typeList(permitsIndex)));
             }
         }
 
@@ -266,6 +324,683 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
 
         return classDecl;
+    }
+
+    @Override
+    public Node visitEnumDeclaration(Mvel3Parser.EnumDeclarationContext ctx) {
+        String enumName = ctx.identifier().getText();
+        EnumDeclaration enumDecl = new EnumDeclaration(new NodeList<>(), enumName);
+
+        // Handle modifiers
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                enumDecl.setModifiers(ma.modifiers);
+                enumDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    enumDecl.setModifiers(ma.modifiers);
+                    enumDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                enumDecl.setModifiers(ma.modifiers);
+                enumDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle implements
+        if (ctx.IMPLEMENTS() != null && ctx.typeList() != null) {
+            enumDecl.setImplementedTypes(parseTypeList(ctx.typeList()));
+        }
+
+        // Handle enum constants
+        if (ctx.enumConstants() != null) {
+            NodeList<EnumConstantDeclaration> entries = new NodeList<>();
+            for (Mvel3Parser.EnumConstantContext constCtx : ctx.enumConstants().enumConstant()) {
+                String constName = constCtx.identifier().getText();
+                EnumConstantDeclaration constDecl = new EnumConstantDeclaration(constName);
+                constDecl.setTokenRange(createTokenRange(constCtx));
+
+                // Handle arguments
+                if (constCtx.arguments() != null) {
+                    constDecl.setArguments(parseArguments(constCtx.arguments()));
+                }
+
+                // Handle class body on enum constant
+                if (constCtx.classBody() != null) {
+                    constDecl.setClassBody(parseAnonymousClassBody(constCtx.classBody()));
+                }
+
+                entries.add(constDecl);
+            }
+            enumDecl.setEntries(entries);
+        }
+
+        // Handle enum body declarations (methods, fields after the semicolon)
+        if (ctx.enumBodyDeclarations() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.enumBodyDeclarations().classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            enumDecl.addMember((MethodDeclaration) method);
+                        }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        enumDecl.addMember(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        enumDecl.addMember(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        enumDecl.addMember(method);
+                    } else if (memberDecl.genericConstructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+                        enumDecl.addMember(constructor);
+                    } else if (memberDecl.classDeclaration() != null) {
+                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
+                    } else if (memberDecl.enumDeclaration() != null) {
+                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
+                    } else if (memberDecl.interfaceDeclaration() != null) {
+                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
+                    } else if (memberDecl.annotationTypeDeclaration() != null) {
+                        enumDecl.addMember((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
+                    } else if (memberDecl.recordDeclaration() != null) {
+                        enumDecl.addMember((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
+                    }
+                }
+            }
+        }
+
+        enumDecl.setTokenRange(createTokenRange(ctx));
+        return enumDecl;
+    }
+
+    @Override
+    public Node visitInterfaceDeclaration(Mvel3Parser.InterfaceDeclarationContext ctx) {
+        String interfaceName = ctx.identifier().getText();
+        ClassOrInterfaceDeclaration interfaceDecl = new ClassOrInterfaceDeclaration();
+        interfaceDecl.setName(interfaceName);
+        interfaceDecl.setInterface(true);
+
+        // Handle modifiers
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                interfaceDecl.setModifiers(ma.modifiers);
+                interfaceDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    interfaceDecl.setModifiers(ma.modifiers);
+                    interfaceDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.InterfaceMemberDeclarationContext) {
+            Mvel3Parser.InterfaceMemberDeclarationContext memberCtx = (Mvel3Parser.InterfaceMemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.InterfaceBodyDeclarationContext) {
+                Mvel3Parser.InterfaceBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.InterfaceBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    interfaceDecl.setModifiers(ma.modifiers);
+                    interfaceDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                interfaceDecl.setModifiers(ma.modifiers);
+                interfaceDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            interfaceDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle extends (interfaces can extend multiple interfaces)
+        if (ctx.EXTENDS() != null && !ctx.typeList().isEmpty()) {
+            interfaceDecl.setExtendedTypes(parseTypeList(ctx.typeList(0)));
+        }
+
+        // Handle permits (Java 17)
+        if (ctx.PERMITS() != null) {
+            int permitsIndex = ctx.EXTENDS() != null ? 1 : 0;
+            if (ctx.typeList().size() > permitsIndex) {
+                interfaceDecl.setPermittedTypes(parseTypeList(ctx.typeList(permitsIndex)));
+            }
+        }
+
+        // Handle interface body
+        if (ctx.interfaceBody() != null) {
+            visitInterfaceBody(ctx.interfaceBody(), interfaceDecl);
+        }
+
+        interfaceDecl.setTokenRange(createTokenRange(ctx));
+        return interfaceDecl;
+    }
+
+    private void visitInterfaceBody(Mvel3Parser.InterfaceBodyContext ctx, ClassOrInterfaceDeclaration interfaceDecl) {
+        if (ctx.interfaceBodyDeclaration() != null) {
+            for (Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl : ctx.interfaceBodyDeclaration()) {
+                if (bodyDecl.interfaceMemberDeclaration() != null) {
+                    Mvel3Parser.InterfaceMemberDeclarationContext memberDecl = bodyDecl.interfaceMemberDeclaration();
+                    if (memberDecl.interfaceMethodDeclaration() != null) {
+                        MethodDeclaration method = visitInterfaceMethodDeclaration(memberDecl.interfaceMethodDeclaration(), bodyDecl);
+                        interfaceDecl.addMember(method);
+                    } else if (memberDecl.constDeclaration() != null) {
+                        FieldDeclaration field = visitConstDeclaration(memberDecl.constDeclaration(), bodyDecl);
+                        interfaceDecl.addMember(field);
+                    } else if (memberDecl.genericInterfaceMethodDeclaration() != null) {
+                        MethodDeclaration method = visitGenericInterfaceMethodDeclaration(memberDecl.genericInterfaceMethodDeclaration(), bodyDecl);
+                        interfaceDecl.addMember(method);
+                    } else if (memberDecl.classDeclaration() != null) {
+                        interfaceDecl.addMember((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
+                    } else if (memberDecl.enumDeclaration() != null) {
+                        interfaceDecl.addMember((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
+                    } else if (memberDecl.interfaceDeclaration() != null) {
+                        interfaceDecl.addMember((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
+                    } else if (memberDecl.annotationTypeDeclaration() != null) {
+                        interfaceDecl.addMember((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
+                    } else if (memberDecl.recordDeclaration() != null) {
+                        interfaceDecl.addMember((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
+                    }
+                }
+            }
+        }
+    }
+
+    private MethodDeclaration visitInterfaceMethodDeclaration(
+            Mvel3Parser.InterfaceMethodDeclarationContext ctx,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
+        Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody = ctx.interfaceCommonBodyDeclaration();
+
+        String methodName = commonBody.identifier().getText();
+        MethodDeclaration methodDecl = new MethodDeclaration();
+        methodDecl.setName(methodName);
+
+        // Handle return type
+        if (commonBody.typeTypeOrVoid() != null) {
+            if (commonBody.typeTypeOrVoid().VOID() != null) {
+                methodDecl.setType(new VoidType());
+            } else if (commonBody.typeTypeOrVoid().typeType() != null) {
+                Type returnType = (Type) visit(commonBody.typeTypeOrVoid().typeType());
+                int extraDims = commonBody.LBRACK() != null ? commonBody.LBRACK().size() : 0;
+                for (int i = 0; i < extraDims; i++) {
+                    returnType = new ArrayType(returnType);
+                }
+                methodDecl.setType(returnType);
+            }
+        }
+
+        // Handle parameters
+        if (commonBody.formalParameters() != null) {
+            methodDecl.setParameters(parseFormalParameters(commonBody.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (commonBody.THROWS() != null && commonBody.qualifiedNameList() != null) {
+            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(commonBody.qualifiedNameList()));
+        }
+
+        // Handle method body (default methods have a body)
+        if (commonBody.methodBody() != null && commonBody.methodBody().block() != null) {
+            BlockStmt body = (BlockStmt) visit(commonBody.methodBody().block());
+            methodDecl.setBody(body);
+        }
+
+        // Handle modifiers from interfaceMethodModifier* and parent interfaceBodyDeclaration
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        // Modifiers from interfaceBodyDeclaration (modifier*)
+        if (bodyDecl.modifier() != null) {
+            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
+            modifiers.addAll(ma.modifiers);
+            annotations.addAll(ma.annotations);
+        }
+
+        // Modifiers from interfaceMethodModifier*
+        if (ctx.interfaceMethodModifier() != null) {
+            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : ctx.interfaceMethodModifier()) {
+                if (modCtx.PUBLIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
+                } else if (modCtx.ABSTRACT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
+                } else if (modCtx.DEFAULT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.DEFAULT, modCtx));
+                } else if (modCtx.STATIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
+                } else if (modCtx.STRICTFP() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
+                }
+            }
+        }
+
+        if (!modifiers.isEmpty()) {
+            methodDecl.setModifiers(modifiers);
+        }
+        if (!annotations.isEmpty()) {
+            methodDecl.setAnnotations(annotations);
+        }
+
+        methodDecl.setTokenRange(createTokenRange(ctx));
+        return methodDecl;
+    }
+
+    private MethodDeclaration visitGenericInterfaceMethodDeclaration(
+            Mvel3Parser.GenericInterfaceMethodDeclarationContext ctx,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
+        // Parse the common body as a regular interface method, passing the bodyDecl for outer modifiers
+        // Create a temporary wrapper to reuse visitInterfaceMethodDeclaration logic
+        Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody = ctx.interfaceCommonBodyDeclaration();
+
+        String methodName = commonBody.identifier().getText();
+        MethodDeclaration methodDecl = new MethodDeclaration();
+        methodDecl.setName(methodName);
+
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            methodDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle return type
+        if (commonBody.typeTypeOrVoid() != null) {
+            if (commonBody.typeTypeOrVoid().VOID() != null) {
+                methodDecl.setType(new VoidType());
+            } else if (commonBody.typeTypeOrVoid().typeType() != null) {
+                Type returnType = (Type) visit(commonBody.typeTypeOrVoid().typeType());
+                int extraDims = commonBody.LBRACK() != null ? commonBody.LBRACK().size() : 0;
+                for (int i = 0; i < extraDims; i++) {
+                    returnType = new ArrayType(returnType);
+                }
+                methodDecl.setType(returnType);
+            }
+        }
+
+        // Handle parameters
+        if (commonBody.formalParameters() != null) {
+            methodDecl.setParameters(parseFormalParameters(commonBody.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (commonBody.THROWS() != null && commonBody.qualifiedNameList() != null) {
+            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(commonBody.qualifiedNameList()));
+        }
+
+        // Handle method body (default methods have a body)
+        if (commonBody.methodBody() != null && commonBody.methodBody().block() != null) {
+            BlockStmt body = (BlockStmt) visit(commonBody.methodBody().block());
+            methodDecl.setBody(body);
+        }
+
+        // Handle modifiers from interfaceMethodModifier* and parent interfaceBodyDeclaration
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        // Modifiers from parent interfaceBodyDeclaration
+        if (bodyDecl.modifier() != null) {
+            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
+            modifiers.addAll(ma.modifiers);
+            annotations.addAll(ma.annotations);
+        }
+
+        // Modifiers from interfaceMethodModifier*
+        if (ctx.interfaceMethodModifier() != null) {
+            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : ctx.interfaceMethodModifier()) {
+                if (modCtx.PUBLIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
+                } else if (modCtx.ABSTRACT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
+                } else if (modCtx.DEFAULT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.DEFAULT, modCtx));
+                } else if (modCtx.STATIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
+                } else if (modCtx.STRICTFP() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
+                }
+            }
+        }
+
+        if (!modifiers.isEmpty()) {
+            methodDecl.setModifiers(modifiers);
+        }
+        if (!annotations.isEmpty()) {
+            methodDecl.setAnnotations(annotations);
+        }
+
+        methodDecl.setTokenRange(createTokenRange(ctx));
+        return methodDecl;
+    }
+
+    private FieldDeclaration visitConstDeclaration(
+            Mvel3Parser.ConstDeclarationContext ctx,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
+        Type fieldType = (Type) visit(ctx.typeType());
+
+        NodeList<VariableDeclarator> declarators = new NodeList<>();
+        for (Mvel3Parser.ConstantDeclaratorContext constCtx : ctx.constantDeclarator()) {
+            String varName = constCtx.identifier().getText();
+            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+            varDeclarator.setTokenRange(createTokenRange(constCtx));
+
+            if (constCtx.variableInitializer() != null) {
+                Expression initializer = (Expression) visit(constCtx.variableInitializer());
+                varDeclarator.setInitializer(initializer);
+            }
+
+            declarators.add(varDeclarator);
+        }
+
+        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
+        fieldDecl.setTokenRange(createTokenRange(ctx));
+
+        // Handle modifiers from parent context
+        if (bodyDecl.modifier() != null) {
+            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
+            fieldDecl.setModifiers(ma.modifiers);
+            fieldDecl.setAnnotations(ma.annotations);
+        }
+
+        return fieldDecl;
+    }
+
+    @Override
+    public Node visitAnnotationTypeDeclaration(Mvel3Parser.AnnotationTypeDeclarationContext ctx) {
+        String annotationName = ctx.identifier().getText();
+        AnnotationDeclaration annotationDecl = new AnnotationDeclaration(new NodeList<>(), annotationName);
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                annotationDecl.setModifiers(ma.modifiers);
+                annotationDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    annotationDecl.setModifiers(ma.modifiers);
+                    annotationDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.InterfaceMemberDeclarationContext) {
+            Mvel3Parser.InterfaceMemberDeclarationContext memberCtx = (Mvel3Parser.InterfaceMemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.InterfaceBodyDeclarationContext) {
+                Mvel3Parser.InterfaceBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.InterfaceBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    annotationDecl.setModifiers(ma.modifiers);
+                    annotationDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.AnnotationTypeElementRestContext) {
+            Mvel3Parser.AnnotationTypeElementRestContext restCtx = (Mvel3Parser.AnnotationTypeElementRestContext) ctx.getParent();
+            if (restCtx.getParent() instanceof Mvel3Parser.AnnotationTypeElementDeclarationContext) {
+                Mvel3Parser.AnnotationTypeElementDeclarationContext elemDeclCtx = (Mvel3Parser.AnnotationTypeElementDeclarationContext) restCtx.getParent();
+                if (elemDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(elemDeclCtx.modifier());
+                    annotationDecl.setModifiers(ma.modifiers);
+                    annotationDecl.setAnnotations(ma.annotations);
+                }
+            }
+        }
+
+        // Handle annotation type body
+        if (ctx.annotationTypeBody() != null) {
+            visitAnnotationTypeBody(ctx.annotationTypeBody(), annotationDecl);
+        }
+
+        annotationDecl.setTokenRange(createTokenRange(ctx));
+        return annotationDecl;
+    }
+
+    private void visitAnnotationTypeBody(Mvel3Parser.AnnotationTypeBodyContext ctx, AnnotationDeclaration annotationDecl) {
+        if (ctx.annotationTypeElementDeclaration() != null) {
+            for (Mvel3Parser.AnnotationTypeElementDeclarationContext elemDecl : ctx.annotationTypeElementDeclaration()) {
+                if (elemDecl.annotationTypeElementRest() == null) {
+                    continue; // bare semicolon
+                }
+                Mvel3Parser.AnnotationTypeElementRestContext rest = elemDecl.annotationTypeElementRest();
+
+                if (rest.annotationMethodOrConstantRest() != null) {
+                    // annotation method or constant: typeType annotationMethodOrConstantRest ';'
+                    Type type = (Type) visit(rest.typeType());
+                    Mvel3Parser.AnnotationMethodOrConstantRestContext methodOrConst = rest.annotationMethodOrConstantRest();
+
+                    if (methodOrConst.annotationMethodRest() != null) {
+                        // Annotation method: identifier '(' ')' defaultValue?
+                        Mvel3Parser.AnnotationMethodRestContext methodRest = methodOrConst.annotationMethodRest();
+                        String methodName = methodRest.identifier().getText();
+
+                        AnnotationMemberDeclaration memberDecl = new AnnotationMemberDeclaration();
+                        memberDecl.setType(type);
+                        memberDecl.setName(methodName);
+
+                        // Handle default value
+                        if (methodRest.defaultValue() != null) {
+                            Expression defaultValue = parseElementValue(methodRest.defaultValue().elementValue());
+                            memberDecl.setDefaultValue(defaultValue);
+                        }
+
+                        // Handle modifiers from parent annotationTypeElementDeclaration
+                        if (elemDecl.modifier() != null) {
+                            ModifiersAnnotations ma = parseModifiers(elemDecl.modifier());
+                            memberDecl.setModifiers(ma.modifiers);
+                            memberDecl.setAnnotations(ma.annotations);
+                        }
+
+                        memberDecl.setTokenRange(createTokenRange(rest));
+                        annotationDecl.addMember(memberDecl);
+                    } else if (methodOrConst.annotationConstantRest() != null) {
+                        // Annotation constant: variableDeclarators
+                        Mvel3Parser.AnnotationConstantRestContext constRest = methodOrConst.annotationConstantRest();
+                        NodeList<VariableDeclarator> declarators = new NodeList<>();
+                        for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : constRest.variableDeclarators().variableDeclarator()) {
+                            String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
+                            VariableDeclarator varDeclarator = new VariableDeclarator(type, varName);
+                            varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
+
+                            if (declaratorCtx.variableInitializer() != null) {
+                                Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
+                                varDeclarator.setInitializer(initializer);
+                            }
+
+                            declarators.add(varDeclarator);
+                        }
+
+                        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
+                        fieldDecl.setTokenRange(createTokenRange(rest));
+
+                        // Handle modifiers
+                        if (elemDecl.modifier() != null) {
+                            ModifiersAnnotations ma = parseModifiers(elemDecl.modifier());
+                            fieldDecl.setModifiers(ma.modifiers);
+                            fieldDecl.setAnnotations(ma.annotations);
+                        }
+
+                        annotationDecl.addMember(fieldDecl);
+                    }
+                } else if (rest.classDeclaration() != null) {
+                    Node nested = visit(rest.classDeclaration());
+                    annotationDecl.addMember((BodyDeclaration<?>) nested);
+                } else if (rest.interfaceDeclaration() != null) {
+                    Node nested = visit(rest.interfaceDeclaration());
+                    annotationDecl.addMember((BodyDeclaration<?>) nested);
+                } else if (rest.enumDeclaration() != null) {
+                    Node nested = visit(rest.enumDeclaration());
+                    annotationDecl.addMember((BodyDeclaration<?>) nested);
+                } else if (rest.annotationTypeDeclaration() != null) {
+                    Node nested = visitAnnotationTypeDeclaration(rest.annotationTypeDeclaration());
+                    annotationDecl.addMember((BodyDeclaration<?>) nested);
+                } else if (rest.recordDeclaration() != null) {
+                    Node nested = visitRecordDeclaration(rest.recordDeclaration());
+                    annotationDecl.addMember((BodyDeclaration<?>) nested);
+                }
+            }
+        }
+    }
+
+    private Expression parseElementValue(Mvel3Parser.ElementValueContext ctx) {
+        if (ctx.expression() != null) {
+            return (Expression) visit(ctx.expression());
+        } else if (ctx.annotation() != null) {
+            return (Expression) visit(ctx.annotation());
+        } else if (ctx.elementValueArrayInitializer() != null) {
+            // Convert { val1, val2, ... } to ArrayInitializerExpr
+            NodeList<Expression> values = new NodeList<>();
+            for (Mvel3Parser.ElementValueContext elemCtx : ctx.elementValueArrayInitializer().elementValue()) {
+                values.add(parseElementValue(elemCtx));
+            }
+            return new ArrayInitializerExpr(values);
+        }
+        throw new UnsupportedOperationException("Unsupported element value: " + ctx.getText());
+    }
+
+    @Override
+    public Node visitRecordDeclaration(Mvel3Parser.RecordDeclarationContext ctx) {
+        String recordName = ctx.identifier().getText();
+        RecordDeclaration recordDecl = new RecordDeclaration(new NodeList<>(), recordName);
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.TypeDeclarationContext) {
+            Mvel3Parser.TypeDeclarationContext parent = (Mvel3Parser.TypeDeclarationContext) ctx.getParent();
+            if (parent.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(parent.classOrInterfaceModifier());
+                recordDecl.setModifiers(ma.modifiers);
+                recordDecl.setAnnotations(ma.annotations);
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    recordDecl.setModifiers(ma.modifiers);
+                    recordDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.InterfaceMemberDeclarationContext) {
+            Mvel3Parser.InterfaceMemberDeclarationContext memberCtx = (Mvel3Parser.InterfaceMemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.InterfaceBodyDeclarationContext) {
+                Mvel3Parser.InterfaceBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.InterfaceBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    recordDecl.setModifiers(ma.modifiers);
+                    recordDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.LocalTypeDeclarationContext) {
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = (Mvel3Parser.LocalTypeDeclarationContext) ctx.getParent();
+            if (localCtx.classOrInterfaceModifier() != null) {
+                ModifiersAnnotations ma = parseClassOrInterfaceModifiers(localCtx.classOrInterfaceModifier());
+                recordDecl.setModifiers(ma.modifiers);
+                recordDecl.setAnnotations(ma.annotations);
+            }
+        }
+
+        // Handle type parameters
+        if (ctx.typeParameters() != null) {
+            recordDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+
+        // Handle record header (parameters)
+        if (ctx.recordHeader() != null && ctx.recordHeader().recordComponentList() != null) {
+            NodeList<Parameter> parameters = new NodeList<>();
+            for (Mvel3Parser.RecordComponentContext compCtx : ctx.recordHeader().recordComponentList().recordComponent()) {
+                Type compType = (Type) visit(compCtx.typeType());
+                String compName = compCtx.identifier().getText();
+                Parameter param = new Parameter(compType, compName);
+                param.setTokenRange(createTokenRange(compCtx));
+                parameters.add(param);
+            }
+            recordDecl.setParameters(parameters);
+        }
+
+        // Handle implements
+        if (ctx.IMPLEMENTS() != null && ctx.typeList() != null) {
+            recordDecl.setImplementedTypes(parseTypeList(ctx.typeList()));
+        }
+
+        // Handle record body
+        if (ctx.recordBody() != null) {
+            visitRecordBody(ctx.recordBody(), recordDecl);
+        }
+
+        recordDecl.setTokenRange(createTokenRange(ctx));
+        return recordDecl;
+    }
+
+    private void visitRecordBody(Mvel3Parser.RecordBodyContext ctx, RecordDeclaration recordDecl) {
+        // Handle classBodyDeclaration members (methods, fields, constructors, etc.)
+        if (ctx.classBodyDeclaration() != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
+                if (bodyDecl.memberDeclaration() != null) {
+                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
+                    if (memberDecl.methodDeclaration() != null) {
+                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
+                        if (method instanceof MethodDeclaration) {
+                            recordDecl.addMember((MethodDeclaration) method);
+                        }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        recordDecl.addMember(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        recordDecl.addMember(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        recordDecl.addMember(method);
+                    }
+                }
+            }
+        }
+
+        // Handle compact constructor declarations
+        if (ctx.compactConstructorDeclaration() != null) {
+            for (Mvel3Parser.CompactConstructorDeclarationContext compactCtx : ctx.compactConstructorDeclaration()) {
+                String name = compactCtx.identifier().getText();
+                CompactConstructorDeclaration compactDecl = new CompactConstructorDeclaration(name);
+
+                // Handle body
+                if (compactCtx.block() != null) {
+                    BlockStmt body = (BlockStmt) visit(compactCtx.block());
+                    compactDecl.setBody(body);
+                }
+
+                // Handle modifiers
+                if (compactCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(compactCtx.modifier());
+                    compactDecl.setModifiers(ma.modifiers);
+                    compactDecl.setAnnotations(ma.annotations);
+                }
+
+                compactDecl.setTokenRange(createTokenRange(compactCtx));
+                recordDecl.addMember(compactDecl);
+            }
+        }
     }
 
     private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
@@ -278,13 +1013,34 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                         if (method instanceof MethodDeclaration) {
                             classDecl.addMember((MethodDeclaration) method);
                         }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        classDecl.addMember(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        classDecl.addMember(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        classDecl.addMember(method);
+                    } else if (memberDecl.genericConstructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+                        classDecl.addMember(constructor);
+                    } else if (memberDecl.classDeclaration() != null) {
+                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
+                    } else if (memberDecl.enumDeclaration() != null) {
+                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
+                    } else if (memberDecl.interfaceDeclaration() != null) {
+                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
+                    } else if (memberDecl.annotationTypeDeclaration() != null) {
+                        classDecl.addMember((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
+                    } else if (memberDecl.recordDeclaration() != null) {
+                        classDecl.addMember((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
                     }
-                    // TODO: Handle other member types (fields, nested classes, etc.)
                 }
             }
         }
     }
-    
+
     private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
         NodeList<BodyDeclaration<?>> members = new NodeList<>();
         if (ctx.classBodyDeclaration() != null) {
@@ -296,12 +1052,141 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                         if (method instanceof MethodDeclaration) {
                             members.add((MethodDeclaration) method);
                         }
+                    } else if (memberDecl.fieldDeclaration() != null) {
+                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+                        members.add(field);
+                    } else if (memberDecl.constructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+                        members.add(constructor);
+                    } else if (memberDecl.genericMethodDeclaration() != null) {
+                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+                        members.add(method);
+                    } else if (memberDecl.genericConstructorDeclaration() != null) {
+                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+                        members.add(constructor);
+                    } else if (memberDecl.classDeclaration() != null) {
+                        members.add((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
+                    } else if (memberDecl.enumDeclaration() != null) {
+                        members.add((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
+                    } else if (memberDecl.interfaceDeclaration() != null) {
+                        members.add((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
+                    } else if (memberDecl.annotationTypeDeclaration() != null) {
+                        members.add((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
+                    } else if (memberDecl.recordDeclaration() != null) {
+                        members.add((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
                     }
-                    // TODO: Handle other member types (fields, nested classes, etc.)
                 }
             }
         }
         return members;
+    }
+
+    @Override
+    public Node visitFieldDeclaration(Mvel3Parser.FieldDeclarationContext ctx) {
+        Type fieldType = (Type) visit(ctx.typeType());
+
+        NodeList<VariableDeclarator> declarators = new NodeList<>();
+        for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
+            String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
+
+            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+            varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
+
+            if (declaratorCtx.variableInitializer() != null) {
+                Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
+                varDeclarator.setInitializer(initializer);
+            }
+
+            declarators.add(varDeclarator);
+        }
+
+        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
+        fieldDecl.setTokenRange(createTokenRange(ctx));
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    fieldDecl.setModifiers(ma.modifiers);
+                    fieldDecl.setAnnotations(ma.annotations);
+                }
+            }
+        }
+
+        return fieldDecl;
+    }
+
+    @Override
+    public Node visitConstructorDeclaration(Mvel3Parser.ConstructorDeclarationContext ctx) {
+        String name = ctx.identifier().getText();
+
+        ConstructorDeclaration constructorDecl = new ConstructorDeclaration(name);
+
+        // Handle parameters
+        if (ctx.formalParameters() != null) {
+            constructorDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
+            constructorDecl.setThrownExceptions(parseQualifiedNameListAsTypes(ctx.qualifiedNameList()));
+        }
+
+        // Handle modifiers from parent context
+        if (ctx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+            Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) ctx.getParent();
+            if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                if (bodyDeclCtx.modifier() != null) {
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    constructorDecl.setModifiers(ma.modifiers);
+                    constructorDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.GenericConstructorDeclarationContext) {
+            Mvel3Parser.GenericConstructorDeclarationContext genericCtx = (Mvel3Parser.GenericConstructorDeclarationContext) ctx.getParent();
+            if (genericCtx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+                Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) genericCtx.getParent();
+                if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                    Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                    if (bodyDeclCtx.modifier() != null) {
+                        ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                        constructorDecl.setModifiers(ma.modifiers);
+                        constructorDecl.setAnnotations(ma.annotations);
+                    }
+                }
+            }
+        }
+
+        // Handle constructor body
+        if (ctx.block() != null) {
+            BlockStmt body = (BlockStmt) visit(ctx.block());
+            constructorDecl.setBody(body);
+        }
+
+        constructorDecl.setTokenRange(createTokenRange(ctx));
+        return constructorDecl;
+    }
+
+    @Override
+    public Node visitGenericMethodDeclaration(Mvel3Parser.GenericMethodDeclarationContext ctx) {
+        MethodDeclaration methodDecl = (MethodDeclaration) visitMethodDeclaration(ctx.methodDeclaration());
+        if (ctx.typeParameters() != null) {
+            methodDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+        return methodDecl;
+    }
+
+    @Override
+    public Node visitGenericConstructorDeclaration(Mvel3Parser.GenericConstructorDeclarationContext ctx) {
+        ConstructorDeclaration constructorDecl = (ConstructorDeclaration) visitConstructorDeclaration(ctx.constructorDeclaration());
+        if (ctx.typeParameters() != null) {
+            constructorDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
+        }
+        return constructorDecl;
     }
 
     @Override
@@ -318,9 +1203,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (ctx.typeTypeOrVoid().VOID() != null) {
                 methodDecl.setType(new VoidType());
             } else if (ctx.typeTypeOrVoid().typeType() != null) {
-                // TODO: Handle other types
-                throw new UnsupportedOperationException("Non-void return types not yet implemented");
+                Type returnType = (Type) visit(ctx.typeTypeOrVoid().typeType());
+                // Handle array dimensions after formal parameters: ('[' ']')*
+                int extraDims = ctx.LBRACK() != null ? ctx.LBRACK().size() : 0;
+                for (int i = 0; i < extraDims; i++) {
+                    returnType = new ArrayType(returnType);
+                }
+                methodDecl.setType(returnType);
             }
+        }
+
+        // Handle parameters
+        if (ctx.formalParameters() != null) {
+            methodDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+        }
+
+        // Handle throws clause
+        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
+            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(ctx.qualifiedNameList()));
         }
 
         // Handle modifiers (from parent context)
@@ -329,13 +1229,21 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
                 Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
                 if (bodyDeclCtx.modifier() != null) {
-                    for (Mvel3Parser.ModifierContext modifier : bodyDeclCtx.modifier()) {
-                        if (modifier.classOrInterfaceModifier() != null) {
-                            if (modifier.classOrInterfaceModifier().PUBLIC() != null) {
-                                methodDecl.addModifier(Modifier.Keyword.PUBLIC);
-                            }
-                            // TODO: Handle other modifiers
-                        }
+                    ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                    methodDecl.setModifiers(ma.modifiers);
+                    methodDecl.setAnnotations(ma.annotations);
+                }
+            }
+        } else if (ctx.getParent() instanceof Mvel3Parser.GenericMethodDeclarationContext) {
+            Mvel3Parser.GenericMethodDeclarationContext genericCtx = (Mvel3Parser.GenericMethodDeclarationContext) ctx.getParent();
+            if (genericCtx.getParent() instanceof Mvel3Parser.MemberDeclarationContext) {
+                Mvel3Parser.MemberDeclarationContext memberCtx = (Mvel3Parser.MemberDeclarationContext) genericCtx.getParent();
+                if (memberCtx.getParent() instanceof Mvel3Parser.ClassBodyDeclarationContext) {
+                    Mvel3Parser.ClassBodyDeclarationContext bodyDeclCtx = (Mvel3Parser.ClassBodyDeclarationContext) memberCtx.getParent();
+                    if (bodyDeclCtx.modifier() != null) {
+                        ModifiersAnnotations ma = parseModifiers(bodyDeclCtx.modifier());
+                        methodDecl.setModifiers(ma.modifiers);
+                        methodDecl.setAnnotations(ma.annotations);
                     }
                 }
             }
@@ -1246,8 +2154,23 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.statement() != null) {
             return visit(ctx.statement());
         } else if (ctx.localTypeDeclaration() != null) {
-            // TODO: Handle local type declarations if needed
-            throw new UnsupportedOperationException("Local type declarations not yet implemented");
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = ctx.localTypeDeclaration();
+            if (localCtx.classDeclaration() != null) {
+                ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) visit(localCtx.classDeclaration());
+                LocalClassDeclarationStmt stmt = new LocalClassDeclarationStmt(classDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            } else if (localCtx.interfaceDeclaration() != null) {
+                ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) visit(localCtx.interfaceDeclaration());
+                LocalClassDeclarationStmt stmt = new LocalClassDeclarationStmt(interfaceDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            } else if (localCtx.recordDeclaration() != null) {
+                RecordDeclaration recordDecl = (RecordDeclaration) visitRecordDeclaration(localCtx.recordDeclaration());
+                LocalRecordDeclarationStmt stmt = new LocalRecordDeclarationStmt(recordDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            }
         }
         return null;
     }
@@ -2213,6 +3136,61 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return new LambdaParametersResult(parameters, enclosingParameters);
     }
 
+    private NodeList<Parameter> parseFormalParameters(Mvel3Parser.FormalParametersContext ctx) {
+        if (ctx == null || ctx.formalParameterList() == null) {
+            return new NodeList<>();
+        }
+        return collectFormalParameters(ctx.formalParameterList());
+    }
+
+    private NodeList<ReferenceType> parseQualifiedNameListAsTypes(Mvel3Parser.QualifiedNameListContext ctx) {
+        NodeList<ReferenceType> types = new NodeList<>();
+        if (ctx != null && ctx.qualifiedName() != null) {
+            for (Mvel3Parser.QualifiedNameContext qn : ctx.qualifiedName()) {
+                ClassOrInterfaceType type = new ClassOrInterfaceType(null, qn.getText());
+                type.setTokenRange(createTokenRange(qn));
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
+    private NodeList<ClassOrInterfaceType> parseTypeList(Mvel3Parser.TypeListContext ctx) {
+        NodeList<ClassOrInterfaceType> types = new NodeList<>();
+        if (ctx != null && ctx.typeType() != null) {
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
+                Type type = (Type) visit(typeCtx);
+                if (type instanceof ClassOrInterfaceType) {
+                    types.add((ClassOrInterfaceType) type);
+                }
+            }
+        }
+        return types;
+    }
+
+    private NodeList<TypeParameter> parseTypeParameters(Mvel3Parser.TypeParametersContext ctx) {
+        NodeList<TypeParameter> typeParams = new NodeList<>();
+        if (ctx == null || ctx.typeParameter() == null) {
+            return typeParams;
+        }
+        for (Mvel3Parser.TypeParameterContext tpCtx : ctx.typeParameter()) {
+            String name = tpCtx.identifier().getText();
+            NodeList<ClassOrInterfaceType> bounds = new NodeList<>();
+            if (tpCtx.typeBound() != null) {
+                for (Mvel3Parser.TypeTypeContext boundCtx : tpCtx.typeBound().typeType()) {
+                    Type boundType = (Type) visit(boundCtx);
+                    if (boundType instanceof ClassOrInterfaceType) {
+                        bounds.add((ClassOrInterfaceType) boundType);
+                    }
+                }
+            }
+            TypeParameter typeParam = new TypeParameter(name, bounds);
+            typeParam.setTokenRange(createTokenRange(tpCtx));
+            typeParams.add(typeParam);
+        }
+        return typeParams;
+    }
+
     private NodeList<Parameter> collectFormalParameters(Mvel3Parser.FormalParameterListContext ctx) {
         NodeList<Parameter> parameters = new NodeList<>();
         if (ctx == null) {
@@ -2279,6 +3257,70 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         ExpressionStmt expressionStmt = new ExpressionStmt(expression);
         expressionStmt.setTokenRange(createTokenRange(ctx));
         return expressionStmt;
+    }
+
+    private ModifiersAnnotations parseClassOrInterfaceModifiers(List<Mvel3Parser.ClassOrInterfaceModifierContext> modifierContexts) {
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        if (modifierContexts != null) {
+            for (Mvel3Parser.ClassOrInterfaceModifierContext modCtx : modifierContexts) {
+                if (modCtx.annotation() != null) {
+                    annotations.add(parseAnnotationExpr(modCtx.annotation()));
+                } else if (modCtx.PUBLIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
+                } else if (modCtx.PROTECTED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PROTECTED, modCtx));
+                } else if (modCtx.PRIVATE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.PRIVATE, modCtx));
+                } else if (modCtx.STATIC() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
+                } else if (modCtx.ABSTRACT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
+                } else if (modCtx.FINAL() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.FINAL, modCtx));
+                } else if (modCtx.STRICTFP() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
+                } else if (modCtx.SEALED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.SEALED, modCtx));
+                } else if (modCtx.NON_SEALED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.NON_SEALED, modCtx));
+                }
+            }
+        }
+
+        return new ModifiersAnnotations(modifiers, annotations);
+    }
+
+    private ModifiersAnnotations parseModifiers(List<Mvel3Parser.ModifierContext> modifierContexts) {
+        NodeList<Modifier> modifiers = new NodeList<>();
+        NodeList<AnnotationExpr> annotations = new NodeList<>();
+
+        if (modifierContexts != null) {
+            for (Mvel3Parser.ModifierContext modCtx : modifierContexts) {
+                if (modCtx.classOrInterfaceModifier() != null) {
+                    ModifiersAnnotations inner = parseClassOrInterfaceModifiers(List.of(modCtx.classOrInterfaceModifier()));
+                    modifiers.addAll(inner.modifiers);
+                    annotations.addAll(inner.annotations);
+                } else if (modCtx.NATIVE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.NATIVE, modCtx));
+                } else if (modCtx.SYNCHRONIZED() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.SYNCHRONIZED, modCtx));
+                } else if (modCtx.TRANSIENT() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.TRANSIENT, modCtx));
+                } else if (modCtx.VOLATILE() != null) {
+                    modifiers.add(createModifier(Modifier.Keyword.VOLATILE, modCtx));
+                }
+            }
+        }
+
+        return new ModifiersAnnotations(modifiers, annotations);
+    }
+
+    private Modifier createModifier(Modifier.Keyword keyword, ParserRuleContext ctx) {
+        Modifier modifier = new Modifier(keyword);
+        modifier.setTokenRange(createTokenRange(ctx));
+        return modifier;
     }
 
     private ModifiersAnnotations parseVariableModifiers(List<Mvel3Parser.VariableModifierContext> modifierContexts) {
