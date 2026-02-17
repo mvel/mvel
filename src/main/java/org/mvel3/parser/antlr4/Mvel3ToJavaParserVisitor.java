@@ -1518,50 +1518,13 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             stringLiteral.setTokenRange(createTokenRange(ctx));
             return stringLiteral;
         } else if (ctx.DECIMAL_LITERAL() != null) {
-            String text = ctx.DECIMAL_LITERAL().getText();
-            // Check if it's a long literal (ends with 'L' or 'l')
-            if (text.endsWith("L") || text.endsWith("l")) {
-                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
-                longLiteral.setTokenRange(createTokenRange(ctx));
-                return longLiteral;
-            } else {
-                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
-                integerLiteral.setTokenRange(createTokenRange(ctx));
-                return integerLiteral;
-            }
+            return createIntegerOrLongLiteral(ctx.DECIMAL_LITERAL().getText(), ctx);
         } else if (ctx.HEX_LITERAL() != null) {
-            String text = ctx.HEX_LITERAL().getText();
-            if (text.endsWith("L") || text.endsWith("l")) {
-                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
-                longLiteral.setTokenRange(createTokenRange(ctx));
-                return longLiteral;
-            } else {
-                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
-                integerLiteral.setTokenRange(createTokenRange(ctx));
-                return integerLiteral;
-            }
+            return createIntegerOrLongLiteral(ctx.HEX_LITERAL().getText(), ctx);
         } else if (ctx.OCT_LITERAL() != null) {
-            String text = ctx.OCT_LITERAL().getText();
-            if (text.endsWith("L") || text.endsWith("l")) {
-                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
-                longLiteral.setTokenRange(createTokenRange(ctx));
-                return longLiteral;
-            } else {
-                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
-                integerLiteral.setTokenRange(createTokenRange(ctx));
-                return integerLiteral;
-            }
+            return createIntegerOrLongLiteral(ctx.OCT_LITERAL().getText(), ctx);
         } else if (ctx.BINARY_LITERAL() != null) {
-            String text = ctx.BINARY_LITERAL().getText();
-            if (text.endsWith("L") || text.endsWith("l")) {
-                LongLiteralExpr longLiteral = new LongLiteralExpr(text);
-                longLiteral.setTokenRange(createTokenRange(ctx));
-                return longLiteral;
-            } else {
-                IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
-                integerLiteral.setTokenRange(createTokenRange(ctx));
-                return integerLiteral;
-            }
+            return createIntegerOrLongLiteral(ctx.BINARY_LITERAL().getText(), ctx);
         } else if (ctx.FLOAT_LITERAL() != null) {
             DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
             doubleLiteral.setTokenRange(createTokenRange(ctx));
@@ -1607,6 +1570,18 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
+    }
+
+    private Expression createIntegerOrLongLiteral(String text, ParserRuleContext ctx) {
+        if (text.endsWith("L") || text.endsWith("l")) {
+            LongLiteralExpr longLiteral = new LongLiteralExpr(text);
+            longLiteral.setTokenRange(createTokenRange(ctx));
+            return longLiteral;
+        } else {
+            IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
+            integerLiteral.setTokenRange(createTokenRange(ctx));
+            return integerLiteral;
+        }
     }
 
     private TemporalLiteralExpr buildTemporalLiteral(Mvel3Parser.TemporalLiteralContext ctx) {
