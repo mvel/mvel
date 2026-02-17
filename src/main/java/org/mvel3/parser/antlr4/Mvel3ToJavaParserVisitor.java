@@ -1098,13 +1098,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         String identifier = ctx.NEW() != null ? "new" : ctx.identifier().getText();
 
         // Handle type arguments if present
-        NodeList<Type> typeArguments = null;
-        if (ctx.typeArguments() != null) {
-            typeArguments = new NodeList<>();
-            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
-                typeArguments.add((Type) visit(typeArgCtx));
-            }
-        }
+        NodeList<Type> typeArguments = ctx.typeArguments() != null ? parseTypeArguments(ctx.typeArguments()) : null;
 
         MethodReferenceExpr methodRef = new MethodReferenceExpr(scope, typeArguments, identifier);
         methodRef.setTokenRange(createTokenRange(ctx));
@@ -1163,11 +1157,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     methodCall.setArguments(args);
                     // Handle type arguments if present
                     if (suffixCtx.typeArguments() != null) {
-                        NodeList<Type> typeArgs = new NodeList<>();
-                        for (Mvel3Parser.TypeArgumentContext typeArgCtx : suffixCtx.typeArguments().typeArgument()) {
-                            typeArgs.add((Type) visit(typeArgCtx));
-                        }
-                        methodCall.setTypeArguments(typeArgs);
+                        methodCall.setTypeArguments(parseTypeArguments(suffixCtx.typeArguments()));
                     }
                     methodCall.setTokenRange(createTokenRange(ctx));
                     return methodCall;
@@ -1188,11 +1178,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             if (innerCtx.nonWildcardTypeArgumentsOrDiamond() != null) {
                 Mvel3Parser.NonWildcardTypeArgumentsOrDiamondContext diamondCtx = innerCtx.nonWildcardTypeArgumentsOrDiamond();
                 if (diamondCtx.nonWildcardTypeArguments() != null) {
-                    NodeList<Type> typeArgs = new NodeList<>();
-                    for (Mvel3Parser.TypeTypeContext typeCtx : diamondCtx.nonWildcardTypeArguments().typeList().typeType()) {
-                        typeArgs.add((Type) visit(typeCtx));
-                    }
-                    type.setTypeArguments(typeArgs);
+                    type.setTypeArguments(parseNonWildcardTypeArguments(diamondCtx.nonWildcardTypeArguments()));
                 } else {
                     // Diamond operator <>
                     type.setTypeArguments(new NodeList<>());
@@ -1222,10 +1208,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             Mvel3Parser.ExplicitGenericInvocationContext egiCtx = ctx.explicitGenericInvocation();
 
             // Parse type arguments from nonWildcardTypeArguments: '<' typeList '>'
-            NodeList<Type> typeArgs = new NodeList<>();
-            for (Mvel3Parser.TypeTypeContext typeCtx : egiCtx.nonWildcardTypeArguments().typeList().typeType()) {
-                typeArgs.add((Type) visit(typeCtx));
-            }
+            NodeList<Type> typeArgs = parseNonWildcardTypeArguments(egiCtx.nonWildcardTypeArguments());
 
             Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = egiCtx.explicitGenericInvocationSuffix();
             if (suffixCtx.identifier() != null) {
@@ -1296,10 +1279,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
         if (ctx.nonWildcardTypeArguments() != null) {
             // nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
-            NodeList<Type> typeArgs = new NodeList<>();
-            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.nonWildcardTypeArguments().typeList().typeType()) {
-                typeArgs.add((Type) visit(typeCtx));
-            }
+            NodeList<Type> typeArgs = parseNonWildcardTypeArguments(ctx.nonWildcardTypeArguments());
 
             if (ctx.explicitGenericInvocationSuffix() != null) {
                 Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx = ctx.explicitGenericInvocationSuffix();
@@ -1445,16 +1425,11 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
 
             // Extract type arguments if present
-            NodeList<Type> typeArguments = new NodeList<>();
-            if (ctx.typeArguments() != null) {
-                for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
-                    typeArguments.add((Type) visit(typeArgCtx));
-                }
-            }
+            NodeList<Type> typeArguments = ctx.typeArguments() != null ? parseTypeArguments(ctx.typeArguments()) : null;
 
             NullSafeMethodCallExpr methodCall = new NullSafeMethodCallExpr(
                 scope,
-                typeArguments.isEmpty() ? null : typeArguments,
+                typeArguments,
                 name,
                 arguments
             );
@@ -1652,16 +1627,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // Handle final typeArguments if present (the common case for generics like List<Foo>)
             if (ctx.typeArguments() != null && !ctx.typeArguments().isEmpty()) {
                 // Get the LAST typeArguments (which should be for the typeIdentifier)
-                Mvel3Parser.TypeArgumentsContext lastTypeArgs = ctx.typeArguments(ctx.typeArguments().size() - 1);
-                NodeList<com.github.javaparser.ast.type.Type> typeArgs = new NodeList<>();
-                
-                for (Mvel3Parser.TypeArgumentContext typeArgCtx : lastTypeArgs.typeArgument()) {
-                    com.github.javaparser.ast.type.Type typeArg = (com.github.javaparser.ast.type.Type) visit(typeArgCtx);
-                    if (typeArg != null) {
-                        typeArgs.add(typeArg);
-                    }
-                }
-                
+                NodeList<Type> typeArgs = parseTypeArguments(ctx.typeArguments(ctx.typeArguments().size() - 1));
                 if (!typeArgs.isEmpty()) {
                     newType.setTypeArguments(typeArgs);
                 }
@@ -2312,13 +2278,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     private NodeList<Type> handleTypeArgumentsOrDiamond(Mvel3Parser.TypeArgumentsOrDiamondContext ctx) {
         if (ctx.typeArguments() != null) {
-            // Handle full type arguments: <String, Integer>
-            NodeList<Type> typeArgs = new NodeList<>();
-            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
-                Type typeArg = (Type) visit(typeArgCtx);
-                typeArgs.add(typeArg);
-            }
-            return typeArgs;
+            return parseTypeArguments(ctx.typeArguments());
         } else {
             // Handle diamond operator: <> - return empty NodeList to represent diamond
             return new NodeList<>();
@@ -2704,11 +2664,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         ClassOrInterfaceType type = new ClassOrInterfaceType(scope, name);
 
         if (ctx.typeArguments() != null) {
-            NodeList<Type> typeArgs = new NodeList<>();
-            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArguments().typeArgument()) {
-                typeArgs.add((Type) visit(typeArgCtx));
-            }
-            type.setTypeArguments(typeArgs);
+            type.setTypeArguments(parseTypeArguments(ctx.typeArguments()));
         }
 
         type.setTokenRange(createTokenRange(ctx));
@@ -2795,6 +2751,29 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
         return types;
+    }
+
+    private NodeList<Type> parseTypeArguments(Mvel3Parser.TypeArgumentsContext ctx) {
+        NodeList<Type> typeArgs = new NodeList<>();
+        if (ctx != null) {
+            for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArgument()) {
+                Type typeArg = (Type) visit(typeArgCtx);
+                if (typeArg != null) {
+                    typeArgs.add(typeArg);
+                }
+            }
+        }
+        return typeArgs;
+    }
+
+    private NodeList<Type> parseNonWildcardTypeArguments(Mvel3Parser.NonWildcardTypeArgumentsContext ctx) {
+        NodeList<Type> typeArgs = new NodeList<>();
+        if (ctx != null && ctx.typeList() != null) {
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeList().typeType()) {
+                typeArgs.add((Type) visit(typeCtx));
+            }
+        }
+        return typeArgs;
     }
 
     private NodeList<ClassOrInterfaceType> parseTypeList(Mvel3Parser.TypeListContext ctx) {
