@@ -22,6 +22,8 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -1019,6 +1021,75 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(interfaceDecl.getFields().get(0).getVariable(0).getNameAsString()).isEqualTo("MAX");
         assertThat(interfaceDecl.getFields().get(0).getVariable(0).getTypeAsString()).isEqualTo("int");
         assertThat(interfaceDecl.getFields().get(1).getVariable(0).getNameAsString()).isEqualTo("NAME");
+    }
+
+    @Test
+    void testAnnotationTypeDeclaration() {
+        String code = "public @interface MyAnnotation { String value(); int count() default 0; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("MyAnnotation");
+        assertThat(annotationDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(annotationDecl.getMembers()).hasSize(2);
+
+        AnnotationMemberDeclaration valueMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(valueMember.getNameAsString()).isEqualTo("value");
+        assertThat(valueMember.getTypeAsString()).isEqualTo("String");
+        assertThat(valueMember.getDefaultValue()).isEmpty();
+
+        AnnotationMemberDeclaration countMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(1);
+        assertThat(countMember.getNameAsString()).isEqualTo("count");
+        assertThat(countMember.getTypeAsString()).isEqualTo("int");
+        assertThat(countMember.getDefaultValue()).isPresent();
+        assertThat(countMember.getDefaultValue().get().toString()).isEqualTo("0");
+    }
+
+    @Test
+    void testAnnotationTypeDeclarationWithConstantsAndNestedTypes() {
+        String code = "public @interface Config { String DEFAULT_NAME = \"test\"; int value(); enum Level { LOW, HIGH } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("Config");
+        assertThat(annotationDecl.getMembers()).hasSize(3);
+
+        // Constant field
+        FieldDeclaration fieldDecl = (FieldDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(fieldDecl.getVariable(0).getNameAsString()).isEqualTo("DEFAULT_NAME");
+        assertThat(fieldDecl.getVariable(0).getTypeAsString()).isEqualTo("String");
+
+        // Annotation method
+        AnnotationMemberDeclaration methodMember = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(1);
+        assertThat(methodMember.getNameAsString()).isEqualTo("value");
+        assertThat(methodMember.getTypeAsString()).isEqualTo("int");
+
+        // Nested enum
+        EnumDeclaration nestedEnum = (EnumDeclaration) annotationDecl.getMembers().get(2);
+        assertThat(nestedEnum.getNameAsString()).isEqualTo("Level");
+        assertThat(nestedEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testAnnotationTypeDeclarationWithArrayDefault() {
+        String code = "public @interface Tags { String[] value() default {\"a\", \"b\"}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        AnnotationDeclaration annotationDecl = (AnnotationDeclaration) result.getResult().get().getType(0);
+        assertThat(annotationDecl.getNameAsString()).isEqualTo("Tags");
+        assertThat(annotationDecl.getMembers()).hasSize(1);
+
+        AnnotationMemberDeclaration member = (AnnotationMemberDeclaration) annotationDecl.getMembers().get(0);
+        assertThat(member.getNameAsString()).isEqualTo("value");
+        assertThat(member.getTypeAsString()).isEqualTo("String[]");
+        assertThat(member.getDefaultValue()).isPresent();
     }
 
     private String toString(Node n) {
