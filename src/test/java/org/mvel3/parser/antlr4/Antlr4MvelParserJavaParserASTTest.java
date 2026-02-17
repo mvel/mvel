@@ -1201,6 +1201,91 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(interfaceDecl.getMethods()).hasSize(1);
     }
 
+    @Test
+    void testNestedClassInClass() {
+        String code = "public class Outer { private static class Inner { int value; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getNameAsString()).isEqualTo("Outer");
+        assertThat(outer.getMembers()).hasSize(1);
+
+        ClassOrInterfaceDeclaration inner = (ClassOrInterfaceDeclaration) outer.getMembers().get(0);
+        assertThat(inner.getNameAsString()).isEqualTo("Inner");
+        assertThat(inner.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactlyInAnyOrder(Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        assertThat(inner.getFields()).hasSize(1);
+    }
+
+    @Test
+    void testNestedEnumInClass() {
+        String code = "public class Outer { public enum Status { ACTIVE, INACTIVE } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getMembers()).hasSize(1);
+
+        EnumDeclaration nestedEnum = (EnumDeclaration) outer.getMembers().get(0);
+        assertThat(nestedEnum.getNameAsString()).isEqualTo("Status");
+        assertThat(nestedEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testNestedInterfaceInClass() {
+        String code = "public class Outer { public interface Callback { void onComplete(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(outer.getMembers()).hasSize(1);
+
+        ClassOrInterfaceDeclaration nestedInterface = (ClassOrInterfaceDeclaration) outer.getMembers().get(0);
+        assertThat(nestedInterface.getNameAsString()).isEqualTo("Callback");
+        assertThat(nestedInterface.isInterface()).isTrue();
+        assertThat(nestedInterface.getMethods()).hasSize(1);
+    }
+
+    @Test
+    void testNestedTypesInInterface() {
+        String code = "public interface Container { class DefaultImpl {} enum Type { A, B } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration container = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(container.isInterface()).isTrue();
+        assertThat(container.getMembers()).hasSize(2);
+
+        ClassOrInterfaceDeclaration defaultImpl = (ClassOrInterfaceDeclaration) container.getMembers().get(0);
+        assertThat(defaultImpl.getNameAsString()).isEqualTo("DefaultImpl");
+
+        EnumDeclaration typeEnum = (EnumDeclaration) container.getMembers().get(1);
+        assertThat(typeEnum.getNameAsString()).isEqualTo("Type");
+        assertThat(typeEnum.getEntries()).hasSize(2);
+    }
+
+    @Test
+    void testGenericInterfaceMethodDeclaration() {
+        String code = "public interface Converter { <T> T convert(Object input); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration converter = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(converter.getMethods()).hasSize(1);
+        MethodDeclaration method = converter.getMethods().get(0);
+        assertThat(method.getNameAsString()).isEqualTo("convert");
+        assertThat(method.getTypeParameters()).hasSize(1);
+        assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
+        assertThat(method.getTypeAsString()).isEqualTo("T");
+        assertThat(method.getParameters()).hasSize(1);
+    }
+
     private String toString(Node n) {
         return PrintUtil.printNode(n);
     }
