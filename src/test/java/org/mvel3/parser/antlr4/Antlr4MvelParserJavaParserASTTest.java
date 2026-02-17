@@ -25,11 +25,13 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
@@ -1090,6 +1092,67 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(member.getNameAsString()).isEqualTo("value");
         assertThat(member.getTypeAsString()).isEqualTo("String[]");
         assertThat(member.getDefaultValue()).isPresent();
+    }
+
+    @Test
+    void testRecordDeclaration() {
+        String code = "public record Point(int x, int y) {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Point");
+        assertThat(recordDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("x");
+        assertThat(recordDecl.getParameters().get(0).getTypeAsString()).isEqualTo("int");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("y");
+        assertThat(recordDecl.getParameters().get(1).getTypeAsString()).isEqualTo("int");
+    }
+
+    @Test
+    void testRecordDeclarationWithTypeParametersAndImplements() {
+        String code = "public record Pair<A, B>(A first, B second) implements Comparable<Pair<A, B>> {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Pair");
+        assertThat(recordDecl.getTypeParameters()).hasSize(2);
+        assertThat(recordDecl.getTypeParameters().get(0).getNameAsString()).isEqualTo("A");
+        assertThat(recordDecl.getTypeParameters().get(1).getNameAsString()).isEqualTo("B");
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("first");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("second");
+        assertThat(recordDecl.getImplementedTypes()).hasSize(1);
+        assertThat(recordDecl.getImplementedTypes().get(0).getNameAsString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testRecordDeclarationWithCompactConstructorAndMethods() {
+        String code = "public record Name(String value) { public Name { if (value == null) throw new NullPointerException(); } public String upper() { return value.toUpperCase(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        RecordDeclaration recordDecl = (RecordDeclaration) result.getResult().get().getType(0);
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Name");
+        assertThat(recordDecl.getParameters()).hasSize(1);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("value");
+
+        // Compact constructor
+        assertThat(recordDecl.getCompactConstructors()).hasSize(1);
+        CompactConstructorDeclaration compactCtor = recordDecl.getCompactConstructors().get(0);
+        assertThat(compactCtor.getNameAsString()).isEqualTo("Name");
+        assertThat(compactCtor.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.PUBLIC);
+
+        // Regular method
+        assertThat(recordDecl.getMethods()).hasSize(1);
+        assertThat(recordDecl.getMethods().get(0).getNameAsString()).isEqualTo("upper");
     }
 
     private String toString(Node n) {
