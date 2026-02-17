@@ -343,39 +343,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
         // Handle enum body declarations (methods, fields after the semicolon)
         if (ctx.enumBodyDeclarations() != null) {
-            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.enumBodyDeclarations().classBodyDeclaration()) {
-                if (bodyDecl.memberDeclaration() != null) {
-                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
-                    if (memberDecl.methodDeclaration() != null) {
-                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
-                        if (method instanceof MethodDeclaration) {
-                            enumDecl.addMember((MethodDeclaration) method);
-                        }
-                    } else if (memberDecl.fieldDeclaration() != null) {
-                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
-                        enumDecl.addMember(field);
-                    } else if (memberDecl.constructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
-                        enumDecl.addMember(constructor);
-                    } else if (memberDecl.genericMethodDeclaration() != null) {
-                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
-                        enumDecl.addMember(method);
-                    } else if (memberDecl.genericConstructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
-                        enumDecl.addMember(constructor);
-                    } else if (memberDecl.classDeclaration() != null) {
-                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
-                    } else if (memberDecl.enumDeclaration() != null) {
-                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
-                    } else if (memberDecl.interfaceDeclaration() != null) {
-                        enumDecl.addMember((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
-                    } else if (memberDecl.annotationTypeDeclaration() != null) {
-                        enumDecl.addMember((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
-                    } else if (memberDecl.recordDeclaration() != null) {
-                        enumDecl.addMember((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
-                    }
-                }
-            }
+            enumDecl.getMembers().addAll(visitClassBodyDeclarations(ctx.enumBodyDeclarations().classBodyDeclaration()));
         }
 
         enumDecl.setTokenRange(createTokenRange(ctx));
@@ -454,77 +422,8 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     private MethodDeclaration visitInterfaceMethodDeclaration(
             Mvel3Parser.InterfaceMethodDeclarationContext ctx,
             Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
-        Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody = ctx.interfaceCommonBodyDeclaration();
-
-        String methodName = commonBody.identifier().getText();
-        MethodDeclaration methodDecl = new MethodDeclaration();
-        methodDecl.setName(methodName);
-
-        // Handle return type
-        if (commonBody.typeTypeOrVoid() != null) {
-            if (commonBody.typeTypeOrVoid().VOID() != null) {
-                methodDecl.setType(new VoidType());
-            } else if (commonBody.typeTypeOrVoid().typeType() != null) {
-                Type returnType = (Type) visit(commonBody.typeTypeOrVoid().typeType());
-                int extraDims = commonBody.LBRACK() != null ? commonBody.LBRACK().size() : 0;
-                for (int i = 0; i < extraDims; i++) {
-                    returnType = new ArrayType(returnType);
-                }
-                methodDecl.setType(returnType);
-            }
-        }
-
-        // Handle parameters
-        if (commonBody.formalParameters() != null) {
-            methodDecl.setParameters(parseFormalParameters(commonBody.formalParameters()));
-        }
-
-        // Handle throws clause
-        if (commonBody.THROWS() != null && commonBody.qualifiedNameList() != null) {
-            methodDecl.setThrownExceptions(parseQualifiedNameListAsTypes(commonBody.qualifiedNameList()));
-        }
-
-        // Handle method body (default methods have a body)
-        if (commonBody.methodBody() != null && commonBody.methodBody().block() != null) {
-            BlockStmt body = (BlockStmt) visit(commonBody.methodBody().block());
-            methodDecl.setBody(body);
-        }
-
-        // Handle modifiers from interfaceMethodModifier* and parent interfaceBodyDeclaration
-        NodeList<Modifier> modifiers = new NodeList<>();
-        NodeList<AnnotationExpr> annotations = new NodeList<>();
-
-        // Modifiers from interfaceBodyDeclaration (modifier*)
-        if (bodyDecl.modifier() != null) {
-            ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
-            modifiers.addAll(ma.modifiers);
-            annotations.addAll(ma.annotations);
-        }
-
-        // Modifiers from interfaceMethodModifier*
-        if (ctx.interfaceMethodModifier() != null) {
-            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : ctx.interfaceMethodModifier()) {
-                if (modCtx.PUBLIC() != null) {
-                    modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
-                } else if (modCtx.ABSTRACT() != null) {
-                    modifiers.add(createModifier(Modifier.Keyword.ABSTRACT, modCtx));
-                } else if (modCtx.DEFAULT() != null) {
-                    modifiers.add(createModifier(Modifier.Keyword.DEFAULT, modCtx));
-                } else if (modCtx.STATIC() != null) {
-                    modifiers.add(createModifier(Modifier.Keyword.STATIC, modCtx));
-                } else if (modCtx.STRICTFP() != null) {
-                    modifiers.add(createModifier(Modifier.Keyword.STRICTFP, modCtx));
-                }
-            }
-        }
-
-        if (!modifiers.isEmpty()) {
-            methodDecl.setModifiers(modifiers);
-        }
-        if (!annotations.isEmpty()) {
-            methodDecl.setAnnotations(annotations);
-        }
-
+        MethodDeclaration methodDecl = buildInterfaceMethodDeclaration(
+                ctx.interfaceCommonBodyDeclaration(), bodyDecl, ctx.interfaceMethodModifier());
         methodDecl.setTokenRange(createTokenRange(ctx));
         return methodDecl;
     }
@@ -532,18 +431,26 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     private MethodDeclaration visitGenericInterfaceMethodDeclaration(
             Mvel3Parser.GenericInterfaceMethodDeclarationContext ctx,
             Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl) {
-        // Parse the common body as a regular interface method, passing the bodyDecl for outer modifiers
-        // Create a temporary wrapper to reuse visitInterfaceMethodDeclaration logic
-        Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody = ctx.interfaceCommonBodyDeclaration();
-
-        String methodName = commonBody.identifier().getText();
-        MethodDeclaration methodDecl = new MethodDeclaration();
-        methodDecl.setName(methodName);
-
-        // Handle type parameters
+        MethodDeclaration methodDecl = buildInterfaceMethodDeclaration(
+                ctx.interfaceCommonBodyDeclaration(), bodyDecl, ctx.interfaceMethodModifier());
         if (ctx.typeParameters() != null) {
             methodDecl.setTypeParameters(parseTypeParameters(ctx.typeParameters()));
         }
+        methodDecl.setTokenRange(createTokenRange(ctx));
+        return methodDecl;
+    }
+
+    /**
+     * Shared logic for building an interface method declaration from its common body,
+     * parent body declaration (for outer modifiers), and interface method modifiers.
+     */
+    private MethodDeclaration buildInterfaceMethodDeclaration(
+            Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody,
+            Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
+            List<Mvel3Parser.InterfaceMethodModifierContext> interfaceMethodModifiers) {
+        String methodName = commonBody.identifier().getText();
+        MethodDeclaration methodDecl = new MethodDeclaration();
+        methodDecl.setName(methodName);
 
         // Handle return type
         if (commonBody.typeTypeOrVoid() != null) {
@@ -579,16 +486,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         NodeList<Modifier> modifiers = new NodeList<>();
         NodeList<AnnotationExpr> annotations = new NodeList<>();
 
-        // Modifiers from parent interfaceBodyDeclaration
         if (bodyDecl.modifier() != null) {
             ModifiersAnnotations ma = parseModifiers(bodyDecl.modifier());
             modifiers.addAll(ma.modifiers);
             annotations.addAll(ma.annotations);
         }
 
-        // Modifiers from interfaceMethodModifier*
-        if (ctx.interfaceMethodModifier() != null) {
-            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : ctx.interfaceMethodModifier()) {
+        if (interfaceMethodModifiers != null) {
+            for (Mvel3Parser.InterfaceMethodModifierContext modCtx : interfaceMethodModifiers) {
                 if (modCtx.PUBLIC() != null) {
                     modifiers.add(createModifier(Modifier.Keyword.PUBLIC, modCtx));
                 } else if (modCtx.ABSTRACT() != null) {
@@ -610,7 +515,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             methodDecl.setAnnotations(annotations);
         }
 
-        methodDecl.setTokenRange(createTokenRange(ctx));
         return methodDecl;
     }
 
@@ -811,28 +715,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     private void visitRecordBody(Mvel3Parser.RecordBodyContext ctx, RecordDeclaration recordDecl) {
         // Handle classBodyDeclaration members (methods, fields, constructors, etc.)
-        if (ctx.classBodyDeclaration() != null) {
-            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
-                if (bodyDecl.memberDeclaration() != null) {
-                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
-                    if (memberDecl.methodDeclaration() != null) {
-                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
-                        if (method instanceof MethodDeclaration) {
-                            recordDecl.addMember((MethodDeclaration) method);
-                        }
-                    } else if (memberDecl.fieldDeclaration() != null) {
-                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
-                        recordDecl.addMember(field);
-                    } else if (memberDecl.constructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
-                        recordDecl.addMember(constructor);
-                    } else if (memberDecl.genericMethodDeclaration() != null) {
-                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
-                        recordDecl.addMember(method);
-                    }
-                }
-            }
-        }
+        recordDecl.getMembers().addAll(visitClassBodyDeclarations(ctx.classBodyDeclaration()));
 
         // Handle compact constructor declarations
         if (ctx.compactConstructorDeclaration() != null) {
@@ -859,82 +742,60 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
     }
 
-    private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
-        if (ctx.classBodyDeclaration() != null) {
-            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
-                if (bodyDecl.memberDeclaration() != null) {
-                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
-                    if (memberDecl.methodDeclaration() != null) {
-                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
-                        if (method instanceof MethodDeclaration) {
-                            classDecl.addMember((MethodDeclaration) method);
-                        }
-                    } else if (memberDecl.fieldDeclaration() != null) {
-                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
-                        classDecl.addMember(field);
-                    } else if (memberDecl.constructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
-                        classDecl.addMember(constructor);
-                    } else if (memberDecl.genericMethodDeclaration() != null) {
-                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
-                        classDecl.addMember(method);
-                    } else if (memberDecl.genericConstructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
-                        classDecl.addMember(constructor);
-                    } else if (memberDecl.classDeclaration() != null) {
-                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
-                    } else if (memberDecl.enumDeclaration() != null) {
-                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
-                    } else if (memberDecl.interfaceDeclaration() != null) {
-                        classDecl.addMember((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
-                    } else if (memberDecl.annotationTypeDeclaration() != null) {
-                        classDecl.addMember((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
-                    } else if (memberDecl.recordDeclaration() != null) {
-                        classDecl.addMember((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
-                    }
-                }
-            }
+    /**
+     * Dispatch a single MemberDeclarationContext to the appropriate visitor method.
+     * Returns the resulting BodyDeclaration, or null if unhandled.
+     */
+    private BodyDeclaration<?> visitMemberDeclarationNode(Mvel3Parser.MemberDeclarationContext memberDecl) {
+        if (memberDecl.methodDeclaration() != null) {
+            return (MethodDeclaration) visitMethodDeclaration(memberDecl.methodDeclaration());
+        } else if (memberDecl.fieldDeclaration() != null) {
+            return (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+        } else if (memberDecl.constructorDeclaration() != null) {
+            return (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+        } else if (memberDecl.genericMethodDeclaration() != null) {
+            return (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+        } else if (memberDecl.genericConstructorDeclaration() != null) {
+            return (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+        } else if (memberDecl.classDeclaration() != null) {
+            return (BodyDeclaration<?>) visit(memberDecl.classDeclaration());
+        } else if (memberDecl.enumDeclaration() != null) {
+            return (BodyDeclaration<?>) visit(memberDecl.enumDeclaration());
+        } else if (memberDecl.interfaceDeclaration() != null) {
+            return (BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration());
+        } else if (memberDecl.annotationTypeDeclaration() != null) {
+            return (BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration());
+        } else if (memberDecl.recordDeclaration() != null) {
+            return (BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration());
         }
+        return null;
     }
 
-    private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
+    /**
+     * Process a list of ClassBodyDeclarationContexts and return all member declarations.
+     * Used by class bodies, enum bodies, record bodies, and anonymous class bodies.
+     */
+    private NodeList<BodyDeclaration<?>> visitClassBodyDeclarations(List<Mvel3Parser.ClassBodyDeclarationContext> bodyDeclarations) {
         NodeList<BodyDeclaration<?>> members = new NodeList<>();
-        if (ctx.classBodyDeclaration() != null) {
-            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : ctx.classBodyDeclaration()) {
+        if (bodyDeclarations != null) {
+            for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : bodyDeclarations) {
                 if (bodyDecl.memberDeclaration() != null) {
-                    Mvel3Parser.MemberDeclarationContext memberDecl = bodyDecl.memberDeclaration();
-                    if (memberDecl.methodDeclaration() != null) {
-                        Node method = visitMethodDeclaration(memberDecl.methodDeclaration());
-                        if (method instanceof MethodDeclaration) {
-                            members.add((MethodDeclaration) method);
-                        }
-                    } else if (memberDecl.fieldDeclaration() != null) {
-                        FieldDeclaration field = (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
-                        members.add(field);
-                    } else if (memberDecl.constructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
-                        members.add(constructor);
-                    } else if (memberDecl.genericMethodDeclaration() != null) {
-                        MethodDeclaration method = (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
-                        members.add(method);
-                    } else if (memberDecl.genericConstructorDeclaration() != null) {
-                        ConstructorDeclaration constructor = (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
-                        members.add(constructor);
-                    } else if (memberDecl.classDeclaration() != null) {
-                        members.add((BodyDeclaration<?>) visit(memberDecl.classDeclaration()));
-                    } else if (memberDecl.enumDeclaration() != null) {
-                        members.add((BodyDeclaration<?>) visit(memberDecl.enumDeclaration()));
-                    } else if (memberDecl.interfaceDeclaration() != null) {
-                        members.add((BodyDeclaration<?>) visit(memberDecl.interfaceDeclaration()));
-                    } else if (memberDecl.annotationTypeDeclaration() != null) {
-                        members.add((BodyDeclaration<?>) visitAnnotationTypeDeclaration(memberDecl.annotationTypeDeclaration()));
-                    } else if (memberDecl.recordDeclaration() != null) {
-                        members.add((BodyDeclaration<?>) visitRecordDeclaration(memberDecl.recordDeclaration()));
+                    BodyDeclaration<?> member = visitMemberDeclarationNode(bodyDecl.memberDeclaration());
+                    if (member != null) {
+                        members.add(member);
                     }
                 }
             }
         }
         return members;
+    }
+
+    private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
+        classDecl.getMembers().addAll(visitClassBodyDeclarations(ctx.classBodyDeclaration()));
+    }
+
+    private NodeList<BodyDeclaration<?>> parseAnonymousClassBody(Mvel3Parser.ClassBodyContext ctx) {
+        return visitClassBodyDeclarations(ctx.classBodyDeclaration());
     }
 
     @Override
