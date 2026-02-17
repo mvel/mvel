@@ -86,6 +86,8 @@ import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.ContinueStmt;
@@ -2021,8 +2023,23 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         } else if (ctx.statement() != null) {
             return visit(ctx.statement());
         } else if (ctx.localTypeDeclaration() != null) {
-            // TODO: Handle local type declarations if needed
-            throw new UnsupportedOperationException("Local type declarations not yet implemented");
+            Mvel3Parser.LocalTypeDeclarationContext localCtx = ctx.localTypeDeclaration();
+            if (localCtx.classDeclaration() != null) {
+                ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) visit(localCtx.classDeclaration());
+                LocalClassDeclarationStmt stmt = new LocalClassDeclarationStmt(classDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            } else if (localCtx.interfaceDeclaration() != null) {
+                ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) visit(localCtx.interfaceDeclaration());
+                LocalClassDeclarationStmt stmt = new LocalClassDeclarationStmt(interfaceDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            } else if (localCtx.recordDeclaration() != null) {
+                RecordDeclaration recordDecl = (RecordDeclaration) visitRecordDeclaration(localCtx.recordDeclaration());
+                LocalRecordDeclarationStmt stmt = new LocalRecordDeclarationStmt(recordDecl);
+                stmt.setTokenRange(createTokenRange(ctx));
+                return stmt;
+            }
         }
         return null;
     }

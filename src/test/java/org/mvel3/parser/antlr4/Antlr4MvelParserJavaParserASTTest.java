@@ -47,6 +47,8 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
+import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -1153,6 +1155,50 @@ class Antlr4MvelParserJavaParserASTTest {
         // Regular method
         assertThat(recordDecl.getMethods()).hasSize(1);
         assertThat(recordDecl.getMethods().get(0).getNameAsString()).isEqualTo("upper");
+    }
+
+    @Test
+    void testLocalClassDeclaration() {
+        String block = "{ class Helper { int getValue() { return 42; } } Helper h = new Helper(); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalClassDeclarationStmt localStmt = (LocalClassDeclarationStmt) result.getResult().get().getStatement(0);
+        ClassOrInterfaceDeclaration classDecl = localStmt.getClassDeclaration();
+        assertThat(classDecl.getNameAsString()).isEqualTo("Helper");
+        assertThat(classDecl.isInterface()).isFalse();
+        assertThat(classDecl.getMethods()).hasSize(1);
+        assertThat(classDecl.getMethods().get(0).getNameAsString()).isEqualTo("getValue");
+    }
+
+    @Test
+    void testLocalRecordDeclaration() {
+        String block = "{ record Pair(int x, int y) {} Pair p = new Pair(1, 2); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalRecordDeclarationStmt localStmt = (LocalRecordDeclarationStmt) result.getResult().get().getStatement(0);
+        RecordDeclaration recordDecl = localStmt.getRecordDeclaration();
+        assertThat(recordDecl.getNameAsString()).isEqualTo("Pair");
+        assertThat(recordDecl.getParameters()).hasSize(2);
+        assertThat(recordDecl.getParameters().get(0).getNameAsString()).isEqualTo("x");
+        assertThat(recordDecl.getParameters().get(1).getNameAsString()).isEqualTo("y");
+    }
+
+    @Test
+    void testLocalInterfaceDeclaration() {
+        String block = "{ interface Greeter { void greet(); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        LocalClassDeclarationStmt localStmt = (LocalClassDeclarationStmt) result.getResult().get().getStatement(0);
+        ClassOrInterfaceDeclaration interfaceDecl = localStmt.getClassDeclaration();
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Greeter");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getMethods()).hasSize(1);
     }
 
     private String toString(Node n) {
