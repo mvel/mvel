@@ -35,6 +35,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -44,11 +45,19 @@ import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
+import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.modules.ModuleDeclaration;
+import com.github.javaparser.ast.modules.ModuleDirective;
+import com.github.javaparser.ast.modules.ModuleExportsDirective;
+import com.github.javaparser.ast.modules.ModuleOpensDirective;
+import com.github.javaparser.ast.modules.ModuleProvidesDirective;
+import com.github.javaparser.ast.modules.ModuleRequiresDirective;
+import com.github.javaparser.ast.modules.ModuleUsesDirective;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -230,6 +239,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     cu.addType((TypeDeclaration<?>) node);
                 }
             }
+        }
+
+        // Handle module declaration (second alternative: moduleDeclaration EOF)
+        if (ctx.moduleDeclaration() != null) {
+            Mvel3Parser.ModuleDeclarationContext moduleCtx = ctx.moduleDeclaration();
+            boolean isOpen = moduleCtx.OPEN() != null;
+            Name moduleName = StaticJavaParser.parseName(moduleCtx.qualifiedName().getText());
+
+            NodeList<ModuleDirective> directives = new NodeList<>();
+            if (moduleCtx.moduleBody() != null && moduleCtx.moduleBody().moduleDirective() != null) {
+                for (Mvel3Parser.ModuleDirectiveContext dirCtx : moduleCtx.moduleBody().moduleDirective()) {
+                    directives.add(processModuleDirective(dirCtx));
+                }
+            }
+
+            ModuleDeclaration moduleDecl = new ModuleDeclaration(moduleName, isOpen);
+            moduleDecl.setDirectives(directives);
+            cu.setModule(moduleDecl);
         }
 
         return cu;
@@ -480,6 +507,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Handle parameters
         if (commonBody.formalParameters() != null) {
             methodDecl.setParameters(parseFormalParameters(commonBody.formalParameters()));
+            processReceiverParameter(commonBody.formalParameters(), methodDecl);
         }
 
         // Handle throws clause
@@ -867,6 +895,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Handle parameters
         if (ctx.formalParameters() != null) {
             constructorDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+            processReceiverParameter(ctx.formalParameters(), constructorDecl);
         }
 
         // Handle throws clause
@@ -934,6 +963,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Handle parameters
         if (ctx.formalParameters() != null) {
             methodDecl.setParameters(parseFormalParameters(ctx.formalParameters()));
+            processReceiverParameter(ctx.formalParameters(), methodDecl);
         }
 
         // Handle throws clause
@@ -1249,9 +1279,26 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 methodCall.setTokenRange(createTokenRange(ctx));
                 return methodCall;
             } else if (suffixCtx.SUPER() != null) {
-                // <Type>super(args) or <Type>super.method(args)
-                // TODO: Handle super suffix with type arguments
-                throw new UnsupportedOperationException("Generic super invocation not yet implemented");
+                // expression.<Type>super(...) or expression.<Type>super.method(...)
+                Mvel3Parser.SuperSuffixContext superSuffix = suffixCtx.superSuffix();
+                Name typeName = new Name(scope.toString());
+                com.github.javaparser.ast.expr.SuperExpr superExpr = new com.github.javaparser.ast.expr.SuperExpr(typeName);
+
+                if (superSuffix.arguments() != null && superSuffix.identifier() == null) {
+                    // expression.<Type>super(args) — generic super constructor call
+                    NodeList<Expression> args = parseArguments(superSuffix.arguments());
+                    MethodCallExpr methodCall = new MethodCallExpr(superExpr, typeArgs, "super", args);
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                } else if (superSuffix.identifier() != null) {
+                    // expression.<Type>super.method(args)
+                    String memberName = superSuffix.identifier().getText();
+                    NodeList<Expression> args = superSuffix.arguments() != null
+                            ? parseArguments(superSuffix.arguments()) : new NodeList<>();
+                    MethodCallExpr methodCall = new MethodCallExpr(superExpr, typeArgs, memberName, args);
+                    methodCall.setTokenRange(createTokenRange(ctx));
+                    return methodCall;
+                }
             }
         }
 
@@ -1632,40 +1679,34 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitClassOrInterfaceType(Mvel3Parser.ClassOrInterfaceTypeContext ctx) {
         // Grammar: (identifier typeArguments? '.')* typeIdentifier typeArguments?
-        
+        // Walk children to correctly associate each typeArguments with its preceding identifier.
         ClassOrInterfaceType type = null;
-        
-        // Handle the optional qualified prefix (identifier typeArguments? '.')*
-        // For now, we skip typeArguments in the prefix (rare case)
-        if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
-            for (int i = 0; i < ctx.identifier().size(); i++) {
-                String name = ctx.identifier(i).getText();
-                ClassOrInterfaceType newType = new ClassOrInterfaceType(type, name);
-                newType.setTokenRange(createTokenRange(ctx));
-                type = newType;
-                // TODO: Handle typeArguments for intermediate identifiers if needed (rare case)
-            }
-        }
-        
-        // Handle the required typeIdentifier at the end
-        if (ctx.typeIdentifier() != null) {
-            String typeName = ctx.typeIdentifier().getText();
-            ClassOrInterfaceType newType = new ClassOrInterfaceType(type, typeName);
-            newType.setTokenRange(createTokenRange(ctx));
-            type = newType;
-            
-            // Handle final typeArguments if present (the common case for generics like List<Foo>)
-            if (ctx.typeArguments() != null && !ctx.typeArguments().isEmpty()) {
-                // Get the LAST typeArguments (which should be for the typeIdentifier)
-                NodeList<Type> typeArgs = parseTypeArguments(ctx.typeArguments(ctx.typeArguments().size() - 1));
-                if (!typeArgs.isEmpty()) {
-                    newType.setTypeArguments(typeArgs);
+        ClassOrInterfaceType currentType = null;
+
+        for (ParseTree child : ctx.children) {
+            if (child instanceof Mvel3Parser.IdentifierContext idCtx) {
+                currentType = new ClassOrInterfaceType(type, idCtx.getText());
+                currentType.setTokenRange(createTokenRange(ctx));
+                type = currentType;
+            } else if (child instanceof Mvel3Parser.TypeIdentifierContext tiCtx) {
+                currentType = new ClassOrInterfaceType(type, tiCtx.getText());
+                currentType.setTokenRange(createTokenRange(ctx));
+                type = currentType;
+            } else if (child instanceof Mvel3Parser.TypeArgumentsContext taCtx) {
+                // Apply type arguments to the most recently built type
+                if (currentType != null) {
+                    NodeList<Type> typeArgs = parseTypeArguments(taCtx);
+                    if (!typeArgs.isEmpty()) {
+                        currentType.setTypeArguments(typeArgs);
+                    }
                 }
             }
-        } else {
+            // DOT terminals are skipped — scope is handled by constructor chaining
+        }
+
+        if (type == null) {
             throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
         }
-        
         return type;
     }
 
@@ -2844,6 +2885,38 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return collectFormalParameters(ctx.formalParameterList());
     }
 
+    /**
+     * Process receiver parameter (e.g., {@code Foo this} or {@code Outer.Inner this}) from
+     * formalParameters and set it on the containing method or constructor declaration.
+     * The receiver parameter is not a regular parameter — it's set via
+     * {@link CallableDeclaration#setReceiverParameter(ReceiverParameter)}.
+     */
+    private void processReceiverParameter(Mvel3Parser.FormalParametersContext formalParamsCtx,
+                                           CallableDeclaration<?> callableDecl) {
+        if (formalParamsCtx == null || formalParamsCtx.receiverParameter() == null) {
+            return;
+        }
+        Mvel3Parser.ReceiverParameterContext rpCtx = formalParamsCtx.receiverParameter();
+
+        // Parse the type
+        Type type = (Type) visit(rpCtx.typeType());
+
+        // Build name from optional qualifiers + "this"
+        // Grammar: typeType (identifier '.')* THIS
+        StringBuilder nameBuilder = new StringBuilder();
+        if (rpCtx.identifier() != null) {
+            for (Mvel3Parser.IdentifierContext idCtx : rpCtx.identifier()) {
+                nameBuilder.append(idCtx.getText()).append(".");
+            }
+        }
+        nameBuilder.append("this");
+        Name name = new Name(nameBuilder.toString());
+
+        ReceiverParameter receiverParam = new ReceiverParameter(type, name);
+        receiverParam.setTokenRange(createTokenRange(rpCtx));
+        callableDecl.setReceiverParameter(receiverParam);
+    }
+
     private NodeList<ReferenceType> parseQualifiedNameListAsTypes(Mvel3Parser.QualifiedNameListContext ctx) {
         NodeList<ReferenceType> types = new NodeList<>();
         if (ctx != null && ctx.qualifiedName() != null) {
@@ -3161,6 +3234,48 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         SimpleName name = new SimpleName(identifierContext.getText());
         name.setTokenRange(createTokenRange(identifierContext));
         return name;
+    }
+
+    private ModuleDirective processModuleDirective(Mvel3Parser.ModuleDirectiveContext ctx) {
+        if (ctx.REQUIRES() != null) {
+            NodeList<Modifier> modifiers = new NodeList<>();
+            if (ctx.requiresModifier() != null) {
+                for (Mvel3Parser.RequiresModifierContext modCtx : ctx.requiresModifier()) {
+                    if (modCtx.TRANSITIVE() != null) {
+                        modifiers.add(new Modifier(Modifier.Keyword.TRANSITIVE));
+                    } else if (modCtx.STATIC() != null) {
+                        modifiers.add(new Modifier(Modifier.Keyword.STATIC));
+                    }
+                }
+            }
+            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
+            return new ModuleRequiresDirective(modifiers, name);
+        } else if (ctx.EXPORTS() != null) {
+            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
+            NodeList<Name> moduleNames = new NodeList<>();
+            if (ctx.TO() != null && ctx.qualifiedName().size() > 1) {
+                moduleNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
+            }
+            return new ModuleExportsDirective(name, moduleNames);
+        } else if (ctx.OPENS() != null) {
+            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
+            NodeList<Name> moduleNames = new NodeList<>();
+            if (ctx.TO() != null && ctx.qualifiedName().size() > 1) {
+                moduleNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
+            }
+            return new ModuleOpensDirective(name, moduleNames);
+        } else if (ctx.USES() != null) {
+            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
+            return new ModuleUsesDirective(name);
+        } else if (ctx.PROVIDES() != null) {
+            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
+            NodeList<Name> withNames = new NodeList<>();
+            if (ctx.qualifiedName().size() > 1) {
+                withNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
+            }
+            return new ModuleProvidesDirective(name, withNames);
+        }
+        throw new IllegalArgumentException("Unknown module directive: " + ctx.getText());
     }
 
     private AnnotationExpr parseAnnotationExpr(Mvel3Parser.AnnotationContext ctx) {
