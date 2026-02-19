@@ -499,6 +499,38 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testConstructorWithTypeWitness() {
+        // new <String>Foo() — explicit type witness on constructor
+        String expr = "new <String>Foo()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Foo");
+        assertThat(objectCreation.getTypeArguments()).isPresent();
+        assertThat(objectCreation.getTypeArguments().get()).hasSize(1);
+        assertThat(objectCreation.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testConstructorWithMultipleTypeWitness() {
+        // new <String, Integer>Foo(1) — multiple type witnesses
+        String expr = "new <String, Integer>Foo(1)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Foo");
+        assertThat(objectCreation.getTypeArguments()).isPresent();
+        assertThat(objectCreation.getTypeArguments().get()).hasSize(2);
+        assertThat(objectCreation.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+        assertThat(objectCreation.getTypeArguments().get().get(1).asString()).isEqualTo("Integer");
+        assertThat(objectCreation.getArguments()).hasSize(1);
+    }
+
+    @Test
     void testGenericMethodCallInPrimary() {
         // <Type>method(args) — generic method call without scope (in primary)
         String expr = "<String>valueOf(42)";

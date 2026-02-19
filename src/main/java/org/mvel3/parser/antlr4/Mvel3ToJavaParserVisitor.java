@@ -2224,6 +2224,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // Handle class creation: new Type(args)
             Type type = (Type) createdName;
 
+            // Handle nonWildcardTypeArguments: new <String>Foo()
+            NodeList<Type> typeArguments = null;
+            if (ctx.nonWildcardTypeArguments() != null) {
+                typeArguments = new NodeList<>();
+                for (ClassOrInterfaceType t : parseTypeList(ctx.nonWildcardTypeArguments().typeList())) {
+                    typeArguments.add(t);
+                }
+            }
+
             // Get constructor arguments
             NodeList<Expression> arguments = new NodeList<>();
             if (ctx.classCreatorRest().arguments() != null &&
@@ -2241,7 +2250,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
 
             // Create ObjectCreationExpr
-            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, null, arguments, anonymousClassBody);
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, typeArguments, arguments, anonymousClassBody);
             objectCreation.setTokenRange(createTokenRange(ctx));
             return objectCreation;
         }
