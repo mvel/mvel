@@ -67,6 +67,7 @@ import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
 import org.junit.jupiter.api.Test;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
@@ -1041,8 +1042,59 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testTypeParameterAnnotation() {
+        // Annotation on type parameter: <@NonNull T>
+        String code = "class Box<@NonNull T> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getAnnotations().get(0))).isEqualTo("@NonNull");
+    }
+
+    @Test
+    void testTypeParameterBoundAnnotation() {
+        // Annotation on type parameter bound: <T extends @Nullable Comparable>
+        String code = "class Box<T extends @Nullable Comparable> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).isEmpty();
+        assertThat(typeParam.getTypeBound()).hasSize(1);
+        assertThat(typeParam.getTypeBound().get(0).getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getTypeBound().get(0).getAnnotations().get(0))).isEqualTo("@Nullable");
+    }
+
+    @Test
+    void testTypeParameterBothAnnotations() {
+        // Annotations on both type parameter and bound: <@NonNull T extends @Nullable Comparable>
+        String code = "class Box<@NonNull T extends @Nullable Comparable> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getAnnotations().get(0))).isEqualTo("@NonNull");
+        assertThat(typeParam.getTypeBound()).hasSize(1);
+        assertThat(typeParam.getTypeBound().get(0).getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getTypeBound().get(0).getAnnotations().get(0))).isEqualTo("@Nullable");
+    }
+
+    @Test
     void testClassDeclarationWithExtends() {
         String code = "public class Foo extends Bar { }";
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<CompilationUnit> result = parser.parse(code);
         assertThat(result.getResult()).isPresent();

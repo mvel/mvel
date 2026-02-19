@@ -2891,15 +2891,39 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         for (Mvel3Parser.TypeParameterContext tpCtx : ctx.typeParameter()) {
             String name = tpCtx.identifier().getText();
             NodeList<ClassOrInterfaceType> bounds = new NodeList<>();
+
+            // Separate annotations: before identifier → type param annotations,
+            // after EXTENDS → bound annotations (applied to first bound type)
+            NodeList<AnnotationExpr> typeParamAnnotations = new NodeList<>();
+            NodeList<AnnotationExpr> boundAnnotations = new NodeList<>();
+            boolean foundIdentifier = false;
+            if (tpCtx.children != null) {
+                for (ParseTree child : tpCtx.children) {
+                    if (child instanceof Mvel3Parser.AnnotationContext) {
+                        if (!foundIdentifier) {
+                            typeParamAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                        } else {
+                            boundAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                        }
+                    } else if (child instanceof Mvel3Parser.IdentifierContext) {
+                        foundIdentifier = true;
+                    }
+                }
+            }
+
             if (tpCtx.typeBound() != null) {
-                for (Mvel3Parser.TypeTypeContext boundCtx : tpCtx.typeBound().typeType()) {
-                    Type boundType = (Type) visit(boundCtx);
+                for (int i = 0; i < tpCtx.typeBound().typeType().size(); i++) {
+                    Type boundType = (Type) visit(tpCtx.typeBound().typeType(i));
                     if (boundType instanceof ClassOrInterfaceType) {
+                        // Apply bound annotations to the first bound type
+                        if (i == 0 && !boundAnnotations.isEmpty()) {
+                            boundType.setAnnotations(boundAnnotations);
+                        }
                         bounds.add((ClassOrInterfaceType) boundType);
                     }
                 }
             }
-            TypeParameter typeParam = new TypeParameter(name, bounds);
+            TypeParameter typeParam = new TypeParameter(new SimpleName(name), bounds, typeParamAnnotations);
             typeParam.setTokenRange(createTokenRange(tpCtx));
             typeParams.add(typeParam);
         }
