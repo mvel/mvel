@@ -38,6 +38,7 @@ import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -45,6 +46,7 @@ import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
@@ -52,6 +54,7 @@ import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
 import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -64,6 +67,7 @@ import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
 import org.junit.jupiter.api.Test;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
@@ -495,6 +499,38 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testConstructorWithTypeWitness() {
+        // new <String>Foo() — explicit type witness on constructor
+        String expr = "new <String>Foo()";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Foo");
+        assertThat(objectCreation.getTypeArguments()).isPresent();
+        assertThat(objectCreation.getTypeArguments().get()).hasSize(1);
+        assertThat(objectCreation.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testConstructorWithMultipleTypeWitness() {
+        // new <String, Integer>Foo(1) — multiple type witnesses
+        String expr = "new <String, Integer>Foo(1)";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        ObjectCreationExpr objectCreation = (ObjectCreationExpr) result.getResult().get();
+        assertThat(objectCreation.getType().getNameAsString()).isEqualTo("Foo");
+        assertThat(objectCreation.getTypeArguments()).isPresent();
+        assertThat(objectCreation.getTypeArguments().get()).hasSize(2);
+        assertThat(objectCreation.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+        assertThat(objectCreation.getTypeArguments().get().get(1).asString()).isEqualTo("Integer");
+        assertThat(objectCreation.getArguments()).hasSize(1);
+    }
+
+    @Test
     void testGenericMethodCallInPrimary() {
         // <Type>method(args) — generic method call without scope (in primary)
         String expr = "<String>valueOf(42)";
@@ -602,8 +638,168 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testSwitchGuardedPatternSimple() {
+        // Simple type pattern in switch case
+        String expr = "switch (obj) { case String s -> s.toUpperCase(); default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        assertThat(switchExpr.getEntries()).hasSize(2);
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getType().asString()).isEqualTo("String");
+        assertThat(patternExpr.getName().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testSwitchGuardedPatternWithGuard() {
+        // Guarded pattern with && guard
+        String expr = "switch (obj) { case String s && s.length() > 5 -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(BinaryExpr.class);
+        BinaryExpr binaryExpr = (BinaryExpr) label;
+        assertThat(binaryExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+        assertThat(binaryExpr.getLeft()).isInstanceOf(PatternExpr.class);
+    }
+
+    @Test
+    void testSwitchGuardedPatternMultipleGuards() {
+        // Multiple guard expressions chained with &&
+        // The grammar's ('&&' expression)* treats "s.length() > 5 && !s.isEmpty()" as a single expression
+        String expr = "switch (obj) { case String s && s.length() > 5 && !s.isEmpty() -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        // BinaryExpr(PatternExpr(String s), AND, BinaryExpr(s.length() > 5, AND, !s.isEmpty()))
+        assertThat(label).isInstanceOf(BinaryExpr.class);
+        BinaryExpr binaryExpr = (BinaryExpr) label;
+        assertThat(binaryExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+        assertThat(binaryExpr.getLeft()).isInstanceOf(PatternExpr.class);
+        assertThat(binaryExpr.getRight()).isInstanceOf(BinaryExpr.class);
+        BinaryExpr guardExpr = (BinaryExpr) binaryExpr.getRight();
+        assertThat(guardExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+    }
+
+    @Test
+    void testSwitchGuardedPatternFinalModifier() {
+        // Guarded pattern with final modifier
+        String expr = "switch (obj) { case final String s -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getModifiers()).isNotEmpty();
+        assertThat(patternExpr.getModifiers().get(0).getKeyword()).isEqualTo(Modifier.Keyword.FINAL);
+    }
+
+    @Test
+    void testSwitchGuardedPatternParenthesized() {
+        // Parenthesized guarded pattern
+        String expr = "switch (obj) { case (String s) -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(EnclosedExpr.class);
+        EnclosedExpr enclosed = (EnclosedExpr) label;
+        assertThat(enclosed.getInner()).isInstanceOf(PatternExpr.class);
+    }
+
+    @Test
+    void testSwitchLabelTypePattern() {
+        // Traditional switch statement with type pattern: case String s:
+        String block = "{ switch (obj) { case String s: System.out.println(s); break; default: break; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchStmt switchStmt = (SwitchStmt) result.getResult().get().getStatement(0);
+        assertThat(switchStmt.getEntries()).hasSize(2);
+        Expression label = switchStmt.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getType().asString()).isEqualTo("String");
+        assertThat(patternExpr.getName().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testSwitchLabelTypePatternQualified() {
+        // Type pattern with qualified type
+        String block = "{ switch (obj) { case java.lang.Integer i: break; default: break; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchStmt switchStmt = (SwitchStmt) result.getResult().get().getStatement(0);
+        Expression label = switchStmt.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getName().asString()).isEqualTo("i");
+    }
+
+    @Test
+    void testTypeAnnotationOnArrayDimension() {
+        // Annotation on array dimension: String @NonNull []
+        String block = "{ String @NonNull [] arr; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        Type type = varDecl.getVariable(0).getType();
+        assertThat(type).isInstanceOf(ArrayType.class);
+        ArrayType arrayType = (ArrayType) type;
+        assertThat(arrayType.getAnnotations()).hasSize(1);
+        assertThat(toString(arrayType.getAnnotations().get(0))).isEqualTo("@NonNull");
+        assertThat(arrayType.getComponentType().getAnnotations()).isEmpty();
+    }
+
+    @Test
+    void testTypeAnnotationOnMultiDimArray() {
+        // Annotations on multi-dimensional array: int @A [] @B []
+        String block = "{ int @A [] @B [] arr; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        Type type = varDecl.getVariable(0).getType();
+        assertThat(type).isInstanceOf(ArrayType.class);
+        ArrayType outerArray = (ArrayType) type;
+        // Outer dimension has @B
+        assertThat(outerArray.getAnnotations()).hasSize(1);
+        assertThat(toString(outerArray.getAnnotations().get(0))).isEqualTo("@B");
+        // Inner dimension has @A
+        assertThat(outerArray.getComponentType()).isInstanceOf(ArrayType.class);
+        ArrayType innerArray = (ArrayType) outerArray.getComponentType();
+        assertThat(innerArray.getAnnotations()).hasSize(1);
+        assertThat(toString(innerArray.getAnnotations().get(0))).isEqualTo("@A");
+    }
+
+    @Test
     void testEmptyStatement() {
         String block = "{ ; }";
+
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<BlockStmt> result = parser.parseBlock(block);
         assertThat(result.getResult()).isPresent();
@@ -878,8 +1074,59 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testTypeParameterAnnotation() {
+        // Annotation on type parameter: <@NonNull T>
+        String code = "class Box<@NonNull T> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getAnnotations().get(0))).isEqualTo("@NonNull");
+    }
+
+    @Test
+    void testTypeParameterBoundAnnotation() {
+        // Annotation on type parameter bound: <T extends @Nullable Comparable>
+        String code = "class Box<T extends @Nullable Comparable> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).isEmpty();
+        assertThat(typeParam.getTypeBound()).hasSize(1);
+        assertThat(typeParam.getTypeBound().get(0).getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getTypeBound().get(0).getAnnotations().get(0))).isEqualTo("@Nullable");
+    }
+
+    @Test
+    void testTypeParameterBothAnnotations() {
+        // Annotations on both type parameter and bound: <@NonNull T extends @Nullable Comparable>
+        String code = "class Box<@NonNull T extends @Nullable Comparable> { T value; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        TypeParameter typeParam = classDecl.getTypeParameters().get(0);
+        assertThat(typeParam.getNameAsString()).isEqualTo("T");
+        assertThat(typeParam.getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getAnnotations().get(0))).isEqualTo("@NonNull");
+        assertThat(typeParam.getTypeBound()).hasSize(1);
+        assertThat(typeParam.getTypeBound().get(0).getAnnotations()).hasSize(1);
+        assertThat(toString(typeParam.getTypeBound().get(0).getAnnotations().get(0))).isEqualTo("@Nullable");
+    }
+
+    @Test
     void testClassDeclarationWithExtends() {
         String code = "public class Foo extends Bar { }";
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<CompilationUnit> result = parser.parse(code);
         assertThat(result.getResult()).isPresent();
@@ -977,8 +1224,30 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testEnumConstantAnnotations() {
+        String code = "enum Status { @Deprecated ACTIVE, @SuppressWarnings(\"unused\") INACTIVE }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getEntries()).hasSize(2);
+
+        EnumConstantDeclaration active = enumDecl.getEntries().get(0);
+        assertThat(active.getNameAsString()).isEqualTo("ACTIVE");
+        assertThat(active.getAnnotations()).hasSize(1);
+        assertThat(toString(active.getAnnotations().get(0))).isEqualTo("@Deprecated");
+
+        EnumConstantDeclaration inactive = enumDecl.getEntries().get(1);
+        assertThat(inactive.getNameAsString()).isEqualTo("INACTIVE");
+        assertThat(inactive.getAnnotations()).hasSize(1);
+        assertThat(toString(inactive.getAnnotations().get(0))).contains("@SuppressWarnings");
+    }
+
+    @Test
     void testInterfaceDeclaration() {
         String code = "public interface Greeter { void greet(String name); }";
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<CompilationUnit> result = parser.parse(code);
         assertThat(result.getResult()).isPresent();

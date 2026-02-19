@@ -16,6 +16,7 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +327,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 String constName = constCtx.identifier().getText();
                 EnumConstantDeclaration constDecl = new EnumConstantDeclaration(constName);
                 constDecl.setTokenRange(createTokenRange(constCtx));
+
+                // Handle annotations
+                if (constCtx.annotation() != null && !constCtx.annotation().isEmpty()) {
+                    NodeList<AnnotationExpr> annotations = new NodeList<>();
+                    for (Mvel3Parser.AnnotationContext annCtx : constCtx.annotation()) {
+                        annotations.add(parseAnnotationExpr(annCtx));
+                    }
+                    constDecl.setAnnotations(annotations);
+                }
 
                 // Handle arguments
                 if (constCtx.arguments() != null) {
@@ -1661,41 +1671,60 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeType(Mvel3Parser.TypeTypeContext ctx) {
+        // typeType: annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
         Type baseType = null;
-        
+
         // Handle different type possibilities
         if (ctx.classOrInterfaceType() != null) {
             baseType = (Type) visit(ctx.classOrInterfaceType());
         } else if (ctx.primitiveType() != null) {
             baseType = (Type) visit(ctx.primitiveType());
         }
-        
+
         if (baseType == null) {
             // Fall back to default behavior
             return visitChildren(ctx);
         }
-        
-        // Handle array dimensions: (annotation* '[' ']')*
-        // Count the number of '[' ']' pairs to determine array dimensions
-        int arrayDimensions = 0;
+
+        // Walk children to separate type annotations from array dimension annotations
+        // Phase 1: annotations before the type node
+        // Phase 2: for each '[', collect preceding annotations for that array dimension
+        NodeList<AnnotationExpr> typeAnnotations = new NodeList<>();
+        List<NodeList<AnnotationExpr>> arrayDimAnnotations = new ArrayList<>();
+        boolean foundType = false;
+        NodeList<AnnotationExpr> pendingAnnotations = new NodeList<>();
+
         if (ctx.children != null) {
             for (ParseTree child : ctx.children) {
-                if (child instanceof TerminalNode && "[".equals(child.getText())) {
-                    arrayDimensions++;
+                if (child instanceof Mvel3Parser.AnnotationContext) {
+                    pendingAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                } else if (child instanceof Mvel3Parser.ClassOrInterfaceTypeContext
+                        || child instanceof Mvel3Parser.PrimitiveTypeContext) {
+                    typeAnnotations = pendingAnnotations;
+                    pendingAnnotations = new NodeList<>();
+                    foundType = true;
+                } else if (foundType && child instanceof TerminalNode && "[".equals(child.getText())) {
+                    arrayDimAnnotations.add(pendingAnnotations);
+                    pendingAnnotations = new NodeList<>();
                 }
             }
         }
-        
-        // Wrap base type in ArrayType for each dimension
-        Type resultType = baseType;
-        for (int i = 0; i < arrayDimensions; i++) {
-            resultType = new ArrayType(resultType);
+
+        // Set annotations on the base type
+        if (!typeAnnotations.isEmpty()) {
+            baseType.setAnnotations(typeAnnotations);
         }
-        
+
+        // Wrap base type in ArrayType for each dimension, with per-dimension annotations
+        Type resultType = baseType;
+        for (NodeList<AnnotationExpr> dimAnnotations : arrayDimAnnotations) {
+            resultType = new ArrayType(resultType, ArrayType.Origin.TYPE, dimAnnotations);
+        }
+
         if (resultType instanceof ArrayType) {
             resultType.setTokenRange(createTokenRange(ctx));
         }
-        
+
         return resultType;
     }
 
@@ -2195,6 +2224,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             // Handle class creation: new Type(args)
             Type type = (Type) createdName;
 
+            // Handle nonWildcardTypeArguments: new <String>Foo()
+            NodeList<Type> typeArguments = null;
+            if (ctx.nonWildcardTypeArguments() != null) {
+                typeArguments = new NodeList<>();
+                for (ClassOrInterfaceType t : parseTypeList(ctx.nonWildcardTypeArguments().typeList())) {
+                    typeArguments.add(t);
+                }
+            }
+
             // Get constructor arguments
             NodeList<Expression> arguments = new NodeList<>();
             if (ctx.classCreatorRest().arguments() != null &&
@@ -2212,7 +2250,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
 
             // Create ObjectCreationExpr
-            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, null, arguments, anonymousClassBody);
+            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, typeArguments, arguments, anonymousClassBody);
             objectCreation.setTokenRange(createTokenRange(ctx));
             return objectCreation;
         }
@@ -2513,8 +2551,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 // case enumConstantName:
                 String enumName = labelCtx.enumConstantName.getText();
                 labels.add(new NameExpr(enumName));
+            } else if (labelCtx.varName != null) {
+                // case typeType varName:
+                ReferenceType type = (ReferenceType) visit(labelCtx.typeType());
+                SimpleName name = new SimpleName(labelCtx.varName.getText());
+                PatternExpr patternExpr = new PatternExpr(new NodeList<>(), type, name);
+                patternExpr.setTokenRange(createTokenRange(labelCtx));
+                labels.add(patternExpr);
             }
-            // TODO: Handle typeType varName case if needed
             
             SwitchEntry entry = new SwitchEntry(labels, SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
             entry.setTokenRange(createTokenRange(labelCtx));
@@ -2528,6 +2572,51 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         }
         
         return null;
+    }
+
+    private Expression processGuardedPattern(Mvel3Parser.GuardedPatternContext ctx) {
+        // guardedPattern
+        //     : '(' guardedPattern ')'                                             // alt 1
+        //     | variableModifier* typeType annotation* identifier ('&&' expression)*  // alt 2
+        //     | guardedPattern '&&' expression                                     // alt 3
+
+        if (ctx.LPAREN() != null) {
+            // Alt 1: parenthesized guarded pattern
+            Expression inner = processGuardedPattern(ctx.guardedPattern());
+            EnclosedExpr enclosed = new EnclosedExpr(inner);
+            enclosed.setTokenRange(createTokenRange(ctx));
+            return enclosed;
+        } else if (ctx.identifier() != null) {
+            // Alt 2: type pattern with optional guards
+            ReferenceType type = (ReferenceType) visit(ctx.typeType());
+            SimpleName name = new SimpleName(ctx.identifier().getText());
+
+            NodeList<Modifier> modifiers = new NodeList<>();
+            if (ctx.variableModifier() != null) {
+                for (Mvel3Parser.VariableModifierContext modCtx : ctx.variableModifier()) {
+                    if (modCtx.FINAL() != null) {
+                        modifiers.add(Modifier.finalModifier());
+                    }
+                }
+            }
+
+            PatternExpr patternExpr = new PatternExpr(modifiers, type, name);
+            patternExpr.setTokenRange(createTokenRange(ctx));
+
+            Expression result = patternExpr;
+            if (ctx.expression() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : ctx.expression()) {
+                    Expression guard = (Expression) visit(exprCtx);
+                    result = new BinaryExpr(result, guard, BinaryExpr.Operator.AND);
+                }
+            }
+            return result;
+        } else {
+            // Alt 3: recursive guard — guardedPattern '&&' expression
+            Expression left = processGuardedPattern(ctx.guardedPattern());
+            Expression right = (Expression) visit(ctx.expression(0));
+            return new BinaryExpr(left, right, BinaryExpr.Operator.AND);
+        }
     }
 
     private SwitchEntry processSwitchLabeledRule(Mvel3Parser.SwitchLabeledRuleContext ruleCtx) {
@@ -2545,8 +2634,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 }
             } else if (ruleCtx.NULL_LITERAL() != null) {
                 labels.add(new NullLiteralExpr());
+            } else if (ruleCtx.guardedPattern() != null) {
+                labels.add(processGuardedPattern(ruleCtx.guardedPattern()));
             }
-            // TODO: Handle guardedPattern if needed
         }
         // DEFAULT has empty labels
 
@@ -2810,15 +2900,39 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         for (Mvel3Parser.TypeParameterContext tpCtx : ctx.typeParameter()) {
             String name = tpCtx.identifier().getText();
             NodeList<ClassOrInterfaceType> bounds = new NodeList<>();
+
+            // Separate annotations: before identifier → type param annotations,
+            // after EXTENDS → bound annotations (applied to first bound type)
+            NodeList<AnnotationExpr> typeParamAnnotations = new NodeList<>();
+            NodeList<AnnotationExpr> boundAnnotations = new NodeList<>();
+            boolean foundIdentifier = false;
+            if (tpCtx.children != null) {
+                for (ParseTree child : tpCtx.children) {
+                    if (child instanceof Mvel3Parser.AnnotationContext) {
+                        if (!foundIdentifier) {
+                            typeParamAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                        } else {
+                            boundAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                        }
+                    } else if (child instanceof Mvel3Parser.IdentifierContext) {
+                        foundIdentifier = true;
+                    }
+                }
+            }
+
             if (tpCtx.typeBound() != null) {
-                for (Mvel3Parser.TypeTypeContext boundCtx : tpCtx.typeBound().typeType()) {
-                    Type boundType = (Type) visit(boundCtx);
+                for (int i = 0; i < tpCtx.typeBound().typeType().size(); i++) {
+                    Type boundType = (Type) visit(tpCtx.typeBound().typeType(i));
                     if (boundType instanceof ClassOrInterfaceType) {
+                        // Apply bound annotations to the first bound type
+                        if (i == 0 && !boundAnnotations.isEmpty()) {
+                            boundType.setAnnotations(boundAnnotations);
+                        }
                         bounds.add((ClassOrInterfaceType) boundType);
                     }
                 }
             }
-            TypeParameter typeParam = new TypeParameter(name, bounds);
+            TypeParameter typeParam = new TypeParameter(new SimpleName(name), bounds, typeParamAnnotations);
             typeParam.setTokenRange(createTokenRange(tpCtx));
             typeParams.add(typeParam);
         }
