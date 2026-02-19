@@ -2530,6 +2530,51 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return null;
     }
 
+    private Expression processGuardedPattern(Mvel3Parser.GuardedPatternContext ctx) {
+        // guardedPattern
+        //     : '(' guardedPattern ')'                                             // alt 1
+        //     | variableModifier* typeType annotation* identifier ('&&' expression)*  // alt 2
+        //     | guardedPattern '&&' expression                                     // alt 3
+
+        if (ctx.LPAREN() != null) {
+            // Alt 1: parenthesized guarded pattern
+            Expression inner = processGuardedPattern(ctx.guardedPattern());
+            EnclosedExpr enclosed = new EnclosedExpr(inner);
+            enclosed.setTokenRange(createTokenRange(ctx));
+            return enclosed;
+        } else if (ctx.identifier() != null) {
+            // Alt 2: type pattern with optional guards
+            ReferenceType type = (ReferenceType) visit(ctx.typeType());
+            SimpleName name = new SimpleName(ctx.identifier().getText());
+
+            NodeList<Modifier> modifiers = new NodeList<>();
+            if (ctx.variableModifier() != null) {
+                for (Mvel3Parser.VariableModifierContext modCtx : ctx.variableModifier()) {
+                    if (modCtx.FINAL() != null) {
+                        modifiers.add(Modifier.finalModifier());
+                    }
+                }
+            }
+
+            PatternExpr patternExpr = new PatternExpr(modifiers, type, name);
+            patternExpr.setTokenRange(createTokenRange(ctx));
+
+            Expression result = patternExpr;
+            if (ctx.expression() != null) {
+                for (Mvel3Parser.ExpressionContext exprCtx : ctx.expression()) {
+                    Expression guard = (Expression) visit(exprCtx);
+                    result = new BinaryExpr(result, guard, BinaryExpr.Operator.AND);
+                }
+            }
+            return result;
+        } else {
+            // Alt 3: recursive guard — guardedPattern '&&' expression
+            Expression left = processGuardedPattern(ctx.guardedPattern());
+            Expression right = (Expression) visit(ctx.expression(0));
+            return new BinaryExpr(left, right, BinaryExpr.Operator.AND);
+        }
+    }
+
     private SwitchEntry processSwitchLabeledRule(Mvel3Parser.SwitchLabeledRuleContext ruleCtx) {
         // switchLabeledRule: CASE (expressionList | NULL_LITERAL | guardedPattern) (ARROW | COLON) switchRuleOutcome
         //                 | DEFAULT (ARROW | COLON) switchRuleOutcome
@@ -2545,8 +2590,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 }
             } else if (ruleCtx.NULL_LITERAL() != null) {
                 labels.add(new NullLiteralExpr());
+            } else if (ruleCtx.guardedPattern() != null) {
+                labels.add(processGuardedPattern(ruleCtx.guardedPattern()));
             }
-            // TODO: Handle guardedPattern if needed
         }
         // DEFAULT has empty labels
 

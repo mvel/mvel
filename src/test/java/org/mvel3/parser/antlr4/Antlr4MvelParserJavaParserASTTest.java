@@ -38,6 +38,7 @@ import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -45,6 +46,7 @@ import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
@@ -599,6 +601,91 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(result.getResult().get().getStatement(0).isExpressionStmt()).isTrue();
         Expression switchExpr = result.getResult().get().getStatement(0).asExpressionStmt().getExpression();
         assertThat(switchExpr).isInstanceOf(SwitchExpr.class);
+    }
+
+    @Test
+    void testSwitchGuardedPatternSimple() {
+        // Simple type pattern in switch case
+        String expr = "switch (obj) { case String s -> s.toUpperCase(); default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        assertThat(switchExpr.getEntries()).hasSize(2);
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getType().asString()).isEqualTo("String");
+        assertThat(patternExpr.getName().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testSwitchGuardedPatternWithGuard() {
+        // Guarded pattern with && guard
+        String expr = "switch (obj) { case String s && s.length() > 5 -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(BinaryExpr.class);
+        BinaryExpr binaryExpr = (BinaryExpr) label;
+        assertThat(binaryExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+        assertThat(binaryExpr.getLeft()).isInstanceOf(PatternExpr.class);
+    }
+
+    @Test
+    void testSwitchGuardedPatternMultipleGuards() {
+        // Multiple guard expressions chained with &&
+        // The grammar's ('&&' expression)* treats "s.length() > 5 && !s.isEmpty()" as a single expression
+        String expr = "switch (obj) { case String s && s.length() > 5 && !s.isEmpty() -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        // BinaryExpr(PatternExpr(String s), AND, BinaryExpr(s.length() > 5, AND, !s.isEmpty()))
+        assertThat(label).isInstanceOf(BinaryExpr.class);
+        BinaryExpr binaryExpr = (BinaryExpr) label;
+        assertThat(binaryExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+        assertThat(binaryExpr.getLeft()).isInstanceOf(PatternExpr.class);
+        assertThat(binaryExpr.getRight()).isInstanceOf(BinaryExpr.class);
+        BinaryExpr guardExpr = (BinaryExpr) binaryExpr.getRight();
+        assertThat(guardExpr.getOperator()).isEqualTo(BinaryExpr.Operator.AND);
+    }
+
+    @Test
+    void testSwitchGuardedPatternFinalModifier() {
+        // Guarded pattern with final modifier
+        String expr = "switch (obj) { case final String s -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getModifiers()).isNotEmpty();
+        assertThat(patternExpr.getModifiers().get(0).getKeyword()).isEqualTo(Modifier.Keyword.FINAL);
+    }
+
+    @Test
+    void testSwitchGuardedPatternParenthesized() {
+        // Parenthesized guarded pattern
+        String expr = "switch (obj) { case (String s) -> s; default -> \"\"; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchExpr switchExpr = (SwitchExpr) result.getResult().get();
+        Expression label = switchExpr.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(EnclosedExpr.class);
+        EnclosedExpr enclosed = (EnclosedExpr) label;
+        assertThat(enclosed.getInner()).isInstanceOf(PatternExpr.class);
     }
 
     @Test
