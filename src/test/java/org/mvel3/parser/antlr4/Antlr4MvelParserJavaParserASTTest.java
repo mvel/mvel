@@ -54,6 +54,7 @@ import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
 import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -689,8 +690,41 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testSwitchLabelTypePattern() {
+        // Traditional switch statement with type pattern: case String s:
+        String block = "{ switch (obj) { case String s: System.out.println(s); break; default: break; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchStmt switchStmt = (SwitchStmt) result.getResult().get().getStatement(0);
+        assertThat(switchStmt.getEntries()).hasSize(2);
+        Expression label = switchStmt.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getType().asString()).isEqualTo("String");
+        assertThat(patternExpr.getName().asString()).isEqualTo("s");
+    }
+
+    @Test
+    void testSwitchLabelTypePatternQualified() {
+        // Type pattern with qualified type
+        String block = "{ switch (obj) { case java.lang.Integer i: break; default: break; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        SwitchStmt switchStmt = (SwitchStmt) result.getResult().get().getStatement(0);
+        Expression label = switchStmt.getEntry(0).getLabels().get(0);
+        assertThat(label).isInstanceOf(PatternExpr.class);
+        PatternExpr patternExpr = (PatternExpr) label;
+        assertThat(patternExpr.getName().asString()).isEqualTo("i");
+    }
+
+    @Test
     void testEmptyStatement() {
         String block = "{ ; }";
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<BlockStmt> result = parser.parseBlock(block);
         assertThat(result.getResult()).isPresent();

@@ -2513,8 +2513,14 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 // case enumConstantName:
                 String enumName = labelCtx.enumConstantName.getText();
                 labels.add(new NameExpr(enumName));
+            } else if (labelCtx.varName != null) {
+                // case typeType varName:
+                ReferenceType type = (ReferenceType) visit(labelCtx.typeType());
+                SimpleName name = new SimpleName(labelCtx.varName.getText());
+                PatternExpr patternExpr = new PatternExpr(new NodeList<>(), type, name);
+                patternExpr.setTokenRange(createTokenRange(labelCtx));
+                labels.add(patternExpr);
             }
-            // TODO: Handle typeType varName case if needed
             
             SwitchEntry entry = new SwitchEntry(labels, SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
             entry.setTokenRange(createTokenRange(labelCtx));
