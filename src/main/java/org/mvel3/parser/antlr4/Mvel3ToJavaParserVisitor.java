@@ -328,6 +328,15 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                 EnumConstantDeclaration constDecl = new EnumConstantDeclaration(constName);
                 constDecl.setTokenRange(createTokenRange(constCtx));
 
+                // Handle annotations
+                if (constCtx.annotation() != null && !constCtx.annotation().isEmpty()) {
+                    NodeList<AnnotationExpr> annotations = new NodeList<>();
+                    for (Mvel3Parser.AnnotationContext annCtx : constCtx.annotation()) {
+                        annotations.add(parseAnnotationExpr(annCtx));
+                    }
+                    constDecl.setAnnotations(annotations);
+                }
+
                 // Handle arguments
                 if (constCtx.arguments() != null) {
                     constDecl.setArguments(parseArguments(constCtx.arguments()));

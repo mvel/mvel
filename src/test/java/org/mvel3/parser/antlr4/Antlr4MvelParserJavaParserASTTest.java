@@ -1140,8 +1140,30 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testEnumConstantAnnotations() {
+        String code = "enum Status { @Deprecated ACTIVE, @SuppressWarnings(\"unused\") INACTIVE }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        EnumDeclaration enumDecl = (EnumDeclaration) result.getResult().get().getType(0);
+        assertThat(enumDecl.getEntries()).hasSize(2);
+
+        EnumConstantDeclaration active = enumDecl.getEntries().get(0);
+        assertThat(active.getNameAsString()).isEqualTo("ACTIVE");
+        assertThat(active.getAnnotations()).hasSize(1);
+        assertThat(toString(active.getAnnotations().get(0))).isEqualTo("@Deprecated");
+
+        EnumConstantDeclaration inactive = enumDecl.getEntries().get(1);
+        assertThat(inactive.getNameAsString()).isEqualTo("INACTIVE");
+        assertThat(inactive.getAnnotations()).hasSize(1);
+        assertThat(toString(inactive.getAnnotations().get(0))).contains("@SuppressWarnings");
+    }
+
+    @Test
     void testInterfaceDeclaration() {
         String code = "public interface Greeter { void greet(String name); }";
+
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<CompilationUnit> result = parser.parse(code);
         assertThat(result.getResult()).isPresent();
