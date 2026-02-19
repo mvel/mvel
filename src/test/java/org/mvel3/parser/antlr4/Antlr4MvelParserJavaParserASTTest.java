@@ -722,8 +722,50 @@ class Antlr4MvelParserJavaParserASTTest {
     }
 
     @Test
+    void testTypeAnnotationOnArrayDimension() {
+        // Annotation on array dimension: String @NonNull []
+        String block = "{ String @NonNull [] arr; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        Type type = varDecl.getVariable(0).getType();
+        assertThat(type).isInstanceOf(ArrayType.class);
+        ArrayType arrayType = (ArrayType) type;
+        assertThat(arrayType.getAnnotations()).hasSize(1);
+        assertThat(toString(arrayType.getAnnotations().get(0))).isEqualTo("@NonNull");
+        assertThat(arrayType.getComponentType().getAnnotations()).isEmpty();
+    }
+
+    @Test
+    void testTypeAnnotationOnMultiDimArray() {
+        // Annotations on multi-dimensional array: int @A [] @B []
+        String block = "{ int @A [] @B [] arr; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        Type type = varDecl.getVariable(0).getType();
+        assertThat(type).isInstanceOf(ArrayType.class);
+        ArrayType outerArray = (ArrayType) type;
+        // Outer dimension has @B
+        assertThat(outerArray.getAnnotations()).hasSize(1);
+        assertThat(toString(outerArray.getAnnotations().get(0))).isEqualTo("@B");
+        // Inner dimension has @A
+        assertThat(outerArray.getComponentType()).isInstanceOf(ArrayType.class);
+        ArrayType innerArray = (ArrayType) outerArray.getComponentType();
+        assertThat(innerArray.getAnnotations()).hasSize(1);
+        assertThat(toString(innerArray.getAnnotations().get(0))).isEqualTo("@A");
+    }
+
+    @Test
     void testEmptyStatement() {
         String block = "{ ; }";
+
 
         Antlr4MvelParser parser = new Antlr4MvelParser();
         ParseResult<BlockStmt> result = parser.parseBlock(block);

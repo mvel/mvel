@@ -16,6 +16,7 @@
 
 package org.mvel3.parser.antlr4;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1661,41 +1662,60 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeType(Mvel3Parser.TypeTypeContext ctx) {
+        // typeType: annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
         Type baseType = null;
-        
+
         // Handle different type possibilities
         if (ctx.classOrInterfaceType() != null) {
             baseType = (Type) visit(ctx.classOrInterfaceType());
         } else if (ctx.primitiveType() != null) {
             baseType = (Type) visit(ctx.primitiveType());
         }
-        
+
         if (baseType == null) {
             // Fall back to default behavior
             return visitChildren(ctx);
         }
-        
-        // Handle array dimensions: (annotation* '[' ']')*
-        // Count the number of '[' ']' pairs to determine array dimensions
-        int arrayDimensions = 0;
+
+        // Walk children to separate type annotations from array dimension annotations
+        // Phase 1: annotations before the type node
+        // Phase 2: for each '[', collect preceding annotations for that array dimension
+        NodeList<AnnotationExpr> typeAnnotations = new NodeList<>();
+        List<NodeList<AnnotationExpr>> arrayDimAnnotations = new ArrayList<>();
+        boolean foundType = false;
+        NodeList<AnnotationExpr> pendingAnnotations = new NodeList<>();
+
         if (ctx.children != null) {
             for (ParseTree child : ctx.children) {
-                if (child instanceof TerminalNode && "[".equals(child.getText())) {
-                    arrayDimensions++;
+                if (child instanceof Mvel3Parser.AnnotationContext) {
+                    pendingAnnotations.add(parseAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                } else if (child instanceof Mvel3Parser.ClassOrInterfaceTypeContext
+                        || child instanceof Mvel3Parser.PrimitiveTypeContext) {
+                    typeAnnotations = pendingAnnotations;
+                    pendingAnnotations = new NodeList<>();
+                    foundType = true;
+                } else if (foundType && child instanceof TerminalNode && "[".equals(child.getText())) {
+                    arrayDimAnnotations.add(pendingAnnotations);
+                    pendingAnnotations = new NodeList<>();
                 }
             }
         }
-        
-        // Wrap base type in ArrayType for each dimension
-        Type resultType = baseType;
-        for (int i = 0; i < arrayDimensions; i++) {
-            resultType = new ArrayType(resultType);
+
+        // Set annotations on the base type
+        if (!typeAnnotations.isEmpty()) {
+            baseType.setAnnotations(typeAnnotations);
         }
-        
+
+        // Wrap base type in ArrayType for each dimension, with per-dimension annotations
+        Type resultType = baseType;
+        for (NodeList<AnnotationExpr> dimAnnotations : arrayDimAnnotations) {
+            resultType = new ArrayType(resultType, ArrayType.Origin.TYPE, dimAnnotations);
+        }
+
         if (resultType instanceof ArrayType) {
             resultType.setTokenRange(createTokenRange(ctx));
         }
-        
+
         return resultType;
     }
 
