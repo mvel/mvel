@@ -42,6 +42,7 @@ import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
@@ -526,7 +527,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         NodeList<VariableDeclarator> declarators = new NodeList<>();
         for (Mvel3Parser.ConstantDeclaratorContext constCtx : ctx.constantDeclarator()) {
             String varName = constCtx.identifier().getText();
-            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+
+            // Apply C-style array dimensions from constantDeclarator (identifier ('[' ']')*)
+            Type declType = fieldType;
+            int dimensions = constCtx.LBRACK() != null ? constCtx.LBRACK().size() : 0;
+            for (int i = 0; i < dimensions; i++) {
+                ArrayType arrayType = new ArrayType(declType);
+                arrayType.setTokenRange(createTokenRange(constCtx));
+                declType = arrayType;
+            }
+
+            VariableDeclarator varDeclarator = new VariableDeclarator(declType, varName);
             varDeclarator.setTokenRange(createTokenRange(constCtx));
 
             if (constCtx.variableInitializer() != null) {
@@ -784,6 +795,12 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     if (member != null) {
                         members.add(member);
                     }
+                } else if (bodyDecl.block() != null) {
+                    boolean isStatic = bodyDecl.STATIC() != null;
+                    BlockStmt block = (BlockStmt) visit(bodyDecl.block());
+                    InitializerDeclaration initDecl = new InitializerDeclaration(isStatic, block);
+                    initDecl.setTokenRange(createTokenRange(bodyDecl));
+                    members.add(initDecl);
                 }
             }
         }
@@ -806,7 +823,10 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
             String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
 
-            VariableDeclarator varDeclarator = new VariableDeclarator(fieldType, varName);
+            // Apply C-style array dimensions from variableDeclaratorId
+            Type declType = applyArrayDimensions(fieldType, declaratorCtx.variableDeclaratorId());
+
+            VariableDeclarator varDeclarator = new VariableDeclarator(declType, varName);
             varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
 
             if (declaratorCtx.variableInitializer() != null) {
@@ -2073,51 +2093,57 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitLocalVariableDeclaration(Mvel3Parser.LocalVariableDeclarationContext ctx) {
         // Handle both: var x = expression; and Type name = expression;
-        
+        ModifiersAnnotations varModifiers = parseVariableModifiers(ctx.variableModifier());
+
         if (ctx.VAR() != null) {
             // Handle: var x = expression;
             Type varType = new VarType();
             varType.setTokenRange(createTokenRange(ctx));
             String varName = ctx.identifier().getText();
-            
+
             VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
             varDeclarator.setTokenRange(createTokenRange(ctx));
-            
+
             // Handle initializer for var declaration
             if (ctx.expression() != null) {
                 Expression initializer = (Expression) visit(ctx.expression());
                 varDeclarator.setInitializer(initializer);
             }
-            
-            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varDeclarator);
+
+            NodeList<VariableDeclarator> declarators = new NodeList<>();
+            declarators.add(varDeclarator);
+            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varModifiers.modifiers, varModifiers.annotations, declarators);
             varDecl.setTokenRange(createTokenRange(ctx));
             return varDecl;
         } else if (ctx.typeType() != null && ctx.variableDeclarators() != null) {
             // Handle: Type name = expression;
             Type varType = (Type) visit(ctx.typeType());
-            
+
             // Create NodeList for multiple declarators (though we usually have just one)
             NodeList<VariableDeclarator> declarators = new NodeList<>();
-            
+
             for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
                 // Get variable name
                 String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
-                
+
+                // Apply C-style array dimensions from variableDeclaratorId
+                Type declType = applyArrayDimensions(varType, declaratorCtx.variableDeclaratorId());
+
                 // Create variable declarator
-                VariableDeclarator varDeclarator = new VariableDeclarator(varType, varName);
+                VariableDeclarator varDeclarator = new VariableDeclarator(declType, varName);
                 varDeclarator.setTokenRange(createTokenRange(declaratorCtx));
-                
+
                 // Handle initializer if present
                 if (declaratorCtx.variableInitializer() != null) {
                     Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
                     varDeclarator.setInitializer(initializer);
                 }
-                
+
                 declarators.add(varDeclarator);
             }
-            
+
             // Create the variable declaration expression with all declarators
-            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(declarators);
+            VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varModifiers.modifiers, varModifiers.annotations, declarators);
             varDecl.setTokenRange(createTokenRange(ctx));
             return varDecl;
         } else {
@@ -2411,13 +2437,8 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     private void visitEnhancedForControlAndPopulate(Mvel3Parser.EnhancedForControlContext enhancedForCtx, ForEachStmt forEachStmt) {
         // enhancedForControl: variableModifier* (typeType | VAR) variableDeclaratorId ':' expression
 
-        // Extract variable modifiers
-        NodeList<Modifier> modifiers = new NodeList<>();
-        if (enhancedForCtx.variableModifier() != null) {
-            for (Mvel3Parser.VariableModifierContext modCtx : enhancedForCtx.variableModifier()) {
-                // TODO: Handle variable modifiers if needed (final, etc.)
-            }
-        }
+        // Extract variable modifiers (final, annotations)
+        ModifiersAnnotations varModifiers = parseVariableModifiers(enhancedForCtx.variableModifier());
 
         // Extract type (typeType or VAR)
         Type variableType = null;
@@ -2434,10 +2455,10 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         // Create VariableDeclarator
         VariableDeclarator variableDeclarator = new VariableDeclarator(variableType, variableName);
 
-        // Create VariableDeclarationExpr like mvel.jj does
+        // Create VariableDeclarationExpr with modifiers
         NodeList<VariableDeclarator> variables = new NodeList<>();
         variables.add(variableDeclarator);
-        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(modifiers, variables);
+        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varModifiers.modifiers, varModifiers.annotations, variables);
 
         // Extract iterable expression
         Expression iterable = (Expression) visit(enhancedForCtx.expression());
@@ -2631,6 +2652,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     resources.add(new NameExpr(resourceCtx.qualifiedName().getText()));
                 } else {
                     // Variable declaration: try (Type var = expr) or try (var x = expr)
+                    ModifiersAnnotations resourceModifiers = parseVariableModifiers(resourceCtx.variableModifier());
                     Type type;
                     String varName;
                     if (resourceCtx.VAR() != null) {
@@ -2643,7 +2665,9 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
                     VariableDeclarator declarator = new VariableDeclarator(type, varName);
                     Expression initializer = (Expression) visit(resourceCtx.expression());
                     declarator.setInitializer(initializer);
-                    VariableDeclarationExpr varDecl = new VariableDeclarationExpr(declarator);
+                    NodeList<VariableDeclarator> declarators = new NodeList<>();
+                    declarators.add(declarator);
+                    VariableDeclarationExpr varDecl = new VariableDeclarationExpr(resourceModifiers.modifiers, resourceModifiers.annotations, declarators);
                     varDecl.setTokenRange(createTokenRange(resourceCtx));
                     resources.add(varDecl);
                 }
@@ -2680,31 +2704,20 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitTypeArgument(Mvel3Parser.TypeArgumentContext ctx) {
-        // Handle individual type argument like "Foo" in List<Foo>
-        if (ctx.typeType() != null) {
-            return visit(ctx.typeType());
-        } else if (ctx.annotation() != null && !ctx.annotation().isEmpty()) {
-            // Handle annotated wildcards - for now, just handle the basic wildcard case
-            // TODO: Implement annotation handling if needed
-            return new WildcardType();
-        } else {
-            // Handle wildcards: ? extends Type or ? super Type
+        // typeArgument: typeType | annotation* '?' ((EXTENDS | SUPER) typeType)?
+        if (ctx.QUESTION() != null) {
+            // Wildcard: ?, ? extends T, ? super T (with optional annotations)
             WildcardType wildcard = new WildcardType();
             if (ctx.EXTENDS() != null && ctx.typeType() != null) {
-                Type extendedType = (Type) visit(ctx.typeType());
-                // Cast to ReferenceType for JavaParser compatibility
-                if (extendedType instanceof ClassOrInterfaceType) {
-                    wildcard.setExtendedType((ClassOrInterfaceType) extendedType);
-                }
+                wildcard.setExtendedType((ReferenceType) visit(ctx.typeType()));
             } else if (ctx.SUPER() != null && ctx.typeType() != null) {
-                Type superType = (Type) visit(ctx.typeType());
-                // Cast to ReferenceType for JavaParser compatibility
-                if (superType instanceof ClassOrInterfaceType) {
-                    wildcard.setSuperType((ClassOrInterfaceType) superType);
-                }
+                wildcard.setSuperType((ReferenceType) visit(ctx.typeType()));
             }
             wildcard.setTokenRange(createTokenRange(ctx));
             return wildcard;
+        } else {
+            // Plain type argument: String, List<Integer>, etc.
+            return visit(ctx.typeType());
         }
     }
 

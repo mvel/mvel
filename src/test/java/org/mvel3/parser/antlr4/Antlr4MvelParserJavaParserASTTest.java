@@ -30,6 +30,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -45,10 +46,12 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
 import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -58,8 +61,10 @@ import com.github.javaparser.ast.stmt.EmptyStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.WildcardType;
 import org.junit.jupiter.api.Test;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
@@ -1284,6 +1289,219 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(method.getTypeParameters().get(0).getNameAsString()).isEqualTo("T");
         assertThat(method.getTypeAsString()).isEqualTo("T");
         assertThat(method.getParameters()).hasSize(1);
+    }
+
+    // --- Wildcard type arguments ---
+
+    @Test
+    void testWildcardTypeArgument_unbounded() {
+        String code = "public class Foo { java.util.List<?> list; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        ClassOrInterfaceType listType = (ClassOrInterfaceType) field.getVariable(0).getType();
+        assertThat(listType.getTypeArguments()).isPresent();
+        assertThat(listType.getTypeArguments().get()).hasSize(1);
+        Type arg = listType.getTypeArguments().get().get(0);
+        assertThat(arg).isInstanceOf(WildcardType.class);
+        WildcardType wildcard = (WildcardType) arg;
+        assertThat(wildcard.getExtendedType()).isEmpty();
+        assertThat(wildcard.getSuperType()).isEmpty();
+    }
+
+    @Test
+    void testWildcardTypeArgument_extends() {
+        String code = "public class Foo { java.util.List<? extends Number> list; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        ClassOrInterfaceType listType = (ClassOrInterfaceType) field.getVariable(0).getType();
+        assertThat(listType.getTypeArguments()).isPresent();
+        Type arg = listType.getTypeArguments().get().get(0);
+        assertThat(arg).isInstanceOf(WildcardType.class);
+        WildcardType wildcard = (WildcardType) arg;
+        assertThat(wildcard.getExtendedType()).isPresent();
+        assertThat(wildcard.getExtendedType().get().asString()).isEqualTo("Number");
+        assertThat(wildcard.getSuperType()).isEmpty();
+    }
+
+    @Test
+    void testWildcardTypeArgument_super() {
+        String code = "public class Foo { java.util.List<? super Exception> list; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        ClassOrInterfaceType listType = (ClassOrInterfaceType) field.getVariable(0).getType();
+        assertThat(listType.getTypeArguments()).isPresent();
+        Type arg = listType.getTypeArguments().get().get(0);
+        assertThat(arg).isInstanceOf(WildcardType.class);
+        WildcardType wildcard = (WildcardType) arg;
+        assertThat(wildcard.getSuperType()).isPresent();
+        assertThat(wildcard.getSuperType().get().asString()).isEqualTo("Exception");
+        assertThat(wildcard.getExtendedType()).isEmpty();
+    }
+
+    @Test
+    void testWildcardTypeArgument_extendsWithTypeArgs() {
+        String code = "public class Foo { java.util.List<? extends Comparable<String>> list; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        ClassOrInterfaceType listType = (ClassOrInterfaceType) field.getVariable(0).getType();
+        assertThat(listType.getTypeArguments()).isPresent();
+        Type arg = listType.getTypeArguments().get().get(0);
+        assertThat(arg).isInstanceOf(WildcardType.class);
+        WildcardType wildcard = (WildcardType) arg;
+        assertThat(wildcard.getExtendedType()).isPresent();
+        ClassOrInterfaceType extType = (ClassOrInterfaceType) wildcard.getExtendedType().get();
+        assertThat(extType.getNameAsString()).isEqualTo("Comparable");
+        assertThat(extType.getTypeArguments()).isPresent();
+        assertThat(extType.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    // --- Variable modifiers ---
+
+    @Test
+    void testFinalLocalVariable() {
+        String block = "{ final int x = 1; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.FINAL);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("x");
+    }
+
+    @Test
+    void testFinalEnhancedFor() {
+        String block = "{ for (final String s : list) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        ForEachStmt forEach = result.getResult().get().getStatement(0).asForEachStmt();
+        VariableDeclarationExpr varDecl = forEach.getVariable();
+        assertThat(varDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.FINAL);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("s");
+    }
+
+    @Test
+    void testFinalTryWithResources() {
+        String block = "{ try (final java.io.InputStream is = create()) { } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        TryStmt tryStmt = (TryStmt) result.getResult().get().getStatement(0);
+        assertThat(tryStmt.getResources()).hasSize(1);
+        VariableDeclarationExpr varDecl = tryStmt.getResources().get(0).asVariableDeclarationExpr();
+        assertThat(varDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .containsExactly(Modifier.Keyword.FINAL);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("is");
+    }
+
+    // --- C-style array dimensions ---
+
+    @Test
+    void testCStyleArrayField() {
+        String code = "public class Foo { int arr[]; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getVariable(0).getType()).isInstanceOf(ArrayType.class);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("arr");
+    }
+
+    @Test
+    void testCStyleArrayMixedDeclarators() {
+        String code = "public class Foo { int x[], y; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getVariables()).hasSize(2);
+        // x[] should be int[]
+        assertThat(field.getVariable(0).getType()).isInstanceOf(ArrayType.class);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("x");
+        // y should be plain int
+        assertThat(field.getVariable(1).getType().asString()).isEqualTo("int");
+        assertThat(field.getVariable(1).getNameAsString()).isEqualTo("y");
+    }
+
+    @Test
+    void testCStyleArrayLocalVariable() {
+        String block = "{ int arr[] = {1, 2}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariable(0).getType()).isInstanceOf(ArrayType.class);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("arr");
+    }
+
+    @Test
+    void testCStyleArrayConstDeclaration() {
+        String code = "public interface Foo { int SIZES[] = {1, 2}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        FieldDeclaration field = result.getResult().get().getType(0).getFields().get(0);
+        assertThat(field.getVariable(0).getType()).isInstanceOf(ArrayType.class);
+        assertThat(field.getVariable(0).getNameAsString()).isEqualTo("SIZES");
+    }
+
+    // --- Initializer blocks ---
+
+    @Test
+    void testStaticInitializerBlock() {
+        String code = "public class Foo { static int x; static { x = 1; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        // Should have field + initializer
+        assertThat(classDecl.getMembers()).hasSizeGreaterThanOrEqualTo(2);
+        InitializerDeclaration initDecl = classDecl.getMembers().stream()
+                .filter(m -> m instanceof InitializerDeclaration)
+                .map(m -> (InitializerDeclaration) m)
+                .findFirst().orElseThrow();
+        assertThat(initDecl.isStatic()).isTrue();
+        assertThat(initDecl.getBody().getStatements()).hasSize(1);
+    }
+
+    @Test
+    void testInstanceInitializerBlock() {
+        String code = "public class Foo { int y; { y = 2; } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        InitializerDeclaration initDecl = classDecl.getMembers().stream()
+                .filter(m -> m instanceof InitializerDeclaration)
+                .map(m -> (InitializerDeclaration) m)
+                .findFirst().orElseThrow();
+        assertThat(initDecl.isStatic()).isFalse();
+        assertThat(initDecl.getBody().getStatements()).hasSize(1);
     }
 
     private String toString(Node n) {
