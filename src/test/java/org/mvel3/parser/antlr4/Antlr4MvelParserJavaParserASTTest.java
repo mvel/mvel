@@ -51,10 +51,19 @@ import com.github.javaparser.ast.modules.ModuleExportsDirective;
 import com.github.javaparser.ast.modules.ModuleProvidesDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
+import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
@@ -70,10 +79,14 @@ import com.github.javaparser.ast.stmt.EmptyStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.WildcardType;
 import org.junit.jupiter.api.Test;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
@@ -1949,6 +1962,676 @@ class Antlr4MvelParserJavaParserASTTest {
         assertThat(outerType.getNameAsString()).isEqualTo("Outer");
         assertThat(outerType.getTypeArguments()).isPresent();
         assertThat(outerType.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testCastExpression() {
+        String expr = "(String) obj";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        CastExpr castExpr = (CastExpr) result.getResult().get();
+        assertThat(castExpr.getType().asString()).isEqualTo("String");
+        assertThat(toString(castExpr.getExpression())).isEqualTo("obj");
+    }
+
+    @Test
+    void testCastExpressionPrimitive() {
+        String expr = "(int) value";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        CastExpr castExpr = (CastExpr) result.getResult().get();
+        assertThat(castExpr.getType().asString()).isEqualTo("int");
+        assertThat(toString(castExpr.getExpression())).isEqualTo("value");
+    }
+
+    @Test
+    void testCastExpressionIntersection() {
+        String expr = "(Serializable & Comparable) obj";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        CastExpr castExpr = (CastExpr) result.getResult().get();
+        assertThat(castExpr.getType()).isInstanceOf(IntersectionType.class);
+        IntersectionType intersectionType = (IntersectionType) castExpr.getType();
+        assertThat(intersectionType.getElements()).hasSize(2);
+        assertThat(intersectionType.getElements().get(0).asString()).isEqualTo("Serializable");
+        assertThat(intersectionType.getElements().get(1).asString()).isEqualTo("Comparable");
+    }
+
+    @Test
+    void testUnaryPlus() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("+x");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.PLUS);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testUnaryMinus() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("-x");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.MINUS);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testUnaryPrefixIncrement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("++x");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.PREFIX_INCREMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testUnaryPrefixDecrement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("--x");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.PREFIX_DECREMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testUnaryBitwiseComplement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("~x");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.BITWISE_COMPLEMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testUnaryLogicalComplement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("!flag");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.LOGICAL_COMPLEMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("flag");
+    }
+
+    @Test
+    void testPostIncrement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x++");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.POSTFIX_INCREMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testPostDecrement() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x--");
+        assertThat(result.getResult()).isPresent();
+
+        UnaryExpr unaryExpr = (UnaryExpr) result.getResult().get();
+        assertThat(unaryExpr.getOperator()).isEqualTo(UnaryExpr.Operator.POSTFIX_DECREMENT);
+        assertThat(toString(unaryExpr.getExpression())).isEqualTo("x");
+    }
+
+    @Test
+    void testArrayAccess() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("array[0]");
+        assertThat(result.getResult()).isPresent();
+
+        ArrayAccessExpr arrayAccess = (ArrayAccessExpr) result.getResult().get();
+        assertThat(toString(arrayAccess.getName())).isEqualTo("array");
+        assertThat(toString(arrayAccess.getIndex())).isEqualTo("0");
+    }
+
+    @Test
+    void testArrayAccessWithExpression() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("matrix[i + 1]");
+        assertThat(result.getResult()).isPresent();
+
+        ArrayAccessExpr arrayAccess = (ArrayAccessExpr) result.getResult().get();
+        assertThat(toString(arrayAccess.getName())).isEqualTo("matrix");
+        assertThat(toString(arrayAccess.getIndex())).isEqualTo("i + 1");
+    }
+
+    @Test
+    void testLambdaSimple() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x -> x + 1");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).hasSize(1);
+        assertThat(lambda.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(lambda.isEnclosingParameters()).isFalse();
+    }
+
+    @Test
+    void testLambdaMultipleParams() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("(x, y) -> x + y");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).hasSize(2);
+        assertThat(lambda.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(lambda.getParameter(1).getNameAsString()).isEqualTo("y");
+        assertThat(lambda.isEnclosingParameters()).isTrue();
+    }
+
+    @Test
+    void testLambdaNoParams() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("() -> \"hello\"");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).isEmpty();
+        assertThat(lambda.isEnclosingParameters()).isTrue();
+    }
+
+    @Test
+    void testLambdaTypedParams() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("(int x, String y) -> x");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).hasSize(2);
+        assertThat(lambda.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(lambda.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(lambda.getParameter(1).getTypeAsString()).isEqualTo("String");
+        assertThat(lambda.getParameter(1).getNameAsString()).isEqualTo("y");
+    }
+
+    @Test
+    void testLambdaBlockBody() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("(x) -> { return x + 1; }");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).hasSize(1);
+        assertThat(lambda.getBody().isBlockStmt()).isTrue();
+    }
+
+    @Test
+    void testArrayCreationWithSize() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("new int[5]");
+        assertThat(result.getResult()).isPresent();
+
+        ArrayCreationExpr arrayCreation = (ArrayCreationExpr) result.getResult().get();
+        assertThat(arrayCreation.getElementType().asString()).isEqualTo("int");
+        assertThat(arrayCreation.getLevels()).hasSize(1);
+        assertThat(arrayCreation.getLevels().get(0).getDimension()).isPresent();
+        assertThat(toString(arrayCreation.getLevels().get(0).getDimension().get())).isEqualTo("5");
+    }
+
+    @Test
+    void testArrayCreationWithInitializer() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("new int[]{1, 2, 3}");
+        assertThat(result.getResult()).isPresent();
+
+        ArrayCreationExpr arrayCreation = (ArrayCreationExpr) result.getResult().get();
+        assertThat(arrayCreation.getElementType().asString()).isEqualTo("int");
+        assertThat(arrayCreation.getInitializer()).isPresent();
+        assertThat(arrayCreation.getInitializer().get().getValues()).hasSize(3);
+    }
+
+    @Test
+    void testArrayCreationMultiDimensional() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("new int[2][3]");
+        assertThat(result.getResult()).isPresent();
+
+        ArrayCreationExpr arrayCreation = (ArrayCreationExpr) result.getResult().get();
+        assertThat(arrayCreation.getElementType().asString()).isEqualTo("int");
+        assertThat(arrayCreation.getLevels()).hasSize(2);
+    }
+
+    @Test
+    void testLocalVariableDeclaration() {
+        String block = "{ int x = 1; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariable(0).getTypeAsString()).isEqualTo("int");
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("x");
+        assertThat(varDecl.getVariable(0).getInitializer()).isPresent();
+        assertThat(toString(varDecl.getVariable(0).getInitializer().get())).isEqualTo("1");
+    }
+
+    @Test
+    void testLocalVariableDeclarationVar() {
+        String block = "{ var x = 1; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariable(0).getType()).isInstanceOf(VarType.class);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("x");
+        assertThat(varDecl.getVariable(0).getInitializer()).isPresent();
+    }
+
+    @Test
+    void testLocalVariableDeclarationMultiple() {
+        String block = "{ int x = 1, y = 2; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariables()).hasSize(2);
+        assertThat(varDecl.getVariable(0).getNameAsString()).isEqualTo("x");
+        assertThat(varDecl.getVariable(1).getNameAsString()).isEqualTo("y");
+    }
+
+    @Test
+    void testArrayInitializer() {
+        String block = "{ int[] arr = {1, 2, 3}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariable(0).getInitializer()).isPresent();
+        Expression init = varDecl.getVariable(0).getInitializer().get();
+        assertThat(init).isInstanceOf(ArrayInitializerExpr.class);
+        ArrayInitializerExpr arrayInit = (ArrayInitializerExpr) init;
+        assertThat(arrayInit.getValues()).hasSize(3);
+    }
+
+    @Test
+    void testArrayInitializerNested() {
+        String block = "{ int[][] arr = {{1, 2}, {3, 4}}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        VariableDeclarationExpr varDecl = result.getResult().get().getStatement(0)
+                .asExpressionStmt().getExpression().asVariableDeclarationExpr();
+        assertThat(varDecl.getVariable(0).getInitializer()).isPresent();
+        ArrayInitializerExpr arrayInit = (ArrayInitializerExpr) varDecl.getVariable(0).getInitializer().get();
+        assertThat(arrayInit.getValues()).hasSize(2);
+        assertThat(arrayInit.getValues().get(0)).isInstanceOf(ArrayInitializerExpr.class);
+    }
+
+    @Test
+    void testAssignmentSimple() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x = 1");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.ASSIGN);
+        assertThat(toString(assignExpr.getTarget())).isEqualTo("x");
+        assertThat(toString(assignExpr.getValue())).isEqualTo("1");
+    }
+
+    @Test
+    void testAssignmentPlusEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x += 5");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.PLUS);
+    }
+
+    @Test
+    void testAssignmentMinusEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x -= 3");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.MINUS);
+    }
+
+    @Test
+    void testAssignmentMultiplyEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x *= 2");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.MULTIPLY);
+    }
+
+    @Test
+    void testAssignmentDivideEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x /= 4");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.DIVIDE);
+    }
+
+    @Test
+    void testAssignmentModuloEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x %= 3");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.REMAINDER);
+    }
+
+    @Test
+    void testAssignmentBitwiseAndEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x &= 0xFF");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.BINARY_AND);
+    }
+
+    @Test
+    void testAssignmentBitwiseOrEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x |= 0x01");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.BINARY_OR);
+    }
+
+    @Test
+    void testAssignmentXorEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x ^= mask");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.XOR);
+    }
+
+    @Test
+    void testAssignmentLeftShiftEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x <<= 2");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.LEFT_SHIFT);
+    }
+
+    @Test
+    void testAssignmentRightShiftEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x >>= 1");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.SIGNED_RIGHT_SHIFT);
+    }
+
+    @Test
+    void testAssignmentUnsignedRightShiftEquals() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("x >>>= 1");
+        assertThat(result.getResult()).isPresent();
+
+        AssignExpr assignExpr = (AssignExpr) result.getResult().get();
+        assertThat(assignExpr.getOperator()).isEqualTo(AssignExpr.Operator.UNSIGNED_RIGHT_SHIFT);
+    }
+
+    @Test
+    void testVarargsParameter() {
+        String code = "public class Foo { void method(String... args) {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getParameters()).hasSize(1);
+        Parameter param = method.getParameter(0);
+        assertThat(param.isVarArgs()).isTrue();
+        assertThat(param.getTypeAsString()).isEqualTo("String");
+        assertThat(param.getNameAsString()).isEqualTo("args");
+    }
+
+    @Test
+    void testVarargsParameterWithOtherParams() {
+        String code = "public class Foo { void method(int count, String... args) {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        MethodDeclaration method = result.getResult().get().getType(0).getMethods().get(0);
+        assertThat(method.getParameters()).hasSize(2);
+        assertThat(method.getParameter(0).isVarArgs()).isFalse();
+        assertThat(method.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(method.getParameter(1).isVarArgs()).isTrue();
+        assertThat(method.getParameter(1).getTypeAsString()).isEqualTo("String");
+    }
+
+    @Test
+    void testStaticImport() {
+        String code = "import static java.lang.Math.PI;\npublic class Foo {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit cu = result.getResult().get();
+        assertThat(cu.getImports()).hasSize(1);
+        ImportDeclaration importDecl = cu.getImports().get(0);
+        assertThat(importDecl.isStatic()).isTrue();
+        assertThat(importDecl.isAsterisk()).isFalse();
+        assertThat(importDecl.getNameAsString()).isEqualTo("java.lang.Math.PI");
+    }
+
+    @Test
+    void testStaticWildcardImport() {
+        String code = "import static java.lang.Math.*;\npublic class Foo {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit cu = result.getResult().get();
+        assertThat(cu.getImports()).hasSize(1);
+        ImportDeclaration importDecl = cu.getImports().get(0);
+        assertThat(importDecl.isStatic()).isTrue();
+        assertThat(importDecl.isAsterisk()).isTrue();
+    }
+
+    @Test
+    void testWildcardImport() {
+        String code = "import java.util.*;\npublic class Foo {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit cu = result.getResult().get();
+        assertThat(cu.getImports()).hasSize(1);
+        ImportDeclaration importDecl = cu.getImports().get(0);
+        assertThat(importDecl.isStatic()).isFalse();
+        assertThat(importDecl.isAsterisk()).isTrue();
+        assertThat(importDecl.getNameAsString()).isEqualTo("java.util");
+    }
+
+    @Test
+    void testTextBlock() {
+        String expr = "\"\"\"\n    Hello\n    World\n    \"\"\"";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression(expr);
+        assertThat(result.getResult()).isPresent();
+
+        assertThat(result.getResult().get()).isInstanceOf(TextBlockLiteralExpr.class);
+        TextBlockLiteralExpr textBlock = (TextBlockLiteralExpr) result.getResult().get();
+        assertThat(textBlock.getValue()).contains("Hello");
+        assertThat(textBlock.getValue()).contains("World");
+    }
+
+    @Test
+    void testSealedClassWithPermits() {
+        String code = "sealed class Shape permits Circle, Square {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(classDecl.getNameAsString()).isEqualTo("Shape");
+        assertThat(classDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .contains(Modifier.Keyword.SEALED);
+        assertThat(classDecl.getPermittedTypes()).hasSize(2);
+        assertThat(classDecl.getPermittedTypes().get(0).getNameAsString()).isEqualTo("Circle");
+        assertThat(classDecl.getPermittedTypes().get(1).getNameAsString()).isEqualTo("Square");
+    }
+
+    @Test
+    void testNonSealedClass() {
+        String code = "public class Outer { sealed class Shape permits Circle {} non-sealed class Circle extends Shape {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outer = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        ClassOrInterfaceDeclaration circle = (ClassOrInterfaceDeclaration) outer.getMembers().get(1);
+        assertThat(circle.getNameAsString()).isEqualTo("Circle");
+        assertThat(circle.getModifiers()).extracting(Modifier::getKeyword)
+                .contains(Modifier.Keyword.NON_SEALED);
+    }
+
+    @Test
+    void testSealedInterfaceWithPermits() {
+        String code = "sealed interface Expr permits Num, Add {}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration interfaceDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        assertThat(interfaceDecl.getNameAsString()).isEqualTo("Expr");
+        assertThat(interfaceDecl.isInterface()).isTrue();
+        assertThat(interfaceDecl.getModifiers()).extracting(Modifier::getKeyword)
+                .contains(Modifier.Keyword.SEALED);
+        assertThat(interfaceDecl.getPermittedTypes()).hasSize(2);
+    }
+
+    @Test
+    void testDoWhileStatement() {
+        String block = "{ do { x++; } while (x < 10); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        DoStmt doStmt = (DoStmt) result.getResult().get().getStatement(0);
+        assertThat(doStmt.getBody()).isNotNull();
+        assertThat(doStmt.getBody().isBlockStmt()).isTrue();
+        assertThat(toString(doStmt.getCondition())).isEqualTo("x < 10");
+    }
+
+    @Test
+    void testDoWhileStatementSimple() {
+        String block = "{ do x++; while (x < 5); }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(block);
+        assertThat(result.getResult()).isPresent();
+
+        DoStmt doStmt = (DoStmt) result.getResult().get().getStatement(0);
+        assertThat(toString(doStmt.getCondition())).isEqualTo("x < 5");
+    }
+
+    @Test
+    void testLambdaWithVarTypeInference() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("(var x, var y) -> x + y");
+        assertThat(result.getResult()).isPresent();
+
+        LambdaExpr lambda = (LambdaExpr) result.getResult().get();
+        assertThat(lambda.getParameters()).hasSize(2);
+        assertThat(lambda.getParameter(0).getType()).isInstanceOf(VarType.class);
+        assertThat(lambda.getParameter(0).getNameAsString()).isEqualTo("x");
+        assertThat(lambda.getParameter(1).getType()).isInstanceOf(VarType.class);
+        assertThat(lambda.getParameter(1).getNameAsString()).isEqualTo("y");
+        assertThat(lambda.isEnclosingParameters()).isTrue();
+    }
+
+    @Test
+    void testThisMethodCall() {
+        String code = "public class Foo { Foo() { this(1); } Foo(int x) {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration ctor = result.getResult().get().getType(0).getConstructors().get(0);
+        BlockStmt body = ctor.getBody();
+        assertThat(body.getStatements()).hasSize(1);
+        MethodCallExpr methodCall = (MethodCallExpr) body.getStatement(0).asExpressionStmt().getExpression();
+        assertThat(methodCall.getNameAsString()).isEqualTo("this");
+        assertThat(methodCall.getArguments()).hasSize(1);
+    }
+
+    @Test
+    void testSuperMethodCall() {
+        String code = "public class Foo extends Bar { Foo() { super(1); } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ConstructorDeclaration ctor = result.getResult().get().getType(0).getConstructors().get(0);
+        BlockStmt body = ctor.getBody();
+        assertThat(body.getStatements()).hasSize(1);
+        MethodCallExpr methodCall = (MethodCallExpr) body.getStatement(0).asExpressionStmt().getExpression();
+        assertThat(methodCall.getNameAsString()).isEqualTo("super");
+        assertThat(methodCall.getArguments()).hasSize(1);
+    }
+
+    @Test
+    void testMethodReferenceWithTypeArguments() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("Arrays::<String>sort");
+        assertThat(result.getResult()).isPresent();
+
+        MethodReferenceExpr methodRef = (MethodReferenceExpr) result.getResult().get();
+        assertThat(methodRef.getIdentifier()).isEqualTo("sort");
+        assertThat(methodRef.getTypeArguments()).isPresent();
+        assertThat(methodRef.getTypeArguments().get()).hasSize(1);
+        assertThat(methodRef.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testMethodReferenceWithMultipleTypeArguments() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<Expression> result = parser.parseExpression("Utils::<String, Integer>convert");
+        assertThat(result.getResult()).isPresent();
+
+        MethodReferenceExpr methodRef = (MethodReferenceExpr) result.getResult().get();
+        assertThat(methodRef.getIdentifier()).isEqualTo("convert");
+        assertThat(methodRef.getTypeArguments()).isPresent();
+        assertThat(methodRef.getTypeArguments().get()).hasSize(2);
+        assertThat(methodRef.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+        assertThat(methodRef.getTypeArguments().get().get(1).asString()).isEqualTo("Integer");
     }
 
     private String toString(Node n) {
