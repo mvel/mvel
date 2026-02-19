@@ -29,6 +29,7 @@ import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -45,6 +46,11 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.modules.ModuleDeclaration;
+import com.github.javaparser.ast.modules.ModuleExportsDirective;
+import com.github.javaparser.ast.modules.ModuleProvidesDirective;
+import com.github.javaparser.ast.modules.ModuleRequiresDirective;
+import com.github.javaparser.ast.modules.ModuleUsesDirective;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
@@ -1771,6 +1777,178 @@ class Antlr4MvelParserJavaParserASTTest {
                 .findFirst().orElseThrow();
         assertThat(initDecl.isStatic()).isFalse();
         assertThat(initDecl.getBody().getStatements()).hasSize(1);
+    }
+
+    // ── Module declarations ──
+
+    @Test
+    void testSimpleModuleDeclaration() {
+        String code = "module com.example { requires java.base; exports com.example.api; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit cu = result.getResult().get();
+        assertThat(cu.getModule()).isPresent();
+        ModuleDeclaration module = cu.getModule().get();
+        assertThat(module.getNameAsString()).isEqualTo("com.example");
+        assertThat(module.isOpen()).isFalse();
+        assertThat(module.getDirectives()).hasSize(2);
+        assertThat(module.getDirectives().get(0)).isInstanceOf(ModuleRequiresDirective.class);
+        assertThat(((ModuleRequiresDirective) module.getDirectives().get(0)).getNameAsString()).isEqualTo("java.base");
+        assertThat(module.getDirectives().get(1)).isInstanceOf(ModuleExportsDirective.class);
+        assertThat(((ModuleExportsDirective) module.getDirectives().get(1)).getNameAsString()).isEqualTo("com.example.api");
+    }
+
+    @Test
+    void testOpenModuleWithAllDirectiveTypes() {
+        String code = "open module com.example {\n"
+                + "  requires transitive java.logging;\n"
+                + "  exports com.example.api to com.example.client;\n"
+                + "  uses com.example.spi.Service;\n"
+                + "  provides com.example.spi.Service with com.example.impl.ServiceImpl;\n"
+                + "}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        CompilationUnit cu = result.getResult().get();
+        assertThat(cu.getModule()).isPresent();
+        ModuleDeclaration module = cu.getModule().get();
+        assertThat(module.isOpen()).isTrue();
+        assertThat(module.getDirectives()).hasSize(4);
+
+        // requires transitive
+        ModuleRequiresDirective requiresDir = (ModuleRequiresDirective) module.getDirectives().get(0);
+        assertThat(requiresDir.getNameAsString()).isEqualTo("java.logging");
+        assertThat(requiresDir.isTransitive()).isTrue();
+
+        // exports ... to ...
+        ModuleExportsDirective exportsDir = (ModuleExportsDirective) module.getDirectives().get(1);
+        assertThat(exportsDir.getNameAsString()).isEqualTo("com.example.api");
+        assertThat(exportsDir.getModuleNames()).hasSize(1);
+        assertThat(exportsDir.getModuleNames().get(0).asString()).isEqualTo("com.example.client");
+
+        // uses
+        ModuleUsesDirective usesDir = (ModuleUsesDirective) module.getDirectives().get(2);
+        assertThat(usesDir.getNameAsString()).isEqualTo("com.example.spi.Service");
+
+        // provides ... with ...
+        ModuleProvidesDirective providesDir = (ModuleProvidesDirective) module.getDirectives().get(3);
+        assertThat(providesDir.getNameAsString()).isEqualTo("com.example.spi.Service");
+        assertThat(providesDir.getWith()).hasSize(1);
+        assertThat(providesDir.getWith().get(0).asString()).isEqualTo("com.example.impl.ServiceImpl");
+    }
+
+    // ── Receiver parameters ──
+
+    @Test
+    void testSimpleReceiverParameter() {
+        String code = "public class Foo { void method(Foo this) {} }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        MethodDeclaration method = classDecl.getMethods().get(0);
+        assertThat(method.getReceiverParameter()).isPresent();
+        ReceiverParameter rp = method.getReceiverParameter().get();
+        assertThat(rp.getType().asString()).isEqualTo("Foo");
+        assertThat(rp.getName().asString()).isEqualTo("this");
+    }
+
+    @Test
+    void testQualifiedReceiverParameter() {
+        // In inner class constructors, the receiver parameter uses: typeType identifier '.' THIS
+        // e.g., Outer Outer.this — the qualifier goes before "this"
+        String code = "public class Outer { class Inner { Inner(Outer Outer.this) {} } }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration outerDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        ClassOrInterfaceDeclaration innerDecl = (ClassOrInterfaceDeclaration) outerDecl.getMembers().stream()
+                .filter(m -> m instanceof ClassOrInterfaceDeclaration)
+                .findFirst().orElseThrow();
+        ConstructorDeclaration ctor = innerDecl.getConstructors().get(0);
+        assertThat(ctor.getReceiverParameter()).isPresent();
+        ReceiverParameter rp = ctor.getReceiverParameter().get();
+        assertThat(rp.getType().asString()).isEqualTo("Outer");
+        assertThat(rp.getName().asString()).isEqualTo("Outer.this");
+    }
+
+    // ── Generic super invocation ──
+
+    @Test
+    void testGenericSuperConstructorCall() {
+        // expression.<Type>super(args) inside a class
+        String code = "public class Child extends Parent {"
+                + "  class Inner {"
+                + "    void test() { Child.<String>super.method(); }"
+                + "  }"
+                + "}";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        ClassOrInterfaceDeclaration innerDecl = (ClassOrInterfaceDeclaration) classDecl.getMembers().stream()
+                .filter(m -> m instanceof ClassOrInterfaceDeclaration)
+                .findFirst().orElseThrow();
+        MethodDeclaration method = innerDecl.getMethods().get(0);
+        BlockStmt body = method.getBody().orElseThrow();
+        assertThat(body.getStatements()).hasSize(1);
+        MethodCallExpr methodCall = (MethodCallExpr) body.getStatement(0).asExpressionStmt().getExpression();
+        assertThat(methodCall.getNameAsString()).isEqualTo("method");
+        assertThat(methodCall.getTypeArguments()).isPresent();
+        assertThat(methodCall.getTypeArguments().get()).hasSize(1);
+    }
+
+    // ── Type arguments on intermediate qualifiers ──
+
+    @Test
+    void testTypeArgsOnIntermediateQualifier() {
+        // Outer<String>.Inner — type arg on intermediate, none on final
+        String code = "public class Foo { Outer<String>.Inner field; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        FieldDeclaration field = classDecl.getFields().get(0);
+        Type fieldType = field.getVariable(0).getType();
+        assertThat(fieldType).isInstanceOf(ClassOrInterfaceType.class);
+        ClassOrInterfaceType innerType = (ClassOrInterfaceType) fieldType;
+        assertThat(innerType.getNameAsString()).isEqualTo("Inner");
+        assertThat(innerType.getTypeArguments()).isNotPresent();
+        // Check the scope has type arguments
+        assertThat(innerType.getScope()).isPresent();
+        ClassOrInterfaceType outerType = innerType.getScope().get();
+        assertThat(outerType.getNameAsString()).isEqualTo("Outer");
+        assertThat(outerType.getTypeArguments()).isPresent();
+        assertThat(outerType.getTypeArguments().get()).hasSize(1);
+        assertThat(outerType.getTypeArguments().get().get(0).asString()).isEqualTo("String");
+    }
+
+    @Test
+    void testTypeArgsOnBothIntermediateAndFinal() {
+        // Outer<String>.Inner<Integer>
+        String code = "public class Foo { Outer<String>.Inner<Integer> field; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<CompilationUnit> result = parser.parse(code);
+        assertThat(result.getResult()).isPresent();
+
+        ClassOrInterfaceDeclaration classDecl = (ClassOrInterfaceDeclaration) result.getResult().get().getType(0);
+        FieldDeclaration field = classDecl.getFields().get(0);
+        ClassOrInterfaceType innerType = (ClassOrInterfaceType) field.getVariable(0).getType();
+        assertThat(innerType.getNameAsString()).isEqualTo("Inner");
+        assertThat(innerType.getTypeArguments()).isPresent();
+        assertThat(innerType.getTypeArguments().get().get(0).asString()).isEqualTo("Integer");
+        // Check scope
+        ClassOrInterfaceType outerType = innerType.getScope().get();
+        assertThat(outerType.getNameAsString()).isEqualTo("Outer");
+        assertThat(outerType.getTypeArguments()).isPresent();
+        assertThat(outerType.getTypeArguments().get().get(0).asString()).isEqualTo("String");
     }
 
     private String toString(Node n) {
