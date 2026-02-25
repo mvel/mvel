@@ -1071,135 +1071,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitClassOrInterfaceType(Mvel3Parser.ClassOrInterfaceTypeContext ctx) {
-        // Grammar: (identifier typeArguments? '.')* typeIdentifier typeArguments?
-        // Walk children to correctly associate each typeArguments with its preceding identifier.
-        ClassOrInterfaceType type = null;
-        ClassOrInterfaceType currentType = null;
-
-        for (ParseTree child : ctx.children) {
-            if (child instanceof Mvel3Parser.IdentifierContext idCtx) {
-                currentType = new ClassOrInterfaceType(type, idCtx.getText());
-                currentType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-                type = currentType;
-            } else if (child instanceof Mvel3Parser.TypeIdentifierContext tiCtx) {
-                currentType = new ClassOrInterfaceType(type, tiCtx.getText());
-                currentType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-                type = currentType;
-            } else if (child instanceof Mvel3Parser.TypeArgumentsContext taCtx) {
-                // Apply type arguments to the most recently built type
-                if (currentType != null) {
-                    NodeList<Type> typeArgs = ArgumentsConverter.convertTypeArguments(taCtx, this);
-                    if (!typeArgs.isEmpty()) {
-                        currentType.setTypeArguments(typeArgs);
-                    }
-                }
-            }
-            // DOT terminals are skipped — scope is handled by constructor chaining
-        }
-
-        if (type == null) {
-            throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
-        }
-        return type;
+        return TypeConverter.convertClassOrInterfaceType(ctx, this);
     }
 
     @Override
     public Node visitTypeType(Mvel3Parser.TypeTypeContext ctx) {
-        // typeType: annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
-        Type baseType = null;
-
-        // Handle different type possibilities
-        if (ctx.classOrInterfaceType() != null) {
-            baseType = (Type) visit(ctx.classOrInterfaceType());
-        } else if (ctx.primitiveType() != null) {
-            baseType = (Type) visit(ctx.primitiveType());
-        }
-
-        if (baseType == null) {
-            // Fall back to default behavior
-            return visitChildren(ctx);
-        }
-
-        // Walk children to separate type annotations from array dimension annotations
-        // Phase 1: annotations before the type node
-        // Phase 2: for each '[', collect preceding annotations for that array dimension
-        NodeList<AnnotationExpr> typeAnnotations = new NodeList<>();
-        List<NodeList<AnnotationExpr>> arrayDimAnnotations = new ArrayList<>();
-        boolean foundType = false;
-        NodeList<AnnotationExpr> pendingAnnotations = new NodeList<>();
-
-        if (ctx.children != null) {
-            for (ParseTree child : ctx.children) {
-                if (child instanceof Mvel3Parser.AnnotationContext) {
-                    pendingAnnotations.add(ModifiersConverter.convertAnnotationExpr((Mvel3Parser.AnnotationContext) child));
-                } else if (child instanceof Mvel3Parser.ClassOrInterfaceTypeContext
-                        || child instanceof Mvel3Parser.PrimitiveTypeContext) {
-                    typeAnnotations = pendingAnnotations;
-                    pendingAnnotations = new NodeList<>();
-                    foundType = true;
-                } else if (foundType && child instanceof TerminalNode && "[".equals(child.getText())) {
-                    arrayDimAnnotations.add(pendingAnnotations);
-                    pendingAnnotations = new NodeList<>();
-                }
-            }
-        }
-
-        // Set annotations on the base type
-        if (!typeAnnotations.isEmpty()) {
-            baseType.setAnnotations(typeAnnotations);
-        }
-
-        // Wrap base type in ArrayType for each dimension, with per-dimension annotations
-        Type resultType = baseType;
-        for (NodeList<AnnotationExpr> dimAnnotations : arrayDimAnnotations) {
-            resultType = new ArrayType(resultType, ArrayType.Origin.TYPE, dimAnnotations);
-        }
-
-        if (resultType instanceof ArrayType) {
-            resultType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        }
-
-        return resultType;
+        return TypeConverter.convertTypeType(ctx, this);
     }
 
     @Override
     public Node visitPrimitiveType(Mvel3Parser.PrimitiveTypeContext ctx) {
-        // Map ANTLR primitive types to JavaParser PrimitiveType
-        String typeName = ctx.getText();
-        PrimitiveType.Primitive primitive;
-        
-        switch (typeName) {
-            case "boolean":
-                primitive = PrimitiveType.Primitive.BOOLEAN;
-                break;
-            case "byte":
-                primitive = PrimitiveType.Primitive.BYTE;
-                break;
-            case "short":
-                primitive = PrimitiveType.Primitive.SHORT;
-                break;
-            case "int":
-                primitive = PrimitiveType.Primitive.INT;
-                break;
-            case "long":
-                primitive = PrimitiveType.Primitive.LONG;
-                break;
-            case "char":
-                primitive = PrimitiveType.Primitive.CHAR;
-                break;
-            case "float":
-                primitive = PrimitiveType.Primitive.FLOAT;
-                break;
-            case "double":
-                primitive = PrimitiveType.Primitive.DOUBLE;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown primitive type: " + typeName);
-        }
-        
-        PrimitiveType primitiveType = new PrimitiveType(primitive);
-        primitiveType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return primitiveType;
+        return TypeConverter.convertPrimitiveType(ctx);
     }
 
     @Override

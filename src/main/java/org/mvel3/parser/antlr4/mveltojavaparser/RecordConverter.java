@@ -35,7 +35,7 @@ public final class RecordConverter {
         if (ctx.recordHeader() != null && ctx.recordHeader().recordComponentList() != null) {
             NodeList<Parameter> parameters = new NodeList<>();
             for (Mvel3Parser.RecordComponentContext compCtx : ctx.recordHeader().recordComponentList().recordComponent()) {
-                Type compType = (Type) mvel3toJavaParserVisitor.visit(compCtx.typeType());
+                Type compType = (Type) TypeConverter.convertTypeType(compCtx.typeType(), mvel3toJavaParserVisitor);
                 String compName = compCtx.identifier().getText();
                 Parameter param = new Parameter(compType, compName);
                 param.setTokenRange(TokenRangeConverter.createTokenRange(compCtx));

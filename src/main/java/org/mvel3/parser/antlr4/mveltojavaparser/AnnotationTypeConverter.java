@@ -50,7 +50,7 @@ public final class AnnotationTypeConverter {
 
                 if (rest.annotationMethodOrConstantRest() != null) {
                     // annotation method or constant: typeType annotationMethodOrConstantRest ';'
-                    Type type = (Type) mvel3toJavaParserVisitor.visit(rest.typeType());
+                    Type type = (Type) TypeConverter.convertTypeType(rest.typeType(), mvel3toJavaParserVisitor);
                     Mvel3Parser.AnnotationMethodOrConstantRestContext methodOrConst = rest.annotationMethodOrConstantRest();
 
                     if (methodOrConst.annotationMethodRest() != null) {

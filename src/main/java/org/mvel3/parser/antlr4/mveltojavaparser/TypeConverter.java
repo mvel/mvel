@@ -12,16 +12,20 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class TypeConverter {
@@ -64,7 +68,7 @@ public final class TypeConverter {
 
         // Handle extends
         if (ctx.EXTENDS() != null && ctx.typeType() != null) {
-            Type extendedType = (Type) mvel3toJavaParserVisitor.visit(ctx.typeType());
+            Type extendedType = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
             if (extendedType instanceof ClassOrInterfaceType) {
                 classDecl.setExtendedTypes(new NodeList<>((ClassOrInterfaceType) extendedType));
             }
@@ -91,8 +95,38 @@ public final class TypeConverter {
         return classDecl;
     }
 
-    private void visitClassBody(Mvel3Parser.ClassBodyContext ctx, ClassOrInterfaceDeclaration classDecl) {
+    public static Node convertClassOrInterfaceType(final Mvel3Parser.ClassOrInterfaceTypeContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        // Grammar: (identifier typeArguments? '.')* typeIdentifier typeArguments?
+        // Walk children to correctly associate each typeArguments with its preceding identifier.
+        ClassOrInterfaceType type = null;
+        ClassOrInterfaceType currentType = null;
 
+        for (ParseTree child : ctx.children) {
+            if (child instanceof Mvel3Parser.IdentifierContext idCtx) {
+                currentType = new ClassOrInterfaceType(type, idCtx.getText());
+                currentType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+                type = currentType;
+            } else if (child instanceof Mvel3Parser.TypeIdentifierContext tiCtx) {
+                currentType = new ClassOrInterfaceType(type, tiCtx.getText());
+                currentType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+                type = currentType;
+            } else if (child instanceof Mvel3Parser.TypeArgumentsContext taCtx) {
+                // Apply type arguments to the most recently built type
+                if (currentType != null) {
+                    NodeList<Type> typeArgs = ArgumentsConverter.convertTypeArguments(taCtx, mvel3toJavaParserVisitor);
+                    if (!typeArgs.isEmpty()) {
+                        currentType.setTypeArguments(typeArgs);
+                    }
+                }
+            }
+            // DOT terminals are skipped — scope is handled by constructor chaining
+        }
+
+        if (type == null) {
+            throw new IllegalArgumentException("Missing typeIdentifier in ClassOrInterfaceType: " + ctx.getText());
+        }
+        return type;
     }
 
     /**
@@ -131,7 +165,7 @@ public final class TypeConverter {
         NodeList<ClassOrInterfaceType> types = new NodeList<>();
         if (ctx != null && ctx.typeType() != null) {
             for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
-                Type type = (Type) mvel3toJavaParserVisitor.visit(typeCtx);
+                Type type = (Type) TypeConverter.convertTypeType(typeCtx, mvel3toJavaParserVisitor);
                 if (type instanceof ClassOrInterfaceType) {
                     types.add((ClassOrInterfaceType) type);
                 }
@@ -171,7 +205,7 @@ public final class TypeConverter {
 
             if (tpCtx.typeBound() != null) {
                 for (int i = 0; i < tpCtx.typeBound().typeType().size(); i++) {
-                    Type boundType = (Type) mvel3toJavaParserVisitor.visit(tpCtx.typeBound().typeType(i));
+                    Type boundType = (Type) TypeConverter.convertTypeType(tpCtx.typeBound().typeType(i), mvel3toJavaParserVisitor);
                     if (boundType instanceof ClassOrInterfaceType) {
                         // Apply bound annotations to the first bound type
                         if (i == 0 && !boundAnnotations.isEmpty()) {
@@ -204,6 +238,105 @@ public final class TypeConverter {
             }
         }
         return types;
+    }
+
+    public static Node convertTypeType(
+            final Mvel3Parser.TypeTypeContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        // typeType: annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
+        Type baseType = null;
+
+        // Handle different type possibilities
+        if (ctx.classOrInterfaceType() != null) {
+            baseType = (Type) convertClassOrInterfaceType(ctx.classOrInterfaceType(), mvel3toJavaParserVisitor);
+        } else if (ctx.primitiveType() != null) {
+            baseType = (Type) convertPrimitiveType(ctx.primitiveType());
+        }
+
+        if (baseType == null) {
+            // Fall back to default behavior
+            return mvel3toJavaParserVisitor.visitChildren(ctx);
+        }
+
+        // Walk children to separate type annotations from array dimension annotations
+        // Phase 1: annotations before the type node
+        // Phase 2: for each '[', collect preceding annotations for that array dimension
+        NodeList<AnnotationExpr> typeAnnotations = new NodeList<>();
+        List<NodeList<AnnotationExpr>> arrayDimAnnotations = new ArrayList<>();
+        boolean foundType = false;
+        NodeList<AnnotationExpr> pendingAnnotations = new NodeList<>();
+
+        if (ctx.children != null) {
+            for (ParseTree child : ctx.children) {
+                if (child instanceof Mvel3Parser.AnnotationContext) {
+                    pendingAnnotations.add(ModifiersConverter.convertAnnotationExpr((Mvel3Parser.AnnotationContext) child));
+                } else if (child instanceof Mvel3Parser.ClassOrInterfaceTypeContext
+                        || child instanceof Mvel3Parser.PrimitiveTypeContext) {
+                    typeAnnotations = pendingAnnotations;
+                    pendingAnnotations = new NodeList<>();
+                    foundType = true;
+                } else if (foundType && child instanceof TerminalNode && "[".equals(child.getText())) {
+                    arrayDimAnnotations.add(pendingAnnotations);
+                    pendingAnnotations = new NodeList<>();
+                }
+            }
+        }
+
+        // Set annotations on the base type
+        if (!typeAnnotations.isEmpty()) {
+            baseType.setAnnotations(typeAnnotations);
+        }
+
+        // Wrap base type in ArrayType for each dimension, with per-dimension annotations
+        Type resultType = baseType;
+        for (NodeList<AnnotationExpr> dimAnnotations : arrayDimAnnotations) {
+            resultType = new ArrayType(resultType, ArrayType.Origin.TYPE, dimAnnotations);
+        }
+
+        if (resultType instanceof ArrayType) {
+            resultType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+        }
+
+        return resultType;
+    }
+
+    public static Node convertPrimitiveType(Mvel3Parser.PrimitiveTypeContext ctx) {
+        // Map ANTLR primitive types to JavaParser PrimitiveType
+        String typeName = ctx.getText();
+        PrimitiveType.Primitive primitive;
+
+        switch (typeName) {
+            case "boolean":
+                primitive = PrimitiveType.Primitive.BOOLEAN;
+                break;
+            case "byte":
+                primitive = PrimitiveType.Primitive.BYTE;
+                break;
+            case "short":
+                primitive = PrimitiveType.Primitive.SHORT;
+                break;
+            case "int":
+                primitive = PrimitiveType.Primitive.INT;
+                break;
+            case "long":
+                primitive = PrimitiveType.Primitive.LONG;
+                break;
+            case "char":
+                primitive = PrimitiveType.Primitive.CHAR;
+                break;
+            case "float":
+                primitive = PrimitiveType.Primitive.FLOAT;
+                break;
+            case "double":
+                primitive = PrimitiveType.Primitive.DOUBLE;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown primitive type: " + typeName);
+        }
+
+        PrimitiveType primitiveType = new PrimitiveType(primitive);
+        primitiveType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+        return primitiveType;
     }
 
     /**

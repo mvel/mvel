@@ -34,15 +34,15 @@ public final class ArgumentsConverter {
             // Wildcard: ?, ? extends T, ? super T (with optional annotations)
             WildcardType wildcard = new WildcardType();
             if (ctx.EXTENDS() != null && ctx.typeType() != null) {
-                wildcard.setExtendedType((ReferenceType) mvel3toJavaParserVisitor.visit(ctx.typeType()));
+                wildcard.setExtendedType((ReferenceType) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor));
             } else if (ctx.SUPER() != null && ctx.typeType() != null) {
-                wildcard.setSuperType((ReferenceType) mvel3toJavaParserVisitor.visit(ctx.typeType()));
+                wildcard.setSuperType((ReferenceType) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor));
             }
             wildcard.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             return wildcard;
         } else {
             // Plain type argument: String, List<Integer>, etc.
-            return mvel3toJavaParserVisitor.visit(ctx.typeType());
+            return TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
         }
     }
 

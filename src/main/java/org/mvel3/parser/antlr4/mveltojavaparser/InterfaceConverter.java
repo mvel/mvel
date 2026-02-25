@@ -139,7 +139,7 @@ public final class InterfaceConverter {
             if (commonBody.typeTypeOrVoid().VOID() != null) {
                 methodDecl.setType(new VoidType());
             } else if (commonBody.typeTypeOrVoid().typeType() != null) {
-                Type returnType = (Type) mvel3toJavaParserVisitor.visit(commonBody.typeTypeOrVoid().typeType());
+                Type returnType = (Type) TypeConverter.convertTypeType(commonBody.typeTypeOrVoid().typeType(), mvel3toJavaParserVisitor);
                 int extraDims = commonBody.LBRACK() != null ? commonBody.LBRACK().size() : 0;
                 for (int i = 0; i < extraDims; i++) {
                     returnType = new ArrayType(returnType);
@@ -205,7 +205,7 @@ public final class InterfaceConverter {
             final Mvel3Parser.ConstDeclarationContext ctx,
             final Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
             final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
-        Type fieldType = (Type) mvel3toJavaParserVisitor.visit(ctx.typeType());
+        Type fieldType = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
 
         NodeList<VariableDeclarator> declarators = new NodeList<>();
         for (Mvel3Parser.ConstantDeclaratorContext constCtx : ctx.constantDeclarator()) {

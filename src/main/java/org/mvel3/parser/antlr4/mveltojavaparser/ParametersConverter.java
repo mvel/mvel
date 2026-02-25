@@ -29,7 +29,7 @@ public final class ParametersConverter {
     public static Node convertFormalParameter(final Mvel3Parser.FormalParameterContext ctx,
             final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
         ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
-        Type type = (Type) mvel3toJavaParserVisitor.visit(ctx.typeType());
+        Type type = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
         Type adjustedType = ArrayConverter.applyArrayDimensions(type, ctx.variableDeclaratorId());
         SimpleName name = createSimpleName(ctx.variableDeclaratorId().identifier());
 
@@ -46,7 +46,7 @@ public final class ParametersConverter {
     public static Node convertLastFormalParameter(final Mvel3Parser.LastFormalParameterContext ctx,
             final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
         ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
-        Type type = (Type) mvel3toJavaParserVisitor.visit(ctx.typeType());
+        Type type = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
         boolean isVarArgs = ctx.ELLIPSIS() != null;
 
         NodeList<AnnotationExpr> varArgsAnnotations = new NodeList<>();
@@ -111,7 +111,7 @@ public final class ParametersConverter {
         Mvel3Parser.ReceiverParameterContext rpCtx = formalParamsCtx.receiverParameter();
 
         // Parse the type
-        Type type = (Type) mvel3toJavaParserVisitor.visit(rpCtx.typeType());
+        Type type = (Type) TypeConverter.convertTypeType(rpCtx.typeType(), mvel3toJavaParserVisitor);
 
         // Build name from optional qualifiers + "this"
         // Grammar: typeType (identifier '.')* THIS

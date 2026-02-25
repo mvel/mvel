@@ -43,7 +43,7 @@ public final class VariableConverter {
             return varDecl;
         } else if (ctx.typeType() != null && ctx.variableDeclarators() != null) {
             // Handle: Type name = expression;
-            Type varType = (Type) mvel3toJavaParserVisitor.visit(ctx.typeType());
+            Type varType = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
 
             // Create NodeList for multiple declarators (though we usually have just one)
             NodeList<VariableDeclarator> declarators = new NodeList<>();
