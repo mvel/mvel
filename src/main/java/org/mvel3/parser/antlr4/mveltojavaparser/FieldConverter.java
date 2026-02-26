@@ -1,4 +1,4 @@
-package org.mvel3.parser.antlr4.mveltojavaparser.type;
+package org.mvel3.parser.antlr4.mveltojavaparser;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -9,10 +9,6 @@ import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
-import org.mvel3.parser.antlr4.mveltojavaparser.ArrayConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
-import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.VariableConverter;
 
 public final class FieldConverter {
 

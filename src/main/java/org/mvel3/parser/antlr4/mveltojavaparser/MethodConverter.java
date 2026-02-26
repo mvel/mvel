@@ -1,7 +1,9 @@
-package org.mvel3.parser.antlr4.mveltojavaparser.type;
+package org.mvel3.parser.antlr4.mveltojavaparser;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.Type;
@@ -9,9 +11,6 @@ import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
-import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
-import org.mvel3.parser.antlr4.mveltojavaparser.ParametersConverter;
 
 public final class MethodConverter {
 
@@ -78,5 +77,38 @@ public final class MethodConverter {
             methodDecl.setTypeParameters(TypeConverter.convertTypeParameters(ctx.typeParameters(), mvel3toJavaParserVisitor));
         }
         return methodDecl;
+    }
+
+    public static Node convertMethodCallExpression(
+            final Mvel3Parser.MethodCallExpressionContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        // Handle method call without scope
+        return convertMethodCallWithScope(ctx.methodCall(), null, mvel3toJavaParserVisitor);
+    }
+
+    private static MethodCallExpr convertMethodCallWithScope(
+            final Mvel3Parser.MethodCallContext ctx, final Expression scope,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        String methodName;
+        if (ctx.identifier() != null) {
+            methodName = ctx.identifier().getText();
+        } else if (ctx.THIS() != null) {
+            methodName = "this";
+        } else if (ctx.SUPER() != null) {
+            methodName = "super";
+        } else {
+            throw new IllegalArgumentException("Unknown method call type: " + ctx.getText());
+        }
+
+        MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
+
+        // Handle arguments
+        if (ctx.arguments() != null && ctx.arguments().expressionList() != null) {
+            methodCall.setArguments(ArgumentsConverter.convertArguments(ctx.arguments(), mvel3toJavaParserVisitor));
+        }
+
+        methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+
+        return methodCall;
     }
 }

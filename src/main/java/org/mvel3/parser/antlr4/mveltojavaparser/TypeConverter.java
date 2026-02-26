@@ -1,4 +1,4 @@
-package org.mvel3.parser.antlr4.mveltojavaparser.type;
+package org.mvel3.parser.antlr4.mveltojavaparser;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
@@ -24,15 +24,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
-import org.mvel3.parser.antlr4.mveltojavaparser.AnnotationTypeConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.EnumConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.InterfaceConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
-import org.mvel3.parser.antlr4.mveltojavaparser.RecordConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,6 +153,26 @@ public final class TypeConverter {
             }
         }
         return members;
+    }
+
+    public static Node convertClassType(
+            final Mvel3Parser.ClassTypeContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        // classType: (classOrInterfaceType '.')? annotation* identifier typeArguments?
+        ClassOrInterfaceType scope = null;
+        if (ctx.classOrInterfaceType() != null) {
+            scope = (ClassOrInterfaceType) convertClassOrInterfaceType(ctx.classOrInterfaceType(), mvel3toJavaParserVisitor);
+        }
+
+        String name = ctx.identifier().getText();
+        ClassOrInterfaceType type = new ClassOrInterfaceType(scope, name);
+
+        if (ctx.typeArguments() != null) {
+            type.setTypeArguments(ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), mvel3toJavaParserVisitor));
+        }
+
+        type.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+        return type;
     }
 
     public static NodeList<BodyDeclaration<?>> convertAnonymousClassBody(final Mvel3Parser.ClassBodyContext ctx,

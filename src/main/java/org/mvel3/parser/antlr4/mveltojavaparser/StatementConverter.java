@@ -34,8 +34,8 @@ import com.github.javaparser.ast.type.VarType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
-import org.mvel3.parser.antlr4.mveltojavaparser.type.TypeConverter;
 import org.mvel3.parser.ast.expr.ModifyStatement;
+import org.mvel3.parser.ast.expr.WithStatement;
 
 public final class StatementConverter {
 
@@ -215,6 +215,22 @@ public final class StatementConverter {
 
         // Create and return a ModifyStatement with proper TokenRange
         return new ModifyStatement(TokenRangeConverter.createTokenRange(ctx), target, statements);
+    }
+
+    public static Node convertWithStatement(
+            final Mvel3Parser.WithStatementContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        String targetName = ctx.identifier().getText();
+        NameExpr target = new NameExpr(targetName);
+        target.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+
+        NodeList<Statement> statements = new NodeList<>();
+        for (Mvel3Parser.StatementContext stmtCtx : ctx.statement()) {
+            Statement stmt = (Statement) convertStatement(stmtCtx, mvel3toJavaParserVisitor);
+            statements.add(stmt);
+        }
+
+        return new WithStatement(TokenRangeConverter.createTokenRange(ctx), target, statements);
     }
 
     private static CatchClause parseCatchClause(final Mvel3Parser.CatchClauseContext ctx,

@@ -1,4 +1,4 @@
-package org.mvel3.parser.antlr4.mveltojavaparser.type;
+package org.mvel3.parser.antlr4.mveltojavaparser;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -6,10 +6,6 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
-import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
-import org.mvel3.parser.antlr4.mveltojavaparser.ParametersConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 
 public final class ConstructorConverter {
 

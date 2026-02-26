@@ -16,69 +16,34 @@
 
 package org.mvel3.parser.antlr4;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
-import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
-import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.PatternExpr;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
-import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.modules.ModuleDirective;
-import com.github.javaparser.ast.modules.ModuleExportsDirective;
-import com.github.javaparser.ast.modules.ModuleOpensDirective;
-import com.github.javaparser.ast.modules.ModuleProvidesDirective;
-import com.github.javaparser.ast.modules.ModuleRequiresDirective;
-import com.github.javaparser.ast.modules.ModuleUsesDirective;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.IntersectionType;
-import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.ast.type.UnknownType;
-import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.VoidType;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -88,31 +53,39 @@ import org.mvel3.parser.antlr4.mveltojavaparser.AnnotationTypeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArrayConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.CompilationUnitConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.ConstructorConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.CreatedNameConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.EnumConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.FieldConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ImportConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.InterfaceConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
+import org.mvel3.parser.antlr4.mveltojavaparser.MethodConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ParametersConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.RecordConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.StatementConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.SwitchConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.type.ConstructorConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.type.FieldConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.type.MethodConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.type.TypeConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.VariableConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.VariableParser;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.BinaryOperatorExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.CastExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.InlineCastExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.InstanceOfOperatorExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.LambdaExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.ListCreationLiteralConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.LiteralConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.MapCreationLiteralConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.MethodReferenceExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.NullSafeExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.ObjectCreationExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.PostIncrementDecrementOperatorExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.SquareBracketExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.TernaryExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.UnaryOperatorExpressionConverter;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
-import org.mvel3.parser.ast.expr.InlineCastExpr;
-import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
-import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
-import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
-import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
-import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
-import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.parser.ast.expr.TemporalChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
@@ -121,8 +94,6 @@ import org.mvel3.parser.ast.expr.WithStatement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.mvel3.parser.util.AstUtils.getBinaryExprOperator;
 
 /**
  * Visitor that converts ANTLR4 parse tree to JavaParser AST nodes.
@@ -133,57 +104,17 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     // Associate antlr tokenId with a JavaParser node for identifier, so it can be used for code completion.
     protected final Map<Integer, Node> tokenIdJPNodeMap = new HashMap<>();
 
-    public Map<Integer, Node> getTokenIdJPNodeMap() {
-        return tokenIdJPNodeMap;
+    protected void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
+        // Antlr token <-> JavaParser node mapping for code completion
+        ParseTree lastNode = ctx.children.get(ctx.children.size() - 1); // take the last terminal node
+        if (lastNode instanceof TerminalNode terminalNode) {
+            tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), jpNode);
+        }
     }
 
     @Override
     public Node visitCompilationUnit(Mvel3Parser.CompilationUnitContext ctx) {
-        CompilationUnit cu = new CompilationUnit();
-
-        if (ctx.packageDeclaration() != null) {
-            Name pkg = StaticJavaParser.parseName(ctx.packageDeclaration().qualifiedName().getText());
-            cu.setPackageDeclaration(new PackageDeclaration(pkg));
-        }
-
-        if (ctx.importDeclaration() != null) {
-            for (Mvel3Parser.ImportDeclarationContext importDecl : ctx.importDeclaration()) {
-                ImportDeclaration importDeclaration = (ImportDeclaration) visit(importDecl);
-                if (importDeclaration != null) {
-                    cu.addImport(importDeclaration);
-                }
-            }
-        }
-
-        // Handle type declarations
-        if (ctx.typeDeclaration() != null) {
-            for (Mvel3Parser.TypeDeclarationContext typeDecl : ctx.typeDeclaration()) {
-                Node node = visit(typeDecl);
-                if (node instanceof TypeDeclaration) {
-                    cu.addType((TypeDeclaration<?>) node);
-                }
-            }
-        }
-
-        // Handle module declaration (second alternative: moduleDeclaration EOF)
-        if (ctx.moduleDeclaration() != null) {
-            Mvel3Parser.ModuleDeclarationContext moduleCtx = ctx.moduleDeclaration();
-            boolean isOpen = moduleCtx.OPEN() != null;
-            Name moduleName = StaticJavaParser.parseName(moduleCtx.qualifiedName().getText());
-
-            NodeList<ModuleDirective> directives = new NodeList<>();
-            if (moduleCtx.moduleBody() != null && moduleCtx.moduleBody().moduleDirective() != null) {
-                for (Mvel3Parser.ModuleDirectiveContext dirCtx : moduleCtx.moduleBody().moduleDirective()) {
-                    directives.add(processModuleDirective(dirCtx));
-                }
-            }
-
-            ModuleDeclaration moduleDecl = new ModuleDeclaration(moduleName, isOpen);
-            moduleDecl.setDirectives(directives);
-            cu.setModule(moduleDecl);
-        }
-
-        return cu;
+        return CompilationUnitConverter.convertCompilationUnit(ctx, this);
     }
     
     @Override
@@ -248,32 +179,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitMethodCallExpression(Mvel3Parser.MethodCallExpressionContext ctx) {
-        // Handle method call without scope
-        return visitMethodCallWithScope(ctx.methodCall(), null);
-    }
-
-    private MethodCallExpr visitMethodCallWithScope(Mvel3Parser.MethodCallContext ctx, Expression scope) {
-        String methodName;
-        if (ctx.identifier() != null) {
-            methodName = ctx.identifier().getText();
-        } else if (ctx.THIS() != null) {
-            methodName = "this";
-        } else if (ctx.SUPER() != null) {
-            methodName = "super";
-        } else {
-            throw new IllegalArgumentException("Unknown method call type: " + ctx.getText());
-        }
-
-        MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
-
-        // Handle arguments
-        if (ctx.arguments() != null && ctx.arguments().expressionList() != null) {
-            methodCall.setArguments(ArgumentsConverter.convertArguments(ctx.arguments(), this));
-        }
-
-        methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        return methodCall;
+        return MethodConverter.convertMethodCallExpression(ctx, this);
     }
 
     @Override
@@ -288,91 +194,22 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitBinaryOperatorExpression(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
-        Expression left = (Expression) visit(ctx.expression(0));
-        Expression right = (Expression) visit(ctx.expression(1));
-
-        String operatorText = resolveOperatorText(ctx);
-
-        // Handle assignment operators separately
-        AssignExpr.Operator assignOp = getAssignOperator(operatorText);
-        if (assignOp != null) {
-            return new AssignExpr(TokenRangeConverter.createTokenRange(ctx), left, right, assignOp);
-        }
-        
-        // Handle other binary operators
-        BinaryExpr.Operator operator = getBinaryExprOperator(operatorText);
-        return new BinaryExpr(TokenRangeConverter.createTokenRange(ctx), left, right, operator);
-    }
-    
-    /**
-     * Map operator text to AssignExpr.Operator, return null if not an assignment operator
-     */
-    private AssignExpr.Operator getAssignOperator(String operatorText) {
-        switch (operatorText) {
-            case "=": return AssignExpr.Operator.ASSIGN;
-            case "+=": return AssignExpr.Operator.PLUS;
-            case "-=": return AssignExpr.Operator.MINUS;
-            case "*=": return AssignExpr.Operator.MULTIPLY;
-            case "/=": return AssignExpr.Operator.DIVIDE;
-            case "&=": return AssignExpr.Operator.BINARY_AND;
-            case "|=": return AssignExpr.Operator.BINARY_OR;
-            case "^=": return AssignExpr.Operator.XOR;
-            case "%=": return AssignExpr.Operator.REMAINDER;
-            case "<<=": return AssignExpr.Operator.LEFT_SHIFT;
-            case ">>=": return AssignExpr.Operator.SIGNED_RIGHT_SHIFT;
-            case ">>>=": return AssignExpr.Operator.UNSIGNED_RIGHT_SHIFT;
-            default: return null;
-        }
+        return BinaryOperatorExpressionConverter.convertBinaryOperatorExpression(ctx, this);
     }
 
     @Override
     public Node visitTernaryExpression(Mvel3Parser.TernaryExpressionContext ctx) {
-        Expression condition = (Expression) visit(ctx.expression(0));
-        Expression thenExpr = (Expression) visit(ctx.expression(1));
-        Expression elseExpr = (Expression) visit(ctx.expression(2));
-
-        ConditionalExpr conditionalExpr = new ConditionalExpr(condition, thenExpr, elseExpr);
-        conditionalExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return conditionalExpr;
+        return TernaryExpressionConverter.convertTernaryExpression(ctx, this);
     }
 
     @Override
     public Node visitInstanceOfOperatorExpression(Mvel3Parser.InstanceOfOperatorExpressionContext ctx) {
-        Expression expression = (Expression) visit(ctx.expression());
-
-        if (ctx.pattern() != null) {
-            // Java 14+ pattern matching: expr instanceof Type varName
-            Mvel3Parser.PatternContext patternCtx = ctx.pattern();
-            ReferenceType type = (ReferenceType) visit(patternCtx.typeType());
-            SimpleName name = new SimpleName(patternCtx.identifier().getText());
-
-            NodeList<Modifier> modifiers = new NodeList<>();
-            if (patternCtx.variableModifier() != null) {
-                for (Mvel3Parser.VariableModifierContext modCtx : patternCtx.variableModifier()) {
-                    if (modCtx.FINAL() != null) {
-                        modifiers.add(Modifier.finalModifier());
-                    }
-                }
-            }
-
-            PatternExpr patternExpr = new PatternExpr(modifiers, type, name);
-            patternExpr.setTokenRange(TokenRangeConverter.createTokenRange(patternCtx));
-
-            InstanceOfExpr instanceOfExpr = new InstanceOfExpr(expression, type, patternExpr);
-            instanceOfExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return instanceOfExpr;
-        } else {
-            // Classic instanceof: expr instanceof Type
-            ReferenceType type = (ReferenceType) visit(ctx.typeType());
-            InstanceOfExpr instanceOfExpr = new InstanceOfExpr(expression, type);
-            instanceOfExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return instanceOfExpr;
-        }
+        return InstanceOfOperatorExpressionConverter.convertInstanceOfOperatorExpression(ctx, this);
     }
 
     @Override
     public Node visitExpressionSwitch(Mvel3Parser.ExpressionSwitchContext ctx) {
-        return visit(ctx.switchExpression());
+        return SwitchConverter.convertSwitchExpression(ctx.switchExpression(), this);
     }
 
     @Override
@@ -382,31 +219,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitMethodReferenceExpression(Mvel3Parser.MethodReferenceExpressionContext ctx) {
-        Expression scope;
-        if (ctx.expression() != null) {
-            // expression '::' typeArguments? identifier
-            scope = (Expression) visit(ctx.expression());
-        } else if (ctx.classType() != null) {
-            // classType '::' typeArguments? NEW
-            Type type = (Type) visit(ctx.classType());
-            scope = new TypeExpr(type);
-        } else if (ctx.typeType() != null) {
-            // typeType '::' (typeArguments? identifier | NEW)
-            Type type = (Type) visit(ctx.typeType());
-            scope = new TypeExpr(type);
-        } else {
-            throw new IllegalArgumentException("Unsupported method reference: " + ctx.getText());
-        }
-
-        // Identifier is the method name, or "new" for constructor references
-        String identifier = ctx.NEW() != null ? "new" : ctx.identifier().getText();
-
-        // Handle type arguments if present
-        NodeList<Type> typeArguments = ctx.typeArguments() != null ? ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), this) : null;
-
-        MethodReferenceExpr methodRef = new MethodReferenceExpr(scope, typeArguments, identifier);
-        methodRef.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return methodRef;
+        return MethodReferenceExpressionConverter.convertMethodReferenceExpression(ctx, this);
     }
 
     @Override
@@ -549,14 +362,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
-    protected void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
-        // Antlr token <-> JavaParser node mapping for code completion
-        ParseTree lastNode = ctx.children.get(ctx.children.size() - 1); // take the last terminal node
-        if (lastNode instanceof TerminalNode terminalNode) {
-            tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), jpNode);
-        }
-    }
-
     @Override
     public Node visitPrimaryExpression(Mvel3Parser.PrimaryExpressionContext ctx) {
         return visit(ctx.primary());
@@ -629,38 +434,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitInlineCastExpression(Mvel3Parser.InlineCastExpressionContext ctx) {
-        // Handle inline cast: expr#Type#[member]
-        Expression scope = (Expression) visit(ctx.expression(0));
-        Type type = (Type) visit(ctx.typeType());
-
-        InlineCastExpr inlineCastExpr = new InlineCastExpr(type, scope);
-        inlineCastExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        associateAntlrTokenWithJPNode(ctx, inlineCastExpr);
-
-        if (ctx.identifier() != null) {
-            String name = ctx.identifier().getText();
-            if (ctx.arguments() != null) {
-                MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, name);
-                methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-                methodCall.setArguments(ArgumentsConverter.convertArguments(ctx.arguments(), this));
-                return methodCall;
-            }
-
-            FieldAccessExpr fieldAccess = new FieldAccessExpr(inlineCastExpr, name);
-            fieldAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return fieldAccess;
-        }
-
-        if (ctx.LBRACK() != null) {
-            Expression indexExpr = (Expression) visit(ctx.expression(1));
-            MethodCallExpr methodCall = new MethodCallExpr(inlineCastExpr, "get");
-            methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            methodCall.addArgument(indexExpr);
-            return methodCall;
-        }
-
-        return inlineCastExpr;
+        return InlineCastExpressionConverter.convertInlineCastExpression(ctx, this);
     }
 
     @Override
@@ -671,23 +445,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitListCreationLiteral(Mvel3Parser.ListCreationLiteralContext ctx) {
-        NodeList<Expression> elements = new NodeList<>();
-
-        // Process each list element
-        if (ctx.listElement() != null) {
-            for (Mvel3Parser.ListElementContext elementCtx : ctx.listElement()) {
-                Expression expr = (Expression) visit(elementCtx.expression());
-                // Wrap in ListCreationLiteralExpressionElement as per mvel.jj
-                ListCreationLiteralExpressionElement element =
-                    new ListCreationLiteralExpressionElement(expr);
-                element.setTokenRange(TokenRangeConverter.createTokenRange(elementCtx));
-                elements.add(element);
-            }
-        }
-
-        ListCreationLiteralExpression listExpr = new ListCreationLiteralExpression(elements);
-        listExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return listExpr;
+        return ListCreationLiteralConverter.convertListCreationLiteral(ctx, this);
     }
 
     @Override
@@ -698,226 +456,27 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitMapCreationLiteral(Mvel3Parser.MapCreationLiteralContext ctx) {
-        NodeList<Expression> entries = new NodeList<>();
-
-        // Check for empty map syntax [:]
-        if (ctx.COLON() != null && ctx.mapEntry().isEmpty()) {
-            // Empty map
-            MapCreationLiteralExpression mapExpr = new MapCreationLiteralExpression(entries);
-            mapExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return mapExpr;
-        }
-
-        // Process each map entry
-        if (ctx.mapEntry() != null) {
-            for (Mvel3Parser.MapEntryContext entryCtx : ctx.mapEntry()) {
-                Expression key = (Expression) visit(entryCtx.expression(0));
-                Expression value = (Expression) visit(entryCtx.expression(1));
-
-                // Wrap in MapCreationLiteralExpressionKeyValuePair as per mvel.jj
-                MapCreationLiteralExpressionKeyValuePair pair =
-                    new MapCreationLiteralExpressionKeyValuePair(key, value);
-                pair.setTokenRange(TokenRangeConverter.createTokenRange(entryCtx));
-                entries.add(pair);
-            }
-        }
-
-        MapCreationLiteralExpression mapExpr = new MapCreationLiteralExpression(entries);
-        mapExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return mapExpr;
+        return MapCreationLiteralConverter.convertMapCreationLiteral(ctx, this);
     }
 
     @Override
     public Node visitNullSafeExpression(Mvel3Parser.NullSafeExpressionContext ctx) {
-        // Extract the scope (left side of !.)
-        Expression scope = (Expression) visit(ctx.expression());
-
-        // Extract the identifier name
-        String name = ctx.identifier().getText();
-
-        // Check if there are arguments (method call) or not (field access)
-        if (ctx.arguments() != null) {
-            // Method call: $p!.getName()
-            NodeList<Expression> arguments = new NodeList<>();
-            if (ctx.arguments().expressionList() != null) {
-                for (Mvel3Parser.ExpressionContext argCtx : ctx.arguments().expressionList().expression()) {
-                    arguments.add((Expression) visit(argCtx));
-                }
-            }
-
-            // Extract type arguments if present
-            NodeList<Type> typeArguments = ctx.typeArguments() != null ? ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), this) : null;
-
-            NullSafeMethodCallExpr methodCall = new NullSafeMethodCallExpr(
-                scope,
-                typeArguments,
-                name,
-                arguments
-            );
-            methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return methodCall;
-        } else {
-            // Field access: $p!.name
-            NullSafeFieldAccessExpr fieldAccess = new NullSafeFieldAccessExpr(scope, name);
-            fieldAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return fieldAccess;
-        }
+        return NullSafeExpressionConverter.convertNullSafeExpression(ctx, this);
     }
 
     @Override
     public Node visitCastExpression(Mvel3Parser.CastExpressionContext ctx) {
-        NodeList<Type> parsedTypes = new NodeList<>();
-        for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
-            parsedTypes.add((Type) visit(typeCtx));
-        }
-
-        Type targetType;
-        if (parsedTypes.size() == 1) {
-            targetType = parsedTypes.get(0);
-        } else {
-            NodeList<ReferenceType> referenceTypes = new NodeList<>();
-            for (Type type : parsedTypes) {
-                if (!(type instanceof ReferenceType)) {
-                    throw new IllegalArgumentException("Intersection casts require reference types: " + ctx.getText());
-                }
-                referenceTypes.add((ReferenceType) type);
-            }
-            IntersectionType intersectionType = new IntersectionType(referenceTypes);
-            intersectionType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            targetType = intersectionType;
-        }
-
-        Expression expression = (Expression) visit(ctx.expression());
-
-        CastExpr castExpr = new CastExpr(targetType, expression);
-        castExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return castExpr;
+        return CastExpressionConverter.convertCastExpression(ctx, this);
     }
 
     @Override
     public Node visitLambdaExpression(Mvel3Parser.LambdaExpressionContext ctx) {
-        LambdaParametersResult parametersResult = resolveLambdaParameters(ctx.lambdaParameters());
-        Statement body = resolveLambdaBody(ctx.lambdaBody());
-
-        LambdaExpr lambdaExpr = new LambdaExpr(parametersResult.parameters, body, parametersResult.enclosingParameters);
-        lambdaExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return lambdaExpr;
+        return LambdaExpressionConverter.convertLambdaExpression(ctx, this);
     }
 
     @Override
     public Node visitLiteral(Mvel3Parser.LiteralContext ctx) {
-        if (ctx.STRING_LITERAL() != null) {
-            String text = ctx.STRING_LITERAL().getText();
-            // Remove quotes
-            String value = text.substring(1, text.length() - 1);
-            StringLiteralExpr stringLiteral = new StringLiteralExpr(value);
-            stringLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return stringLiteral;
-        } else if (ctx.DECIMAL_LITERAL() != null) {
-            return createIntegerOrLongLiteral(ctx.DECIMAL_LITERAL().getText(), ctx);
-        } else if (ctx.HEX_LITERAL() != null) {
-            return createIntegerOrLongLiteral(ctx.HEX_LITERAL().getText(), ctx);
-        } else if (ctx.OCT_LITERAL() != null) {
-            return createIntegerOrLongLiteral(ctx.OCT_LITERAL().getText(), ctx);
-        } else if (ctx.BINARY_LITERAL() != null) {
-            return createIntegerOrLongLiteral(ctx.BINARY_LITERAL().getText(), ctx);
-        } else if (ctx.FLOAT_LITERAL() != null) {
-            DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.FLOAT_LITERAL().getText());
-            doubleLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return doubleLiteral;
-        } else if (ctx.HEX_FLOAT_LITERAL() != null) {
-            DoubleLiteralExpr doubleLiteral = new DoubleLiteralExpr(ctx.HEX_FLOAT_LITERAL().getText());
-            doubleLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return doubleLiteral;
-        } else if (ctx.BOOL_LITERAL() != null) {
-            BooleanLiteralExpr booleanLiteral = new BooleanLiteralExpr(Boolean.parseBoolean(ctx.BOOL_LITERAL().getText()));
-            booleanLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return booleanLiteral;
-        } else if (ctx.NULL_LITERAL() != null) {
-            NullLiteralExpr nullLiteral = new NullLiteralExpr();
-            nullLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return nullLiteral;
-        } else if (ctx.CHAR_LITERAL() != null) {
-            String text = ctx.CHAR_LITERAL().getText();
-            char value = text.charAt(1); // Simple case, more complex handling needed for escape sequences
-            CharLiteralExpr charLiteral = new CharLiteralExpr(value);
-            charLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return charLiteral;
-        } else if (ctx.TEXT_BLOCK() != null) {
-            String rawText = ctx.TEXT_BLOCK().getText();
-            // Extract content between triple quotes: """content"""
-            String content = rawText.substring(3, rawText.length() - 3);
-            TextBlockLiteralExpr textBlockLiteral = new TextBlockLiteralExpr(content);
-            textBlockLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return textBlockLiteral;
-        }
-        
-        // Handle MVEL-specific literals - create proper AST nodes like mvel.jj does
-        if (ctx.BigDecimalLiteral() != null) {
-            String text = ctx.BigDecimalLiteral().getText();
-            // Create BigDecimalLiteralExpr node (transformation happens in MVELToJavaRewriter)
-            return new BigDecimalLiteralExpr(TokenRangeConverter.createTokenRange(ctx), text);
-        } else if (ctx.BigIntegerLiteral() != null) {
-            String text = ctx.BigIntegerLiteral().getText();
-            // Create BigIntegerLiteralExpr node (transformation happens in MVELToJavaRewriter)
-            return new BigIntegerLiteralExpr(TokenRangeConverter.createTokenRange(ctx), text);
-        } else if (ctx.temporalLiteral() != null) {
-            return buildTemporalLiteral(ctx.temporalLiteral());
-        }
-        
-        throw new IllegalArgumentException("Unknown literal type: " + ctx.getText());
-    }
-
-    private Expression createIntegerOrLongLiteral(String text, ParserRuleContext ctx) {
-        if (text.endsWith("L") || text.endsWith("l")) {
-            LongLiteralExpr longLiteral = new LongLiteralExpr(text);
-            longLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return longLiteral;
-        } else {
-            IntegerLiteralExpr integerLiteral = new IntegerLiteralExpr(text);
-            integerLiteral.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return integerLiteral;
-        }
-    }
-
-    private TemporalLiteralExpr buildTemporalLiteral(Mvel3Parser.TemporalLiteralContext ctx) {
-        NodeList<TemporalChunkExpr> chunks = new NodeList<>();
-        for (Mvel3Parser.TemporalLiteralChunkContext chunkCtx : ctx.temporalLiteralChunk()) {
-            chunks.add(buildTemporalLiteralChunk(chunkCtx));
-        }
-        TemporalLiteralExpr temporalLiteralExpr = new TemporalLiteralExpr(TokenRangeConverter.createTokenRange(ctx), chunks);
-        return temporalLiteralExpr;
-    }
-
-    private TemporalLiteralChunkExpr buildTemporalLiteralChunk(Mvel3Parser.TemporalLiteralChunkContext ctx) {
-        Token token;
-        TimeUnit timeUnit;
-
-        if (ctx.MILLISECOND_LITERAL() != null) {
-            token = ctx.MILLISECOND_LITERAL().getSymbol();
-            timeUnit = TimeUnit.MILLISECONDS;
-        } else if (ctx.SECOND_LITERAL() != null) {
-            token = ctx.SECOND_LITERAL().getSymbol();
-            timeUnit = TimeUnit.SECONDS;
-        } else if (ctx.MINUTE_LITERAL() != null) {
-            token = ctx.MINUTE_LITERAL().getSymbol();
-            timeUnit = TimeUnit.MINUTES;
-        } else if (ctx.HOUR_LITERAL() != null) {
-            token = ctx.HOUR_LITERAL().getSymbol();
-            timeUnit = TimeUnit.HOURS;
-        } else if (ctx.DAY_LITERAL() != null) {
-            token = ctx.DAY_LITERAL().getSymbol();
-            timeUnit = TimeUnit.DAYS;
-        } else {
-            throw new IllegalArgumentException("Unsupported temporal literal chunk: " + ctx.getText());
-        }
-
-        return new TemporalLiteralChunkExpr(TokenRangeConverter.createTokenRange(ctx), stripTimeUnit(token.getText()), timeUnit);
-    }
-
-    private String stripTimeUnit(String text) {
-        // Remove the time unit suffix (e.g., "m", "s", "h", "d", "ms")
-        return text.replaceAll("[a-zA-Z]+$", "");
+        return LiteralConverter.convertLiteral(ctx);
     }
 
     @Override
@@ -937,15 +496,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitSquareBracketExpression(Mvel3Parser.SquareBracketExpressionContext ctx) {
-        // Handle array/list access: expression[index]
-        Expression array = (Expression) visit(ctx.expression(0)); // The array/list expression
-        Expression index = (Expression) visit(ctx.expression(1)); // The index expression
-        
-        // Create ArrayAccessExpr like mvel.jj does
-        // The transformation to .get() method calls is handled by MVELToJavaRewriter
-        ArrayAccessExpr arrayAccess = new ArrayAccessExpr(array, index);
-        arrayAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return arrayAccess;
+        return SquareBracketExpressionConverter.convertSquareBracketExpression(ctx, this);
     }
 
     @Override
@@ -980,17 +531,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitWithStatement(Mvel3Parser.WithStatementContext ctx) {
-        String targetName = ctx.identifier().getText();
-        NameExpr target = new NameExpr(targetName);
-        target.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        NodeList<Statement> statements = new NodeList<>();
-        for (Mvel3Parser.StatementContext stmtCtx : ctx.statement()) {
-            Statement stmt = (Statement) visit(stmtCtx);
-            statements.add(stmt);
-        }
-
-        return new WithStatement(TokenRangeConverter.createTokenRange(ctx), target, statements);
+        return StatementConverter.convertWithStatement(ctx, this);
     }
 
     @Override
@@ -1010,203 +551,32 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitObjectCreationExpression(Mvel3Parser.ObjectCreationExpressionContext ctx) {
-        return visit(ctx.creator());
+        return ObjectCreationExpressionConverter.convertObjectCreationExpression(ctx, this);
     }
 
     @Override
     public Node visitCreator(Mvel3Parser.CreatorContext ctx) {
-        Node createdName = visit(ctx.createdName());
-        
-        if (ctx.arrayCreatorRest() != null) {
-            // Handle array creation: new Type[] {...} or new Type[size]
-            return visitArrayCreatorRest(ctx.arrayCreatorRest(), createdName);
-        } else if (ctx.classCreatorRest() != null) {
-            // Handle class creation: new Type(args)
-            Type type = (Type) createdName;
-
-            // Handle nonWildcardTypeArguments: new <String>Foo()
-            NodeList<Type> typeArguments = null;
-            if (ctx.nonWildcardTypeArguments() != null) {
-                typeArguments = new NodeList<>();
-                typeArguments.addAll(TypeConverter.convertTypeList(ctx.nonWildcardTypeArguments().typeList(), this));
-            }
-
-            // Get constructor arguments
-            NodeList<Expression> arguments = new NodeList<>();
-            if (ctx.classCreatorRest().arguments() != null &&
-                ctx.classCreatorRest().arguments().expressionList() != null) {
-                for (Mvel3Parser.ExpressionContext exprCtx : ctx.classCreatorRest().arguments().expressionList().expression()) {
-                    Expression arg = (Expression) visit(exprCtx);
-                    arguments.add(arg);
-                }
-            }
-
-            // Handle anonymous class body if present
-            NodeList<BodyDeclaration<?>> anonymousClassBody = null;
-            if (ctx.classCreatorRest().classBody() != null) {
-                anonymousClassBody = TypeConverter.convertAnonymousClassBody(ctx.classCreatorRest().classBody(), this);
-            }
-
-            // Create ObjectCreationExpr
-            ObjectCreationExpr objectCreation = new ObjectCreationExpr(null, (ClassOrInterfaceType) type, typeArguments, arguments, anonymousClassBody);
-            objectCreation.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return objectCreation;
-        }
-        
-        return createdName;
-    }
-
-    private Node visitArrayCreatorRest(Mvel3Parser.ArrayCreatorRestContext ctx, Node createdName) {
-        Type elementType = (Type) createdName;
-        
-        if (ctx.arrayInitializer() != null) {
-            // Handle: new Type[] { ... }
-            ArrayInitializerExpr initializer = (ArrayInitializerExpr) visit(ctx.arrayInitializer());
-            
-            // Count the array dimensions from '[' ']' pairs
-            int dimensions = 0;
-            if (ctx.children != null) {
-                for (ParseTree child : ctx.children) {
-                    if (child instanceof TerminalNode && "[".equals(child.getText())) {
-                        dimensions++;
-                    }
-                }
-            }
-            
-            // Create ArrayCreationLevel objects for each dimension (empty for array initializer)
-            NodeList<ArrayCreationLevel> levels = new NodeList<>();
-            for (int i = 0; i < dimensions; i++) {
-                ArrayCreationLevel level = new ArrayCreationLevel();
-                level.setTokenRange(TokenRangeConverter.createTokenRange(ctx)); 
-                levels.add(level);
-            }
-            
-            // Create ArrayCreationExpr
-            ArrayCreationExpr arrayCreation = new ArrayCreationExpr(elementType, levels, initializer);
-            arrayCreation.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return arrayCreation;
-        } else {
-            // Handle: new Type[size] or new Type[size1][size2]
-            NodeList<ArrayCreationLevel> levels = new NodeList<>();
-            
-            if (ctx.expression() != null) {
-                for (Mvel3Parser.ExpressionContext exprCtx : ctx.expression()) {
-                    Expression dimExpr = (Expression) visit(exprCtx);
-                    ArrayCreationLevel level = new ArrayCreationLevel(dimExpr);
-                    level.setTokenRange(TokenRangeConverter.createTokenRange(exprCtx));
-                    levels.add(level);
-                }
-            }
-            
-            // Create ArrayCreationExpr with dimensions
-            ArrayCreationExpr arrayCreation = new ArrayCreationExpr(elementType, levels, null);
-            arrayCreation.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return arrayCreation;
-        }
+        return ObjectCreationExpressionConverter.convertCreator(ctx, this);
     }
 
     @Override
     public Node visitCreatedName(Mvel3Parser.CreatedNameContext ctx) {
-        if (ctx.primitiveType() != null) {
-            return visit(ctx.primitiveType());
-        } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
-            // Handle class/interface type creation - build qualified name with type arguments
-            ClassOrInterfaceType type = null;
-
-            // Build the qualified name from all identifiers with their type arguments
-            for (int i = 0; i < ctx.identifier().size(); i++) {
-                String name = ctx.identifier(i).getText();
-
-                // Check if this identifier has type arguments or diamond operator
-                NodeList<Type> typeArguments = null;
-                if (i < ctx.typeArgumentsOrDiamond().size() && ctx.typeArgumentsOrDiamond(i) != null) {
-                    typeArguments = handleTypeArgumentsOrDiamond(ctx.typeArgumentsOrDiamond(i));
-                }
-
-                type = new ClassOrInterfaceType(type, name);
-                if (typeArguments != null) {
-                    type.setTypeArguments(typeArguments);
-                }
-            }
-
-            if (type != null) {
-                type.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            }
-            return type;
-        }
-
-        throw new IllegalArgumentException("Unsupported created name: " + ctx.getText());
-    }
-
-    private NodeList<Type> handleTypeArgumentsOrDiamond(Mvel3Parser.TypeArgumentsOrDiamondContext ctx) {
-        if (ctx.typeArguments() != null) {
-            return ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), this);
-        } else {
-            // Handle diamond operator: <> - return empty NodeList to represent diamond
-            return new NodeList<>();
-        }
+        return CreatedNameConverter.convertCreatedName(ctx, this);
     }
 
     @Override
     public Node visitUnaryOperatorExpression(Mvel3Parser.UnaryOperatorExpressionContext ctx) {
-        // Handle unary operators: +expr, -expr, ++expr, --expr, ~expr, !expr
-        Expression operand = (Expression) visit(ctx.expression());
-        String operator = ctx.prefix.getText();
-
-        UnaryExpr.Operator unaryOp;
-        switch (operator) {
-            case "+": unaryOp = UnaryExpr.Operator.PLUS; break;
-            case "-": unaryOp = UnaryExpr.Operator.MINUS; break;
-            case "++": unaryOp = UnaryExpr.Operator.PREFIX_INCREMENT; break;
-            case "--": unaryOp = UnaryExpr.Operator.PREFIX_DECREMENT; break;
-            case "~": unaryOp = UnaryExpr.Operator.BITWISE_COMPLEMENT; break;
-            case "!": unaryOp = UnaryExpr.Operator.LOGICAL_COMPLEMENT; break;
-            default:
-                throw new IllegalArgumentException("Unknown unary operator: " + operator);
-        }
-
-        UnaryExpr unaryExpr = new UnaryExpr(operand, unaryOp);
-        unaryExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return unaryExpr;
+        return UnaryOperatorExpressionConverter.convertUnaryOperatorExpression(ctx, this);
     }
 
     @Override
     public Node visitPostIncrementDecrementOperatorExpression(Mvel3Parser.PostIncrementDecrementOperatorExpressionContext ctx) {
-        // Handle post-increment and post-decrement: expression++ or expression--
-        Expression operand = (Expression) visit(ctx.expression());
-        String operator = ctx.postfix.getText();
-        
-        UnaryExpr.Operator unaryOp;
-        if ("++".equals(operator)) {
-            unaryOp = UnaryExpr.Operator.POSTFIX_INCREMENT;
-        } else if ("--".equals(operator)) {
-            unaryOp = UnaryExpr.Operator.POSTFIX_DECREMENT;
-        } else {
-            throw new IllegalArgumentException("Unknown post-increment/decrement operator: " + operator);
-        }
-        
-        UnaryExpr unaryExpr = new UnaryExpr(operand, unaryOp);
-        unaryExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return unaryExpr;
+        return PostIncrementDecrementOperatorExpressionConverter.convertPostIncrementDecrementOperatorExpression(ctx, this);
     }
 
     @Override
     public Node visitClassType(Mvel3Parser.ClassTypeContext ctx) {
-        // classType: (classOrInterfaceType '.')? annotation* identifier typeArguments?
-        ClassOrInterfaceType scope = null;
-        if (ctx.classOrInterfaceType() != null) {
-            scope = (ClassOrInterfaceType) visit(ctx.classOrInterfaceType());
-        }
-
-        String name = ctx.identifier().getText();
-        ClassOrInterfaceType type = new ClassOrInterfaceType(scope, name);
-
-        if (ctx.typeArguments() != null) {
-            type.setTypeArguments(ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), this));
-        }
-
-        type.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return type;
+        return TypeConverter.convertClassType(ctx, this);
     }
 
     @Override
@@ -1221,32 +591,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         return ArgumentsConverter.convertTypeArgument(ctx, this);
     }
 
-    private LambdaParametersResult resolveLambdaParameters(Mvel3Parser.LambdaParametersContext ctx) {
-        if (ctx == null) {
-            return new LambdaParametersResult(new NodeList<>(), false);
-        }
-
-        NodeList<Parameter> parameters = new NodeList<>();
-        boolean enclosingParameters = ctx.LPAREN() != null;
-
-        if (!enclosingParameters && ctx.identifier() != null && !ctx.identifier().isEmpty()) {
-            parameters.add(createInferredParameter(ctx.identifier(0)));
-            return new LambdaParametersResult(parameters, false);
-        }
-
-        if (ctx.formalParameterList() != null) {
-            parameters.addAll(ParametersConverter.convertFormalParameters(ctx.formalParameterList(), this));
-        } else if (ctx.lambdaLVTIList() != null) {
-            parameters.addAll(collectLambdaLVTIParameters(ctx.lambdaLVTIList()));
-        } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
-            for (Mvel3Parser.IdentifierContext identifierContext : ctx.identifier()) {
-                parameters.add(createInferredParameter(identifierContext));
-            }
-        }
-
-        return new LambdaParametersResult(parameters, enclosingParameters);
-    }
-
     private NodeList<Type> parseNonWildcardTypeArguments(Mvel3Parser.NonWildcardTypeArgumentsContext ctx) {
         NodeList<Type> typeArgs = new NodeList<>();
         if (ctx != null && ctx.typeList() != null) {
@@ -1255,133 +599,5 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
             }
         }
         return typeArgs;
-    }
-
-    private NodeList<Parameter> collectLambdaLVTIParameters(Mvel3Parser.LambdaLVTIListContext ctx) {
-        NodeList<Parameter> parameters = new NodeList<>();
-        if (ctx != null) {
-            for (Mvel3Parser.LambdaLVTIParameterContext parameterContext : ctx.lambdaLVTIParameter()) {
-                parameters.add(createLambdaVarParameter(parameterContext));
-            }
-        }
-        return parameters;
-    }
-
-    private Parameter createInferredParameter(Mvel3Parser.IdentifierContext identifierContext) {
-        UnknownType unknownType = new UnknownType();
-        unknownType.setTokenRange(TokenRangeConverter.createTokenRange(identifierContext));
-
-        SimpleName name = ParametersConverter.createSimpleName(identifierContext);
-
-        Parameter parameter = new Parameter(new NodeList<>(), new NodeList<>(), unknownType, false, new NodeList<>(), name);
-        parameter.setTokenRange(TokenRangeConverter.createTokenRange(identifierContext));
-        return parameter;
-    }
-
-    private Parameter createLambdaVarParameter(Mvel3Parser.LambdaLVTIParameterContext ctx) {
-        ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
-        VarType varType = new VarType();
-        varType.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        SimpleName name = ParametersConverter.createSimpleName(ctx.identifier());
-
-        Parameter parameter = new Parameter(modifiersAnnotations.modifiers(),
-                modifiersAnnotations.annotations(),
-                varType,
-                false,
-                new NodeList<>(),
-                name);
-        parameter.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return parameter;
-    }
-
-    private Statement resolveLambdaBody(Mvel3Parser.LambdaBodyContext ctx) {
-        if (ctx.block() != null) {
-            return (Statement) visit(ctx.block());
-        }
-
-        Expression expression = (Expression) visit(ctx.expression());
-        ExpressionStmt expressionStmt = new ExpressionStmt(expression);
-        expressionStmt.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return expressionStmt;
-    }
-
-    private ModuleDirective processModuleDirective(Mvel3Parser.ModuleDirectiveContext ctx) {
-        if (ctx.REQUIRES() != null) {
-            NodeList<Modifier> modifiers = new NodeList<>();
-            if (ctx.requiresModifier() != null) {
-                for (Mvel3Parser.RequiresModifierContext modCtx : ctx.requiresModifier()) {
-                    if (modCtx.TRANSITIVE() != null) {
-                        modifiers.add(new Modifier(Modifier.Keyword.TRANSITIVE));
-                    } else if (modCtx.STATIC() != null) {
-                        modifiers.add(new Modifier(Modifier.Keyword.STATIC));
-                    }
-                }
-            }
-            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
-            return new ModuleRequiresDirective(modifiers, name);
-        } else if (ctx.EXPORTS() != null) {
-            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
-            NodeList<Name> moduleNames = new NodeList<>();
-            if (ctx.TO() != null && ctx.qualifiedName().size() > 1) {
-                moduleNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
-            }
-            return new ModuleExportsDirective(name, moduleNames);
-        } else if (ctx.OPENS() != null) {
-            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
-            NodeList<Name> moduleNames = new NodeList<>();
-            if (ctx.TO() != null && ctx.qualifiedName().size() > 1) {
-                moduleNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
-            }
-            return new ModuleOpensDirective(name, moduleNames);
-        } else if (ctx.USES() != null) {
-            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
-            return new ModuleUsesDirective(name);
-        } else if (ctx.PROVIDES() != null) {
-            Name name = StaticJavaParser.parseName(ctx.qualifiedName(0).getText());
-            NodeList<Name> withNames = new NodeList<>();
-            if (ctx.qualifiedName().size() > 1) {
-                withNames.add(StaticJavaParser.parseName(ctx.qualifiedName(1).getText()));
-            }
-            return new ModuleProvidesDirective(name, withNames);
-        }
-        throw new IllegalArgumentException("Unknown module directive: " + ctx.getText());
-    }
-
-    /**
-     * The Java grammar we inherit emits shift operators as separate '<' and '>' tokens, so
-     * {@code ctx.bop} remains {@code null}. JavaCC still produces "<<", ">>", ">>>", so we
-     * synthesise that text here to keep the generated AST identical to the legacy pipeline.
-     */
-    private String resolveOperatorText(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
-        if (ctx.bop != null) {
-            return ctx.bop.getText();
-        }
-
-        // This looks odd, but indeed it's expected by JavaParser.g4
-        int ltCount = ctx.LT().size();
-        int gtCount = ctx.GT().size();
-
-        if (ltCount == 2) {
-            return "<<";
-        }
-        if (gtCount == 3) {
-            return ">>>";
-        }
-        if (gtCount == 2) {
-            return ">>";
-        }
-
-        throw new IllegalArgumentException("Unknown binary operator: " + ctx.getText());
-    }
-
-    private static final class LambdaParametersResult {
-        private final NodeList<Parameter> parameters;
-        private final boolean enclosingParameters;
-
-        private LambdaParametersResult(NodeList<Parameter> parameters, boolean enclosingParameters) {
-            this.parameters = parameters;
-            this.enclosingParameters = enclosingParameters;
-        }
     }
 }
