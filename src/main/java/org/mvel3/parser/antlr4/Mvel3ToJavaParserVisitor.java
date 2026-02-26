@@ -25,16 +25,12 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
@@ -62,12 +58,10 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleDirective;
 import com.github.javaparser.ast.modules.ModuleExportsDirective;
@@ -75,34 +69,14 @@ import com.github.javaparser.ast.modules.ModuleOpensDirective;
 import com.github.javaparser.ast.modules.ModuleProvidesDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
-import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.BreakStmt;
-import com.github.javaparser.ast.stmt.CatchClause;
-import com.github.javaparser.ast.stmt.ContinueStmt;
-import com.github.javaparser.ast.stmt.DoStmt;
-import com.github.javaparser.ast.stmt.EmptyStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.stmt.ForEachStmt;
-import com.github.javaparser.ast.stmt.ForStmt;
-import com.github.javaparser.ast.stmt.IfStmt;
-import com.github.javaparser.ast.stmt.LabeledStmt;
-import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.stmt.SwitchEntry;
-import com.github.javaparser.ast.stmt.SwitchStmt;
-import com.github.javaparser.ast.stmt.SynchronizedStmt;
-import com.github.javaparser.ast.stmt.ThrowStmt;
-import com.github.javaparser.ast.stmt.TryStmt;
-import com.github.javaparser.ast.stmt.WhileStmt;
-import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.type.VoidType;
@@ -117,13 +91,16 @@ import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.EnumConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ImportConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.InterfaceConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
 import org.mvel3.parser.antlr4.mveltojavaparser.ParametersConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.RecordConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.StatementConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.SwitchConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
-import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.ConstructorConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.FieldConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.MethodConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.TypeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.VariableConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.VariableParser;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
@@ -134,7 +111,6 @@ import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.MapCreationLiteralExpressionKeyValuePair;
-import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.mvel3.parser.ast.expr.NullSafeMethodCallExpr;
 import org.mvel3.parser.ast.expr.TemporalChunkExpr;
@@ -142,9 +118,7 @@ import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.ast.expr.WithStatement;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -249,136 +223,27 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitFieldDeclaration(Mvel3Parser.FieldDeclarationContext ctx) {
-        Type fieldType = (Type) visit(ctx.typeType());
-
-        NodeList<VariableDeclarator> declarators = new NodeList<>();
-        for (Mvel3Parser.VariableDeclaratorContext declaratorCtx : ctx.variableDeclarators().variableDeclarator()) {
-            String varName = declaratorCtx.variableDeclaratorId().identifier().getText();
-
-            // Apply C-style array dimensions from variableDeclaratorId
-            Type declType = ArrayConverter.applyArrayDimensions(fieldType, declaratorCtx.variableDeclaratorId());
-
-            VariableDeclarator varDeclarator = new VariableDeclarator(declType, varName);
-            varDeclarator.setTokenRange(TokenRangeConverter.createTokenRange(declaratorCtx));
-
-            if (declaratorCtx.variableInitializer() != null) {
-                Expression initializer = (Expression) visit(declaratorCtx.variableInitializer());
-                varDeclarator.setInitializer(initializer);
-            }
-
-            declarators.add(varDeclarator);
-        }
-
-        FieldDeclaration fieldDecl = new FieldDeclaration(new NodeList<>(), declarators);
-        fieldDecl.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        // Handle modifiers from parent context
-        ModifiersAnnotations fieldModifiers = ModifiersParser.resolveModifiersFromParent(ctx);
-        fieldDecl.setModifiers(fieldModifiers.modifiers());
-        fieldDecl.setAnnotations(fieldModifiers.annotations());
-
-        return fieldDecl;
+        return FieldConverter.convertFieldDeclaration(ctx, this);
     }
 
     @Override
     public Node visitConstructorDeclaration(Mvel3Parser.ConstructorDeclarationContext ctx) {
-        String name = ctx.identifier().getText();
-
-        ConstructorDeclaration constructorDecl = new ConstructorDeclaration(name);
-
-        // Handle parameters
-        if (ctx.formalParameters() != null) {
-            constructorDecl.setParameters(ParametersConverter.convertFormalParameters(ctx.formalParameters(), this));
-            ParametersConverter.convertReceiverParameter(ctx.formalParameters(), constructorDecl, this);
-        }
-
-        // Handle throws clause
-        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
-            constructorDecl.setThrownExceptions(TypeConverter.convertQualifiedNameListAsTypes(ctx.qualifiedNameList()));
-        }
-
-        // Handle modifiers from parent context
-        ModifiersAnnotations constructorModifiers = ModifiersParser.resolveModifiersFromParent(ctx);
-        constructorDecl.setModifiers(constructorModifiers.modifiers());
-        constructorDecl.setAnnotations(constructorModifiers.annotations());
-
-        // Handle constructor body
-        if (ctx.block() != null) {
-            BlockStmt body = (BlockStmt) visit(ctx.block());
-            constructorDecl.setBody(body);
-        }
-
-        constructorDecl.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return constructorDecl;
+        return ConstructorConverter.convertConstructorDeclaration(ctx, this);
     }
 
     @Override
     public Node visitGenericMethodDeclaration(Mvel3Parser.GenericMethodDeclarationContext ctx) {
-        MethodDeclaration methodDecl = (MethodDeclaration) visitMethodDeclaration(ctx.methodDeclaration());
-        if (ctx.typeParameters() != null) {
-            methodDecl.setTypeParameters(TypeConverter.convertTypeParameters(ctx.typeParameters(), this));
-        }
-        return methodDecl;
+        return MethodConverter.convertGenericMethodDeclaration(ctx, this);
     }
 
     @Override
     public Node visitGenericConstructorDeclaration(Mvel3Parser.GenericConstructorDeclarationContext ctx) {
-        ConstructorDeclaration constructorDecl = (ConstructorDeclaration) visitConstructorDeclaration(ctx.constructorDeclaration());
-        if (ctx.typeParameters() != null) {
-            constructorDecl.setTypeParameters(TypeConverter.convertTypeParameters(ctx.typeParameters(), this));
-        }
-        return constructorDecl;
+        return ConstructorConverter.convertGenericConstructorDeclaration(ctx, this);
     }
 
     @Override
     public Node visitMethodDeclaration(Mvel3Parser.MethodDeclarationContext ctx) {
-        // Get method name
-        String methodName = ctx.identifier().getText();
-
-        // Create method declaration
-        MethodDeclaration methodDecl = new MethodDeclaration();
-        methodDecl.setName(methodName);
-
-        // Handle return type
-        if (ctx.typeTypeOrVoid() != null) {
-            if (ctx.typeTypeOrVoid().VOID() != null) {
-                methodDecl.setType(new VoidType());
-            } else if (ctx.typeTypeOrVoid().typeType() != null) {
-                Type returnType = (Type) visit(ctx.typeTypeOrVoid().typeType());
-                // Handle array dimensions after formal parameters: ('[' ']')*
-                int extraDims = ctx.LBRACK() != null ? ctx.LBRACK().size() : 0;
-                for (int i = 0; i < extraDims; i++) {
-                    returnType = new ArrayType(returnType);
-                }
-                methodDecl.setType(returnType);
-            }
-        }
-
-        // Handle parameters
-        if (ctx.formalParameters() != null) {
-            methodDecl.setParameters(ParametersConverter.convertFormalParameters(ctx.formalParameters(), this));
-            ParametersConverter.convertReceiverParameter(ctx.formalParameters(), methodDecl, this);
-        }
-
-        // Handle throws clause
-        if (ctx.THROWS() != null && ctx.qualifiedNameList() != null) {
-            methodDecl.setThrownExceptions(TypeConverter.convertQualifiedNameListAsTypes(ctx.qualifiedNameList()));
-        }
-
-        // Handle modifiers (from parent context)
-        ModifiersAnnotations methodModifiers = ModifiersParser.resolveModifiersFromParent(ctx);
-        methodDecl.setModifiers(methodModifiers.modifiers());
-        methodDecl.setAnnotations(methodModifiers.annotations());
-
-        // Handle method body
-        if (ctx.methodBody() != null) {
-            if (ctx.methodBody().block() != null) {
-                BlockStmt body = (BlockStmt) visit(ctx.methodBody().block());
-                methodDecl.setBody(body);
-            }
-        }
-
-        return methodDecl;
+        return MethodConverter.convertMethodDeclaration(ctx, this);
     }
 
     @Override
@@ -512,22 +377,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitSwitchExpression(Mvel3Parser.SwitchExpressionContext ctx) {
-        // switchExpression: SWITCH parExpression '{' switchLabeledRule* '}'
-        Expression selector = (Expression) visit(ctx.parExpression().expression());
-
-        NodeList<SwitchEntry> entries = new NodeList<>();
-        if (ctx.switchLabeledRule() != null) {
-            for (Mvel3Parser.SwitchLabeledRuleContext ruleCtx : ctx.switchLabeledRule()) {
-                SwitchEntry entry = processSwitchLabeledRule(ruleCtx);
-                if (entry != null) {
-                    entries.add(entry);
-                }
-            }
-        }
-
-        SwitchExpr switchExpr = new SwitchExpr(selector, entries);
-        switchExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return switchExpr;
+        return SwitchConverter.convertSwitchExpression(ctx, this);
     }
 
     @Override
@@ -1125,23 +975,7 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
     @Override
     public Node visitModifyStatement(Mvel3Parser.ModifyStatementContext ctx) {
-        // modify ( identifier ) { statement* }
-        String targetName = ctx.identifier().getText();
-        NameExpr target = new NameExpr(targetName);
-        target.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        // Create a NodeList for the statements  
-        NodeList<Statement> statements = new NodeList<>();
-        
-        // Process each statement in the modify block
-        // Keep assignments as simple names - MVELToJavaRewriter will add the target prefix
-        for (Mvel3Parser.StatementContext stmtCtx : ctx.statement()) {
-            Statement stmt = (Statement) visit(stmtCtx);
-            statements.add(stmt);
-        }
-        
-        // Create and return a ModifyStatement with proper TokenRange
-        return new ModifyStatement(TokenRangeConverter.createTokenRange(ctx), target, statements);
+        return StatementConverter.convertModifyStatement(ctx, this);
     }
 
     @Override
@@ -1354,368 +1188,6 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
         UnaryExpr unaryExpr = new UnaryExpr(operand, unaryOp);
         unaryExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
         return unaryExpr;
-    }
-
-    // Handle constant expressions by visiting the contained expression
-    private Node visitConstantExpr(Mvel3Parser.ExpressionContext ctx) {
-        return visit(ctx);
-    }
-
-    private void visitForControlAndPopulate(Mvel3Parser.ForControlContext forControlCtx, ForStmt forStmt) {
-        // FOR control can be: forInit? ';' expression? ';' forUpdate?
-        // Or enhanced for: variableDeclarator ':' expression
-        
-        // Check if it's an enhanced for (for-each) loop
-        if (forControlCtx.enhancedForControl() != null) {
-            // Enhanced for: for (Type var : iterable)
-            // TODO: Implement enhanced for loop parsing if needed
-            return;
-        }
-        
-        // Regular for loop: for (init; condition; update)
-        NodeList<Expression> initialization = new NodeList<>();
-        Expression compare = null;
-        NodeList<Expression> update = new NodeList<>();
-        
-        // Parse forInit
-        if (forControlCtx.forInit() != null) {
-            // forInit can be localVariableDeclaration or expressionList
-            if (forControlCtx.forInit().localVariableDeclaration() != null) {
-                // Variable declaration like: int i = 0
-                VariableDeclarationExpr varDecl = (VariableDeclarationExpr) visit(forControlCtx.forInit().localVariableDeclaration());
-                if (varDecl != null) {
-                    initialization.add(varDecl);
-                }
-            } else if (forControlCtx.forInit().expressionList() != null) {
-                // Expression list like: i = 0, j = 1
-                for (Mvel3Parser.ExpressionContext exprCtx : forControlCtx.forInit().expressionList().expression()) {
-                    Expression expr = (Expression) visit(exprCtx);
-                    if (expr != null) {
-                        initialization.add(expr);
-                    }
-                }
-            }
-        }
-        
-        // Parse condition
-        if (forControlCtx.expression() != null) {
-            compare = (Expression) visit(forControlCtx.expression());
-        }
-        
-        // Parse forUpdate
-        if (forControlCtx.forUpdate != null) {
-            for (Mvel3Parser.ExpressionContext exprCtx : forControlCtx.forUpdate.expression()) {
-                Expression expr = (Expression) visit(exprCtx);
-                if (expr != null) {
-                    update.add(expr);
-                }
-            }
-        }
-        
-        // Set the for loop components - only set non-empty lists
-        if (!initialization.isEmpty()) {
-            forStmt.setInitialization(initialization);
-        }
-        if (compare != null) {
-            forStmt.setCompare(compare);
-        }
-        if (!update.isEmpty()) {
-            forStmt.setUpdate(update);
-        }
-    }
-
-    private void visitEnhancedForControlAndPopulate(Mvel3Parser.EnhancedForControlContext enhancedForCtx, ForEachStmt forEachStmt) {
-        // enhancedForControl: variableModifier* (typeType | VAR) variableDeclaratorId ':' expression
-
-        // Extract variable modifiers (final, annotations)
-        ModifiersAnnotations varModifiers = VariableParser.parseVariableModifiers(enhancedForCtx.variableModifier());
-
-        // Extract type (typeType or VAR)
-        Type variableType = null;
-        if (enhancedForCtx.typeType() != null) {
-            variableType = (Type) visit(enhancedForCtx.typeType());
-        } else if (enhancedForCtx.VAR() != null) {
-            // Handle var type - use VarType from JavaParser
-            variableType = new VarType();
-        }
-
-        // Extract variable name from variableDeclaratorId
-        String variableName = enhancedForCtx.variableDeclaratorId().identifier().getText();
-
-        // Create VariableDeclarator
-        VariableDeclarator variableDeclarator = new VariableDeclarator(variableType, variableName);
-
-        // Create VariableDeclarationExpr with modifiers
-        NodeList<VariableDeclarator> variables = new NodeList<>();
-        variables.add(variableDeclarator);
-        VariableDeclarationExpr varDecl = new VariableDeclarationExpr(varModifiers.modifiers(), varModifiers.annotations(), variables);
-
-        // Extract iterable expression
-        Expression iterable = (Expression) visit(enhancedForCtx.expression());
-
-        // Set the ForEachStmt components to match mvel.jj: ForEachStmt(range, varExpr, expr, body)
-        forEachStmt.setVariable(varDecl);
-        forEachStmt.setIterable(iterable);
-    }
-
-    private SwitchEntry processSwitchBlockStatementGroup(Mvel3Parser.SwitchBlockStatementGroupContext groupCtx) {
-        // switchBlockStatementGroup: switchLabel+ blockStatement*
-        if (groupCtx.switchLabel() == null || groupCtx.switchLabel().isEmpty()) {
-            return null;
-        }
-
-        // Process the first switch label
-        Mvel3Parser.SwitchLabelContext firstLabel = groupCtx.switchLabel(0);
-        SwitchEntry entry = processSwitchLabel(firstLabel);
-        
-        if (entry != null) {
-            // Process statements in this switch block
-            NodeList<Statement> statements = new NodeList<>();
-            if (groupCtx.blockStatement() != null) {
-                for (Mvel3Parser.BlockStatementContext blockStmtCtx : groupCtx.blockStatement()) {
-                    Node stmt = visit(blockStmtCtx);
-                    if (stmt instanceof Statement) {
-                        statements.add((Statement) stmt);
-                    }
-                }
-            }
-            entry.setStatements(statements);
-        }
-        
-        return entry;
-    }
-
-    private SwitchEntry processSwitchLabel(Mvel3Parser.SwitchLabelContext labelCtx) {
-        // switchLabel: CASE (constantExpression | enumConstantName | typeType varName=IDENTIFIER) ':'
-        //            | DEFAULT ':'
-        
-        if (labelCtx.CASE() != null) {
-            // Case label
-            NodeList<Expression> labels = new NodeList<>();
-            
-            if (labelCtx.constantExpression != null) {
-                // case constantExpression:
-                Expression caseExpr = (Expression) visitConstantExpr(labelCtx.constantExpression);
-                if (caseExpr != null) {
-                    labels.add(caseExpr);
-                }
-            } else if (labelCtx.enumConstantName != null) {
-                // case enumConstantName:
-                String enumName = labelCtx.enumConstantName.getText();
-                labels.add(new NameExpr(enumName));
-            } else if (labelCtx.varName != null) {
-                // case typeType varName:
-                ReferenceType type = (ReferenceType) visit(labelCtx.typeType());
-                SimpleName name = new SimpleName(labelCtx.varName.getText());
-                PatternExpr patternExpr = new PatternExpr(new NodeList<>(), type, name);
-                patternExpr.setTokenRange(TokenRangeConverter.createTokenRange(labelCtx));
-                labels.add(patternExpr);
-            }
-            
-            SwitchEntry entry = new SwitchEntry(labels, SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
-            entry.setTokenRange(TokenRangeConverter.createTokenRange(labelCtx));
-            return entry;
-            
-        } else if (labelCtx.DEFAULT() != null) {
-            // Default label
-            SwitchEntry entry = new SwitchEntry(new NodeList<>(), SwitchEntry.Type.STATEMENT_GROUP, new NodeList<>());
-            entry.setTokenRange(TokenRangeConverter.createTokenRange(labelCtx));
-            return entry;
-        }
-        
-        return null;
-    }
-
-    private Expression processGuardedPattern(Mvel3Parser.GuardedPatternContext ctx) {
-        // guardedPattern
-        //     : '(' guardedPattern ')'                                             // alt 1
-        //     | variableModifier* typeType annotation* identifier ('&&' expression)*  // alt 2
-        //     | guardedPattern '&&' expression                                     // alt 3
-
-        if (ctx.LPAREN() != null) {
-            // Alt 1: parenthesized guarded pattern
-            Expression inner = processGuardedPattern(ctx.guardedPattern());
-            EnclosedExpr enclosed = new EnclosedExpr(inner);
-            enclosed.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            return enclosed;
-        } else if (ctx.identifier() != null) {
-            // Alt 2: type pattern with optional guards
-            ReferenceType type = (ReferenceType) visit(ctx.typeType());
-            SimpleName name = new SimpleName(ctx.identifier().getText());
-
-            NodeList<Modifier> modifiers = new NodeList<>();
-            if (ctx.variableModifier() != null) {
-                for (Mvel3Parser.VariableModifierContext modCtx : ctx.variableModifier()) {
-                    if (modCtx.FINAL() != null) {
-                        modifiers.add(Modifier.finalModifier());
-                    }
-                }
-            }
-
-            PatternExpr patternExpr = new PatternExpr(modifiers, type, name);
-            patternExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-            Expression result = patternExpr;
-            if (ctx.expression() != null) {
-                for (Mvel3Parser.ExpressionContext exprCtx : ctx.expression()) {
-                    Expression guard = (Expression) visit(exprCtx);
-                    result = new BinaryExpr(result, guard, BinaryExpr.Operator.AND);
-                }
-            }
-            return result;
-        } else {
-            // Alt 3: recursive guard — guardedPattern '&&' expression
-            Expression left = processGuardedPattern(ctx.guardedPattern());
-            Expression right = (Expression) visit(ctx.expression(0));
-            return new BinaryExpr(left, right, BinaryExpr.Operator.AND);
-        }
-    }
-
-    private SwitchEntry processSwitchLabeledRule(Mvel3Parser.SwitchLabeledRuleContext ruleCtx) {
-        // switchLabeledRule: CASE (expressionList | NULL_LITERAL | guardedPattern) (ARROW | COLON) switchRuleOutcome
-        //                 | DEFAULT (ARROW | COLON) switchRuleOutcome
-
-        NodeList<Expression> labels = new NodeList<>();
-        boolean isArrow = ruleCtx.ARROW() != null;
-
-        if (ruleCtx.CASE() != null) {
-            if (ruleCtx.expressionList() != null) {
-                // case expr1, expr2, ... ->
-                for (Mvel3Parser.ExpressionContext exprCtx : ruleCtx.expressionList().expression()) {
-                    labels.add((Expression) visit(exprCtx));
-                }
-            } else if (ruleCtx.NULL_LITERAL() != null) {
-                labels.add(new NullLiteralExpr());
-            } else if (ruleCtx.guardedPattern() != null) {
-                labels.add(processGuardedPattern(ruleCtx.guardedPattern()));
-            }
-        }
-        // DEFAULT has empty labels
-
-        // Determine entry type and process switchRuleOutcome
-        Mvel3Parser.SwitchRuleOutcomeContext outcomeCtx = ruleCtx.switchRuleOutcome();
-        NodeList<Statement> statements = new NodeList<>();
-        SwitchEntry.Type entryType;
-
-        if (outcomeCtx.block() != null) {
-            entryType = isArrow ? SwitchEntry.Type.BLOCK : SwitchEntry.Type.STATEMENT_GROUP;
-            BlockStmt block = (BlockStmt) visit(outcomeCtx.block());
-            statements.addAll(block.getStatements());
-        } else {
-            // blockStatement*
-            if (isArrow) {
-                // For arrow cases with a single expression, determine the type
-                if (outcomeCtx.blockStatement() != null && outcomeCtx.blockStatement().size() == 1) {
-                    Node node = visit(outcomeCtx.blockStatement(0));
-                    if (node instanceof Statement) {
-                        Statement stmt = (Statement) node;
-                        if (stmt instanceof ThrowStmt) {
-                            entryType = SwitchEntry.Type.THROWS_STATEMENT;
-                        } else if (stmt instanceof ExpressionStmt) {
-                            entryType = SwitchEntry.Type.EXPRESSION;
-                        } else {
-                            entryType = SwitchEntry.Type.STATEMENT_GROUP;
-                        }
-                        statements.add(stmt);
-                    } else {
-                        entryType = SwitchEntry.Type.STATEMENT_GROUP;
-                    }
-                } else {
-                    entryType = SwitchEntry.Type.STATEMENT_GROUP;
-                    if (outcomeCtx.blockStatement() != null) {
-                        for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
-                            Node node = visit(blockStmtCtx);
-                            if (node instanceof Statement) {
-                                statements.add((Statement) node);
-                            }
-                        }
-                    }
-                }
-            } else {
-                entryType = SwitchEntry.Type.STATEMENT_GROUP;
-                if (outcomeCtx.blockStatement() != null) {
-                    for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
-                        Node node = visit(blockStmtCtx);
-                        if (node instanceof Statement) {
-                            statements.add((Statement) node);
-                        }
-                    }
-                }
-            }
-        }
-
-        SwitchEntry entry = new SwitchEntry(labels, entryType, statements);
-        entry.setTokenRange(TokenRangeConverter.createTokenRange(ruleCtx));
-        return entry;
-    }
-
-    private CatchClause parseCatchClause(Mvel3Parser.CatchClauseContext ctx) {
-        // catchClause: CATCH '(' variableModifier* catchType identifier ')' block
-        // catchType: qualifiedName ('|' qualifiedName)*
-        ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
-
-        // Parse catch type (may be a union type like IOException | NullPointerException)
-        Mvel3Parser.CatchTypeContext catchTypeCtx = ctx.catchType();
-        Type catchType;
-        if (catchTypeCtx.qualifiedName().size() == 1) {
-            // Single type
-            catchType = new ClassOrInterfaceType(null, catchTypeCtx.qualifiedName(0).getText());
-        } else {
-            // Union type: IOException | NullPointerException
-            NodeList<ReferenceType> types = new NodeList<>();
-            for (Mvel3Parser.QualifiedNameContext qn : catchTypeCtx.qualifiedName()) {
-                types.add(new ClassOrInterfaceType(null, qn.getText()));
-            }
-            catchType = new UnionType(types);
-        }
-
-        SimpleName name = new SimpleName(ctx.identifier().getText());
-        Parameter parameter = new Parameter(modifiersAnnotations.modifiers(),
-                modifiersAnnotations.annotations(),
-                catchType,
-                false,
-                new NodeList<>(),
-                name);
-        parameter.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-
-        BlockStmt body = (BlockStmt) visit(ctx.block());
-
-        CatchClause catchClause = new CatchClause(parameter, body);
-        catchClause.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        return catchClause;
-    }
-
-    private NodeList<Expression> parseResources(Mvel3Parser.ResourceSpecificationContext ctx) {
-        NodeList<Expression> resources = new NodeList<>();
-        if (ctx.resources() != null) {
-            for (Mvel3Parser.ResourceContext resourceCtx : ctx.resources().resource()) {
-                if (resourceCtx.qualifiedName() != null && resourceCtx.expression() == null) {
-                    // Simple name reference: try (existingResource) { ... }
-                    resources.add(new NameExpr(resourceCtx.qualifiedName().getText()));
-                } else {
-                    // Variable declaration: try (Type var = expr) or try (var x = expr)
-                    ModifiersAnnotations resourceModifiers = VariableParser.parseVariableModifiers(resourceCtx.variableModifier());
-                    Type type;
-                    String varName;
-                    if (resourceCtx.VAR() != null) {
-                        type = new VarType();
-                        varName = resourceCtx.identifier().getText();
-                    } else {
-                        type = (Type) visit(resourceCtx.classOrInterfaceType());
-                        varName = resourceCtx.variableDeclaratorId().identifier().getText();
-                    }
-                    VariableDeclarator declarator = new VariableDeclarator(type, varName);
-                    Expression initializer = (Expression) visit(resourceCtx.expression());
-                    declarator.setInitializer(initializer);
-                    NodeList<VariableDeclarator> declarators = new NodeList<>();
-                    declarators.add(declarator);
-                    VariableDeclarationExpr varDecl = new VariableDeclarationExpr(resourceModifiers.modifiers(), resourceModifiers.annotations(), declarators);
-                    varDecl.setTokenRange(TokenRangeConverter.createTokenRange(resourceCtx));
-                    resources.add(varDecl);
-                }
-            }
-        }
-        return resources;
     }
 
     @Override

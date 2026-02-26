@@ -6,6 +6,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.TypeConverter;
 
 import java.util.List;
 

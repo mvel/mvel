@@ -1,4 +1,4 @@
-package org.mvel3.parser.antlr4.mveltojavaparser;
+package org.mvel3.parser.antlr4.mveltojavaparser.type;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
@@ -24,6 +24,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.mveltojavaparser.AnnotationTypeConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.EnumConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.InterfaceConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.ModifiersParser;
+import org.mvel3.parser.antlr4.mveltojavaparser.RecordConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -346,15 +355,15 @@ public final class TypeConverter {
     private static BodyDeclaration<?> visitMemberDeclarationNode(final Mvel3Parser.MemberDeclarationContext memberDecl,
             final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
         if (memberDecl.methodDeclaration() != null) {
-            return (MethodDeclaration) visitMethodDeclaration(memberDecl.methodDeclaration());
+            return (MethodDeclaration) MethodConverter.convertMethodDeclaration(memberDecl.methodDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.fieldDeclaration() != null) {
-            return (FieldDeclaration) visitFieldDeclaration(memberDecl.fieldDeclaration());
+            return (FieldDeclaration) FieldConverter.convertFieldDeclaration(memberDecl.fieldDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.constructorDeclaration() != null) {
-            return (ConstructorDeclaration) visitConstructorDeclaration(memberDecl.constructorDeclaration());
+            return (ConstructorDeclaration) ConstructorConverter.convertConstructorDeclaration(memberDecl.constructorDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.genericMethodDeclaration() != null) {
-            return (MethodDeclaration) visitGenericMethodDeclaration(memberDecl.genericMethodDeclaration());
+            return (MethodDeclaration) MethodConverter.convertGenericMethodDeclaration(memberDecl.genericMethodDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.genericConstructorDeclaration() != null) {
-            return (ConstructorDeclaration) visitGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration());
+            return (ConstructorDeclaration) ConstructorConverter.convertGenericConstructorDeclaration(memberDecl.genericConstructorDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.classDeclaration() != null) {
             return (BodyDeclaration<?>) convertClassDeclaration(memberDecl.classDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.enumDeclaration() != null) {

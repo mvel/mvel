@@ -17,6 +17,7 @@ import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.mveltojavaparser.type.TypeConverter;
 
 import java.util.List;
 
