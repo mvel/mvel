@@ -33,6 +33,8 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 
 /**
  * Tolerant visitor which continues parsing even if there is an error so that code completion and analysis can be performed.
@@ -44,7 +46,7 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
     @Override
     public Node visitBlock(Mvel3Parser.BlockContext ctx) {
         BlockStmt blockStmt = new BlockStmt();
-        blockStmt.setTokenRange(createTokenRange(ctx));
+        blockStmt.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
         NodeList<Statement> statements = new NodeList<>();
 
         if (ctx.blockStatement() != null) {
@@ -122,7 +124,7 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
             // Handle local variable declaration
             VariableDeclarationExpr varDecl = (VariableDeclarationExpr) visit(ctx.localVariableDeclaration());
             ExpressionStmt exprStmt = new ExpressionStmt(varDecl);
-            exprStmt.setTokenRange(createTokenRange(ctx));
+            exprStmt.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             return exprStmt;
         } else if (ctx.statement() != null) {
             return visit(ctx.statement());
@@ -160,22 +162,22 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
             // Simple field access: expression.identifier
             String fieldName = ctx.identifier().getText();
             FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
-            fieldAccess.setTokenRange(createTokenRange(ctx));
+            fieldAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             associateAntlrTokenWithJPNode(ctx.identifier(), fieldAccess);
             return fieldAccess;
         } else if (ctx.methodCall() != null) {
             // Method call: expression.methodCall()
             String methodName = ctx.methodCall().identifier().getText();
-            NodeList<Expression> args = parseArguments(ctx.methodCall().arguments());
+            NodeList<Expression> args = ArgumentsConverter.convertArguments(ctx.methodCall().arguments(), this);
 
             MethodCallExpr methodCall = new MethodCallExpr(scope, methodName);
             methodCall.setArguments(args);
-            methodCall.setTokenRange(createTokenRange(ctx));
+            methodCall.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             return methodCall;
         } else if (ctx.THIS() != null) {
             // expression.this
             FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, "this");
-            fieldAccess.setTokenRange(createTokenRange(ctx));
+            fieldAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             return fieldAccess;
         } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
             // expression.super.something
@@ -194,7 +196,7 @@ public class TolerantMvel3ToJavaParserVisitor extends Mvel3ToJavaParserVisitor {
         if (hasTrailingDot(ctx)) {
             FieldAccessExpr completionField = new FieldAccessExpr(scope, COMPLETION_FIELD);
             scope.setParentNode(completionField);
-            completionField.setTokenRange(createTokenRange(ctx));
+            completionField.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
             return completionField;
         }
 
