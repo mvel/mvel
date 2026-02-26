@@ -59,4 +59,16 @@ public final class ArgumentsConverter {
         }
         return typeArgs;
     }
+
+    public static NodeList<Type> convertNonWildcardTypeArguments(
+            final Mvel3Parser.NonWildcardTypeArgumentsContext ctx,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+        NodeList<Type> typeArgs = new NodeList<>();
+        if (ctx != null && ctx.typeList() != null) {
+            for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeList().typeType()) {
+                typeArgs.add((Type) TypeConverter.convertTypeType(typeCtx, mvel3toJavaParserVisitor));
+            }
+        }
+        return typeArgs;
+    }
 }
