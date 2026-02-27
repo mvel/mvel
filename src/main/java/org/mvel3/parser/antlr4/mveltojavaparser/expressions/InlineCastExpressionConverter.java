@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
@@ -27,8 +28,8 @@ public final class InlineCastExpressionConverter {
         InlineCastExpr inlineCastExpr = new InlineCastExpr(type, scope);
         inlineCastExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
 
-        // TODO - fix Tolerant visitor - it needs this to work properly.
-        // associateAntlrTokenWithJPNode(ctx, inlineCastExpr);
+        // TODO fix this hack for Tolerant visitor to work.
+        ((Mvel3ToJavaParserVisitor) mvel3toJavaParserVisitor).associateAntlrTokenWithJPNode(ctx.identifier(), inlineCastExpr);
 
         if (ctx.identifier() != null) {
             String name = ctx.identifier().getText();

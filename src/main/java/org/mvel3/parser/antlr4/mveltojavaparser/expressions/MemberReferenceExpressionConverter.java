@@ -12,6 +12,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
@@ -27,7 +28,7 @@ public final class MemberReferenceExpressionConverter {
         Expression scope = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
 
         if (ctx.identifier() != null) {
-            return handleSimpleFieldAccess(ctx, scope);
+            return handleSimpleFieldAccess(ctx, scope, mvel3toJavaParserVisitor);
         } else if (ctx.methodCall() != null) {
             return handleMethodCall(ctx, scope, mvel3toJavaParserVisitor);
         } else if (ctx.THIS() != null) {
@@ -45,13 +46,14 @@ public final class MemberReferenceExpressionConverter {
 
     private static Node handleSimpleFieldAccess(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
-            final Expression scope) {
+            final Expression scope,
+            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
         // Simple field access: expression.identifier
         String fieldName = ctx.identifier().getText();
         FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
         fieldAccess.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-        // TODO - fix Tolerant visitor - it needs this to work properly.
-        // associateAntlrTokenWithJPNode(ctx.identifier(), fieldAccess);
+        // TODO fix this hack for Tolerant visitor to work.
+        ((Mvel3ToJavaParserVisitor) mvel3toJavaParserVisitor).associateAntlrTokenWithJPNode(ctx.identifier(), fieldAccess);
         return fieldAccess;
     }
 

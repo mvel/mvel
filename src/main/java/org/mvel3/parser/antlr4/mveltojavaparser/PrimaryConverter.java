@@ -11,6 +11,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.Mvel3Parser;
 import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.LiteralConverter;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
 
@@ -29,8 +30,8 @@ public final class PrimaryConverter {
             // backReferencesCount defaults to 0 for normal identifiers
             DrlNameExpr nameExpr = new DrlNameExpr(ctx.identifier().getText());
             nameExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
-            // TODO - fix Tolerant visitor - it needs this to work properly.
-            // associateAntlrTokenWithJPNode(ctx.identifier(), nameExpr);
+            // TODO fix this hack for Tolerant visitor to work.
+            ((Mvel3ToJavaParserVisitor) mvel3toJavaParserVisitor).associateAntlrTokenWithJPNode(ctx.identifier(), nameExpr);
             return nameExpr;
         } else if (ctx.LPAREN() != null && ctx.expression() != null && ctx.RPAREN() != null) {
             // Parenthesized expression

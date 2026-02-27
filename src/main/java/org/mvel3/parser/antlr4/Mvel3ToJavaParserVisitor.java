@@ -68,12 +68,16 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     // Associate antlr tokenId with a JavaParser node for identifier, so it can be used for code completion.
     protected final Map<Integer, Node> tokenIdJPNodeMap = new HashMap<>();
 
-    protected void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
+    public void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
         // Antlr token <-> JavaParser node mapping for code completion
         ParseTree lastNode = ctx.children.get(ctx.children.size() - 1); // take the last terminal node
         if (lastNode instanceof TerminalNode terminalNode) {
             tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), jpNode);
         }
+    }
+
+    public Map<Integer, Node> getTokenIdJPNodeMap() {
+        return tokenIdJPNodeMap;
     }
 
     @Override
