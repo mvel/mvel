@@ -9,7 +9,7 @@ import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ReferenceType;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
 
@@ -20,7 +20,7 @@ public final class InstanceOfOperatorExpressionConverter {
 
     public static Node convertInstanceOfOperatorExpression(
             final Mvel3Parser.InstanceOfOperatorExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Expression expression = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
 
         if (ctx.pattern() != null) {

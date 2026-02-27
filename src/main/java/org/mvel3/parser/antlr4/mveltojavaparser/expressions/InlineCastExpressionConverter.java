@@ -6,7 +6,6 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
 import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
@@ -20,7 +19,7 @@ public final class InlineCastExpressionConverter {
 
     public static Node convertInlineCastExpression(
             final Mvel3Parser.InlineCastExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle inline cast: expr#Type#[member]
         Expression scope = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression(0));
         Type type = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);

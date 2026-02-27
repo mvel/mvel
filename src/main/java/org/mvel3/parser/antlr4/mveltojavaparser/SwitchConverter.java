@@ -19,7 +19,7 @@ import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ReferenceType;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class SwitchConverter {
 
@@ -28,7 +28,7 @@ public final class SwitchConverter {
 
     public static Node convertSwitchExpression(
             final Mvel3Parser.SwitchExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // switchExpression: SWITCH parExpression '{' switchLabeledRule* '}'
         Expression selector = (Expression) mvel3toJavaParserVisitor.visit(ctx.parExpression().expression());
 
@@ -46,7 +46,7 @@ public final class SwitchConverter {
 
     public static Node convertSwitchStatementExpression(
             final Mvel3Parser.StatementContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle switch statement: SWITCH parExpression '{' switchBlockStatementGroup* switchLabel* '}'
         Expression selector = (Expression) mvel3toJavaParserVisitor.visit(ctx.parExpression().expression());
 
@@ -82,7 +82,7 @@ public final class SwitchConverter {
 
     private static SwitchEntry processSwitchLabeledRule(
             final Mvel3Parser.SwitchLabeledRuleContext ruleCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // switchLabeledRule: CASE (expressionList | NULL_LITERAL | guardedPattern) (ARROW | COLON) switchRuleOutcome
         //                 | DEFAULT (ARROW | COLON) switchRuleOutcome
 
@@ -148,7 +148,7 @@ public final class SwitchConverter {
     private static void processStatementGroup(
             final Mvel3Parser.SwitchRuleOutcomeContext outcomeCtx,
             final NodeList<Statement> statements,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (outcomeCtx.blockStatement() != null) {
             for (Mvel3Parser.BlockStatementContext blockStmtCtx : outcomeCtx.blockStatement()) {
                 Node node = BlockConverter.convertBlockStatement(blockStmtCtx, mvel3toJavaParserVisitor);
@@ -161,7 +161,7 @@ public final class SwitchConverter {
 
     private static SwitchEntry processSwitchBlockStatementGroup(
             final Mvel3Parser.SwitchBlockStatementGroupContext groupCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // switchBlockStatementGroup: switchLabel+ blockStatement*
         if (groupCtx.switchLabel() == null || groupCtx.switchLabel().isEmpty()) {
             return null;
@@ -190,7 +190,7 @@ public final class SwitchConverter {
 
     private static SwitchEntry processSwitchLabel(
             final Mvel3Parser.SwitchLabelContext labelCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // switchLabel: CASE (constantExpression | enumConstantName | typeType varName=IDENTIFIER) ':'
         //            | DEFAULT ':'
 
@@ -233,7 +233,7 @@ public final class SwitchConverter {
 
     private static Expression processGuardedPattern(
             final Mvel3Parser.GuardedPatternContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // guardedPattern
         //     : '(' guardedPattern ')'                                             // alt 1
         //     | variableModifier* typeType annotation* identifier ('&&' expression)*  // alt 2

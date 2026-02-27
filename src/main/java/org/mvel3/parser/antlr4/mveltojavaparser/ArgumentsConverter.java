@@ -7,7 +7,7 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.WildcardType;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class ArgumentsConverter {
 
@@ -15,7 +15,7 @@ public final class ArgumentsConverter {
     }
 
     public static NodeList<Expression> convertArguments(final Mvel3Parser.ArgumentsContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Expression> args = new NodeList<>();
         if (ctx.expressionList() != null) {
             // Parse each expression in the argument list
@@ -28,7 +28,7 @@ public final class ArgumentsConverter {
     }
 
     public static Node convertTypeArgument(final Mvel3Parser.TypeArgumentContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // typeArgument: typeType | annotation* '?' ((EXTENDS | SUPER) typeType)?
         if (ctx.QUESTION() != null) {
             // Wildcard: ?, ? extends T, ? super T (with optional annotations)
@@ -47,7 +47,7 @@ public final class ArgumentsConverter {
     }
 
     public static NodeList<Type> convertTypeArguments(final Mvel3Parser.TypeArgumentsContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Type> typeArgs = new NodeList<>();
         if (ctx != null) {
             for (Mvel3Parser.TypeArgumentContext typeArgCtx : ctx.typeArgument()) {
@@ -62,7 +62,7 @@ public final class ArgumentsConverter {
 
     public static NodeList<Type> convertNonWildcardTypeArguments(
             final Mvel3Parser.NonWildcardTypeArgumentsContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Type> typeArgs = new NodeList<>();
         if (ctx != null && ctx.typeList() != null) {
             for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeList().typeType()) {

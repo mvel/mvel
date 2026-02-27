@@ -5,7 +5,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class CreatedNameConverter {
 
@@ -14,7 +14,7 @@ public final class CreatedNameConverter {
 
     public static Node convertCreatedName(
             final Mvel3Parser.CreatedNameContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.primitiveType() != null) {
             return TypeConverter.convertPrimitiveType(ctx.primitiveType());
         } else if (ctx.identifier() != null && !ctx.identifier().isEmpty()) {
@@ -48,7 +48,7 @@ public final class CreatedNameConverter {
 
     private static NodeList<Type> handleTypeArgumentsOrDiamond(
             final Mvel3Parser.TypeArgumentsOrDiamondContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.typeArguments() != null) {
             return ArgumentsConverter.convertTypeArguments(ctx.typeArguments(), mvel3toJavaParserVisitor);
         } else {

@@ -7,7 +7,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class EnumConverter {
 
@@ -15,7 +15,7 @@ public final class EnumConverter {
     }
 
     public static Node convertEnumDeclaration(final Mvel3Parser.EnumDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String enumName = ctx.identifier().getText();
         EnumDeclaration enumDecl = new EnumDeclaration(new NodeList<>(), enumName);
 

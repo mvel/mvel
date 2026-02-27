@@ -4,7 +4,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Expression;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpression;
 import org.mvel3.parser.ast.expr.ListCreationLiteralExpressionElement;
@@ -16,7 +16,7 @@ public final class ListCreationLiteralConverter {
 
     public static Node convertListCreationLiteral(
             final Mvel3Parser.ListCreationLiteralContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Expression> elements = new NodeList<>();
 
         // Process each list element

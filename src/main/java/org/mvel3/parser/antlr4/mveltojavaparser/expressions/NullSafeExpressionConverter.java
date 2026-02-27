@@ -5,7 +5,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.ast.expr.NullSafeFieldAccessExpr;
@@ -18,7 +18,7 @@ public final class NullSafeExpressionConverter {
 
     public static Node convertNullSafeExpression(
             final Mvel3Parser.NullSafeExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Extract the scope (left side of !.)
         Expression scope = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
 

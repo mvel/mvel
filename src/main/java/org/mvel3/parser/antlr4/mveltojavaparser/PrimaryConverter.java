@@ -10,7 +10,6 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
 import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.LiteralConverter;
 import org.mvel3.parser.ast.expr.DrlNameExpr;
@@ -22,7 +21,7 @@ public final class PrimaryConverter {
 
     public static Node convertPrimary(
             final Mvel3Parser.PrimaryContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.literal() != null) {
             return LiteralConverter.convertLiteral(ctx.literal());
         } else if (ctx.identifier() != null) {

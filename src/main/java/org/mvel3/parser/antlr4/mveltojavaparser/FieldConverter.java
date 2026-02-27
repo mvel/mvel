@@ -8,7 +8,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class FieldConverter {
 
@@ -17,7 +17,7 @@ public final class FieldConverter {
 
     public static Node convertFieldDeclaration(
             final Mvel3Parser.FieldDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Type fieldType = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
 
         NodeList<VariableDeclarator> declarators = new NodeList<>();

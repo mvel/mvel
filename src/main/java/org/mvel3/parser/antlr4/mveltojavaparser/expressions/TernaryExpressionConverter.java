@@ -4,7 +4,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 
 public final class TernaryExpressionConverter {
@@ -14,7 +14,7 @@ public final class TernaryExpressionConverter {
 
     public static Node convertTernaryExpression(
             final Mvel3Parser.TernaryExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Expression condition = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression(0));
         Expression thenExpr = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression(1));
         Expression elseExpr = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression(2));

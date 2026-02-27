@@ -9,7 +9,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class RecordConverter {
 
@@ -17,7 +17,7 @@ public final class RecordConverter {
     }
 
     public static Node convertRecordDeclaration(final Mvel3Parser.RecordDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String recordName = ctx.identifier().getText();
         RecordDeclaration recordDecl = new RecordDeclaration(new NodeList<>(), recordName);
 
@@ -59,7 +59,7 @@ public final class RecordConverter {
     }
 
     private static void convertRecordBody(final Mvel3Parser.RecordBodyContext ctx, final RecordDeclaration recordDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle classBodyDeclaration members (methods, fields, constructors, etc.)
         recordDecl.getMembers().addAll(TypeConverter.convertClassBodyDeclarations(ctx.classBodyDeclaration(), mvel3toJavaParserVisitor));
 

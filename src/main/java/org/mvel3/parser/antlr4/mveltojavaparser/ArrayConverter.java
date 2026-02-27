@@ -7,7 +7,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class ArrayConverter {
 
@@ -15,7 +15,7 @@ public final class ArrayConverter {
     }
 
     public static Node convertArrayInitializer(final Mvel3Parser.ArrayInitializerContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Expression> values = new NodeList<>();
 
         if (ctx.variableInitializer() != null && !ctx.variableInitializer().isEmpty()) {

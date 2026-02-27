@@ -7,7 +7,7 @@ import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
@@ -19,7 +19,7 @@ public final class MethodReferenceExpressionConverter {
 
     public static Node convertMethodReferenceExpression(
             final Mvel3Parser.MethodReferenceExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Expression scope;
         if (ctx.expression() != null) {
             // expression '::' typeArguments? identifier

@@ -9,7 +9,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class VariableConverter {
 
@@ -17,7 +17,7 @@ public final class VariableConverter {
     }
 
     public static Node convertLocalVariableDeclaration(final Mvel3Parser.LocalVariableDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle both: var x = expression; and Type name = expression;
         ModifiersAnnotations varModifiers = VariableParser.parseVariableModifiers(ctx.variableModifier());
 
@@ -78,7 +78,7 @@ public final class VariableConverter {
     }
 
     public static Node convertVariableInitializer(Mvel3Parser.VariableInitializerContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.arrayInitializer() != null) {
             return ArrayConverter.convertArrayInitializer(ctx.arrayInitializer(), mvel3toJavaParserVisitor);
         } else if (ctx.expression() != null) {

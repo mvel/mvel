@@ -17,6 +17,8 @@
 package org.mvel3.parser.antlr4;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -65,14 +67,37 @@ import java.util.Map;
  */
 public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
 
+    private final boolean tolerantMode;
     // Associate antlr tokenId with a JavaParser node for identifier, so it can be used for code completion.
     protected final Map<Integer, Node> tokenIdJPNodeMap = new HashMap<>();
+
+    public Mvel3ToJavaParserVisitor(boolean tolerantMode) {
+        this.tolerantMode = tolerantMode;
+    }
+
+    public Mvel3ToJavaParserVisitor() {
+        this.tolerantMode = false;
+    }
+
+    public boolean isTolerantMode() {
+        return tolerantMode;
+    }
 
     public void associateAntlrTokenWithJPNode(ParserRuleContext ctx, Node jpNode) {
         // Antlr token <-> JavaParser node mapping for code completion
         ParseTree lastNode = ctx.children.get(ctx.children.size() - 1); // take the last terminal node
         if (lastNode instanceof TerminalNode terminalNode) {
             tokenIdJPNodeMap.put(terminalNode.getSymbol().getTokenIndex(), jpNode);
+        }
+    }
+
+    public void updateTokenIdJPNodeMapForMerge(NameExpr orphanedNode, FieldAccessExpr newMergedNode) {
+        // Find the token ID that was pointing to the orphaned node and update it to point to the merged node
+        for (Map.Entry<Integer, Node> entry : tokenIdJPNodeMap.entrySet()) {
+            if (entry.getValue() == orphanedNode) {
+                entry.setValue(newMergedNode);
+                break;
+            }
         }
     }
 

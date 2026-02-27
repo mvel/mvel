@@ -23,7 +23,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public final class TypeConverter {
     }
 
     public static Node convertTypeDeclaration(final Mvel3Parser.TypeDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.classDeclaration() != null) {
             return convertClassDeclaration(ctx.classDeclaration(), mvel3toJavaParserVisitor);
         } else if (ctx.enumDeclaration() != null) {
@@ -50,7 +50,7 @@ public final class TypeConverter {
     }
 
     public static Node convertClassDeclaration(final Mvel3Parser.ClassDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String className = ctx.identifier().getText();
         ClassOrInterfaceDeclaration classDecl = new ClassOrInterfaceDeclaration();
         classDecl.setName(className);
@@ -96,7 +96,7 @@ public final class TypeConverter {
     }
 
     public static Node convertClassOrInterfaceType(final Mvel3Parser.ClassOrInterfaceTypeContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Grammar: (identifier typeArguments? '.')* typeIdentifier typeArguments?
         // Walk children to correctly associate each typeArguments with its preceding identifier.
         ClassOrInterfaceType type = null;
@@ -134,7 +134,7 @@ public final class TypeConverter {
      * Used by class bodies, enum bodies, record bodies, and anonymous class bodies.
      */
     public static NodeList<BodyDeclaration<?>> convertClassBodyDeclarations(final List<Mvel3Parser.ClassBodyDeclarationContext> bodyDeclarations,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<BodyDeclaration<?>> members = new NodeList<>();
         if (bodyDeclarations != null) {
             for (Mvel3Parser.ClassBodyDeclarationContext bodyDecl : bodyDeclarations) {
@@ -157,7 +157,7 @@ public final class TypeConverter {
 
     public static Node convertClassType(
             final Mvel3Parser.ClassTypeContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // classType: (classOrInterfaceType '.')? annotation* identifier typeArguments?
         ClassOrInterfaceType scope = null;
         if (ctx.classOrInterfaceType() != null) {
@@ -176,12 +176,12 @@ public final class TypeConverter {
     }
 
     public static NodeList<BodyDeclaration<?>> convertAnonymousClassBody(final Mvel3Parser.ClassBodyContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         return convertClassBodyDeclarations(ctx.classBodyDeclaration(), mvel3toJavaParserVisitor);
     }
 
     public static NodeList<ClassOrInterfaceType> convertTypeList(final Mvel3Parser.TypeListContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<ClassOrInterfaceType> types = new NodeList<>();
         if (ctx != null && ctx.typeType() != null) {
             for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
@@ -195,7 +195,7 @@ public final class TypeConverter {
     }
 
     public static NodeList<TypeParameter> convertTypeParameters(final Mvel3Parser.TypeParametersContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<TypeParameter> typeParams = new NodeList<>();
         if (ctx == null || ctx.typeParameter() == null) {
             return typeParams;
@@ -262,7 +262,7 @@ public final class TypeConverter {
 
     public static Node convertTypeType(
             final Mvel3Parser.TypeTypeContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // typeType: annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
         Type baseType = null;
 
@@ -364,7 +364,7 @@ public final class TypeConverter {
      * Returns the resulting BodyDeclaration, or null if unhandled.
      */
     private static BodyDeclaration<?> visitMemberDeclarationNode(final Mvel3Parser.MemberDeclarationContext memberDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (memberDecl.methodDeclaration() != null) {
             return (MethodDeclaration) MethodConverter.convertMethodDeclaration(memberDecl.methodDeclaration(), mvel3toJavaParserVisitor);
         } else if (memberDecl.fieldDeclaration() != null) {

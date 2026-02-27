@@ -11,11 +11,11 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
 import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArgumentsConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.tolerant.TolerantMemberReferenceExpressionConverter;
 
 public final class MemberReferenceExpressionConverter {
 
@@ -24,30 +24,34 @@ public final class MemberReferenceExpressionConverter {
 
     public static Node convertMemberReferenceExpression(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
-        Expression scope = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
+        if (mvel3toJavaParserVisitor.isTolerantMode()) {
+            return TolerantMemberReferenceExpressionConverter.convertMemberReferenceExpression(ctx, mvel3toJavaParserVisitor);
+        } else {
+            Expression scope = (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
 
-        if (ctx.identifier() != null) {
-            return handleSimpleFieldAccess(ctx, scope, mvel3toJavaParserVisitor);
-        } else if (ctx.methodCall() != null) {
-            return handleMethodCall(ctx, scope, mvel3toJavaParserVisitor);
-        } else if (ctx.THIS() != null) {
-            return handleThisReference(ctx, scope);
-        } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
-            return handleSuperReference(ctx, scope, mvel3toJavaParserVisitor);
-        } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
-            return handleInnerCreator(ctx, scope, mvel3toJavaParserVisitor);
-        } else if (ctx.explicitGenericInvocation() != null) {
-            return handleExplicitGenericInvocation(ctx, scope, mvel3toJavaParserVisitor);
+            if (ctx.identifier() != null) {
+                return handleSimpleFieldAccess(ctx, scope, mvel3toJavaParserVisitor);
+            } else if (ctx.methodCall() != null) {
+                return handleMethodCall(ctx, scope, mvel3toJavaParserVisitor);
+            } else if (ctx.THIS() != null) {
+                return handleThisReference(ctx, scope);
+            } else if (ctx.SUPER() != null && ctx.superSuffix() != null) {
+                return handleSuperReference(ctx, scope, mvel3toJavaParserVisitor);
+            } else if (ctx.NEW() != null && ctx.innerCreator() != null) {
+                return handleInnerCreator(ctx, scope, mvel3toJavaParserVisitor);
+            } else if (ctx.explicitGenericInvocation() != null) {
+                return handleExplicitGenericInvocation(ctx, scope, mvel3toJavaParserVisitor);
+            }
+
+            throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
         }
-
-        throw new IllegalArgumentException("Unsupported member reference: " + ctx.getText());
     }
 
     private static Node handleSimpleFieldAccess(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Simple field access: expression.identifier
         String fieldName = ctx.identifier().getText();
         FieldAccessExpr fieldAccess = new FieldAccessExpr(scope, fieldName);
@@ -60,7 +64,7 @@ public final class MemberReferenceExpressionConverter {
     private static Node handleMethodCall(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Method call: expression.methodCall()
         String methodName = ctx.methodCall().identifier().getText();
         NodeList<Expression> args = ArgumentsConverter.convertArguments(
@@ -84,7 +88,7 @@ public final class MemberReferenceExpressionConverter {
     private static Node handleSuperReference(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.super(args) or expression.super.method(args) or expression.super.field
         Mvel3Parser.SuperSuffixContext suffixCtx = ctx.superSuffix();
         com.github.javaparser.ast.expr.SuperExpr superExpr = createSuperExpr(scope);
@@ -113,7 +117,7 @@ public final class MemberReferenceExpressionConverter {
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final com.github.javaparser.ast.expr.SuperExpr superExpr,
             final Mvel3Parser.SuperSuffixContext suffixCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.super(args) — super constructor invocation
         // Represented as MethodCallExpr with super as scope
         NodeList<Expression> args = ArgumentsConverter.convertArguments(
@@ -128,7 +132,7 @@ public final class MemberReferenceExpressionConverter {
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final com.github.javaparser.ast.expr.SuperExpr superExpr,
             final Mvel3Parser.SuperSuffixContext suffixCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String memberName = suffixCtx.identifier().getText();
 
         if (suffixCtx.arguments() != null) {
@@ -143,7 +147,7 @@ public final class MemberReferenceExpressionConverter {
             final com.github.javaparser.ast.expr.SuperExpr superExpr,
             final String memberName,
             final Mvel3Parser.SuperSuffixContext suffixCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.super.method(args)
         NodeList<Expression> args = ArgumentsConverter.convertArguments(
                 suffixCtx.arguments(), mvel3toJavaParserVisitor);
@@ -173,7 +177,7 @@ public final class MemberReferenceExpressionConverter {
     private static Node handleInnerCreator(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.new InnerClass(args) [classBody]
         Mvel3Parser.InnerCreatorContext innerCtx = ctx.innerCreator();
         ClassOrInterfaceType type = createInnerClassType(innerCtx, mvel3toJavaParserVisitor);
@@ -187,7 +191,7 @@ public final class MemberReferenceExpressionConverter {
 
     private static ClassOrInterfaceType createInnerClassType(
             final Mvel3Parser.InnerCreatorContext innerCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String className = innerCtx.identifier().getText();
         ClassOrInterfaceType type = new ClassOrInterfaceType(null, className);
 
@@ -209,7 +213,7 @@ public final class MemberReferenceExpressionConverter {
 
     private static NodeList<Expression> extractConstructorArguments(
             final Mvel3Parser.InnerCreatorContext innerCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Expression> arguments = new NodeList<>();
 
         if (innerCtx.classCreatorRest().arguments() != null &&
@@ -225,7 +229,7 @@ public final class MemberReferenceExpressionConverter {
 
     private static NodeList<BodyDeclaration<?>> extractAnonymousClassBody(
             final Mvel3Parser.InnerCreatorContext innerCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (innerCtx.classCreatorRest().classBody() != null) {
             return TypeConverter.convertAnonymousClassBody(
                     innerCtx.classCreatorRest().classBody(), mvel3toJavaParserVisitor);
@@ -236,7 +240,7 @@ public final class MemberReferenceExpressionConverter {
     private static Node handleExplicitGenericInvocation(
             final Mvel3Parser.MemberReferenceExpressionContext ctx,
             final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.<Type>method(args) — explicit generic invocation
         Mvel3Parser.ExplicitGenericInvocationContext egiCtx = ctx.explicitGenericInvocation();
         NodeList<Type> typeArgs = ArgumentsConverter.convertNonWildcardTypeArguments(
@@ -258,7 +262,7 @@ public final class MemberReferenceExpressionConverter {
             final Expression scope,
             final NodeList<Type> typeArgs,
             final Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // <Type>method(args)
         String methodName = suffixCtx.identifier().getText();
         NodeList<Expression> args = ArgumentsConverter.convertArguments(
@@ -273,7 +277,7 @@ public final class MemberReferenceExpressionConverter {
             final Expression scope,
             final NodeList<Type> typeArgs,
             final Mvel3Parser.ExplicitGenericInvocationSuffixContext suffixCtx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.<Type>super(...) or expression.<Type>super.method(...)
         Mvel3Parser.SuperSuffixContext superSuffix = suffixCtx.superSuffix();
         com.github.javaparser.ast.expr.SuperExpr superExpr = createSuperExpr(scope);
@@ -292,7 +296,7 @@ public final class MemberReferenceExpressionConverter {
             final com.github.javaparser.ast.expr.SuperExpr superExpr,
             final NodeList<Type> typeArgs,
             final Mvel3Parser.SuperSuffixContext superSuffix,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.<Type>super(args) — generic super constructor call
         NodeList<Expression> args = ArgumentsConverter.convertArguments(
                 superSuffix.arguments(), mvel3toJavaParserVisitor);
@@ -306,7 +310,7 @@ public final class MemberReferenceExpressionConverter {
             final com.github.javaparser.ast.expr.SuperExpr superExpr,
             final NodeList<Type> typeArgs,
             final Mvel3Parser.SuperSuffixContext superSuffix,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // expression.<Type>super.method(args)
         String memberName = superSuffix.identifier().getText();
         NodeList<Expression> args = superSuffix.arguments() != null

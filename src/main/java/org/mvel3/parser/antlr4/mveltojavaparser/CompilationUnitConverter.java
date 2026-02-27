@@ -17,7 +17,7 @@ import com.github.javaparser.ast.modules.ModuleProvidesDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class CompilationUnitConverter {
 
@@ -26,7 +26,7 @@ public final class CompilationUnitConverter {
 
     public static Node convertCompilationUnit(
             final Mvel3Parser.CompilationUnitContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         CompilationUnit cu = new CompilationUnit();
 
         if (ctx.packageDeclaration() != null) {

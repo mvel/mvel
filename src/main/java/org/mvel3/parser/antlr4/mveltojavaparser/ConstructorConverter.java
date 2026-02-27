@@ -5,7 +5,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class ConstructorConverter {
 
@@ -14,7 +14,7 @@ public final class ConstructorConverter {
 
     public static Node convertConstructorDeclaration(
             final Mvel3Parser.ConstructorDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String name = ctx.identifier().getText();
 
         ConstructorDeclaration constructorDecl = new ConstructorDeclaration(name);
@@ -47,7 +47,7 @@ public final class ConstructorConverter {
 
     public static Node convertGenericConstructorDeclaration(
             final Mvel3Parser.GenericConstructorDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         ConstructorDeclaration constructorDecl = (ConstructorDeclaration) convertConstructorDeclaration(ctx.constructorDeclaration(), mvel3toJavaParserVisitor);
         if (ctx.typeParameters() != null) {
             constructorDecl.setTypeParameters(TypeConverter.convertTypeParameters(ctx.typeParameters(), mvel3toJavaParserVisitor));

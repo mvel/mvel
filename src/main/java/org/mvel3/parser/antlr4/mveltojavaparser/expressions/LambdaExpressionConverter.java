@@ -13,7 +13,7 @@ import com.github.javaparser.ast.type.VarType;
 import org.mvel3.parser.antlr4.LambdaParametersResult;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.BlockConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.ParametersConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
@@ -26,7 +26,7 @@ public final class LambdaExpressionConverter {
 
     public static Node convertLambdaExpression(
             final Mvel3Parser.LambdaExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         LambdaParametersResult parametersResult = resolveLambdaParameters(ctx.lambdaParameters(), mvel3toJavaParserVisitor);
         Statement body = resolveLambdaBody(ctx.lambdaBody(), mvel3toJavaParserVisitor);
 
@@ -37,7 +37,7 @@ public final class LambdaExpressionConverter {
 
     private static LambdaParametersResult resolveLambdaParameters(
             final Mvel3Parser.LambdaParametersContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx == null) {
             return new LambdaParametersResult(new NodeList<>(), false);
         }
@@ -103,7 +103,7 @@ public final class LambdaExpressionConverter {
 
     private static Statement resolveLambdaBody(
             final Mvel3Parser.LambdaBodyContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.block() != null) {
             return (Statement) BlockConverter.convertBlock(ctx.block(), mvel3toJavaParserVisitor);
         }

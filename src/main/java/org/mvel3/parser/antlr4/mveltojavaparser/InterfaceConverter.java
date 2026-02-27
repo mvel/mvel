@@ -16,7 +16,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public final class InterfaceConverter {
 
     public static Node convertInterfaceDeclaration(
             final Mvel3Parser.InterfaceDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String interfaceName = ctx.identifier().getText();
         ClassOrInterfaceDeclaration interfaceDecl = new ClassOrInterfaceDeclaration();
         interfaceDecl.setName(interfaceName);
@@ -68,7 +68,7 @@ public final class InterfaceConverter {
     private static void convertInterfaceBody(
             final Mvel3Parser.InterfaceBodyContext ctx,
             final ClassOrInterfaceDeclaration interfaceDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.interfaceBodyDeclaration() != null) {
             for (Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl : ctx.interfaceBodyDeclaration()) {
                 if (bodyDecl.interfaceMemberDeclaration() != null) {
@@ -101,7 +101,7 @@ public final class InterfaceConverter {
     private static MethodDeclaration convertInterfaceMethodDeclaration(
             final Mvel3Parser.InterfaceMethodDeclarationContext ctx,
             final Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         MethodDeclaration methodDecl = buildInterfaceMethodDeclaration(
                 ctx.interfaceCommonBodyDeclaration(), bodyDecl, ctx.interfaceMethodModifier(), mvel3toJavaParserVisitor);
         methodDecl.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
@@ -111,7 +111,7 @@ public final class InterfaceConverter {
     private static MethodDeclaration convertGenericInterfaceMethodDeclaration(
             final Mvel3Parser.GenericInterfaceMethodDeclarationContext ctx,
             final Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         MethodDeclaration methodDecl = buildInterfaceMethodDeclaration(
                 ctx.interfaceCommonBodyDeclaration(), bodyDecl, ctx.interfaceMethodModifier(), mvel3toJavaParserVisitor);
         if (ctx.typeParameters() != null) {
@@ -129,7 +129,7 @@ public final class InterfaceConverter {
             final Mvel3Parser.InterfaceCommonBodyDeclarationContext commonBody,
             final Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
             final List<Mvel3Parser.InterfaceMethodModifierContext> interfaceMethodModifiers,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String methodName = commonBody.identifier().getText();
         MethodDeclaration methodDecl = new MethodDeclaration();
         methodDecl.setName(methodName);
@@ -204,7 +204,7 @@ public final class InterfaceConverter {
     private static FieldDeclaration convertConstDeclaration(
             final Mvel3Parser.ConstDeclarationContext ctx,
             final Mvel3Parser.InterfaceBodyDeclarationContext bodyDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Type fieldType = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
 
         NodeList<VariableDeclarator> declarators = new NodeList<>();

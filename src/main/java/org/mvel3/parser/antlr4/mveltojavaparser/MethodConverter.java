@@ -10,7 +10,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class MethodConverter {
 
@@ -19,7 +19,7 @@ public final class MethodConverter {
 
     public static Node convertMethodDeclaration(
             final Mvel3Parser.MethodDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Get method name
         String methodName = ctx.identifier().getText();
 
@@ -71,7 +71,7 @@ public final class MethodConverter {
 
     public static Node convertGenericMethodDeclaration(
             final Mvel3Parser.GenericMethodDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         MethodDeclaration methodDecl = (MethodDeclaration) convertMethodDeclaration(ctx.methodDeclaration(), mvel3toJavaParserVisitor);
         if (ctx.typeParameters() != null) {
             methodDecl.setTypeParameters(TypeConverter.convertTypeParameters(ctx.typeParameters(), mvel3toJavaParserVisitor));
@@ -81,14 +81,14 @@ public final class MethodConverter {
 
     public static Node convertMethodCallExpression(
             final Mvel3Parser.MethodCallExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle method call without scope
         return convertMethodCallWithScope(ctx.methodCall(), null, mvel3toJavaParserVisitor);
     }
 
     private static MethodCallExpr convertMethodCallWithScope(
             final Mvel3Parser.MethodCallContext ctx, final Expression scope,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String methodName;
         if (ctx.identifier() != null) {
             methodName = ctx.identifier().getText();

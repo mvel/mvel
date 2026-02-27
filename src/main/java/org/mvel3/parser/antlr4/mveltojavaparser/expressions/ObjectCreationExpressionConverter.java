@@ -13,7 +13,7 @@ import com.github.javaparser.ast.type.Type;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.ArrayConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.CreatedNameConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
@@ -26,13 +26,13 @@ public final class ObjectCreationExpressionConverter {
 
     public static Node convertObjectCreationExpression(
             final Mvel3Parser.ObjectCreationExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         return convertCreator(ctx.creator(), mvel3toJavaParserVisitor);
     }
 
     public static Node convertCreator(
             final Mvel3Parser.CreatorContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Node createdName = CreatedNameConverter.convertCreatedName(ctx.createdName(), mvel3toJavaParserVisitor);
 
         if (ctx.arrayCreatorRest() != null) {
@@ -77,7 +77,7 @@ public final class ObjectCreationExpressionConverter {
     private static Node visitArrayCreatorRest(
             final Mvel3Parser.ArrayCreatorRestContext ctx,
             final Node createdName,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         Type elementType = (Type) createdName;
 
         if (ctx.arrayInitializer() != null) {

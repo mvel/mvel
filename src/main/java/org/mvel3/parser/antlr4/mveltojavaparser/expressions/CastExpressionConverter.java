@@ -8,7 +8,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.TypeConverter;
 
@@ -19,7 +19,7 @@ public final class CastExpressionConverter {
 
     public static Node convertCastExpression(
             final Mvel3Parser.CastExpressionContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Type> parsedTypes = new NodeList<>();
         for (Mvel3Parser.TypeTypeContext typeCtx : ctx.typeType()) {
             parsedTypes.add((Type) TypeConverter.convertTypeType(typeCtx, mvel3toJavaParserVisitor));

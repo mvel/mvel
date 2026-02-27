@@ -12,7 +12,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class AnnotationTypeConverter {
 
@@ -20,7 +20,7 @@ public final class AnnotationTypeConverter {
     }
 
     public static Node convertAnnotationTypeDeclaration(final Mvel3Parser.AnnotationTypeDeclarationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String annotationName = ctx.identifier().getText();
         AnnotationDeclaration annotationDecl = new AnnotationDeclaration(new NodeList<>(), annotationName);
 
@@ -40,7 +40,7 @@ public final class AnnotationTypeConverter {
 
     private static void convertAnnotationTypeBody(final Mvel3Parser.AnnotationTypeBodyContext ctx,
             final AnnotationDeclaration annotationDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.annotationTypeElementDeclaration() != null) {
             for (Mvel3Parser.AnnotationTypeElementDeclarationContext elemDecl : ctx.annotationTypeElementDeclaration()) {
                 if (elemDecl.annotationTypeElementRest() == null) {
@@ -127,7 +127,7 @@ public final class AnnotationTypeConverter {
     }
 
     private static Expression convertElementValue(final Mvel3Parser.ElementValueContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx.expression() != null) {
             return (Expression) mvel3toJavaParserVisitor.visit(ctx.expression());
         } else if (ctx.annotation() != null) {

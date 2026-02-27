@@ -33,7 +33,7 @@ import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.VarType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 import org.mvel3.parser.ast.expr.ModifyStatement;
 import org.mvel3.parser.ast.expr.WithStatement;
 
@@ -42,7 +42,7 @@ public final class StatementConverter {
     private StatementConverter() {
     }
 
-    public static Node convertStatement(final Mvel3Parser.StatementContext ctx, final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+    public static Node convertStatement(final Mvel3Parser.StatementContext ctx, final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle modify statement
         if (ctx.modifyStatement() != null) {
             return convertModifyStatement(ctx.modifyStatement(), mvel3toJavaParserVisitor);
@@ -197,7 +197,7 @@ public final class StatementConverter {
     }
 
     public static Node convertModifyStatement(final Mvel3Parser.ModifyStatementContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // modify ( identifier ) { statement* }
         String targetName = ctx.identifier().getText();
         NameExpr target = new NameExpr(targetName);
@@ -219,7 +219,7 @@ public final class StatementConverter {
 
     public static Node convertWithStatement(
             final Mvel3Parser.WithStatementContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         String targetName = ctx.identifier().getText();
         NameExpr target = new NameExpr(targetName);
         target.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
@@ -234,7 +234,7 @@ public final class StatementConverter {
     }
 
     private static CatchClause parseCatchClause(final Mvel3Parser.CatchClauseContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // catchClause: CATCH '(' variableModifier* catchType identifier ')' block
         // catchType: qualifiedName ('|' qualifiedName)*
         ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
@@ -272,7 +272,7 @@ public final class StatementConverter {
 
     private static NodeList<Expression> parseResources(
             final Mvel3Parser.ResourceSpecificationContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Expression> resources = new NodeList<>();
         if (ctx.resources() != null) {
             for (Mvel3Parser.ResourceContext resourceCtx : ctx.resources().resource()) {

@@ -12,7 +12,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VarType;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class ForConverter {
 
@@ -21,7 +21,7 @@ public final class ForConverter {
 
     public static Node convertForStatement(
             final Mvel3Parser.StatementContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // Handle for statement: FOR '(' forControl ')' statement
         Statement body = (Statement) StatementConverter.convertStatement(ctx.statement(0), mvel3toJavaParserVisitor);
 
@@ -51,7 +51,7 @@ public final class ForConverter {
     private static void visitForControlAndPopulate(
             final Mvel3Parser.ForControlContext forControlCtx,
             final ForStmt forStmt,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // FOR control can be: forInit? ';' expression? ';' forUpdate?
         // Or enhanced for: variableDeclarator ':' expression
 
@@ -114,7 +114,7 @@ public final class ForConverter {
     private static void visitEnhancedForControlAndPopulate(
             final Mvel3Parser.EnhancedForControlContext enhancedForCtx,
             final ForEachStmt forEachStmt,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         // enhancedForControl: variableModifier* (typeType | VAR) variableDeclaratorId ':' expression
 
         // Extract variable modifiers (final, annotations)

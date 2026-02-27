@@ -11,7 +11,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.Type;
 import org.mvel3.parser.antlr4.ModifiersAnnotations;
 import org.mvel3.parser.antlr4.Mvel3Parser;
-import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
+import org.mvel3.parser.antlr4.Mvel3ToJavaParserVisitor;
 
 public final class ParametersConverter {
 
@@ -19,7 +19,7 @@ public final class ParametersConverter {
     }
 
     public static NodeList<Parameter> convertFormalParameters(Mvel3Parser.FormalParametersContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (ctx == null || ctx.formalParameterList() == null) {
             return new NodeList<>();
         }
@@ -27,7 +27,7 @@ public final class ParametersConverter {
     }
 
     public static Node convertFormalParameter(final Mvel3Parser.FormalParameterContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
         Type type = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
         Type adjustedType = ArrayConverter.applyArrayDimensions(type, ctx.variableDeclaratorId());
@@ -44,7 +44,7 @@ public final class ParametersConverter {
     }
 
     public static Node convertLastFormalParameter(final Mvel3Parser.LastFormalParameterContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         ModifiersAnnotations modifiersAnnotations = VariableParser.parseVariableModifiers(ctx.variableModifier());
         Type type = (Type) TypeConverter.convertTypeType(ctx.typeType(), mvel3toJavaParserVisitor);
         boolean isVarArgs = ctx.ELLIPSIS() != null;
@@ -70,7 +70,7 @@ public final class ParametersConverter {
     }
 
     public static NodeList<Parameter> convertFormalParameters(final Mvel3Parser.FormalParameterListContext ctx,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         NodeList<Parameter> parameters = new NodeList<>();
         if (ctx == null) {
             return parameters;
@@ -104,7 +104,7 @@ public final class ParametersConverter {
     public static void convertReceiverParameter(
             final Mvel3Parser.FormalParametersContext formalParamsCtx,
             final CallableDeclaration<?> callableDecl,
-            final Mvel3ParserBaseVisitor<Node> mvel3toJavaParserVisitor) {
+            final Mvel3ToJavaParserVisitor mvel3toJavaParserVisitor) {
         if (formalParamsCtx == null || formalParamsCtx.receiverParameter() == null) {
             return;
         }
