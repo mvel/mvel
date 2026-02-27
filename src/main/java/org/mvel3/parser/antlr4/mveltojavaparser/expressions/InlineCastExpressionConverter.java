@@ -29,7 +29,7 @@ public final class InlineCastExpressionConverter {
         inlineCastExpr.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
 
         // TODO fix this hack for Tolerant visitor to work.
-        ((Mvel3ToJavaParserVisitor) mvel3toJavaParserVisitor).associateAntlrTokenWithJPNode(ctx.identifier(), inlineCastExpr);
+        ((Mvel3ToJavaParserVisitor) mvel3toJavaParserVisitor).associateAntlrTokenWithJPNode(ctx, inlineCastExpr);
 
         if (ctx.identifier() != null) {
             String name = ctx.identifier().getText();
