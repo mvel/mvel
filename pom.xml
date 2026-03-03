@@ -49,6 +49,12 @@
             <url>https://github.com/tkobayas</url>
             <id>tkobayas</id>
         </developer>
+        <developer>
+            <name>Tibor Zimányi</name>
+            <email>tibor.zimanyi@gmail.com</email>
+            <url>https://github.com/baldimir</url>
+            <id>baldimir</id>
+        </developer>
     </developers>
 
     <contributors>
@@ -60,6 +66,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
 
         <!-- Plugin versions -->
         <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
