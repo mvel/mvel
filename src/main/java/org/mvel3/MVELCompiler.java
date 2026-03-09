@@ -63,11 +63,30 @@ public class MVELCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(MVELCompiler.class);
 
+    public record TranspiledSource(String fqn, String javaSource) {}
+
     public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
         CompilationUnit unit = compileNoLoad(info);
         Evaluator<T, K, R> evaluator = compileEvaluator(unit, info);
 
         return evaluator;
+    }
+
+    public <T, K, R> TranspiledSource transpileToSource(CompilerParameters<T, K, R> info) {
+        CompilationUnit unit = compileNoLoad(info);
+        String fqn = evaluatorFullQualifiedName(unit);
+        String source = PrintUtil.printNode(unit);
+        return new TranspiledSource(fqn, source);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T resolveEvaluator(ClassManager classManager, String fqn) {
+        Class<T> clazz = classManager.getClass(fqn);
+        try {
+            return (T) clazz.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException("Failed to instantiate evaluator: " + fqn, e);
+        }
     }
 
     public <T, K, R> TranspiledResult transpile(CompilerParameters<T, K, R> info) {
