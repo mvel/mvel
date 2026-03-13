@@ -20,8 +20,9 @@ untrusted expressions is not a supported use case.**
 
 If you embed MVEL in your application:
 
-- **Never pass untrusted user input directly to `MVELCompiler.compile()`** or
-  any other compilation entry point.
+- **Never pass untrusted user input directly to the MVEL compiler** (for example,
+  via `new MVELCompiler().compile(...)`, `new MVEL().compile(...)`, or any
+  other compilation entry point).
 - The responsibility for restricting who can author expressions lies with your
   application, not with MVEL.
 - Treat MVEL expressions with the same level of trust as Java source code.
