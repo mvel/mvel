@@ -8,6 +8,11 @@ MVEL3 is a complete rewrite of MVEL. Instead of interpreting expressions at runt
 
 > **Alpha Notice:** This is an alpha release. APIs may change in future releases.
 
+> **Security Notice:** MVEL expressions are functionally equivalent to Java code
+> and can perform any operation the JVM allows, including file system access and
+> network calls. Only compile and execute expressions from **trusted sources**.
+> See [SECURITY.md](SECURITY.md) for details.
+
 ### MVEL3 and MVEL2
 
 This is the MVEL version 3.x codebase, developed in the `main` branch.
