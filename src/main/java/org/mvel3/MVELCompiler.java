@@ -79,6 +79,10 @@ public class MVELCompiler {
         return new TranspiledSource(fqn, source);
     }
 
+    public <T, K, R> CompilationUnit transpileToCompilationUnit(CompilerParameters<T, K, R> info) {
+        return compileNoLoad(info);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T resolveEvaluator(ClassManager classManager, String fqn) {
         Class<T> clazz = classManager.getClass(fqn);
@@ -224,7 +228,22 @@ public class MVELCompiler {
     }
 
 
-    private String evaluatorFullQualifiedName(CompilationUnit evaluatorCompilationUnit) {
+    record LambdaRegistration(int physicalId, String newFqn) {}
+
+    static LambdaRegistration registerAndRename(CompilationUnit unit, String currentFqn) {
+        MethodDeclaration methodDeclaration = unit.findFirst(MethodDeclaration.class).orElseThrow();
+        LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
+        int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
+        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey);
+        String oldClassName = currentFqn.substring(currentFqn.lastIndexOf('.') + 1);
+        String newClassName = oldClassName + "_" + physicalId;
+        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = unit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
+        classOrInterfaceDeclaration.setName(newClassName);
+        String newFqn = currentFqn.substring(0, currentFqn.lastIndexOf('.') + 1) + newClassName;
+        return new LambdaRegistration(physicalId, newFqn);
+    }
+
+    static String evaluatorFullQualifiedName(CompilationUnit evaluatorCompilationUnit) {
         ClassOrInterfaceDeclaration evaluatorClass = evaluatorCompilationUnit
                 .findFirst(ClassOrInterfaceDeclaration.class)
                 .orElseThrow(() -> new RuntimeException("class expected"));
@@ -254,20 +273,9 @@ public class MVELCompiler {
     }
 
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
-        MethodDeclaration methodDeclaration = compilationUnit.findFirst(MethodDeclaration.class).orElseThrow();
-        LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
-        int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
-        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey);
-        String oldClassName = javaFQN.substring(javaFQN.lastIndexOf('.') + 1);
-        String newClassName = oldClassName + "_" + physicalId; // The default class name is "GeneratorEvaluator__", but adding extra '_' just in case
-        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = compilationUnit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
-        classOrInterfaceDeclaration.setName(newClassName);
-        String newSource = PrintUtil.printNode(compilationUnit);
-        String newJavaFQN = javaFQN.substring(0, javaFQN.lastIndexOf('.') + 1) + newClassName;
-        Map<String, String> sources = Collections.singletonMap(
-                newJavaFQN,
-                newSource
-        );
+        LambdaRegistration reg = registerAndRename(compilationUnit, javaFQN);
+        int physicalId = reg.physicalId();
+        String newJavaFQN = reg.newFqn();
 
         if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
             if (classManager.getClasses().containsKey(newJavaFQN)) {
@@ -283,6 +291,8 @@ public class MVELCompiler {
                 throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
             }
         } else {
+            String newSource = PrintUtil.printNode(compilationUnit);
+            Map<String, String> sources = Collections.singletonMap(newJavaFQN, newSource);
             log.info("Persisting lambda class {}", newJavaFQN);
             List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
