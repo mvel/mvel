@@ -68,7 +68,7 @@ public class TemplateRuntime {
   }
 
   public static Object eval(InputStream instream, Object ctx, VariableResolverFactory vars) {
-    return eval(instream, ctx, vars);
+    return eval(instream, ctx, vars, null);
   }
 
   public static Object eval(InputStream instream, Object ctx, Map vars) {
