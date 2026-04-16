@@ -147,6 +147,7 @@ class CompilationUnitTranspilerTest {
                 "",
                 "Generated__",
                 "eval",
+                null,
                 null
         );
 

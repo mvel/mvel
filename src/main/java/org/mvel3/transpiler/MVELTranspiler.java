@@ -34,6 +34,8 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.mvel3.ContentType;
 import org.mvel3.CompilerParameters;
@@ -57,7 +59,7 @@ public class MVELTranspiler {
 
     public static <T, K, R>  TranspiledResult transpile(CompilerParameters<T, K, R> evalInfo, EvalPre evalPre) {
 
-        TypeSolver typeSolver = new ReflectionTypeSolver(false);
+        TypeSolver typeSolver = buildTypeSolver(evalInfo.classLoader());
         JavaSymbolSolver solver = new JavaSymbolSolver(typeSolver);
 
         ParserConfiguration conf = new ParserConfiguration();
@@ -73,6 +75,19 @@ public class MVELTranspiler {
         TranspiledResult transpiledResult =  mvelTranspiler.transpileContent(evalInfo, evalPre);
 
         return transpiledResult;
+    }
+
+    /**
+     * Builds a TypeSolver that can see both the JRE classes (via reflection)
+     * and application classes visible through the caller-supplied classLoader.
+     * Falls back to the default ReflectionTypeSolver when no classLoader is
+     * configured on the CompilerParameters.
+     */
+    static TypeSolver buildTypeSolver(ClassLoader classLoader) {
+        if (classLoader == null) {
+            return new ReflectionTypeSolver(false);
+        }
+        return new CombinedTypeSolver(new ReflectionTypeSolver(false), new ClassLoaderTypeSolver(classLoader));
     }
 
     public static <T> T handleParserResult(ParseResult<T> result) {
