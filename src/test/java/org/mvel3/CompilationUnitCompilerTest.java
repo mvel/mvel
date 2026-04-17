@@ -185,6 +185,7 @@ class CompilationUnitCompilerTest {
                 "",
                 "Generated__",
                 "eval",
+                null,
                 null
         );
 

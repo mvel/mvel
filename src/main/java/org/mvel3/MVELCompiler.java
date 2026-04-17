@@ -185,7 +185,11 @@ public class MVELCompiler {
     private <T, K, R> CompilationUnit compileNoLoad(CompilerParameters<T, K, R> info) {
         TranspiledResult input = transpile(info);
 
-        return new CompilationUnitGenerator(input.getTranspilerContext().getParser()).createCompilationUnit(input, info);
+        CompilationUnit unit = new CompilationUnitGenerator(input.getTranspilerContext().getParser()).createCompilationUnit(input, info);
+
+        ClassFilterValidator.validate(unit, info.classFilter(), info.classLoader());
+
+        return unit;
     }
 
     private <C, W, O> Evaluator<C, W, O> compileEvaluator(CompilationUnit unit, CompilerParameters<C, W, O> info) {

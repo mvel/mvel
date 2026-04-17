@@ -193,6 +193,8 @@ public class MVELBuilder<C, W, O> {
 
     private String generatedSuperName;
 
+    private ClassFilter classFilter;
+
     public static <C, W, O> MVELBuilder<C, W, O> create() {
         MVELBuilder builder = new MVELBuilder<>();
         builder.outType = Type.type(Void.class); // default no return
@@ -209,6 +211,7 @@ public class MVELBuilder<C, W, O> {
         builder.outType         = template.outType;
         builder.generatedClassName = template.generatedClassName;
         builder.generatedMethodName = template.generatedMethodName;
+        builder.classFilter = template.classFilter;
 
         return builder;
     }
@@ -326,6 +329,17 @@ public class MVELBuilder<C, W, O> {
         return this;
     }
 
+    /**
+     * Restricts which classes may be referenced by the compiled expression.
+     * When {@code null} (the default), no class filtering is applied. See
+     * {@link ClassFilter} for factory methods and the {@code SAFE_PRESET}
+     * baseline.
+     */
+    public MVELBuilder<C, W, O> classFilter(ClassFilter classFilter) {
+        this.classFilter = classFilter;
+        return this;
+    }
+
     public Evaluator<C, W, O>  compile() {
         return compile(build());
     }
@@ -356,7 +370,7 @@ public class MVELBuilder<C, W, O> {
 
         CompilerParameters<C, W, O> info = new CompilerParameters<>(contextType, classLoader, classManager, imports, staticImports, outType,
                                                                     contextDeclaration, variableDeclarations, withDeclaration, contentType, content,
-                                                                    generatedClassName, generatedMethodName, generatedSuperName);
+                                                                    generatedClassName, generatedMethodName, generatedSuperName, classFilter);
 
         return info;
     }

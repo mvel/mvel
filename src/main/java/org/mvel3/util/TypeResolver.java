@@ -47,8 +47,13 @@ public interface TypeResolver {
 
     ClassLoader getClassLoader();
 
-    interface ClassFilter {
-        boolean accept( Class<?> clazz );
+    /**
+     * @deprecated Use {@link org.mvel3.ClassFilter} instead. This nested
+     * interface is kept only so existing internal callers still compile; it
+     * extends the public interface without adding any members.
+     */
+    @Deprecated
+    interface ClassFilter extends org.mvel3.ClassFilter {
     }
 
     AcceptAllClassFilter ACCEPT_ALL_CLASS_FILTER = new AcceptAllClassFilter();

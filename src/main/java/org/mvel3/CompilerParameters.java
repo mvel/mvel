@@ -2,7 +2,6 @@ package org.mvel3;
 
 import org.mvel3.transpiler.context.Declaration;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,8 @@ public record CompilerParameters<T, K, R>(ContextType contextType,
                                           String expression,
                                           String generatedClassName,
                                           String generatedMethodName,
-                                          String generatedSuperName) {
+                                          String generatedSuperName,
+                                          ClassFilter classFilter) {
 
     public Map<String, Declaration> allVars() {
         if (variableDeclarations.isEmpty()) {
