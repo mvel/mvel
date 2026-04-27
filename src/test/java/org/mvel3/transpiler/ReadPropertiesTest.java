@@ -33,4 +33,16 @@ class ReadPropertiesTest {
         Evaluator<Object, Void, Boolean> ev = compile("salary > 0");
         assertThat(ev.getReadProperties()).containsExactlyInAnyOrder("salary");
     }
+
+    @Test
+    void multipleProperties_collectsAll() {
+        Evaluator<Object, Void, Boolean> ev = compile("salary > 0 && basePay == 1000");
+        assertThat(ev.getReadProperties()).containsExactlyInAnyOrder("salary", "basePay");
+    }
+
+    @Test
+    void noProperties_returnsEmpty() {
+        Evaluator<Object, Void, Boolean> ev = compile("1 == 1");
+        assertThat(ev.getReadProperties()).isEmpty();
+    }
 }
