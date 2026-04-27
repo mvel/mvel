@@ -77,4 +77,18 @@ public interface Evaluator<C, W, O> {
     default O evalWith(W w) {
         throw new RuntimeException("Not Implemented");
     }
+
+    /**
+     * Returns the names of properties that the compiled expression reads from
+     * its context. Populated only for POJO-context evaluators; empty otherwise.
+     * <p>
+     * The returned names are <em>candidates</em> derived from AST analysis — bare
+     * identifiers and no-arg getter calls. Consumers are expected to filter
+     * against the actual settable-property set of the context type.
+     *
+     * @return property names referenced by the expression, or an empty array
+     */
+    default String[] getReadProperties() {
+        return new String[0];
+    }
 }
