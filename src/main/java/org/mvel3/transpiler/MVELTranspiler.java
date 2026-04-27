@@ -177,6 +177,12 @@ public class MVELTranspiler {
             rewriter.rewriteChildren(method.getBody().get());
         }
 
+        // Emit getReadProperties() override AFTER the eval method so downstream
+        // logic that calls findFirst(MethodDeclaration.class) still finds the
+        // eval method. Consumers (e.g. DRLX alpha-mask construction) filter the
+        // returned names against the actual settable-property set.
+        emitGetReadPropertiesOverride(classDeclaration, analyser.getReadProperties());
+
 //        // Inject the "return" if one is needed and it's missing and it's a statement expression.
 //        // This will not check branchs of an if statement or for loop, those need explicit returns
 //        Statement stmt = method.getBody().get().getStatements().getLast().get();
@@ -196,5 +202,24 @@ public class MVELTranspiler {
         logger.debug("Generated compilation unit:\n{}", PrintUtil.printNode(unit));
 
         return new TranspiledBlockResult(unit, classDeclaration, method, context);
+    }
+
+    private static void emitGetReadPropertiesOverride(
+            com.github.javaparser.ast.body.ClassOrInterfaceDeclaration classDeclaration,
+            java.util.Set<String> readProperties) {
+        com.github.javaparser.ast.body.MethodDeclaration m = classDeclaration.addMethod("getReadProperties");
+        m.setPublic(true);
+        m.setType("String[]");
+        m.addAnnotation("Override");
+        StringBuilder body = new StringBuilder("return new String[]{");
+        boolean first = true;
+        for (String p : readProperties) {
+            if (!first) body.append(", ");
+            body.append('"').append(p.replace("\"", "\\\"")).append('"');
+            first = false;
+        }
+        body.append("};");
+        m.setBody(new com.github.javaparser.ast.stmt.BlockStmt()
+                .addStatement(body.toString()));
     }
 }
