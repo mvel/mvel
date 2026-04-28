@@ -451,25 +451,28 @@ public class MVELToJavaRewriter {
                 // JavaParser's extension to detect BigDecimal and BigNumber does not pass  the negative prefix on the number.
                 // This detects this and adds it back in.
                 UnaryExpr unaryExpr = (UnaryExpr) node;
-                if (unaryExpr.getOperator() == UnaryExpr.Operator.MINUS ||
-                    unaryExpr.getOperator() == UnaryExpr.Operator.PLUS) {
-                    if (unaryExpr.getExpression() instanceof BigDecimalLiteralExpr ||
-                        unaryExpr.getExpression() instanceof BigIntegerLiteralExpr) {
-                        LiteralStringValueExpr lit = (LiteralStringValueExpr) unaryExpr.getExpression();
-                        lit.setValue(unaryExpr.getOperator().asString() + lit.getValue().substring(0, lit.getValue().length()));
-                        rewriteNode(unaryExpr.getExpression());
-                        unaryExpr.replace(unaryExpr.getExpression());
-                    }
-                } else if (unaryExpr.getOperator() == UnaryExpr.Operator.BITWISE_COMPLEMENT) {
-                    if (unaryExpr.getExpression() instanceof BigIntegerLiteralExpr) {
-                        rewriteNode(unaryExpr.getExpression());
-                        Expression     expr = unaryExpr.getExpression();
-                        MethodCallExpr not  = new MethodCallExpr(expr, "not");
-                        Node           p    = unaryExpr.getParentNode().get();
-                        unaryExpr.replace(not);
-                    } else if (unaryExpr.getExpression() instanceof BigDecimalLiteralExpr) {
-                        throw new UnsupportedOperationException("BigDecimals cannot use bitwise compliment operators");
-                    }
+                if ((unaryExpr.getOperator() == UnaryExpr.Operator.MINUS ||
+                     unaryExpr.getOperator() == UnaryExpr.Operator.PLUS) &&
+                    (unaryExpr.getExpression() instanceof BigDecimalLiteralExpr ||
+                     unaryExpr.getExpression() instanceof BigIntegerLiteralExpr)) {
+                    LiteralStringValueExpr lit = (LiteralStringValueExpr) unaryExpr.getExpression();
+                    lit.setValue(unaryExpr.getOperator().asString() + lit.getValue().substring(0, lit.getValue().length()));
+                    rewriteNode(unaryExpr.getExpression());
+                    unaryExpr.replace(unaryExpr.getExpression());
+                } else if (unaryExpr.getOperator() == UnaryExpr.Operator.BITWISE_COMPLEMENT &&
+                           unaryExpr.getExpression() instanceof BigIntegerLiteralExpr) {
+                    rewriteNode(unaryExpr.getExpression());
+                    Expression     expr = unaryExpr.getExpression();
+                    MethodCallExpr not  = new MethodCallExpr(expr, "not");
+                    Node           p    = unaryExpr.getParentNode().get();
+                    unaryExpr.replace(not);
+                } else if (unaryExpr.getOperator() == UnaryExpr.Operator.BITWISE_COMPLEMENT &&
+                           unaryExpr.getExpression() instanceof BigDecimalLiteralExpr) {
+                    throw new UnsupportedOperationException("BigDecimals cannot use bitwise compliment operators");
+                } else {
+                    // No literal-folding special-case applies — recurse so the operand's children
+                    // (NameExpr→ctx, FieldAccessExpr→getter, etc.) still get rewritten.
+                    rewriteNode(unaryExpr.getExpression());
                 }
                 break;
             case "DrlNameExpr":
