@@ -1167,6 +1167,24 @@ class MVELTranspilerTest implements TranspilerTest {
             );
     }
 
+    @Test
+    void testGetterRewriteInsideLogicalNot() {
+        test( "    var p = new Person(\"yoda\");\n" +
+                "    boolean b = !(p.age > 18); \n",
+                "    var p = new Person(\"yoda\");\n" +
+                "    boolean b = !(p.getAge() > 18);\n"
+            );
+    }
+
+    @Test
+    void testGetterRewriteInsideUnaryMinus() {
+        test( "    var p = new Person(\"yoda\");\n" +
+                "    int x = -p.age; \n",
+                "    var p = new Person(\"yoda\");\n" +
+                "    int x = -p.getAge();\n"
+            );
+    }
+
     public static Person createPerson(String name) {
         return new Person(name);
     }
