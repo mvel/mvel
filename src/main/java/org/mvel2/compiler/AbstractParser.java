@@ -2449,8 +2449,12 @@ public class AbstractParser implements Parser, Serializable {
               /**
                * This operator is of the same level precedence.  push to the RHS.
                */
-
-              dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+              ASTNode nextToken = nextToken();
+              if (compileMode && !nextToken.isLiteral()) {
+                splitAccumulator.push(nextToken, new OperatorNode(operator2, expr, st, pCtx));
+                return OP_OVERFLOW;
+              }
+              dStack.push(operator = operator2, nextToken.getReducedValue(ctx, ctx, variableFactory));
 
               continue;
             }
