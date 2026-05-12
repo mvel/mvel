@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Lambda Registry that supports subtype overload detection.
- * <p>
- * TODO: Review persist/load logic not to miss the new changes.
+ * Lambda Registry facade — transitional during the refactor. Dedup and
+ * ID-allocation state has moved to {@link LambdaCatalog}; this class still
+ * owns the artifact-path tracking until Phase 4 ({@link LambdaPersistenceManager}
+ * takes over). The whole facade is deleted in Phase 6.
  */
 public enum LambdaRegistry {
 
@@ -47,118 +47,44 @@ public enum LambdaRegistry {
         }
     }
 
-    // LambdaKey -> entry (physical ID + optional persisted path)
-    private final Map<LambdaKey, RegistryEntry> entriesByKey = new HashMap<>();
+    private final LambdaCatalog catalog = new LambdaCatalog();
 
-    // hash -> LambdaKeys (group of conflicting hashes)
-    private final Map<Integer, List<LambdaKey>> hashToKeys = new HashMap<>();
-
-    // physical ID -> entry
+    // physical ID -> entry (artifact path tracking; migrates to LambdaPersistenceManager in Phase 4)
     private final Map<Integer, RegistryEntry> entriesByPhysicalId = new HashMap<>();
 
-    // logical ID -> physical ID
-    private final Map<Integer, Integer> logicalToPhysical = new HashMap<>();
-
-    private int nextPhysicalId = 0;
-
-    private int nextLogicalId = 0;
-
-    private LambdaRegistry() {
+    LambdaRegistry() {
         // singleton
     }
 
+    public LambdaCatalog catalog() {
+        return catalog;
+    }
+
     public int getNextLogicalId() {
-        return nextLogicalId++;
+        // Catalog allocates logicalId inside register(); this is informational only now.
+        return -1;
     }
 
-    public int registerLambda(int logicalId, LambdaKey key) {
-        if (reuseIfSubtypeOverload(logicalId, key)) {
-            // all work done in the method. Just return the mapped physical ID.
-            return logicalToPhysical.get(logicalId);
-        }
-
-        hashToKeys.computeIfAbsent(key.hashCode(), h -> new ArrayList<>())
-                .add(key);
-
-        RegistryEntry entry = entriesByKey.get(key);
-        if (entry == null) {
-            entry = new RegistryEntry(key, nextPhysicalId++);
-            entriesByKey.put(key, entry);
-            entriesByPhysicalId.put(entry.physicalId, entry);
-        } else {
-            entriesByPhysicalId.putIfAbsent(entry.physicalId, entry);
-        }
-
-        logicalToPhysical.put(logicalId, entry.physicalId);
-        return entry.physicalId;
-    }
-
-    private boolean reuseIfSubtypeOverload(int logicalId, LambdaKey key) {
-        if (entriesByKey.containsKey(key)) {
-            // exact match found, no need to check further
-            // TODO: This check is not optimal, can be optimized by refactoring this method and registerLambda
-            return false;
-        }
-        List<LambdaKey> targetLambdaKeys = hashToKeys.get(key.hashCode());
-        if (targetLambdaKeys == null || targetLambdaKeys.isEmpty()) {
-            return false;
-        }
-        // 1. body hash match found
-        for (LambdaKey target : targetLambdaKeys) {
-            if (target.getNormalisedBody().equals(key.getNormalisedBody())) {
-                // 2. body equals match found
-                LambdaKey.MethodSignatureInfo targetInfo = target.getMethodSignatureInfo();
-                LambdaKey.MethodSignatureInfo currentInfo = key.getMethodSignatureInfo();
-                if (targetInfo.returnType.equals(currentInfo.returnType) &&
-                        targetInfo.methodName.equals(currentInfo.methodName) &&
-                        targetInfo.parameterTypes.size() == currentInfo.parameterTypes.size()) {
-                    // 3. method name, return type, and the number of parameters match found
-                    if (!isAllParamsAssignable(targetInfo, currentInfo)) {
-                        continue;
-                    }
-                    // 4. all parameter types are either same or subtypes
-                    // No need to add to hashToKeys, because target is already there
-                    // Reuse the physical ID of the target by reusing the existing RegistryEntry
-                    RegistryEntry existingEntry = entriesByKey.get(target);
-                    if (existingEntry == null) {
-                        // Should not happen if targetLambdaKeys and entriesByKey are kept in sync,
-                        throw new IllegalStateException("Inconsistent state: RegistryEntry not found for existing LambdaKey");
-                    }
-                    entriesByKey.put(key, existingEntry);
-                    logicalToPhysical.put(logicalId, existingEntry.physicalId);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isAllParamsAssignable(LambdaKey.MethodSignatureInfo targetInfo, LambdaKey.MethodSignatureInfo currentInfo) {
-        boolean allParamsAssignable = true;
-        for (int i = 0; i < targetInfo.parameterTypes.size(); i++) {
-            Class<?> targetParamType = targetInfo.parameterTypes.get(i);
-            Class<?> currentParamType = currentInfo.parameterTypes.get(i);
-            if (!targetParamType.isAssignableFrom(currentParamType)) {
-                // current parameter type is not the same nor a subtype
-                allParamsAssignable = false;
-                break;
-            }
-        }
-        return allParamsAssignable;
+    public int registerLambda(int ignoredLogicalId, LambdaKey key) {
+        RegistrationResult result = catalog.register(key);
+        entriesByPhysicalId.computeIfAbsent(result.physicalId(), RegistryEntry::new);
+        return result.physicalId();
     }
 
     public int getPhysicalId(int logicalId) {
-        return logicalToPhysical.get(logicalId);
+        Integer p = catalog.physicalForLogical(logicalId);
+        return p == null ? -1 : p;
     }
 
-    public void registerPhysicalPath(int physicalId, Path path) {
+    public void registerPhysicalPath(int physicalId, String fqn, Path path) {
         RegistryEntry entry = entriesByPhysicalId.get(physicalId);
         if (entry == null) {
             throw new IllegalStateException("Unknown physical ID " + physicalId);
         }
+        entry.fqn = fqn;
         entry.path = path;
         if (PERSISTENCE_ENABLED) {
-            persistToDisk(); // TODO: We may call this explicitly at the end of whole build
+            persistToDisk();
         }
     }
 
@@ -193,12 +119,8 @@ public enum LambdaRegistry {
             }
         }
 
-        hashToKeys.clear();
-        entriesByKey.clear();
+        catalog.clear();
         entriesByPhysicalId.clear();
-        logicalToPhysical.clear();
-        nextPhysicalId = 0;
-        nextLogicalId = 0;
     }
 
     private void loadFromDisk() {
@@ -211,14 +133,18 @@ public enum LambdaRegistry {
                 return;
             }
             String countersLine = reader.readLine();
+            int nextPhysicalId = 0;
+            int nextLogicalId = 0;
             if (countersLine != null) {
                 String[] counters = countersLine.split("\\|", -1);
                 if (counters.length >= 2) {
-                    nextPhysicalId = parseIntSafe(counters[0], nextPhysicalId);
-                    nextLogicalId = parseIntSafe(counters[1], nextLogicalId);
+                    nextPhysicalId = parseIntSafe(counters[0], 0);
+                    nextLogicalId = parseIntSafe(counters[1], 0);
                 }
             }
 
+            // Buffer entries; build a snapshot for the catalog and populate entriesByPhysicalId here.
+            java.util.List<CatalogEntry> snapshotEntries = new java.util.ArrayList<>();
             String line;
             int maxPhysicalId = -1;
             while ((line = reader.readLine()) != null) {
@@ -236,20 +162,19 @@ public enum LambdaRegistry {
                 String pathString = decode(parts[1]);
                 String methodSignature = decode(parts[2]);
                 String normalisedBody = decode(parts[3]);
-                MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(
-                        methodSignature + " " + normalisedBody);
-                LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
 
-                RegistryEntry entry = new RegistryEntry(key, physicalId);
+                snapshotEntries.add(new CatalogEntry(physicalId, methodSignature, normalisedBody));
+
+                RegistryEntry entry = new RegistryEntry(physicalId);
                 if (!pathString.isEmpty()) {
                     entry.path = Path.of(pathString);
                 }
-                entriesByKey.put(key, entry);
                 entriesByPhysicalId.put(physicalId, entry);
-                hashToKeys.computeIfAbsent(key.hashCode(), h -> new ArrayList<>()).add(key);
                 maxPhysicalId = Math.max(maxPhysicalId, physicalId);
             }
             nextPhysicalId = Math.max(nextPhysicalId, maxPhysicalId + 1);
+
+            catalog.applySnapshot(new CatalogSnapshot(nextPhysicalId, nextLogicalId, snapshotEntries));
         } catch (IOException e) {
             throw new RuntimeException("Failed to load lambda registry from " + REGISTRY_FILE, e);
         }
@@ -258,10 +183,16 @@ public enum LambdaRegistry {
     private void persistToDisk() {
         try {
             Files.createDirectories(REGISTRY_FILE.getParent());
+            CatalogSnapshot catSnap = catalog.toSnapshot();
+            // Build lookup: physicalId -> (signature, body)
+            Map<Integer, CatalogEntry> catByPid = new HashMap<>();
+            for (CatalogEntry ce : catSnap.entries()) {
+                catByPid.put(ce.physicalId(), ce);
+            }
             try (BufferedWriter writer = Files.newBufferedWriter(REGISTRY_FILE, StandardCharsets.UTF_8)) {
                 writer.write(REGISTRY_VERSION);
                 writer.newLine();
-                writer.write(nextPhysicalId + "|" + nextLogicalId);
+                writer.write(catSnap.nextPhysicalId() + "|" + catSnap.nextLogicalId());
                 writer.newLine();
 
                 List<RegistryEntry> entries = entriesByPhysicalId.values().stream()
@@ -270,8 +201,10 @@ public enum LambdaRegistry {
                         .collect(Collectors.toList());
 
                 for (RegistryEntry entry : entries) {
+                    CatalogEntry ce = catByPid.get(entry.physicalId);
+                    if (ce == null) continue;
                     writer.write(entry.physicalId + "|" + encode(entry.path.toString()) + "|" +
-                                         encode(entry.key.getMethodSignature()) + "|" + encode(entry.key.getNormalisedBody()));
+                                         encode(ce.methodSignature()) + "|" + encode(ce.normalizedBody()));
                     writer.newLine();
                 }
             }
@@ -298,12 +231,11 @@ public enum LambdaRegistry {
 
     private static final class RegistryEntry {
 
-        private final LambdaKey key;
         private final int physicalId;
+        private String fqn;
         private Path path;
 
-        private RegistryEntry(LambdaKey key, int physicalId) {
-            this.key = key;
+        private RegistryEntry(int physicalId) {
             this.physicalId = physicalId;
         }
     }

@@ -42,7 +42,7 @@ class LambdaRegistryPersistenceTest {
                         null,
                         tempDir)
                 .get(0);
-        registry.registerPhysicalPath(physicalId1, persistedPath1);
+        registry.registerPhysicalPath(physicalId1, javaFqn, persistedPath1);
 
         // Second registration of the same lambda
         int logicalId2 = registry.getNextLogicalId();

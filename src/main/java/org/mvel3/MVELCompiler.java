@@ -299,7 +299,7 @@ public class MVELCompiler {
             Map<String, String> sources = Collections.singletonMap(newJavaFQN, newSource);
             log.info("Persisting lambda class {}", newJavaFQN);
             List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
-            LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
+            LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, newJavaFQN, persistedFiles.get(0)); // only one class persisted
         }
 
         return newJavaFQN;

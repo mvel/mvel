@@ -100,7 +100,7 @@ public class MVELBatchCompiler {
                     if (h.state == HandleState.NEW) {
                         Path path = fqnToPath.get(h.fqn);
                         if (path != null) {
-                            LambdaRegistry.INSTANCE.registerPhysicalPath(h.physicalId, path);
+                            LambdaRegistry.INSTANCE.registerPhysicalPath(h.physicalId, h.fqn, path);
                         }
                     }
                 }
