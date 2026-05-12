@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,21 +92,11 @@ public enum LambdaRegistry {
      */
     public synchronized void resetAndRemoveAllPersistedFiles() {
         LOG.info("Clean up Lambda Registry and persisted files at {}", DEFAULT_PERSISTENCE_PATH);
-        if (Files.exists(DEFAULT_PERSISTENCE_PATH)) {
-            try (Stream<Path> walk = Files.walk(DEFAULT_PERSISTENCE_PATH)) {
-                walk.sorted((a, b) -> b.getNameCount() - a.getNameCount())
-                        .forEach(path -> {
-                            try {
-                                Files.deleteIfExists(path);
-                            } catch (Exception ignored) {
-                                // best-effort cleanup
-                            }
-                        });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            new LambdaArtifactStore(DEFAULT_PERSISTENCE_PATH).deleteAll();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
         catalog.clear();
         entriesByPhysicalId.clear();
     }
