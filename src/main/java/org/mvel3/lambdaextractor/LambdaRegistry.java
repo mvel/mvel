@@ -3,17 +3,16 @@ package org.mvel3.lambdaextractor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Lambda Registry facade — transitional during the refactor. Dedup and
- * ID-allocation state has moved to {@link LambdaCatalog}; this class still
- * owns the artifact-path tracking until Phase 4 ({@link LambdaPersistenceManager}
- * takes over). The whole facade is deleted in Phase 6.
+ * Lambda Registry facade — transitional during the refactor. Dedup state lives
+ * in {@link LambdaCatalog}; artifact map lives in {@link LambdaPersistenceManager};
+ * byte-level I/O is in {@link LambdaArtifactStore}. The whole facade is deleted
+ * in Phase 6 when {@link LambdaRuntime} becomes the real composition root.
  */
 public enum LambdaRegistry {
 
@@ -27,6 +26,11 @@ public enum LambdaRegistry {
                                                                          DEFAULT_PERSISTENCE_PATH.resolve("lambda-registry.dat").toString()));
 
     static {
+        // Field init must run after the static path fields are set. Enum constants are
+        // built before static fields, so we wire collaborators here in the static block.
+        INSTANCE.artifactStore = new LambdaArtifactStore(DEFAULT_PERSISTENCE_PATH);
+        INSTANCE.persistenceManager = new LambdaPersistenceManager(INSTANCE.artifactStore, INSTANCE.stubRuntime);
+
         if (PERSISTENCE_ENABLED) {
             INSTANCE.loadFromDisk();
         }
@@ -36,9 +40,9 @@ public enum LambdaRegistry {
     }
 
     private final LambdaCatalog catalog = new LambdaCatalog();
-
-    // physical ID -> entry (artifact path tracking; migrates to LambdaPersistenceManager in Phase 4)
-    private final Map<Integer, RegistryEntry> entriesByPhysicalId = new HashMap<>();
+    private final LambdaRuntime stubRuntime = new LambdaRuntime();      // Phase 6 replaces with real runtime
+    private LambdaArtifactStore artifactStore;                          // set in static init
+    private LambdaPersistenceManager persistenceManager;                // set in static init
 
     LambdaRegistry() {
         // singleton
@@ -48,15 +52,17 @@ public enum LambdaRegistry {
         return catalog;
     }
 
+    public LambdaPersistenceManager persistenceManager() {
+        return persistenceManager;
+    }
+
     public int getNextLogicalId() {
         // Catalog allocates logicalId inside register(); this is informational only now.
         return -1;
     }
 
     public int registerLambda(int ignoredLogicalId, LambdaKey key) {
-        RegistrationResult result = catalog.register(key);
-        entriesByPhysicalId.computeIfAbsent(result.physicalId(), RegistryEntry::new);
-        return result.physicalId();
+        return catalog.register(key).physicalId();
     }
 
     public int getPhysicalId(int logicalId) {
@@ -65,25 +71,18 @@ public enum LambdaRegistry {
     }
 
     public void registerPhysicalPath(int physicalId, String fqn, Path path) {
-        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
-        if (entry == null) {
-            throw new IllegalStateException("Unknown physical ID " + physicalId);
-        }
-        entry.fqn = fqn;
-        entry.path = path;
+        persistenceManager.attachArtifact(physicalId, new ArtifactRef(fqn, path));
         if (PERSISTENCE_ENABLED) {
             persistToDisk();
         }
     }
 
     public Path getPhysicalPath(int physicalId) {
-        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
-        return entry == null ? null : entry.path;
+        return persistenceManager.artifactFor(physicalId).map(ArtifactRef::classFile).orElse(null);
     }
 
     public boolean isPersisted(int physicalId) {
-        RegistryEntry entry = entriesByPhysicalId.get(physicalId);
-        return entry != null && entry.path != null && Files.exists(entry.path);
+        return persistenceManager.artifactExists(physicalId);
     }
 
     /**
@@ -93,12 +92,17 @@ public enum LambdaRegistry {
     public synchronized void resetAndRemoveAllPersistedFiles() {
         LOG.info("Clean up Lambda Registry and persisted files at {}", DEFAULT_PERSISTENCE_PATH);
         try {
-            new LambdaArtifactStore(DEFAULT_PERSISTENCE_PATH).deleteAll();
+            artifactStore.deleteAll();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         catalog.clear();
-        entriesByPhysicalId.clear();
+        persistenceManager.clear();
+        try {
+            Files.deleteIfExists(REGISTRY_FILE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void loadFromDisk() {
@@ -108,12 +112,7 @@ public enum LambdaRegistry {
         try {
             LambdaPersistenceSnapshot snapshot = new LambdaRegistryStore(REGISTRY_FILE).load();
             catalog.applySnapshot(snapshot.catalog());
-            for (Map.Entry<Integer, ArtifactRef> e : snapshot.artifacts().entrySet()) {
-                RegistryEntry entry = new RegistryEntry(e.getKey());
-                entry.fqn = e.getValue().fqn();
-                entry.path = e.getValue().classFile();
-                entriesByPhysicalId.put(e.getKey(), entry);
-            }
+            persistenceManager.applyArtifacts(snapshot.artifacts());
         } catch (IOException e) {
             throw new RuntimeException("Failed to load lambda registry from " + REGISTRY_FILE, e);
         }
@@ -122,27 +121,10 @@ public enum LambdaRegistry {
     private void persistToDisk() {
         try {
             Files.createDirectories(REGISTRY_FILE.getParent());
-            Map<Integer, ArtifactRef> artifacts = new HashMap<>();
-            for (RegistryEntry entry : entriesByPhysicalId.values()) {
-                if (entry.fqn != null && entry.path != null) {
-                    artifacts.put(entry.physicalId, new ArtifactRef(entry.fqn, entry.path));
-                }
-            }
             new LambdaRegistryStore(REGISTRY_FILE).save(
-                    new LambdaPersistenceSnapshot(catalog.toSnapshot(), artifacts));
+                    new LambdaPersistenceSnapshot(catalog.toSnapshot(), persistenceManager.snapshot()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to persist lambda registry to " + REGISTRY_FILE, e);
-        }
-    }
-
-    private static final class RegistryEntry {
-
-        private final int physicalId;
-        private String fqn;
-        private Path path;
-
-        private RegistryEntry(int physicalId) {
-            this.physicalId = physicalId;
         }
     }
 }
