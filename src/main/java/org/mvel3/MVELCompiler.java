@@ -63,6 +63,21 @@ public class MVELCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(MVELCompiler.class);
 
+    /**
+     * Process-wide counter of actual MVEL compile invocations (i.e. paths that
+     * called {@code KieMemoryCompiler.compile} or {@code compileAndPersist} for
+     * a NEW lambda, not reuse-from-disk).
+     * <p>
+     * Test-only instrumentation. NOT part of the long-term public compiler API.
+     */
+    private static final java.util.concurrent.atomic.AtomicInteger COMPILE_INVOCATIONS =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    public static int compileInvocationCount() { return COMPILE_INVOCATIONS.get(); }
+    public static void resetCompileInvocationCountForTests() { COMPILE_INVOCATIONS.set(0); }
+    /** Package-private: used by {@link MVELBatchCompiler} when its bulk compile runs. */
+    static void bumpCompileInvocationCount() { COMPILE_INVOCATIONS.incrementAndGet(); }
+
     public record TranspiledSource(String fqn, String javaSource) {}
 
     public <T, K, R> Evaluator<T, K, R> compile(CompilerParameters<T, K, R> info) {
@@ -274,6 +289,7 @@ public class MVELCompiler {
                 PrintUtil.printNode(compilationUnit)
         );
         KieMemoryCompiler.compile(classManager, sources, classLoader);
+        COMPILE_INVOCATIONS.incrementAndGet();
     }
 
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
@@ -299,6 +315,7 @@ public class MVELCompiler {
             Map<String, String> sources = Collections.singletonMap(newJavaFQN, newSource);
             log.info("Persisting lambda class {}", newJavaFQN);
             List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
+            COMPILE_INVOCATIONS.incrementAndGet();
             LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, newJavaFQN, persistedFiles.get(0)); // only one class persisted
         }
 

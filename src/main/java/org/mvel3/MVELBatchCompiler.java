@@ -89,6 +89,7 @@ public class MVELBatchCompiler {
                 LOG.info("Batch-compiling and persisting {} lambda sources", pendingSources.size());
                 List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(
                         classManager, pendingSources, classLoader, null, persistenceDir);
+                MVELCompiler.bumpCompileInvocationCount();
                 // Register physical paths with LambdaRegistry
                 Map<String, Path> fqnToPath = new HashMap<>();
                 for (Path persistedFile : persistedFiles) {
@@ -107,6 +108,7 @@ public class MVELBatchCompiler {
             } else {
                 LOG.info("Batch-compiling {} lambda sources", pendingSources.size());
                 KieMemoryCompiler.compile(classManager, pendingSources, classLoader);
+                MVELCompiler.bumpCompileInvocationCount();
             }
         }
 
@@ -151,6 +153,22 @@ public class MVELBatchCompiler {
      */
     public int getPhysicalId(LambdaHandle handle) {
         return handle.physicalId;
+    }
+
+    /**
+     * Returns the persisted artifact reference for a handle, for cross-repo
+     * consumers (DRLX). Internal callers may still use {@link #getFqn(LambdaHandle)}
+     * / {@link #getPhysicalId(LambdaHandle)} where appropriate.
+     *
+     * @throws IllegalStateException if no artifact has been attached for this handle
+     */
+    public org.mvel3.lambdaextractor.ArtifactRef getArtifactRef(LambdaHandle handle) {
+        String fqn = handle.fqn;
+        Path classFile = LambdaRegistry.INSTANCE.persistenceManager()
+                .artifactFor(handle.physicalId)
+                .map(org.mvel3.lambdaextractor.ArtifactRef::classFile)
+                .orElseThrow(() -> new IllegalStateException("No artifact attached for handle " + handle));
+        return new org.mvel3.lambdaextractor.ArtifactRef(fqn, classFile);
     }
 
     enum HandleState {
