@@ -107,7 +107,40 @@ public class MVELCompilerPersistenceTest {
         assertThat(MVELCompiler.compileInvocationCount()).isEqualTo(afterSeed + 1);
     }
 
-    // M11 is added in Phase 6a once LambdaRuntime.resetSingletonForTests() exists.
+    @Test
+    void M11_runtime_persistenceDisabled_noFileWrites(@org.junit.jupiter.api.io.TempDir Path tmp) {
+        String prevEnabled = System.getProperty("mvel3.compiler.lambda.persistence");
+        String prevPath = System.getProperty("mvel3.compiler.lambda.persistence.path");
+        String prevReg = System.getProperty("mvel3.compiler.lambda.registry.file");
+        System.setProperty("mvel3.compiler.lambda.persistence", "false");
+        System.setProperty("mvel3.compiler.lambda.persistence.path", tmp.toString());
+        System.setProperty("mvel3.compiler.lambda.registry.file", tmp.resolve("lambda-registry.dat").toString());
+        LambdaRuntime.resetSingletonForTests();
+
+        try {
+            CompilerParameters<MyPerson, Void, Boolean> info = MVEL.<MyPerson>pojo(MyPerson.class,
+                            Declaration.of("age", int.class))
+                    .<Boolean>out(Boolean.class)
+                    .expression("age > 20")
+                    .imports(Set.of()).classManager(new ClassManager())
+                    .build();
+            new MVEL().compilePojoEvaluator(info);
+
+            assertThat(Files.exists(tmp.resolve("lambda-registry.dat"))).isFalse();
+            LambdaRuntime rt = LambdaRuntime.getInstance();
+            assertThat(rt.config().persistenceEnabled()).isFalse();
+        } finally {
+            restoreProp("mvel3.compiler.lambda.persistence", prevEnabled);
+            restoreProp("mvel3.compiler.lambda.persistence.path", prevPath);
+            restoreProp("mvel3.compiler.lambda.registry.file", prevReg);
+            LambdaRuntime.resetSingletonForTests();
+        }
+    }
+
+    private static void restoreProp(String key, String prev) {
+        if (prev == null) System.clearProperty(key);
+        else System.setProperty(key, prev);
+    }
 
     public static class MyPerson {
         private final String name;
