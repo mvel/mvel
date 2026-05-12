@@ -1,20 +1,12 @@
 package org.mvel3.lambdaextractor;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +26,6 @@ public enum LambdaRegistry {
     public static final Path DEFAULT_PERSISTENCE_PATH = Path.of(System.getProperty("mvel3.compiler.lambda.persistence.path", "target/generated-classes/mvel"));
     private static final Path REGISTRY_FILE = Path.of(System.getProperty("mvel3.compiler.lambda.registry.file",
                                                                          DEFAULT_PERSISTENCE_PATH.resolve("lambda-registry.dat").toString()));
-
-    // This version has to be incremented when the registry file format changes
-    private static final String REGISTRY_VERSION = "v1";
 
     static {
         if (PERSISTENCE_ENABLED) {
@@ -127,54 +116,15 @@ public enum LambdaRegistry {
         if (!Files.exists(REGISTRY_FILE)) {
             return;
         }
-        try (BufferedReader reader = Files.newBufferedReader(REGISTRY_FILE, StandardCharsets.UTF_8)) {
-            String versionLine = reader.readLine();
-            if (!REGISTRY_VERSION.equals(versionLine)) {
-                return;
+        try {
+            LambdaPersistenceSnapshot snapshot = new LambdaRegistryStore(REGISTRY_FILE).load();
+            catalog.applySnapshot(snapshot.catalog());
+            for (Map.Entry<Integer, ArtifactRef> e : snapshot.artifacts().entrySet()) {
+                RegistryEntry entry = new RegistryEntry(e.getKey());
+                entry.fqn = e.getValue().fqn();
+                entry.path = e.getValue().classFile();
+                entriesByPhysicalId.put(e.getKey(), entry);
             }
-            String countersLine = reader.readLine();
-            int nextPhysicalId = 0;
-            int nextLogicalId = 0;
-            if (countersLine != null) {
-                String[] counters = countersLine.split("\\|", -1);
-                if (counters.length >= 2) {
-                    nextPhysicalId = parseIntSafe(counters[0], 0);
-                    nextLogicalId = parseIntSafe(counters[1], 0);
-                }
-            }
-
-            // Buffer entries; build a snapshot for the catalog and populate entriesByPhysicalId here.
-            java.util.List<CatalogEntry> snapshotEntries = new java.util.ArrayList<>();
-            String line;
-            int maxPhysicalId = -1;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-                String[] parts = line.split("\\|", -1);
-                if (parts.length < 4) {
-                    continue;
-                }
-                int physicalId = parseIntSafe(parts[0], -1);
-                if (physicalId < 0) {
-                    continue;
-                }
-                String pathString = decode(parts[1]);
-                String methodSignature = decode(parts[2]);
-                String normalisedBody = decode(parts[3]);
-
-                snapshotEntries.add(new CatalogEntry(physicalId, methodSignature, normalisedBody));
-
-                RegistryEntry entry = new RegistryEntry(physicalId);
-                if (!pathString.isEmpty()) {
-                    entry.path = Path.of(pathString);
-                }
-                entriesByPhysicalId.put(physicalId, entry);
-                maxPhysicalId = Math.max(maxPhysicalId, physicalId);
-            }
-            nextPhysicalId = Math.max(nextPhysicalId, maxPhysicalId + 1);
-
-            catalog.applySnapshot(new CatalogSnapshot(nextPhysicalId, nextLogicalId, snapshotEntries));
         } catch (IOException e) {
             throw new RuntimeException("Failed to load lambda registry from " + REGISTRY_FILE, e);
         }
@@ -183,50 +133,17 @@ public enum LambdaRegistry {
     private void persistToDisk() {
         try {
             Files.createDirectories(REGISTRY_FILE.getParent());
-            CatalogSnapshot catSnap = catalog.toSnapshot();
-            // Build lookup: physicalId -> (signature, body)
-            Map<Integer, CatalogEntry> catByPid = new HashMap<>();
-            for (CatalogEntry ce : catSnap.entries()) {
-                catByPid.put(ce.physicalId(), ce);
-            }
-            try (BufferedWriter writer = Files.newBufferedWriter(REGISTRY_FILE, StandardCharsets.UTF_8)) {
-                writer.write(REGISTRY_VERSION);
-                writer.newLine();
-                writer.write(catSnap.nextPhysicalId() + "|" + catSnap.nextLogicalId());
-                writer.newLine();
-
-                List<RegistryEntry> entries = entriesByPhysicalId.values().stream()
-                        .filter(e -> e.path != null)
-                        .sorted((a, b) -> Integer.compare(a.physicalId, b.physicalId))
-                        .collect(Collectors.toList());
-
-                for (RegistryEntry entry : entries) {
-                    CatalogEntry ce = catByPid.get(entry.physicalId);
-                    if (ce == null) continue;
-                    writer.write(entry.physicalId + "|" + encode(entry.path.toString()) + "|" +
-                                         encode(ce.methodSignature()) + "|" + encode(ce.normalizedBody()));
-                    writer.newLine();
+            Map<Integer, ArtifactRef> artifacts = new HashMap<>();
+            for (RegistryEntry entry : entriesByPhysicalId.values()) {
+                if (entry.fqn != null && entry.path != null) {
+                    artifacts.put(entry.physicalId, new ArtifactRef(entry.fqn, entry.path));
                 }
             }
+            new LambdaRegistryStore(REGISTRY_FILE).save(
+                    new LambdaPersistenceSnapshot(catalog.toSnapshot(), artifacts));
         } catch (IOException e) {
             throw new RuntimeException("Failed to persist lambda registry to " + REGISTRY_FILE, e);
         }
-    }
-
-    private static int parseIntSafe(String value, int defaultValue) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    private static String encode(String value) {
-        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private static String decode(String value) {
-        return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
     }
 
     private static final class RegistryEntry {
