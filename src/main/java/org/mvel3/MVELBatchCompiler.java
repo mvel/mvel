@@ -12,13 +12,15 @@ import java.util.Map;
 
 import com.github.javaparser.ast.CompilationUnit;
 import org.mvel3.javacompiler.KieMemoryCompiler;
-import org.mvel3.lambdaextractor.LambdaRegistry;
+import org.mvel3.lambdaextractor.ArtifactRef;
+import org.mvel3.lambdaextractor.LambdaArtifactLoader;
+import org.mvel3.lambdaextractor.LambdaRuntime;
 import org.mvel3.parser.printer.PrintUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A batch compiler that accumulates lambdas, deduplicates via LambdaRegistry,
+ * A batch compiler that accumulates lambdas, deduplicates via LambdaRuntime catalog,
  * and compiles all unique ones in a single javac call.
  */
 public class MVELBatchCompiler {
@@ -55,13 +57,13 @@ public class MVELBatchCompiler {
         CompilationUnit unit = compiler.transpileToCompilationUnit(info);
         String fqn = MVELCompiler.evaluatorFullQualifiedName(unit);
 
-        // Register with LambdaRegistry and rename class
+        // Register with LambdaRuntime catalog and rename class
         MVELCompiler.LambdaRegistration reg = MVELCompiler.registerAndRename(unit, fqn);
         int physicalId = reg.physicalId();
         String newFqn = reg.newFqn();
 
         HandleState state;
-        if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
+        if (LambdaRuntime.getInstance().persistenceManager().artifactExists(physicalId)) {
             state = HandleState.PRE_PERSISTED;
         } else if (physicalIdToFqn.containsKey(physicalId)) {
             // Same lambda already added in this batch — reuse
@@ -90,7 +92,7 @@ public class MVELBatchCompiler {
                 List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(
                         classManager, pendingSources, classLoader, null, persistenceDir);
                 MVELCompiler.bumpCompileInvocationCount();
-                // Register physical paths with LambdaRegistry
+                // Register physical paths with the persistence manager
                 Map<String, Path> fqnToPath = new HashMap<>();
                 for (Path persistedFile : persistedFiles) {
                     String relativePath = persistenceDir.relativize(persistedFile).toString();
@@ -101,7 +103,8 @@ public class MVELBatchCompiler {
                     if (h.state == HandleState.NEW) {
                         Path path = fqnToPath.get(h.fqn);
                         if (path != null) {
-                            LambdaRegistry.INSTANCE.registerPhysicalPath(h.physicalId, h.fqn, path);
+                            LambdaRuntime.getInstance().persistenceManager()
+                                    .attachArtifact(h.physicalId, new ArtifactRef(h.fqn, path));
                         }
                     }
                 }
@@ -116,12 +119,13 @@ public class MVELBatchCompiler {
         for (LambdaHandle h : handles) {
             if (h.state == HandleState.PRE_PERSISTED) {
                 if (!classManager.getClasses().containsKey(h.fqn)) {
-                    Path path = LambdaRegistry.INSTANCE.getPhysicalPath(h.physicalId);
+                    ArtifactRef ref = LambdaRuntime.getInstance().persistenceManager()
+                            .artifactFor(h.physicalId)
+                            .orElseThrow(() -> new IllegalStateException("No artifact for handle " + h));
                     try {
-                        byte[] bytes = Files.readAllBytes(path);
-                        classManager.define(Collections.singletonMap(h.fqn, bytes));
+                        LambdaArtifactLoader.loadOrDefinePersistedClass(classManager, ref);
                     } catch (Exception e) {
-                        throw new RuntimeException("Failed to load persisted lambda class from " + path, e);
+                        throw new RuntimeException("Failed to load persisted lambda class from " + ref.classFile(), e);
                     }
                 }
             }
@@ -162,13 +166,13 @@ public class MVELBatchCompiler {
      *
      * @throws IllegalStateException if no artifact has been attached for this handle
      */
-    public org.mvel3.lambdaextractor.ArtifactRef getArtifactRef(LambdaHandle handle) {
+    public ArtifactRef getArtifactRef(LambdaHandle handle) {
         String fqn = handle.fqn;
-        Path classFile = LambdaRegistry.INSTANCE.persistenceManager()
+        Path classFile = LambdaRuntime.getInstance().persistenceManager()
                 .artifactFor(handle.physicalId)
-                .map(org.mvel3.lambdaextractor.ArtifactRef::classFile)
+                .map(ArtifactRef::classFile)
                 .orElseThrow(() -> new IllegalStateException("No artifact attached for handle " + handle));
-        return new org.mvel3.lambdaextractor.ArtifactRef(fqn, classFile);
+        return new ArtifactRef(fqn, classFile);
     }
 
     enum HandleState {

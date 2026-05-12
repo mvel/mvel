@@ -19,13 +19,13 @@ public class MVELCompilerPersistenceTest {
 
     @BeforeEach
     void cleanState() {
-        LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
+        LambdaRuntime.getInstance().resetAndRemoveAllPersistedFiles();
         MVELCompiler.resetCompileInvocationCountForTests();
     }
 
     @AfterEach
     void teardown() {
-        LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
+        LambdaRuntime.getInstance().resetAndRemoveAllPersistedFiles();
     }
 
     @Test
@@ -42,7 +42,7 @@ public class MVELCompilerPersistenceTest {
         mvel.compilePojoEvaluator(info);
 
         assertThat(MVELCompiler.compileInvocationCount()).isEqualTo(before + 1);
-        Path registryFile = LambdaRegistry.DEFAULT_PERSISTENCE_PATH.resolve("lambda-registry.dat");
+        Path registryFile = LambdaRuntime.defaultPersistencePath().resolve("lambda-registry.dat");
         assertThat(Files.exists(registryFile)).isTrue();
     }
 
@@ -85,7 +85,7 @@ public class MVELCompilerPersistenceTest {
         // Batch: same lambda (known) + a new one. Use a fresh ClassManager so we
         // exercise the load-from-disk path for the known one.
         ClassManager batchCm = new ClassManager();
-        org.mvel3.MVELBatchCompiler batch = new org.mvel3.MVELBatchCompiler(batchCm, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
+        org.mvel3.MVELBatchCompiler batch = new org.mvel3.MVELBatchCompiler(batchCm, LambdaRuntime.defaultPersistencePath());
 
         CompilerParameters<MyPerson, Void, Boolean> infoKnown = MVEL.<MyPerson>pojo(MyPerson.class,
                         Declaration.of("age", int.class))
