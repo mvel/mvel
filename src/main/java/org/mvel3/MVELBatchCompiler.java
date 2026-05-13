@@ -14,14 +14,19 @@ import com.github.javaparser.ast.CompilationUnit;
 import org.mvel3.javacompiler.KieMemoryCompiler;
 import org.mvel3.lambdaextractor.ArtifactRef;
 import org.mvel3.lambdaextractor.LambdaArtifactLoader;
+import org.mvel3.lambdaextractor.LambdaCatalog;
 import org.mvel3.lambdaextractor.LambdaRuntime;
 import org.mvel3.parser.printer.PrintUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A batch compiler that accumulates lambdas, deduplicates via LambdaRuntime catalog,
- * and compiles all unique ones in a single javac call.
+ * A batch compiler that accumulates lambdas, deduplicates them, and compiles
+ * all unique ones in a single javac call. When constructed with a persistence
+ * directory, dedup goes through the global {@link LambdaRuntime} catalog and
+ * persisted artifacts are reused. When constructed without one (no-persist
+ * mode), dedup uses a batch-local {@link LambdaCatalog} and no global state
+ * is read or mutated.
  */
 public class MVELBatchCompiler {
 
@@ -29,6 +34,10 @@ public class MVELBatchCompiler {
 
     private final ClassManager classManager;
     private final Path persistenceDir; // null = no persistence
+    // In no-persist mode we use a batch-local catalog so dedup and class
+    // renaming still work without touching the global LambdaRuntime catalog.
+    // Null when persistenceDir != null.
+    private final LambdaCatalog localCatalog;
 
     // Accumulated state
     private final Map<String, String> pendingSources = new LinkedHashMap<>(); // fqn -> source
@@ -43,6 +52,7 @@ public class MVELBatchCompiler {
     public MVELBatchCompiler(ClassManager classManager, Path persistenceDir) {
         this.classManager = classManager;
         this.persistenceDir = persistenceDir;
+        this.localCatalog = persistenceDir == null ? new LambdaCatalog() : null;
     }
 
     public ClassManager getClassManager() {
@@ -56,6 +66,28 @@ public class MVELBatchCompiler {
         MVELCompiler compiler = new MVELCompiler();
         CompilationUnit unit = compiler.transpileToCompilationUnit(info);
         String fqn = MVELCompiler.evaluatorFullQualifiedName(unit);
+
+        if (persistenceDir == null) {
+            // No-persist: rename via a batch-local LambdaCatalog so dedup and
+            // unique class names still work, without touching the global
+            // LambdaRuntime catalog or persistence manager.
+            MVELCompiler.LambdaRegistration reg = MVELCompiler.registerAndRename(unit, fqn, localCatalog);
+            int physicalId = reg.physicalId();
+            String newFqn = reg.newFqn();
+
+            HandleState state;
+            if (physicalIdToFqn.containsKey(physicalId)) {
+                newFqn = physicalIdToFqn.get(physicalId);
+                state = HandleState.DEDUP;
+            } else {
+                pendingSources.put(newFqn, PrintUtil.printNode(unit));
+                physicalIdToFqn.put(physicalId, newFqn);
+                state = HandleState.NEW;
+            }
+            LambdaHandle handle = new LambdaHandle(physicalId, newFqn, state);
+            handles.add(handle);
+            return handle;
+        }
 
         // Register with LambdaRuntime catalog and rename class
         MVELCompiler.LambdaRegistration reg = MVELCompiler.registerAndRename(unit, fqn);
