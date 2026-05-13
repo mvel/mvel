@@ -79,6 +79,29 @@ class LambdaRegistryStoreTest {
     }
 
     @Test
+    void M7d_registryStore_invalidClassFilePath_throws(@TempDir Path tmp) throws IOException {
+        // The \\u0000 in the Properties file decodes to a NUL byte, which Path.of()
+        // rejects with the unchecked InvalidPathException on Unix file systems.
+        // The store must convert that into the typed InvalidLambdaRegistryException
+        // so callers can handle malformed metadata uniformly.
+        Path file = tmp.resolve("lambda-registry.dat");
+        Files.writeString(file, String.join("\n",
+                "format.version=2",
+                "catalog.nextPhysicalId=1",
+                "catalog.nextLogicalId=1",
+                "catalog.entry.0.physicalId=0",
+                "catalog.entry.0.methodSignature=public boolean eval(java.lang.Object o)",
+                "catalog.entry.0.normalizedBody={ return o != null; }",
+                "artifact.0.physicalId=0",
+                "artifact.0.fqn=org.mvel3.Gen",
+                "artifact.0.classFile=foo\\u0000bar.class",
+                ""));
+        assertThatThrownBy(() -> new LambdaRegistryStore(file).load())
+                .isInstanceOf(InvalidLambdaRegistryException.class)
+                .hasMessageContaining("classFile");
+    }
+
+    @Test
     void M7c_registryStore_danglingArtifactReference_throws(@TempDir Path tmp) throws IOException {
         Path file = tmp.resolve("lambda-registry.dat");
         Files.writeString(file, String.join("\n",

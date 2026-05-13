@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,7 +73,14 @@ final class LambdaRegistryStore {
             if (artifacts.containsKey(physicalId)) {
                 throw new InvalidLambdaRegistryException("Duplicate artifact physicalId: " + physicalId);
             }
-            artifacts.put(physicalId, new ArtifactRef(fqn, Path.of(classFile)));
+            Path classFilePath;
+            try {
+                classFilePath = Path.of(classFile);
+            } catch (InvalidPathException e) {
+                throw new InvalidLambdaRegistryException(
+                        "Invalid classFile path for artifact physicalId " + physicalId + ": " + classFile, e);
+            }
+            artifacts.put(physicalId, new ArtifactRef(fqn, classFilePath));
         }
 
         return new LambdaPersistenceSnapshot(
