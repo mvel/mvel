@@ -108,6 +108,70 @@ public class MVELCompilerPersistenceTest {
     }
 
     @Test
+    void M12_batchCompiler_noPersist_doesNotTouchCatalog() {
+        // No-persist batch must keep all state local to the instance and not
+        // touch LambdaRuntime.getInstance().catalog() (no register() calls).
+        ClassManager batchCm = new ClassManager();
+        org.mvel3.MVELBatchCompiler batch = new org.mvel3.MVELBatchCompiler(batchCm); // persistenceDir == null
+
+        CompilerParameters<MyPerson, Void, Boolean> info1 = MVEL.<MyPerson>pojo(MyPerson.class,
+                        Declaration.of("age", int.class))
+                .<Boolean>out(Boolean.class)
+                .expression("age > 20")
+                .imports(Set.of()).classManager(batchCm)
+                .build();
+        CompilerParameters<MyPerson, Void, Boolean> info2 = MVEL.<MyPerson>pojo(MyPerson.class,
+                        Declaration.of("age", int.class))
+                .<Boolean>out(Boolean.class)
+                .expression("age < 10")
+                .imports(Set.of()).classManager(batchCm)
+                .build();
+        batch.add(info1);
+        batch.add(info2);
+        batch.compile(Thread.currentThread().getContextClassLoader());
+
+        // Probe the catalog after the batch: if the batch leaked any
+        // catalog.register(...) calls, the next probe registration would
+        // receive a non-zero logicalId.
+        LambdaKey probe = LambdaUtils.createLambdaKeyFromMethodDeclarationString(
+                "public boolean test(int x) { return x > 0; }");
+        RegistrationResult result = LambdaRuntime.getInstance().catalog().register(probe);
+        assertThat(result.logicalId()).isZero();
+    }
+
+    @Test
+    void M13_batchCompiler_noPersist_ignoresPreviouslyPersistedArtifact() {
+        // Seed: compile lambda X via the single-compiler path with persistence
+        // enabled, so the artifact is now persisted and known to the global
+        // persistence manager.
+        CompilerParameters<MyPerson, Void, Boolean> seed = MVEL.<MyPerson>pojo(MyPerson.class,
+                        Declaration.of("age", int.class))
+                .<Boolean>out(Boolean.class)
+                .expression("age > 20")
+                .imports(Set.of()).classManager(new ClassManager())
+                .build();
+        new MVEL().compilePojoEvaluator(seed);
+
+        int afterSeed = MVELCompiler.compileInvocationCount();
+
+        // Now construct an explicit no-persist batch and ask it to compile the
+        // same lambda. It must compile fresh (i.e., not load from disk via the
+        // global persistenceManager().artifactExists() shortcut).
+        ClassManager batchCm = new ClassManager();
+        org.mvel3.MVELBatchCompiler batch = new org.mvel3.MVELBatchCompiler(batchCm); // persistenceDir == null
+        CompilerParameters<MyPerson, Void, Boolean> info = MVEL.<MyPerson>pojo(MyPerson.class,
+                        Declaration.of("age", int.class))
+                .<Boolean>out(Boolean.class)
+                .expression("age > 20")
+                .imports(Set.of()).classManager(batchCm)
+                .build();
+        batch.add(info);
+        batch.compile(Thread.currentThread().getContextClassLoader());
+
+        assertThat(MVELCompiler.compileInvocationCount()).isEqualTo(afterSeed + 1);
+    }
+
+    @Test
     void M11_runtime_persistenceDisabled_noFileWrites(@org.junit.jupiter.api.io.TempDir Path tmp) {
         String prevEnabled = System.getProperty("mvel3.compiler.lambda.persistence");
         String prevPath = System.getProperty("mvel3.compiler.lambda.persistence.path");

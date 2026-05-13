@@ -36,6 +36,7 @@ import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.mvel3.javacompiler.KieMemoryCompiler;
+import org.mvel3.lambdaextractor.LambdaCatalog;
 import org.mvel3.lambdaextractor.LambdaKey;
 import org.mvel3.lambdaextractor.ArtifactRef;
 import org.mvel3.lambdaextractor.LambdaArtifactLoader;
@@ -252,9 +253,13 @@ public class MVELCompiler {
     record LambdaRegistration(int physicalId, String newFqn) {}
 
     static LambdaRegistration registerAndRename(CompilationUnit unit, String currentFqn) {
+        return registerAndRename(unit, currentFqn, LambdaRuntime.getInstance().catalog());
+    }
+
+    static LambdaRegistration registerAndRename(CompilationUnit unit, String currentFqn, LambdaCatalog catalog) {
         MethodDeclaration methodDeclaration = unit.findFirst(MethodDeclaration.class).orElseThrow();
         LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
-        int physicalId = LambdaRuntime.getInstance().catalog().register(lambdaKey).physicalId();
+        int physicalId = catalog.register(lambdaKey).physicalId();
         String oldClassName = currentFqn.substring(currentFqn.lastIndexOf('.') + 1);
         String newClassName = oldClassName + "_" + physicalId;
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = unit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
