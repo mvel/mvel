@@ -10,17 +10,16 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mvel3.lambdaextractor.LambdaRegistry;
+import org.mvel3.lambdaextractor.LambdaRuntime;
 import org.mvel3.transpiler.context.Declaration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mvel3.lambdaextractor.LambdaRegistry.DEFAULT_PERSISTENCE_PATH;
 
 class MVELPersistenceTest {
 
     @BeforeEach
     void cleanRegistryAndDir() {
-        LambdaRegistry.INSTANCE.resetAndRemoveAllPersistedFiles();
+        LambdaRuntime.getInstance().resetAndRemoveAllPersistedFiles();
     }
 
     @Test
@@ -52,7 +51,7 @@ class MVELPersistenceTest {
     }
 
     private List<Path> listClassFiles() {
-        try (Stream<Path> walk = Files.walk(DEFAULT_PERSISTENCE_PATH)) {
+        try (Stream<Path> walk = Files.walk(LambdaRuntime.defaultPersistencePath())) {
             return walk
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".class"))

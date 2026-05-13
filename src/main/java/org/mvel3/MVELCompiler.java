@@ -37,7 +37,9 @@ import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclar
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.mvel3.javacompiler.KieMemoryCompiler;
 import org.mvel3.lambdaextractor.LambdaKey;
-import org.mvel3.lambdaextractor.LambdaRegistry;
+import org.mvel3.lambdaextractor.ArtifactRef;
+import org.mvel3.lambdaextractor.LambdaArtifactLoader;
+import org.mvel3.lambdaextractor.LambdaRuntime;
 import org.mvel3.lambdaextractor.LambdaUtils;
 import org.mvel3.transpiler.MVELToJavaRewriter;
 import org.mvel3.parser.printer.PrintUtil;
@@ -62,6 +64,21 @@ import static org.mvel3.transpiler.MVELTranspiler.handleParserResult;
 public class MVELCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(MVELCompiler.class);
+
+    /**
+     * Process-wide counter of actual MVEL compile invocations (i.e. paths that
+     * called {@code KieMemoryCompiler.compile} or {@code compileAndPersist} for
+     * a NEW lambda, not reuse-from-disk).
+     * <p>
+     * Test-only instrumentation. NOT part of the long-term public compiler API.
+     */
+    private static final java.util.concurrent.atomic.AtomicInteger COMPILE_INVOCATIONS =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    public static int compileInvocationCount() { return COMPILE_INVOCATIONS.get(); }
+    public static void resetCompileInvocationCountForTests() { COMPILE_INVOCATIONS.set(0); }
+    /** Package-private: used by {@link MVELBatchCompiler} when its bulk compile runs. */
+    static void bumpCompileInvocationCount() { COMPILE_INVOCATIONS.incrementAndGet(); }
 
     public record TranspiledSource(String fqn, String javaSource) {}
 
@@ -199,7 +216,7 @@ public class MVELCompiler {
             clsManager = new ClassManager();
         }
 
-        if (LambdaRegistry.PERSISTENCE_ENABLED) {
+        if (LambdaRuntime.isPersistenceEnabled()) {
             // return the new class name
             javaFQN = compileEvaluatorClassWithPersistence(clsManager, info.classLoader(), unit, javaFQN);
         } else {
@@ -237,8 +254,7 @@ public class MVELCompiler {
     static LambdaRegistration registerAndRename(CompilationUnit unit, String currentFqn) {
         MethodDeclaration methodDeclaration = unit.findFirst(MethodDeclaration.class).orElseThrow();
         LambdaKey lambdaKey = LambdaUtils.createLambdaKeyFromMethodDeclaration(methodDeclaration);
-        int logicalId = LambdaRegistry.INSTANCE.getNextLogicalId();
-        int physicalId = LambdaRegistry.INSTANCE.registerLambda(logicalId, lambdaKey);
+        int physicalId = LambdaRuntime.getInstance().catalog().register(lambdaKey).physicalId();
         String oldClassName = currentFqn.substring(currentFqn.lastIndexOf('.') + 1);
         String newClassName = oldClassName + "_" + physicalId;
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = unit.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow();
@@ -274,6 +290,7 @@ public class MVELCompiler {
                 PrintUtil.printNode(compilationUnit)
         );
         KieMemoryCompiler.compile(classManager, sources, classLoader);
+        COMPILE_INVOCATIONS.incrementAndGet();
     }
 
     private String compileEvaluatorClassWithPersistence(ClassManager classManager, ClassLoader classLoader, CompilationUnit compilationUnit, String javaFQN) {
@@ -281,25 +298,22 @@ public class MVELCompiler {
         int physicalId = reg.physicalId();
         String newJavaFQN = reg.newFqn();
 
-        if (LambdaRegistry.INSTANCE.isPersisted(physicalId)) {
-            if (classManager.getClasses().containsKey(newJavaFQN)) {
-                log.info("Lambda class {} already loaded in ClassManager", newJavaFQN);
-                return newJavaFQN;
-            }
-            Path persistedFile = LambdaRegistry.INSTANCE.getPhysicalPath(physicalId);
+        LambdaRuntime rt = LambdaRuntime.getInstance();
+        if (rt.persistenceManager().artifactExists(physicalId)) {
+            ArtifactRef ref = rt.persistenceManager().artifactFor(physicalId).orElseThrow();
             log.info("Reading the persisted lambda class {}", newJavaFQN);
             try {
-                byte[] bytes = Files.readAllBytes(persistedFile);
-                classManager.define(Collections.singletonMap(newJavaFQN, bytes));
+                LambdaArtifactLoader.loadOrDefinePersistedClass(classManager, ref);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to load persisted lambda class from " + persistedFile, e);
+                throw new RuntimeException("Failed to load persisted lambda class from " + ref.classFile(), e);
             }
         } else {
             String newSource = PrintUtil.printNode(compilationUnit);
             Map<String, String> sources = Collections.singletonMap(newJavaFQN, newSource);
             log.info("Persisting lambda class {}", newJavaFQN);
-            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, LambdaRegistry.DEFAULT_PERSISTENCE_PATH);
-            LambdaRegistry.INSTANCE.registerPhysicalPath(physicalId, persistedFiles.get(0)); // only one class persisted
+            List<Path> persistedFiles = KieMemoryCompiler.compileAndPersist(classManager, sources, classLoader, null, rt.config().persistenceRoot());
+            COMPILE_INVOCATIONS.incrementAndGet();
+            rt.persistenceManager().attachArtifact(physicalId, new ArtifactRef(newJavaFQN, persistedFiles.get(0)));
         }
 
         return newJavaFQN;
