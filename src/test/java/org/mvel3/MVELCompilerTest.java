@@ -250,6 +250,62 @@ class MVELCompilerTest {
     }
 
     @Test
+    void testMapPostfixIncrement() {
+        Map<String, Type<?>> types = Map.of("count", Type.type(int.class));
+        Map<String, Object> vars = new HashMap<>(Map.of("count", 0));
+
+        MVEL mvel = new MVEL();
+        Evaluator<Map<String, Object>, Void, Object> evaluator =
+                mvel.compileMapBlock("count++;\nreturn null;", Object.class, getImports(), types);
+        evaluator.eval(vars);
+
+        assertThat(vars.get("count")).isEqualTo(1);
+    }
+
+    @Test
+    void testMapPrefixIncrement() {
+        Map<String, Type<?>> types = Map.of("count", Type.type(int.class));
+        Map<String, Object> vars = new HashMap<>(Map.of("count", 0));
+
+        MVEL mvel = new MVEL();
+        Evaluator<Map<String, Object>, Void, Object> evaluator =
+                mvel.compileMapBlock("++count;\nreturn null;", Object.class, getImports(), types);
+        evaluator.eval(vars);
+
+        assertThat(vars.get("count")).isEqualTo(1);
+    }
+
+    @Test
+    void testMapPostfixIncrementReturn() {
+        Map<String, Type<?>> types = Map.of("count", Type.type(int.class));
+        Map<String, Object> vars = new HashMap<>(Map.of("count", 0));
+
+        MVEL mvel = new MVEL();
+        Evaluator<Map<String, Object>, Void, Integer> evaluator =
+                mvel.compileMapBlock("return count++;", Integer.class, getImports(), types);
+        int result = evaluator.eval(vars);
+
+        // Postfix is converted to prefix for correct map write-back,
+        // so both return value and map get the new value
+        assertThat(result).isEqualTo(1);
+        assertThat(vars.get("count")).isEqualTo(1);
+    }
+
+    @Test
+    void testMapPrefixIncrementReturn() {
+        Map<String, Type<?>> types = Map.of("count", Type.type(int.class));
+        Map<String, Object> vars = new HashMap<>(Map.of("count", 0));
+
+        MVEL mvel = new MVEL();
+        Evaluator<Map<String, Object>, Void, Integer> evaluator =
+                mvel.compileMapBlock("return ++count;", Integer.class, getImports(), types);
+        int result = evaluator.eval(vars);
+
+        assertThat(result).isEqualTo(1);
+        assertThat(vars.get("count")).isEqualTo(1);
+    }
+
+    @Test
     void testListEvaluator() {
         Declaration[] declrs = new Declaration[]{new Declaration("foo", Foo.class),
                 new Declaration("bar", Bar.class)};
