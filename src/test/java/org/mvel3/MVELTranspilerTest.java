@@ -48,6 +48,48 @@ class MVELTranspilerTest implements TranspilerTest {
     }
 
     @Test
+    void testPostfixIncrement() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "i++;",
+             MVELBuilder.CONTEXT_NAME + ".put(\"i\", ++i);");
+    }
+
+    @Test
+    void testPrefixIncrement() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "++i;",
+             MVELBuilder.CONTEXT_NAME + ".put(\"i\", ++i);");
+    }
+
+    @Test
+    void testPostfixDecrement() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "i--;",
+             MVELBuilder.CONTEXT_NAME + ".put(\"i\", --i);");
+    }
+
+    @Test
+    void testPrefixDecrement() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "--i;",
+             MVELBuilder.CONTEXT_NAME + ".put(\"i\", --i);");
+    }
+
+    @Test
+    void testPostfixIncrementInReturn() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "return i++;",
+             "return org.mvel3.MVEL.putMap(" + MVELBuilder.CONTEXT_NAME + ", \"i\", ++i);");
+    }
+
+    @Test
+    void testPrefixIncrementInReturn() {
+        test(ctx -> ctx.addDeclaration("i", Integer.class),
+             "return ++i;",
+             "return org.mvel3.MVEL.putMap(" + MVELBuilder.CONTEXT_NAME + ", \"i\", ++i);");
+    }
+
+    @Test
     void testInlineCast1() {
         test(ctx -> ctx.addDeclaration("l", List.class),
              "l#ArrayList#removeRange(0, 10);",

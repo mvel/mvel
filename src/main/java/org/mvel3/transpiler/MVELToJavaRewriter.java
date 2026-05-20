@@ -473,6 +473,14 @@ public class MVELToJavaRewriter {
                     // No literal-folding special-case applies — recurse so the operand's children
                     // (NameExpr→ctx, FieldAccessExpr→getter, etc.) still get rewritten.
                     rewriteNode(unaryExpr.getExpression());
+
+                    if (isIncrementOrDecrement(unaryExpr.getOperator()) &&
+                        unaryExpr.getExpression().isNameExpr()) {
+                        String name = unaryExpr.getExpression().asNameExpr().getNameAsString();
+                        if (context.getInputs().contains(name)) {
+                            wrapUnaryWithContextWriteBack(unaryExpr, name);
+                        }
+                    }
                 }
                 break;
             case "DrlNameExpr":
@@ -1022,6 +1030,60 @@ public class MVELToJavaRewriter {
             Expression value = assignExpr.getValue();
             rewriteAssign(null, () -> null,value, -1, null, assignExpr, target,
                           (v) -> new Expression[] {v});
+        }
+    }
+
+    private static boolean isIncrementOrDecrement(UnaryExpr.Operator op) {
+        return op == UnaryExpr.Operator.PREFIX_INCREMENT ||
+               op == UnaryExpr.Operator.POSTFIX_INCREMENT ||
+               op == UnaryExpr.Operator.PREFIX_DECREMENT ||
+               op == UnaryExpr.Operator.POSTFIX_DECREMENT;
+    }
+
+    private void wrapUnaryWithContextWriteBack(UnaryExpr unaryExpr, String name) {
+        Declaration<?> ctxDeclr = context.getEvaluatorInfo().contextDeclaration();
+        Class<?> ctxClass = ctxDeclr.type().getClazz();
+
+        // Postfix returns the OLD value, so context.put("x", x++) would write the
+        // pre-increment value.  Convert to the equivalent prefix form so the NEW
+        // value is what gets written back to the context.
+        ensurePrefixForm(unaryExpr);
+
+        if (ctxClass.isAssignableFrom(Map.class)) {
+            if (unaryExpr.getParentNode().get() instanceof ExpressionStmt) {
+                MethodCallExpr putMethod = new MethodCallExpr(new NameExpr(new SimpleName(ctxDeclr.name())), "put");
+                unaryExpr.replace(putMethod);
+                putMethod.setArguments(NodeList.nodeList(new StringLiteralExpr(name), unaryExpr));
+            } else {
+                Expression scope = handleParserResult(context.getParser().parseExpression(MVEL.class.getCanonicalName()));
+                MethodCallExpr putMethod = new MethodCallExpr(scope, "putMap");
+                unaryExpr.replace(putMethod);
+                putMethod.addArgument(new NameExpr(context.getEvaluatorInfo().contextDeclaration().name()));
+                putMethod.addArgument(new StringLiteralExpr(name));
+                putMethod.addArgument(unaryExpr);
+            }
+        } else if (ctxClass.isAssignableFrom(List.class)) {
+            if (unaryExpr.getParentNode().get() instanceof ExpressionStmt) {
+                MethodCallExpr setMethod = new MethodCallExpr(new NameExpr(new SimpleName(ctxDeclr.name())), "set");
+                unaryExpr.replace(setMethod);
+                setMethod.setArguments(NodeList.nodeList(new IntegerLiteralExpr(context.getEvaluatorInfo().indexOf(name)),
+                                                         unaryExpr));
+            } else {
+                Expression scope = handleParserResult(context.getParser().parseExpression(MVEL.class.getCanonicalName()));
+                MethodCallExpr setMethod = new MethodCallExpr(scope, "setList");
+                unaryExpr.replace(setMethod);
+                setMethod.addArgument(MVELBuilder.CONTEXT_NAME);
+                setMethod.addArgument(new IntegerLiteralExpr(context.getEvaluatorInfo().indexOf(name)));
+                setMethod.addArgument(unaryExpr);
+            }
+        }
+    }
+
+    private static void ensurePrefixForm(UnaryExpr unaryExpr) {
+        if (unaryExpr.getOperator() == UnaryExpr.Operator.POSTFIX_INCREMENT) {
+            unaryExpr.setOperator(UnaryExpr.Operator.PREFIX_INCREMENT);
+        } else if (unaryExpr.getOperator() == UnaryExpr.Operator.POSTFIX_DECREMENT) {
+            unaryExpr.setOperator(UnaryExpr.Operator.PREFIX_DECREMENT);
         }
     }
 
