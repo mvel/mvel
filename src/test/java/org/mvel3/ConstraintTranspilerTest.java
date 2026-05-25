@@ -143,6 +143,60 @@ class ConstraintTranspilerTest implements TranspilerTest {
                        "{var x = _this.getParent().getSalary().compareTo(BigDecimal.valueOf(90)) != 0;}");
     }
 
+    @Test
+    void testStringEquality() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = name == \"John\";}",
+                       "{var x = java.util.Objects.equals(_this.getName(), \"John\");}");
+    }
+
+    @Test
+    void testStringNonEquality() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = name != \"John\";}",
+                       "{var x = !java.util.Objects.equals(_this.getName(), \"John\");}");
+    }
+
+    @Test
+    void testStringEqualityWithBoundVariable() {
+        testExpression(c -> {
+            c.withDeclaration(Declaration.of("_this", Person.class));
+            c.addDeclaration("$n", String.class);
+        }, "{var x = name == $n;}",
+           "{var x = java.util.Objects.equals(_this.getName(), $n);}");
+    }
+
+    @Test
+    void testNestedPropertyStringEquality() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = parent.name == \"John\";}",
+                       "{var x = java.util.Objects.equals(_this.getParent().getName(), \"John\");}");
+    }
+
+    @Test
+    void testObjectEquality() {
+        testExpression(c -> {
+            c.withDeclaration(Declaration.of("_this", Person.class));
+            c.addDeclaration("$p", Person.class);
+        }, "{var x = parent == $p;}",
+           "{var x = java.util.Objects.equals(_this.getParent(), $p);}");
+    }
+
+    @Test
+    void testEnumEqualityUnchanged() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = gender == Gender.MALE;}",
+                       "{var x = _this.getGender() == _this.getGender().MALE;}");
+    }
+
+    @Test
+    void testNullComparisonUnchanged() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = name == null;}",
+                       "{var x = _this.getName() == null;}");
+    }
+
+    @Test
+    void testPrimitiveEqualityUnchanged() {
+        testExpression(c -> c.withDeclaration(Declaration.of("_this", Person.class)), "{var x = age == 30;}",
+                       "{var x = _this.getAge() == 30;}");
+    }
+
     public <K, R> void testExpression(Consumer<MVELBuilder<Map<String, Object>, Void, Object>> testFunction,
                                String inputExpression,
                                String expectedResult,
