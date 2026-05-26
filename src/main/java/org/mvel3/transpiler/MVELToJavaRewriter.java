@@ -1279,9 +1279,9 @@ public class MVELToJavaRewriter {
             Node parent = binExpr.getParentNode().get();
 
             nodeMap.remove(binExpr);
-            Expression overloaded = rewrite(types);
-            if (overloaded != null) {
-                binExpr.replace(overloaded);
+            Expression rewritten = rewrite(types);
+            if (rewritten != null) {
+                binExpr.replace(rewritten);
             }
 
             if (binExpr != rootBinaryExpr) {
@@ -1329,8 +1329,51 @@ public class MVELToJavaRewriter {
             binExprTypes.binaryExpr.setLeft(left);
         }
 
-        Expression overloaded = overloader.overload(leftType, left, right, binExprTypes.binaryExpr.getOperator());
-        return overloaded;
+        Expression rewritten = overloader.overload(leftType, left, right, binExprTypes.binaryExpr.getOperator());
+        if (rewritten == null) {
+            rewritten = rewriteReferenceEquality(binExprTypes);
+        }
+        return rewritten;
+    }
+
+    private Expression rewriteReferenceEquality(BinaryExprTypes binExprTypes) {
+        BinaryExpr.Operator op = binExprTypes.getBinaryExpr().getOperator();
+        if (op != BinaryExpr.Operator.EQUALS && op != BinaryExpr.Operator.NOT_EQUALS) {
+            return null;
+        }
+
+        ResolvedType leftType = binExprTypes.leftType;
+        ResolvedType rightType = binExprTypes.rightType;
+
+        if ((leftType == null || leftType.isPrimitive()) && (rightType == null || rightType.isPrimitive())) {
+            return null;
+        }
+
+        Expression left = binExprTypes.left;
+        Expression right = binExprTypes.right;
+
+        if (left instanceof NullLiteralExpr || right instanceof NullLiteralExpr) {
+            return null;
+        }
+
+        if (isEnum(leftType) || isEnum(rightType)) {
+            return null;
+        }
+
+        MethodCallExpr equalsCall = new MethodCallExpr(
+                new NameExpr("java.util.Objects"), "equals",
+                new NodeList<>(left.clone(), right.clone()));
+
+        if (op == BinaryExpr.Operator.NOT_EQUALS) {
+            return new UnaryExpr(equalsCall, UnaryExpr.Operator.LOGICAL_COMPLEMENT);
+        }
+        return equalsCall;
+    }
+
+    private boolean isEnum(ResolvedType type) {
+        return type != null && type.isReferenceType()
+                && type.asReferenceType().getTypeDeclaration().isPresent()
+                && type.asReferenceType().getTypeDeclaration().get().isEnum();
     }
 
     public static boolean isAssignableBy(ResolvedType target, ResolvedType source) {
