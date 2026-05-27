@@ -1844,6 +1844,23 @@ class MVELTranspilerTest implements TranspilerTest {
     }
 
     @Test
+    void testCompactWithStandaloneEval() {
+        Person person = new Person("John");
+        person.setAge(20);
+        java.util.Set<String> imports = new java.util.HashSet<>();
+        imports.add(Person.class.getCanonicalName());
+        Evaluator<Map<String, Object>, Void, String> evaluator =
+                new MVEL().compileMapBlock("$p{name = \"Luca\", age = 35};\n return null;",
+                        String.class, imports,
+                        Map.of("$p", Type.type(Person.class)));
+        Map<String, Object> vars = new java.util.HashMap<>();
+        vars.put("$p", person);
+        evaluator.eval(vars);
+        assertThat(person.getName()).isEqualTo("Luca");
+        assertThat(person.getAge()).isEqualTo(35);
+    }
+
+    @Test
     void testCompactWithInlineMethodArg() {
         test(ctx -> {
                  ctx.addDeclaration("$p", Person.class);
