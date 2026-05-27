@@ -76,6 +76,9 @@ expression
     | mapCreationLiteral                                            #MapCreationLiteralExpression
     | expression '[' expression ']'                                 #SquareBracketExpression
 
+    // MVEL compact with expression: t{prop = val, ...}
+    | identifier '{' compactWithAssignment (',' compactWithAssignment)* '}'  #CompactWithExpression
+
     // Mvel 3
     | expression HASH typeType HASH (identifier arguments? | '[' expression ']')? #InlineCastExpression
 
@@ -188,6 +191,10 @@ withStatement
     : WITH LPAREN identifier RPAREN LBRACE (statement)* RBRACE
     ;
 
+// MVEL-specific compact with expression: t{prop = val, ...}
+compactWithAssignment
+    : identifier '=' expression
+    ;
 
 // Override block without any changes. Just for ANTLR plugin conveinience. We may remove this later.
 block

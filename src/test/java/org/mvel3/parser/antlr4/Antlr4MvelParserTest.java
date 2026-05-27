@@ -31,11 +31,18 @@ import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpression
 import static org.mvel3.parser.antlr4.ParserTestUtil.getTemporalLiteralContext;
 import static org.mvel3.parser.printer.PrintUtil.printNode;
 
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ast.stmt.BlockStmt;
+
 /**
  * Tests for the MVEL parser using ANTLR4.
  * Assertions are based on the generated Antlr AST.
  */
 class Antlr4MvelParserTest {
+
+    private static String newLine() {
+        return System.lineSeparator();
+    }
 
     @Test
     void testParseSimpleExpr() {
@@ -193,5 +200,31 @@ class Antlr4MvelParserTest {
         assertThat(temporalLiteralChunkContext0.MINUTE_LITERAL().getText()).isEqualTo("1m");
         Mvel3Parser.TemporalLiteralChunkContext temporalLiteralChunkContext1 = temporalLiteralContext.temporalLiteralChunk(1);
         assertThat(temporalLiteralChunkContext1.SECOND_LITERAL().getText()).isEqualTo("5s");
+    }
+
+    @Test
+    void testCompactWithExpression() {
+        String expr = "{ t{status = RECEIVED, timestamp = new Date()}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(expr);
+        assertThat(result.isSuccessful()).isTrue();
+        BlockStmt block = result.getResult().get();
+        assertThat(printNode(block)).isEqualToIgnoringWhitespace(
+                "{" + newLine() +
+                "    t{status = RECEIVED, timestamp = new Date()};" + newLine() +
+                "}");
+    }
+
+    @Test
+    void testCompactWithExpressionSingleAssignment() {
+        String expr = "{ t{status = RECEIVED}; }";
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        ParseResult<BlockStmt> result = parser.parseBlock(expr);
+        assertThat(result.isSuccessful()).isTrue();
+        BlockStmt block = result.getResult().get();
+        assertThat(printNode(block)).isEqualToIgnoringWhitespace(
+                "{" + newLine() +
+                "    t{status = RECEIVED};" + newLine() +
+                "}");
     }
 }
