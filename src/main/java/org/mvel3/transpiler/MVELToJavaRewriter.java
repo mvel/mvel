@@ -429,22 +429,13 @@ public class MVELToJavaRewriter {
                 isModifyWithContext = true;
             case "WithStatement" : {
                 AbstractContextStatement modifyStmt = (AbstractContextStatement) node;
-                NameExpr                 nameExpr   = (NameExpr) modifyStmt.getTarget();
-                withContextName = nameExpr;
-                withContextType = nameExpr.calculateResolvedType();
-
-                // create a block to hold the rewritten statements to repalce the modify block
+                NameExpr nameExpr = (NameExpr) modifyStmt.getTarget();
                 BlockStmt blockStmt = new BlockStmt();
                 modifyStmt.replace(blockStmt);
                 modifyStmt.getTarget().setParentNode(blockStmt);
-                modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement((Statement) n));
-                blockStmt.getStatements().forEach( n -> rewriteNode(n));
-                if (isModifyWithContext) {
-                    blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(withContextName.getNameAsString())));
-                }
-
-                withContextName = null;
-                withContextType = null;
+                expandContextBlock(nameExpr,
+                        modifyStmt.getExpressions().stream().map(n -> (Statement) n).toList(),
+                        blockStmt, isModifyWithContext);
                 break;
             }
             case "UnaryExpr":
@@ -902,6 +893,20 @@ public class MVELToJavaRewriter {
         }
 
         return expr;
+    }
+
+    private void expandContextBlock(NameExpr contextName, List<? extends Statement> statements,
+                                    BlockStmt outputBlock, boolean addUpdateCall) {
+        withContextName = contextName;
+        withContextType = contextName.calculateResolvedType();
+        statements.forEach(s -> outputBlock.addStatement(s));
+        outputBlock.getStatements().forEach(this::rewriteNode);
+        if (addUpdateCall) {
+            outputBlock.addStatement(
+                    new MethodCallExpr("update", new NameExpr(contextName.getNameAsString())));
+        }
+        withContextName = null;
+        withContextType = null;
     }
 
     private void processAssignExpr(AssignExpr node) {
