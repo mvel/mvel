@@ -82,6 +82,7 @@ import org.mvel3.parser.ast.expr.TemporalChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralInfiniteChunkExpr;
+import org.mvel3.parser.ast.expr.CompactWithExpression;
 import org.mvel3.parser.ast.expr.WithStatement;
 import org.mvel3.parser.ast.visitor.DrlVoidVisitor;
 
@@ -376,6 +377,23 @@ public class MVELPrintVisitor extends DefaultPrettyPrinterVisitor implements Drl
     public void visit(WithStatement withExpression, Void arg) {
         printer.print("with (");
         visitContextStatement(withExpression, arg);
+    }
+
+    @Override
+    public void visit(CompactWithExpression compactWith, Void arg) {
+        compactWith.getTarget().accept(this, arg);
+        printer.print("{");
+        NodeList<AssignExpr> assignments = compactWith.getAssignments();
+        for (int i = 0; i < assignments.size(); i++) {
+            AssignExpr a = assignments.get(i);
+            printer.print(PrintUtil.printNode(a.getTarget()));
+            printer.print(" = ");
+            printer.print(PrintUtil.printNode(a.getValue()));
+            if (i < assignments.size() - 1) {
+                printer.print(", ");
+            }
+        }
+        printer.print("}");
     }
 
     public <T extends AbstractContextStatement, R extends Expression> void visitContextStatement(AbstractContextStatement<T, R> contextExpression, Void arg) {

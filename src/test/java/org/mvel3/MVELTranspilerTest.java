@@ -1827,6 +1827,50 @@ class MVELTranspilerTest implements TranspilerTest {
              result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("foo"));
     }
 
+    @Test
+    void testCompactWithStandalone() {
+        test(ctx -> ctx.addDeclaration("foo", Foo.class),
+             "foo{countTest = 5};",
+             "{ foo.setCountTest(5); }",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("foo"));
+    }
+
+    @Test
+    void testCompactWithStandaloneMultipleAssignments() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+             "$p{name = \"Luca\", age = 35};",
+             "{ $p.setName(\"Luca\"); $p.setAge(35); }",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p"));
+    }
+
+    @Test
+    void testCompactWithStandaloneEval() {
+        Person person = new Person("John");
+        person.setAge(20);
+        java.util.Set<String> imports = new java.util.HashSet<>();
+        imports.add(Person.class.getCanonicalName());
+        Evaluator<Map<String, Object>, Void, String> evaluator =
+                new MVEL().compileMapBlock("$p{name = \"Luca\", age = 35};\n return null;",
+                        String.class, imports,
+                        Map.of("$p", Type.type(Person.class)));
+        Map<String, Object> vars = new java.util.HashMap<>();
+        vars.put("$p", person);
+        evaluator.eval(vars);
+        assertThat(person.getName()).isEqualTo("Luca");
+        assertThat(person.getAge()).isEqualTo(35);
+    }
+
+    @Test
+    void testCompactWithInlineMethodArg() {
+        test(ctx -> {
+                 ctx.addDeclaration("$p", Person.class);
+                 ctx.addDeclaration("list", java.util.List.class);
+             },
+             "list.add($p{name = \"Luca\", age = 35});",
+             "{ $p.setName(\"Luca\"); $p.setAge(35); list.add($p); }",
+             result -> assertThat(allUsedBindings(result)).containsExactlyInAnyOrder("$p", "list"));
+    }
+
     @Test @Disabled("Not yet supporing Method's with expressions, only variables")
     void testUncompiledMethod() {
         test("modify( (List)$toEdit.get(0) ){ setEnabled( true ) }",

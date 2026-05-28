@@ -17,8 +17,13 @@
 package org.mvel3.parser.antlr4;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import org.mvel3.parser.ast.expr.CompactWithExpression;
+import org.mvel3.parser.antlr4.mveltojavaparser.TokenRangeConverter;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -330,6 +335,24 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitWithStatement(Mvel3Parser.WithStatementContext ctx) {
         return StatementConverter.convertWithStatement(ctx, this);
+    }
+
+    @Override
+    public Node visitCompactWithExpression(Mvel3Parser.CompactWithExpressionContext ctx) {
+        String targetName = ctx.identifier().getText();
+        NameExpr target = new NameExpr(targetName);
+        target.setTokenRange(TokenRangeConverter.createTokenRange(ctx));
+
+        NodeList<AssignExpr> assignments = new NodeList<>();
+        for (Mvel3Parser.CompactWithAssignmentContext assignCtx : ctx.compactWithAssignment()) {
+            String propName = assignCtx.identifier().getText();
+            NameExpr propTarget = new NameExpr(propName);
+            propTarget.setTokenRange(TokenRangeConverter.createTokenRange(assignCtx));
+            Expression value = (Expression) visit(assignCtx.expression());
+            assignments.add(new AssignExpr(propTarget, value, AssignExpr.Operator.ASSIGN));
+        }
+
+        return new CompactWithExpression(TokenRangeConverter.createTokenRange(ctx), target, assignments);
     }
 
     @Override

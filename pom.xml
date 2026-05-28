@@ -84,7 +84,7 @@
         <asm.version>9.7.1</asm.version>
         <antlr4.version>4.13.2</antlr4.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <javaparser.version>3.25.5-mvel3-1</javaparser.version>
+        <javaparser.version>3.25.5-mvel3-SNAPSHOT</javaparser.version>
         <junit-jupiter.version>5.11.4</junit-jupiter.version>
         <assertj-core.version>3.27.3</assertj-core.version>
         <drools-compiler.version>10.1.0</drools-compiler.version>

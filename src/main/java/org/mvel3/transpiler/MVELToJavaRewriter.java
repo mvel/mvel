@@ -51,6 +51,7 @@ import com.github.javaparser.utils.Pair;
 import org.mvel3.MVELBuilder;
 import org.mvel3.MVEL;
 import org.mvel3.parser.ast.expr.AbstractContextStatement;
+import org.mvel3.parser.ast.expr.CompactWithExpression;
 import org.mvel3.parser.ast.expr.BigDecimalLiteralExpr;
 import org.mvel3.parser.ast.expr.BigIntegerLiteralExpr;
 import org.mvel3.parser.ast.expr.InlineCastExpr;
@@ -429,22 +430,45 @@ public class MVELToJavaRewriter {
                 isModifyWithContext = true;
             case "WithStatement" : {
                 AbstractContextStatement modifyStmt = (AbstractContextStatement) node;
-                NameExpr                 nameExpr   = (NameExpr) modifyStmt.getTarget();
-                withContextName = nameExpr;
-                withContextType = nameExpr.calculateResolvedType();
-
-                // create a block to hold the rewritten statements to repalce the modify block
+                NameExpr nameExpr = (NameExpr) modifyStmt.getTarget();
                 BlockStmt blockStmt = new BlockStmt();
                 modifyStmt.replace(blockStmt);
                 modifyStmt.getTarget().setParentNode(blockStmt);
-                modifyStmt.getExpressions().forEach(n -> blockStmt.addStatement((Statement) n));
-                blockStmt.getStatements().forEach( n -> rewriteNode(n));
-                if (isModifyWithContext) {
-                    blockStmt.addStatement(new MethodCallExpr("update", new NameExpr(withContextName.getNameAsString())));
+                expandContextBlock(nameExpr,
+                        modifyStmt.getExpressions().stream().map(n -> (Statement) n).toList(),
+                        blockStmt, isModifyWithContext);
+                break;
+            }
+            case "CompactWithExpression" : {
+                CompactWithExpression compactWith = (CompactWithExpression) node;
+                NameExpr targetName = compactWith.getTarget();
+
+                List<Statement> expandedStmts = new ArrayList<>();
+                for (AssignExpr assignment : compactWith.getAssignments()) {
+                    expandedStmts.add(new ExpressionStmt(assignment));
                 }
 
-                withContextName = null;
-                withContextType = null;
+                Node parent = compactWith.getParentNode().orElse(null);
+                if (parent instanceof ExpressionStmt) {
+                    BlockStmt blockStmt = new BlockStmt();
+                    parent.replace(blockStmt);
+                    targetName.setParentNode(blockStmt);
+                    expandContextBlock(targetName, expandedStmts, blockStmt, false);
+                } else {
+                    Node current = parent;
+                    while (current != null && !(current instanceof ExpressionStmt)) {
+                        current = current.getParentNode().orElse(null);
+                    }
+                    if (current instanceof ExpressionStmt enclosingStmt) {
+                        BlockStmt blockStmt = new BlockStmt();
+                        enclosingStmt.replace(blockStmt);
+                        targetName.setParentNode(blockStmt);
+                        expandContextBlock(targetName, expandedStmts, blockStmt, false);
+                        compactWith.replace(new NameExpr(targetName.getNameAsString()));
+                        blockStmt.addStatement(enclosingStmt);
+                        rewriteNode(enclosingStmt);
+                    }
+                }
                 break;
             }
             case "UnaryExpr":
@@ -902,6 +926,20 @@ public class MVELToJavaRewriter {
         }
 
         return expr;
+    }
+
+    private void expandContextBlock(NameExpr contextName, List<? extends Statement> statements,
+                                    BlockStmt outputBlock, boolean addUpdateCall) {
+        withContextName = contextName;
+        withContextType = contextName.calculateResolvedType();
+        statements.forEach(s -> outputBlock.addStatement(s));
+        outputBlock.getStatements().forEach(this::rewriteNode);
+        if (addUpdateCall) {
+            outputBlock.addStatement(
+                    new MethodCallExpr("update", new NameExpr(contextName.getNameAsString())));
+        }
+        withContextName = null;
+        withContextType = null;
     }
 
     private void processAssignExpr(AssignExpr node) {
