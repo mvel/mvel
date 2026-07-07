@@ -26,9 +26,10 @@ public final class LambdaRegistryGenerator {
             String fieldName = "LAMBDA_" + physicalId;
 
             String lambdaSource = lambda.originalLambdaExpr().toString();
+            String fieldType = lambda.resolvedTypeFqn();
 
-            sb.append("    public static final Object ")
-                    .append(fieldName).append(" = ")
+            sb.append("    public static final ").append(fieldType)
+                    .append(" ").append(fieldName).append(" = ")
                     .append(lambdaSource).append(";\n\n");
 
             Set<String> props = lambda.readProperties();

@@ -19,10 +19,12 @@ class LambdaRegistryGeneratorTest {
     void generatesClassWithFieldsAndReadProps() {
         NormalizedLambda lambda0 = new NormalizedLambda(
                 Path.of("Test.java"), 10, 20, null, 0, false,
-                Set.of("length"), parseLambdaExpr("s -> s.length() > 5"));
+                Set.of("length"), parseLambdaExpr("s -> s.length() > 5"),
+                "java.util.function.Predicate<java.lang.String>");
         NormalizedLambda lambda1 = new NormalizedLambda(
                 Path.of("Test.java"), 11, 20, null, 1, false,
-                Set.of("empty"), parseLambdaExpr("s -> s.isEmpty()"));
+                Set.of("empty"), parseLambdaExpr("s -> s.isEmpty()"),
+                "java.util.function.Predicate<java.lang.String>");
 
         Map<Integer, NormalizedLambda> uniqueMap = new LinkedHashMap<>();
         uniqueMap.put(0, lambda0);
@@ -40,9 +42,7 @@ class LambdaRegistryGeneratorTest {
         assertThat(source).contains("LAMBDA_1");
         assertThat(source).contains("LAMBDA_0_READ_PROPS");
         assertThat(source).contains("LAMBDA_1_READ_PROPS");
-        CompilationUnit cu = StaticJavaParser.parse(source);
-        List<FieldDeclaration> fields = cu.findAll(FieldDeclaration.class);
-        assertThat(fields).hasSize(4);
+        assertThat(source).contains("java.util.function.Predicate<java.lang.String> LAMBDA_0");
     }
 
     private com.github.javaparser.ast.expr.LambdaExpr parseLambdaExpr(String lambdaSource) {

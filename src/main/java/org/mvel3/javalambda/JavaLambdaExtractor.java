@@ -76,11 +76,12 @@ public final class JavaLambdaExtractor {
                 LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclaration(syntheticMethod);
                 Set<String> readProperties = extractReadProperties(syntheticMethod);
                 RegistrationResult regResult = catalog.register(key);
+                String resolvedType = resolveTargetType(el.lambdaExpr());
 
                 NormalizedLambda normalized = new NormalizedLambda(
                         el.sourceFile(), el.line(), el.column(),
                         key, regResult.physicalId(), regResult.reused(),
-                        readProperties, el.lambdaExpr());
+                        readProperties, el.lambdaExpr(), resolvedType);
 
                 allLambdas.add(normalized);
                 if (!regResult.reused()) {
@@ -98,6 +99,14 @@ public final class JavaLambdaExtractor {
                 uniqueMap.size(),
                 reusedCount,
                 skippedCaptures);
+    }
+
+    private String resolveTargetType(LambdaExpr lambda) {
+        try {
+            return lambda.calculateResolvedType().describe();
+        } catch (Exception e) {
+            return "Object";
+        }
     }
 
     private String normalizeBody(LambdaExpr lambda) {
