@@ -30,6 +30,7 @@ class EndToEndRewriteTest {
 
     @Test
     void fullPipeline_extractGenerateRewrite() throws IOException {
+        // --- Input: three lambdas, two are structurally identical ---
         String original = """
             import java.util.function.Predicate;
             class RuleDefinitions {
@@ -44,33 +45,63 @@ class EndToEndRewriteTest {
         Path sourceFile = tempDir.resolve("RuleDefinitions.java");
         Files.writeString(sourceFile, original);
 
+        // --- Step 1: Extract ---
+        // Finds all lambdas, normalizes bodies (s→v1, x→v1), groups by hash.
+        // "s -> s.length() > 5" and "x -> x.length() > 5" normalize to the
+        // same body → duplicate group (2 members) → processed.
+        // "s -> s.isEmpty()" appears once → single occurrence → dropped.
         JavaLambdaExtractor extractor = new JavaLambdaExtractor();
         ExtractionResult result = extractor.extract(List.of(sourceFile), typeSolver);
 
-        // s.length() > 5 has 2 occurrences → in result
-        // s.isEmpty() has 1 occurrence → excluded
         assertThat(result.totalCount()).isEqualTo(2);
         assertThat(result.uniqueCount()).isEqualTo(1);
         assertThat(result.reusedCount()).isEqualTo(1);
 
+        // --- Step 2: Generate registry ---
+        // One static final field per unique lambda, typed as the resolved
+        // functional interface (Predicate<String>), with the original
+        // (non-normalized) lambda source as the initializer.
         LambdaRegistryGenerator generator = new LambdaRegistryGenerator(
                 "com.example", "LambdaRegistry");
         String registrySource = generator.generate(result);
 
-        assertThat(registrySource).contains("LAMBDA_0");
-        assertThat(registrySource).doesNotContain("LAMBDA_1");
+        String expectedRegistry = """
+                package com.example;
 
+                public final class LambdaRegistry {
+
+                    private LambdaRegistry() {}
+
+                    public static final java.util.function.Predicate<java.lang.String> LAMBDA_0 = s -> s.length() > 5;
+
+                }
+                """;
+        assertThat(registrySource).isEqualToIgnoringWhitespace(expectedRegistry);
+
+        // --- Step 3: Rewrite source ---
+        // Replaces duplicate inline lambdas with registry field references.
+        // Non-duplicate lambdas (s.isEmpty()) are left untouched.
+        // Adds the registry import after the last existing import.
         LambdaSourceRewriter rewriter = new LambdaSourceRewriter("com.example.LambdaRegistry");
         String rewritten = rewriter.rewrite(result, sourceFile);
 
-        assertThat(rewritten).contains("import com.example.LambdaRegistry;");
-        long lambda0Count = rewritten.lines()
-                .filter(l -> l.contains("LambdaRegistry.LAMBDA_0")).count();
-        assertThat(lambda0Count).isEqualTo(2);
-        // s.isEmpty() was not duplicated — stays as inline lambda
-        assertThat(rewritten).contains("s.isEmpty()");
+        String expectedRewritten = """
+            import java.util.function.Predicate;
+            import com.example.LambdaRegistry;
+            class RuleDefinitions {
+                static Predicate<String> when(Predicate<String> p) { return p; }
+                void rules() {
+                    when(LambdaRegistry.LAMBDA_0);
+                    when(s -> s.isEmpty());
+                    when(LambdaRegistry.LAMBDA_0);
+                }
+            }
+            """;
+        assertThat(rewritten).isEqualTo(expectedRewritten);
 
-        // Verify both generated sources compile together
+        // --- Step 4: Compile both together ---
+        // Proves the generated registry type is correct (Predicate<String>,
+        // not Object) and the rewritten source references it properly.
         Map<String, String> sources = new HashMap<>();
         sources.put("com.example.LambdaRegistry", registrySource);
         sources.put("RuleDefinitions", rewritten);
