@@ -24,7 +24,6 @@ class JavaLambdaExtractorTest {
     @BeforeEach
     void setup() {
         extractor = new JavaLambdaExtractor();
-        extractor.addTargetSignature("java.util.function.Predicate", "test", 1);
         typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
     }
 
@@ -56,7 +55,7 @@ class JavaLambdaExtractorTest {
     }
 
     @Test
-    void differentLambdas_differentPhysicalIds() throws IOException {
+    void singleOccurrenceLambdas_excludedFromResult() throws IOException {
         Path file = writeSource("Test.java", """
             import java.util.function.Predicate;
             class Test {
@@ -69,11 +68,28 @@ class JavaLambdaExtractorTest {
             """);
         ExtractionResult result = extractor.extract(List.of(file), typeSolver);
 
+        assertThat(result.totalCount()).isEqualTo(0);
+        assertThat(result.uniqueCount()).isEqualTo(0);
+    }
+
+    @Test
+    void duplicatePlusSingle_onlyDuplicateInResult() throws IOException {
+        Path file = writeSource("Test.java", """
+            import java.util.function.Predicate;
+            class Test {
+                static Predicate<String> f(Predicate<String> p) { return p; }
+                void m() {
+                    f(s -> s.length() > 5);
+                    f(x -> x.length() > 5);
+                    f(s -> s.isEmpty());
+                }
+            }
+            """);
+        ExtractionResult result = extractor.extract(List.of(file), typeSolver);
+
         assertThat(result.totalCount()).isEqualTo(2);
-        assertThat(result.uniqueCount()).isEqualTo(2);
-        assertThat(result.reusedCount()).isEqualTo(0);
-        assertThat(result.allLambdas().get(0).physicalId())
-                .isNotEqualTo(result.allLambdas().get(1).physicalId());
+        assertThat(result.uniqueCount()).isEqualTo(1);
+        assertThat(result.reusedCount()).isEqualTo(1);
     }
 
     @Test
@@ -85,14 +101,14 @@ class JavaLambdaExtractorTest {
                 void m() {
                     int limit = 5;
                     f(s -> s.length() > limit);
-                    f(s -> s.isEmpty());
+                    f(s -> s.length() > limit);
                 }
             }
             """);
         ExtractionResult result = extractor.extract(List.of(file), typeSolver);
 
-        assertThat(result.totalCount()).isEqualTo(1);
-        assertThat(result.skippedCaptureCount()).isEqualTo(1);
+        assertThat(result.totalCount()).isEqualTo(0);
+        assertThat(result.skippedCaptureCount()).isEqualTo(2);
     }
 
     @Test
@@ -103,12 +119,13 @@ class JavaLambdaExtractorTest {
                 static Predicate<String> f(Predicate<String> p) { return p; }
                 void m() {
                     f(s -> s.length() > 5);
+                    f(x -> x.length() > 5);
                 }
             }
             """);
         ExtractionResult result = extractor.extract(List.of(file), typeSolver);
 
-        assertThat(result.allLambdas()).hasSize(1);
-        assertThat(result.allLambdas().get(0).readProperties()).contains("s");
+        assertThat(result.allLambdas()).hasSize(2);
+        assertThat(result.allLambdas().get(0).readProperties()).contains("v1");
     }
 }

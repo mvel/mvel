@@ -2,13 +2,16 @@ package org.mvel3.javalambda;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import org.mvel3.lambdaextractor.LambdaCatalog;
 import org.mvel3.lambdaextractor.LambdaKey;
 import org.mvel3.lambdaextractor.LambdaUtils;
 import org.mvel3.lambdaextractor.RegistrationResult;
+import org.mvel3.lambdaextractor.VariableNameNormalizerVisitor;
 import org.mvel3.transpiler.VariableAnalyser;
 
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,21 +28,12 @@ import java.util.Set;
 
 public final class JavaLambdaExtractor {
 
-    private final List<LambdaSignature> signatures = new ArrayList<>();
-
-    public void addTargetSignature(String samInterfaceFqn, String methodName, int paramCount) {
-        signatures.add(new LambdaSignature(samInterfaceFqn, methodName, paramCount));
-    }
-
     public ExtractionResult extract(List<Path> sourceFiles, TypeSolver typeSolver) {
         StaticJavaParser.getParserConfiguration()
                 .setSymbolResolver(new JavaSymbolSolver(typeSolver));
 
-        LambdaCatalog catalog = new LambdaCatalog();
-        LambdaFinder finder = new LambdaFinder(signatures);
-
-        List<NormalizedLambda> allLambdas = new ArrayList<>();
-        Map<Integer, NormalizedLambda> uniqueMap = new LinkedHashMap<>();
+        // Phase 1: find all lambdas, normalize body, group by hash
+        Map<String, List<ExtractedLambda>> bodyGroups = new HashMap<>();
         int skippedCaptures = 0;
 
         for (Path file : sourceFiles) {
@@ -49,37 +44,43 @@ public final class JavaLambdaExtractor {
                 continue;
             }
 
-            List<ExtractedLambda> extracted = finder.find(cu, file, typeSolver);
-
-            for (ExtractedLambda el : extracted) {
-                if (el.capturing()) {
+            for (LambdaExpr lambda : cu.findAll(LambdaExpr.class)) {
+                if (CaptureDetector.isCapturing(lambda)) {
                     skippedCaptures++;
                     continue;
                 }
 
-                String methodName = signatures.stream()
-                        .filter(s -> s.paramCount() == el.parameterTypes().size())
-                        .map(LambdaSignature::methodName)
-                        .findFirst().orElse("eval");
+                int line = lambda.getBegin().map(p -> p.line).orElse(-1);
+                int column = lambda.getBegin().map(p -> p.column).orElse(-1);
+                ExtractedLambda el = new ExtractedLambda(file, line, column, lambda, false);
 
+                String normalizedBody = normalizeBody(lambda);
+                bodyGroups.computeIfAbsent(normalizedBody, k -> new ArrayList<>()).add(el);
+            }
+        }
+
+        // Phase 2: only process groups with 2+ members (duplicates)
+        LambdaCatalog catalog = new LambdaCatalog();
+        List<NormalizedLambda> allLambdas = new ArrayList<>();
+        Map<Integer, NormalizedLambda> uniqueMap = new LinkedHashMap<>();
+
+        for (Map.Entry<String, List<ExtractedLambda>> group : bodyGroups.entrySet()) {
+            if (group.getValue().size() < 2) {
+                continue;
+            }
+
+            for (ExtractedLambda el : group.getValue()) {
                 MethodDeclaration syntheticMethod = LambdaConverter.toMethodDeclaration(
-                        el.lambdaExpr(), methodName, el.parameterTypes());
+                        el.lambdaExpr(), "eval");
 
                 LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclaration(syntheticMethod);
-
                 Set<String> readProperties = extractReadProperties(syntheticMethod);
-
                 RegistrationResult regResult = catalog.register(key);
-
-                String samFqn = signatures.stream()
-                        .filter(s -> s.paramCount() == el.parameterTypes().size())
-                        .map(LambdaSignature::samInterfaceFqn)
-                        .findFirst().orElse("");
 
                 NormalizedLambda normalized = new NormalizedLambda(
                         el.sourceFile(), el.line(), el.column(),
                         key, regResult.physicalId(), regResult.reused(),
-                        readProperties, el.lambdaExpr(), samFqn);
+                        readProperties, el.lambdaExpr());
 
                 allLambdas.add(normalized);
                 if (!regResult.reused()) {
@@ -97,6 +98,12 @@ public final class JavaLambdaExtractor {
                 uniqueMap.size(),
                 reusedCount,
                 skippedCaptures);
+    }
+
+    private String normalizeBody(LambdaExpr lambda) {
+        Node bodyClone = lambda.getBody().clone();
+        Node normalized = VariableNameNormalizerVisitor.normalize(bodyClone);
+        return normalized.toString();
     }
 
     private Set<String> extractReadProperties(MethodDeclaration md) {
