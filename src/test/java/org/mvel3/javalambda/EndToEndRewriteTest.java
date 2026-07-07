@@ -5,11 +5,14 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mvel3.javacompiler.KieMemoryCompiler;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,6 +69,14 @@ class EndToEndRewriteTest {
         assertThat(lambda0Count).isEqualTo(2);
         // s.isEmpty() was not duplicated — stays as inline lambda
         assertThat(rewritten).contains("s.isEmpty()");
+
+        // Verify both generated sources compile together
+        Map<String, String> sources = new HashMap<>();
+        sources.put("com.example.LambdaRegistry", registrySource);
+        sources.put("RuleDefinitions", rewritten);
+        Map<String, byte[]> byteCode = KieMemoryCompiler.compileNoLoad(
+                sources, getClass().getClassLoader(), null);
+        assertThat(byteCode).containsKeys("com.example.LambdaRegistry", "RuleDefinitions");
     }
 
     @Test
