@@ -26,10 +26,9 @@ public final class LambdaRegistryGenerator {
             String fieldName = "LAMBDA_" + physicalId;
 
             String lambdaSource = lambda.originalLambdaExpr().toString();
-            String samSimpleName = simpleName(lambda.samInterfaceFqn());
 
-            sb.append("    public static final ").append(samSimpleName)
-                    .append(" ").append(fieldName).append(" = ")
+            sb.append("    public static final Object ")
+                    .append(fieldName).append(" = ")
                     .append(lambdaSource).append(";\n\n");
 
             Set<String> props = lambda.readProperties();
@@ -40,10 +39,5 @@ public final class LambdaRegistryGenerator {
 
         sb.append("}\n");
         return sb.toString();
-    }
-
-    private static String simpleName(String fqn) {
-        int dot = fqn.lastIndexOf('.');
-        return dot >= 0 ? fqn.substring(dot + 1) : fqn;
     }
 }

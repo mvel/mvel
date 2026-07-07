@@ -101,9 +101,9 @@ public final class JavaLambdaExtractor {
     }
 
     private String normalizeBody(LambdaExpr lambda) {
-        Node bodyClone = lambda.getBody().clone();
-        Node normalized = VariableNameNormalizerVisitor.normalize(bodyClone);
-        return normalized.toString();
+        LambdaExpr clone = lambda.clone();
+        LambdaExpr normalized = VariableNameNormalizerVisitor.normalize(clone);
+        return normalized.getBody().toString();
     }
 
     private Set<String> extractReadProperties(MethodDeclaration md) {

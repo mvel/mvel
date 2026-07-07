@@ -19,12 +19,10 @@ class LambdaRegistryGeneratorTest {
     void generatesClassWithFieldsAndReadProps() {
         NormalizedLambda lambda0 = new NormalizedLambda(
                 Path.of("Test.java"), 10, 20, null, 0, false,
-                Set.of("length"), parseLambdaExpr("s -> s.length() > 5"),
-                "java.util.function.Predicate");
+                Set.of("length"), parseLambdaExpr("s -> s.length() > 5"));
         NormalizedLambda lambda1 = new NormalizedLambda(
                 Path.of("Test.java"), 11, 20, null, 1, false,
-                Set.of("empty"), parseLambdaExpr("s -> s.isEmpty()"),
-                "java.util.function.Predicate");
+                Set.of("empty"), parseLambdaExpr("s -> s.isEmpty()"));
 
         Map<Integer, NormalizedLambda> uniqueMap = new LinkedHashMap<>();
         uniqueMap.put(0, lambda0);

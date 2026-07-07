@@ -42,11 +42,12 @@ class EndToEndRewriteTest {
         Files.writeString(sourceFile, original);
 
         JavaLambdaExtractor extractor = new JavaLambdaExtractor();
-        extractor.addTargetSignature("java.util.function.Predicate", "test", 1);
         ExtractionResult result = extractor.extract(List.of(sourceFile), typeSolver);
 
-        assertThat(result.totalCount()).isEqualTo(3);
-        assertThat(result.uniqueCount()).isEqualTo(2);
+        // s.length() > 5 has 2 occurrences → in result
+        // s.isEmpty() has 1 occurrence → excluded
+        assertThat(result.totalCount()).isEqualTo(2);
+        assertThat(result.uniqueCount()).isEqualTo(1);
         assertThat(result.reusedCount()).isEqualTo(1);
 
         LambdaRegistryGenerator generator = new LambdaRegistryGenerator(
@@ -54,7 +55,7 @@ class EndToEndRewriteTest {
         String registrySource = generator.generate(result);
 
         assertThat(registrySource).contains("LAMBDA_0");
-        assertThat(registrySource).contains("LAMBDA_1");
+        assertThat(registrySource).doesNotContain("LAMBDA_1");
 
         LambdaSourceRewriter rewriter = new LambdaSourceRewriter("com.example.LambdaRegistry");
         String rewritten = rewriter.rewrite(result, sourceFile);
@@ -63,7 +64,8 @@ class EndToEndRewriteTest {
         long lambda0Count = rewritten.lines()
                 .filter(l -> l.contains("LambdaRegistry.LAMBDA_0")).count();
         assertThat(lambda0Count).isEqualTo(2);
-        assertThat(rewritten).contains("LambdaRegistry.LAMBDA_1");
+        // s.isEmpty() was not duplicated — stays as inline lambda
+        assertThat(rewritten).contains("s.isEmpty()");
     }
 
     @Test
@@ -92,7 +94,6 @@ class EndToEndRewriteTest {
         Files.writeString(f2, file2Source);
 
         JavaLambdaExtractor extractor = new JavaLambdaExtractor();
-        extractor.addTargetSignature("java.util.function.Predicate", "test", 1);
         ExtractionResult result = extractor.extract(List.of(f1, f2), typeSolver);
 
         assertThat(result.totalCount()).isEqualTo(2);

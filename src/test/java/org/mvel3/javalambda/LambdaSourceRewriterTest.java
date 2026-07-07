@@ -40,7 +40,7 @@ class LambdaSourceRewriterTest {
 
         NormalizedLambda lambda0 = new NormalizedLambda(
                 file, line, column, null, 0, false,
-                Set.of("s"), lambdaExpr, "java.util.function.Predicate");
+                Set.of("s"), lambdaExpr);
 
         Map<Integer, NormalizedLambda> uniqueMap = new LinkedHashMap<>();
         uniqueMap.put(0, lambda0);
