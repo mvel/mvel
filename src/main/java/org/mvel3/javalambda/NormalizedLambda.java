@@ -13,6 +13,5 @@ public record NormalizedLambda(
     int physicalId,
     boolean reused,
     Set<String> readProperties,
-    LambdaExpr originalLambdaExpr,
-    String samInterfaceFqn
+    LambdaExpr originalLambdaExpr
 ) {}
