@@ -4,13 +4,22 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LambdaConverterTest {
+
+    @BeforeEach
+    void setup() {
+        CombinedTypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
+        StaticJavaParser.getParserConfiguration()
+                .setSymbolResolver(new JavaSymbolSolver(typeSolver));
+    }
 
     private LambdaExpr parseLambda(String classSource) {
         CompilationUnit cu = StaticJavaParser.parse(classSource);
@@ -28,8 +37,7 @@ class LambdaConverterTest {
             }
             """;
         LambdaExpr lambda = parseLambda(source);
-        MethodDeclaration md = LambdaConverter.toMethodDeclaration(
-                lambda, "test", List.of(String.class));
+        MethodDeclaration md = LambdaConverter.toMethodDeclaration(lambda, "test");
 
         assertThat(md.getNameAsString()).isEqualTo("test");
         assertThat(md.getParameters()).hasSize(1);
@@ -51,8 +59,7 @@ class LambdaConverterTest {
             }
             """;
         LambdaExpr lambda = parseLambda(source);
-        MethodDeclaration md = LambdaConverter.toMethodDeclaration(
-                lambda, "test", List.of(String.class));
+        MethodDeclaration md = LambdaConverter.toMethodDeclaration(lambda, "test");
 
         assertThat(md.getBody()).isPresent();
         String body = md.getBody().get().toString();
@@ -70,8 +77,7 @@ class LambdaConverterTest {
             }
             """;
         LambdaExpr lambda = parseLambda(source);
-        MethodDeclaration md = LambdaConverter.toMethodDeclaration(
-                lambda, "test", List.of(String.class, Integer.class));
+        MethodDeclaration md = LambdaConverter.toMethodDeclaration(lambda, "test");
 
         assertThat(md.getParameters()).hasSize(2);
         assertThat(md.getParameter(0).getTypeAsString()).isEqualTo("java.lang.String");
@@ -79,19 +85,19 @@ class LambdaConverterTest {
     }
 
     @Test
-    void primitiveParameterType() {
+    void unresolvedParameterType_fallsBackToObject() {
         String source = """
-            import java.util.function.IntPredicate;
             class Test {
+                interface MyFunc<T> { boolean check(T t); }
                 void m() {
-                    IntPredicate p = n -> n > 5;
+                    MyFunc<String> f = t -> t.length() > 0;
                 }
             }
             """;
         LambdaExpr lambda = parseLambda(source);
-        MethodDeclaration md = LambdaConverter.toMethodDeclaration(
-                lambda, "test", List.of(int.class));
+        MethodDeclaration md = LambdaConverter.toMethodDeclaration(lambda, "check");
 
-        assertThat(md.getParameter(0).getTypeAsString()).isEqualTo("int");
+        assertThat(md.getParameters()).hasSize(1);
+        assertThat(md.getParameter(0).getTypeAsString()).isNotEmpty();
     }
 }

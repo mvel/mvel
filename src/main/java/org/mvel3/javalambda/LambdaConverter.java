@@ -8,31 +8,17 @@ import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.VoidType;
+import com.github.javaparser.resolution.types.ResolvedType;
 
 import java.util.List;
-import java.util.Map;
 
 public final class LambdaConverter {
 
-    private static final Map<Class<?>, PrimitiveType.Primitive> PRIMITIVES = Map.of(
-            boolean.class, PrimitiveType.Primitive.BOOLEAN,
-            byte.class, PrimitiveType.Primitive.BYTE,
-            short.class, PrimitiveType.Primitive.SHORT,
-            int.class, PrimitiveType.Primitive.INT,
-            long.class, PrimitiveType.Primitive.LONG,
-            float.class, PrimitiveType.Primitive.FLOAT,
-            double.class, PrimitiveType.Primitive.DOUBLE,
-            char.class, PrimitiveType.Primitive.CHAR
-    );
-
     private LambdaConverter() {}
 
-    public static MethodDeclaration toMethodDeclaration(
-            LambdaExpr lambdaExpr, String methodName, List<Class<?>> parameterTypes) {
-
+    public static MethodDeclaration toMethodDeclaration(LambdaExpr lambdaExpr, String methodName) {
         MethodDeclaration md = new MethodDeclaration();
         md.setModifiers(Modifier.Keyword.PUBLIC);
         md.setName(methodName);
@@ -40,9 +26,8 @@ public final class LambdaConverter {
 
         NodeList<Parameter> params = new NodeList<>();
         List<Parameter> lambdaParams = lambdaExpr.getParameters();
-        for (int i = 0; i < lambdaParams.size(); i++) {
-            Parameter original = lambdaParams.get(i);
-            Type type = toJavaParserType(parameterTypes.get(i));
+        for (Parameter original : lambdaParams) {
+            Type type = resolveParamType(original);
             params.add(new Parameter(type, original.getNameAsString()));
         }
         md.setParameters(params);
@@ -59,14 +44,13 @@ public final class LambdaConverter {
         return md;
     }
 
-    private static Type toJavaParserType(Class<?> clazz) {
-        if (clazz == void.class) {
-            return new VoidType();
+    private static Type resolveParamType(Parameter param) {
+        try {
+            ResolvedType resolved = param.getType().resolve();
+            String fqcn = resolved.describe();
+            return new ClassOrInterfaceType(null, fqcn);
+        } catch (Exception e) {
+            return new ClassOrInterfaceType(null, "java.lang.Object");
         }
-        PrimitiveType.Primitive primitive = PRIMITIVES.get(clazz);
-        if (primitive != null) {
-            return new PrimitiveType(primitive);
-        }
-        return new ClassOrInterfaceType(null, clazz.getCanonicalName());
     }
 }
