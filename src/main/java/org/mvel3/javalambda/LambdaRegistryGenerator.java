@@ -1,7 +1,6 @@
 package org.mvel3.javalambda;
 
 import java.util.Map;
-import java.util.Set;
 
 public final class LambdaRegistryGenerator {
 
@@ -31,11 +30,6 @@ public final class LambdaRegistryGenerator {
             sb.append("    public static final ").append(fieldType)
                     .append(" ").append(fieldName).append(" = ")
                     .append(lambdaSource).append(";\n\n");
-
-            Set<String> props = lambda.readProperties();
-            sb.append("    public static final String[] ").append(fieldName).append("_READ_PROPS = {");
-            sb.append(String.join(", ", props.stream().map(p -> "\"" + p + "\"").toList()));
-            sb.append("};\n\n");
         }
 
         sb.append("}\n");

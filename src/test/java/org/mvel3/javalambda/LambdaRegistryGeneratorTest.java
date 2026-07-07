@@ -40,8 +40,7 @@ class LambdaRegistryGeneratorTest {
         assertThat(source).contains("public final class LambdaRegistry");
         assertThat(source).contains("LAMBDA_0");
         assertThat(source).contains("LAMBDA_1");
-        assertThat(source).contains("LAMBDA_0_READ_PROPS");
-        assertThat(source).contains("LAMBDA_1_READ_PROPS");
+        assertThat(source).doesNotContain("READ_PROPS");
         assertThat(source).contains("java.util.function.Predicate<java.lang.String> LAMBDA_0");
     }
 
