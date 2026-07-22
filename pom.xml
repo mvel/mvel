@@ -312,7 +312,26 @@
             <name>JBoss Releases Repository</name>
             <url>https://repository.jboss.org/nexus/repository/testing/</url>
         </repository>
+        <snapshotRepository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>https://repository.jboss.org/nexus/repository/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots</name>
+            <url>https://repository.jboss.org/nexus/repository/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <profiles>
         <profile>
