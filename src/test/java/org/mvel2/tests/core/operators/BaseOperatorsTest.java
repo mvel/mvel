@@ -11,6 +11,7 @@ public class BaseOperatorsTest extends BaseMvelTest {
     protected static final Class[] TYPES = new Class[]{Integer.class, Long.class, Byte.class, Character.class, Short.class, Float.class, Double.class, BigInteger.class, BigDecimal.class};
     protected static final boolean[] NULL_PROPERTY_ON_LEFT = new boolean[]{true, false};
     protected static final String[] EQUALITY_COMPARISON_OPERATORS = new String[]{"==", "!="};
+    protected static final String[] RELATIONAL_COMPARISON_OPERATORS = new String[]{">", ">=", "<", "<="};
 
     protected Class type;
 

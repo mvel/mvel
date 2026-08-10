@@ -597,13 +597,13 @@ public strictfp class MathProcessor {
           case MOD:
             return ((BigInteger) val1).remainder(((BigInteger) val2));
           case GTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) > 0;
+            return val1 != null && val2 != null && ((BigInteger) val1).compareTo(((BigInteger) val2)) > 0;
           case GETHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
+            return val1 != null && val2 != null && ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
           case LTHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) < 0;
+            return val1 != null && val2 != null && ((BigInteger) val1).compareTo(((BigInteger) val2)) < 0;
           case LETHAN:
-            return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
+            return val1 != null && val2 != null && ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
           case EQUAL:
             return val1 != null && val2 != null ? ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 : val1 == val2;
           case NEQUAL:
