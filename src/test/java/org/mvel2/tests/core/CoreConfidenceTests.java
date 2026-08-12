@@ -5079,4 +5079,22 @@ public class CoreConfidenceTests extends AbstractTest {
     assertEquals(1, result.size());
     assertEquals("a\"b", result.get(0));
   }
+
+  public void testMapVariableResolverFactoryGetKnownVariablesWithNextFactory() {
+    Map<String, Object> parentVars = new HashMap<String, Object>();
+    parentVars.put("parentVar1", "value1");
+    parentVars.put("parentVar2", "value2");
+    MapVariableResolverFactory parentFactory = new MapVariableResolverFactory(parentVars);
+
+    Map<String, Object> childVars = new HashMap<String, Object>();
+    childVars.put("childVar1", "value3");
+    MapVariableResolverFactory childFactory = new MapVariableResolverFactory(childVars, parentFactory);
+
+    Set<String> knownVariables = childFactory.getKnownVariables();
+
+    assertTrue("should contain childVar1", knownVariables.contains("childVar1"));
+    assertTrue("should contain parentVar1 from next factory", knownVariables.contains("parentVar1"));
+    assertTrue("should contain parentVar2 from next factory", knownVariables.contains("parentVar2"));
+    assertEquals(3, knownVariables.size());
+  }
 }
