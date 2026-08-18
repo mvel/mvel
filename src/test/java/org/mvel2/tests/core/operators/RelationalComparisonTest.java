@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class RelationalComparisonTest extends BaseOperatorsTest {
 
+    // Character and Byte excluded - see issue #446
     private static final Class[] NUMERIC_COMPARABLE_TYPES = new Class[]{
             Integer.class,
             Long.class,
