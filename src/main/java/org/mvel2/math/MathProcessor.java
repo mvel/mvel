@@ -617,6 +617,95 @@ public strictfp class MathProcessor {
             throw new RuntimeException("bitwise operation on a number greater than 32-bits not possible");
         }
 
+      case DataTypes.CHAR:
+      case DataTypes.W_CHAR:
+        switch (operation) {
+          case ADD:
+            return valueOf(val1) + valueOf(val2);
+          case SUB:
+            return toChar(val1) - toChar(val2);
+          case DIV:
+            return (double) toChar(val1) / (double) toChar(val2);
+          case MULT:
+            return toChar(val1) * toChar(val2);
+          case POWER:
+            double dc = Math.pow(toChar(val1), toChar(val2));
+            if (dc > Character.MAX_VALUE) return dc;
+            else return (char) dc;
+          case MOD:
+            return toChar(val1) % toChar(val2);
+          case GTHAN:
+            return val1 != null && val2 != null && toChar(val1) > toChar(val2);
+          case GETHAN:
+            return val1 != null && val2 != null && toChar(val1) >= toChar(val2);
+          case LTHAN:
+            return val1 != null && val2 != null && toChar(val1) < toChar(val2);
+          case LETHAN:
+            return val1 != null && val2 != null && toChar(val1) <= toChar(val2);
+          case EQUAL:
+            return safeEquals(val2, val1);
+          case NEQUAL:
+            return safeNotEquals(val2, val1);
+          case BW_AND:
+            return toChar(val1) & toChar(val2);
+          case BW_OR:
+            return toChar(val1) | toChar(val2);
+          case BW_SHIFT_LEFT:
+            return toChar(val1) << toChar(val2);
+          case BW_USHIFT_LEFT:
+            throw new UnsupportedOperationException("unsigned left-shift not supported");
+          case BW_SHIFT_RIGHT:
+            return toChar(val1) >> toChar(val2);
+          case BW_USHIFT_RIGHT:
+            return toChar(val1) >>> toChar(val2);
+          case BW_XOR:
+            return toChar(val1) ^ toChar(val2);
+        }
+
+      case DataTypes.BYTE:
+      case DataTypes.W_BYTE:
+        switch (operation) {
+          case ADD:
+            return toByte(val1) + toByte(val2);
+          case SUB:
+            return toByte(val1) - toByte(val2);
+          case DIV:
+            return toDouble(val1) / toDouble(val2);
+          case MULT:
+            return toByte(val1) * toByte(val2);
+          case POWER:
+            double db = Math.pow(toByte(val1), toByte(val2));
+            if (db > Byte.MAX_VALUE) return db;
+            else return (byte) db;
+          case MOD:
+            return toByte(val1) % toByte(val2);
+          case GTHAN:
+            return val1 != null && val2 != null && toByte(val1) >= toByte(val2);
+          case GETHAN:
+            return val1 != null && val2 != null && toByte(val1) > toByte(val2);
+          case LTHAN:
+            return val1 != null && val2 != null && toByte(val1) < toByte(val2);
+          case LETHAN:
+            return val1 != null && val2 != null && toByte(val1) <= toByte(val2);
+          case EQUAL:
+            return safeEquals(val2, val1);
+          case NEQUAL:
+            return safeNotEquals(val2, val1);
+          case BW_AND:
+            return toByte(val1) & toByte(val2);
+          case BW_OR:
+            return toByte(val1) | toByte(val2);
+          case BW_SHIFT_LEFT:
+            return toByte(val1) << toByte(val2);
+          case BW_USHIFT_LEFT:
+            throw new UnsupportedOperationException("unsigned left-shift not supported");
+          case BW_SHIFT_RIGHT:
+            return toByte(val1) >> toByte(val2);
+          case BW_USHIFT_RIGHT:
+            return toByte(val1) >>> toByte(val2);
+          case BW_XOR:
+            return toByte(val1) ^ toByte(val2);
+        }
 
       default:
         switch (operation) {
@@ -649,6 +738,14 @@ public strictfp class MathProcessor {
 
   private static float toFloat(Object val) {
     return val instanceof Float ? (Float) val : ((Number) val).floatValue();
+  }
+
+  private static byte toByte(Object val) {
+    return val instanceof Byte ? (Byte) val : ((Number) val).byteValue();
+  }
+
+  private static char toChar(Object val) {
+    return (Character) val;
   }
 
   private static int box(int type) {
