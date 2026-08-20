@@ -680,9 +680,9 @@ public strictfp class MathProcessor {
           case MOD:
             return toByte(val1) % toByte(val2);
           case GTHAN:
-            return val1 != null && val2 != null && toByte(val1) >= toByte(val2);
-          case GETHAN:
             return val1 != null && val2 != null && toByte(val1) > toByte(val2);
+          case GETHAN:
+            return val1 != null && val2 != null && toByte(val1) >= toByte(val2);
           case LTHAN:
             return val1 != null && val2 != null && toByte(val1) < toByte(val2);
           case LETHAN:
