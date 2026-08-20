@@ -65,4 +65,54 @@ public class RelationalComparisonTest extends BaseOperatorsTest {
         Object result = MVEL.executeExpression(compiledExpr, null, factory);
         assertEquals("Comparison with null property should be false: " + expression, false, result);
     }
+
+    @Test
+    public void compareNonNullValues() throws Exception {
+        if (!nullPropertyOnLeft) {
+            return;
+        }
+
+        String lowValue = getInstanceValueString(type, "1");
+        String highValue = getInstanceValueString(type, "2");
+        boolean expectedLowVsHigh;
+        boolean expectedHighVsLow;
+        boolean expectedAtEquality;
+
+        if (">".equals(operator)) {
+            expectedLowVsHigh = false;
+            expectedHighVsLow = true;
+            expectedAtEquality = false;
+        } else if (">=".equals(operator)) {
+            expectedLowVsHigh = false;
+            expectedHighVsLow = true;
+            expectedAtEquality = true;
+        } else if ("<".equals(operator)) {
+            expectedLowVsHigh = true;
+            expectedHighVsLow = false;
+            expectedAtEquality = false;
+        } else if ("<=".equals(operator)) {
+            expectedLowVsHigh = true;
+            expectedHighVsLow = false;
+            expectedAtEquality = true;
+        } else {
+            throw new IllegalStateException("Unexpected operator: " + operator);
+        }
+
+        assertRelationalResult(expectedLowVsHigh, lowValue, highValue);
+        assertRelationalResult(expectedHighVsLow, highValue, lowValue);
+        assertRelationalResult(expectedAtEquality, lowValue, lowValue);
+    }
+
+    private void assertRelationalResult(boolean expected, String leftValue, String rightValue) throws Exception {
+        String expression = leftValue + " " + operator + " " + rightValue;
+
+        Map<String, Object> imports = new HashMap<String, Object>();
+        imports.put(type.getSimpleName(), type);
+        ParserContext pctx = new ParserContext(imports, null, "testfile");
+        pctx.addImport("BaseOperatorTest", BaseOperatorsTest.class);
+
+        Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+        Object result = MVEL.executeExpression(compiledExpr);
+        assertEquals(expression, expected, result);
+    }
 }
