@@ -10,8 +10,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,17 +21,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class RelationalComparisonTest extends BaseOperatorsTest {
 
-    // Character and Byte excluded - see issue #446
-    private static final Class[] NUMERIC_COMPARABLE_TYPES = new Class[]{
-            Integer.class,
-            Long.class,
-            Short.class,
-            Float.class,
-            Double.class,
-            BigInteger.class,
-            BigDecimal.class
-    };
-
     public RelationalComparisonTest(Class type, String operator, boolean nullPropertyOnLeft) {
         super(type, operator, nullPropertyOnLeft);
     }
@@ -41,7 +28,7 @@ public class RelationalComparisonTest extends BaseOperatorsTest {
     @Parameters
     public static Collection<Object[]> ruleParams() {
         List<Object[]> parameterData = new ArrayList<Object[]>();
-        for (Class type : NUMERIC_COMPARABLE_TYPES) {
+        for (Class type : TYPES) {
             for (String operator : RELATIONAL_COMPARISON_OPERATORS) {
                 for (boolean nullPropertyOnLeft : NULL_PROPERTY_ON_LEFT)
                     parameterData.add(new Object[]{type, operator, nullPropertyOnLeft});
@@ -77,5 +64,55 @@ public class RelationalComparisonTest extends BaseOperatorsTest {
 
         Object result = MVEL.executeExpression(compiledExpr, null, factory);
         assertEquals("Comparison with null property should be false: " + expression, false, result);
+    }
+
+    @Test
+    public void compareNonNullValues() throws Exception {
+        if (!nullPropertyOnLeft) {
+            return;
+        }
+
+        String lowValue = getInstanceValueString(type, "1");
+        String highValue = getInstanceValueString(type, "2");
+        boolean expectedLowVsHigh;
+        boolean expectedHighVsLow;
+        boolean expectedAtEquality;
+
+        if (">".equals(operator)) {
+            expectedLowVsHigh = false;
+            expectedHighVsLow = true;
+            expectedAtEquality = false;
+        } else if (">=".equals(operator)) {
+            expectedLowVsHigh = false;
+            expectedHighVsLow = true;
+            expectedAtEquality = true;
+        } else if ("<".equals(operator)) {
+            expectedLowVsHigh = true;
+            expectedHighVsLow = false;
+            expectedAtEquality = false;
+        } else if ("<=".equals(operator)) {
+            expectedLowVsHigh = true;
+            expectedHighVsLow = false;
+            expectedAtEquality = true;
+        } else {
+            throw new IllegalStateException("Unexpected operator: " + operator);
+        }
+
+        assertRelationalResult(expectedLowVsHigh, lowValue, highValue);
+        assertRelationalResult(expectedHighVsLow, highValue, lowValue);
+        assertRelationalResult(expectedAtEquality, lowValue, lowValue);
+    }
+
+    private void assertRelationalResult(boolean expected, String leftValue, String rightValue) throws Exception {
+        String expression = leftValue + " " + operator + " " + rightValue;
+
+        Map<String, Object> imports = new HashMap<String, Object>();
+        imports.put(type.getSimpleName(), type);
+        ParserContext pctx = new ParserContext(imports, null, "testfile");
+        pctx.addImport("BaseOperatorTest", BaseOperatorsTest.class);
+
+        Serializable compiledExpr = MVEL.compileExpression(expression, pctx);
+        Object result = MVEL.executeExpression(compiledExpr);
+        assertEquals(expression, expected, result);
     }
 }

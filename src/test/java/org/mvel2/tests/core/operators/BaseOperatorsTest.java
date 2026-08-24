@@ -37,7 +37,19 @@ public class BaseOperatorsTest extends BaseMvelTest {
         }
     }
 
+    protected static String getInstanceValueString(Class clazz, String value) {
+        if (clazz.equals(Character.class)) {
+            return "BaseOperatorTest.characterValue(\"" + value + "\")";
+        } else {
+            return "new " + clazz.getSimpleName() + "(\"" + value + "\")";
+        }
+    }
+
     public static Character constantCharacterValue() {
         return Character.valueOf('a');
+    }
+
+    public static Character characterValue(String value) {
+        return Character.valueOf(value.charAt(0));
     }
 }
