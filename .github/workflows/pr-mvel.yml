@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Java Setup
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'

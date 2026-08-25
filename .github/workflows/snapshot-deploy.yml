@@ -20,15 +20,15 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
           server-id: jboss-releases-repository
-          server-username-env-var: NEXUS_USERNAME
-          server-password-env-var: NEXUS_PASSWORD
+          server-username: NEXUS_USERNAME
+          server-password: NEXUS_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase-env-var: GPG_PASSPHRASE
+          gpg-passphrase: GPG_PASSPHRASE
 
       - name: Deploy SNAPSHOT
         run: mvn -B clean deploy -Prun-release -DskipTests
