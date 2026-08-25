@@ -337,6 +337,10 @@
                                 <configuration>
                                     <keyname>B22A5F7F5A6C0EC375BB9964BC36F72DEA2E4C81</keyname>
                                     <passphraseServerId>gpg.passphrase</passphraseServerId>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
                                 </configuration>
                             </execution>
                         </executions>
