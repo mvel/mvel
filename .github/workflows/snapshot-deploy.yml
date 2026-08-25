@@ -25,10 +25,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           server-id: jboss-releases-repository
-          server-username: NEXUS_USERNAME
-          server-password: NEXUS_PASSWORD
+          server-username-env-var: NEXUS_USERNAME
+          server-password-env-var: NEXUS_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
+          gpg-passphrase-env-var: GPG_PASSPHRASE
 
       - name: Deploy SNAPSHOT
         run: mvn -B clean deploy -Prun-release -DskipTests
