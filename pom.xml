@@ -37,6 +37,27 @@
         <system>GitHub</system>
         <url>https://github.com/mvel/mvel/issues</url>
     </issueManagement>
+    <developers>
+        <developer>
+            <name>Mike Brock</name>
+            <email>brockm@gmail.com</email>
+            <url>https://github.com/mikebrock</url>
+            <id>mikebrock</id>
+        </developer>
+        <developer>
+            <name>Mark Proctor</name>
+            <email>mdproctor@gmail.com</email>
+            <url>https://github.com/mdproctor</url>
+            <id>mdproctor</id>
+        </developer>
+        <developer>
+            <name>Mario Fusco</name>
+            <email>mario.fusco@gmail.com</email>
+            <url>https://github.com/mariofusco</url>
+            <id>mariofusco</id>
+        </developer>
+    </developers>
+
     <contributors>
         <contributor>
             <name>MVEL Project Contributors</name>
