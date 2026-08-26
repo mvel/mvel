@@ -12,3 +12,6 @@ git clone https://github.com/mvel/mvel.git
 cd mvel
 mvn clean install
 ```
+
+## Test case development
+- Test cases have to extend `BaseMvelTest` or `BaseMvelTestCase` class in order to make sure to clean up the configuration

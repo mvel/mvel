@@ -1,5 +1,6 @@
 package org.mvel2.tests;
 
+import org.junit.After;
 import org.junit.Before;
 import org.mvel2.MVEL;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -9,8 +10,15 @@ import org.mvel2.optimizers.OptimizerFactory;
  */
 public class BaseMvelTest {
 
+    // Clean up on both setUp and teatDown,
+    // so never affect/affected by other classes which don't extend the base test class
     @Before
     public void setUp() {
+        cleanUpConfigurations();
+    }
+
+    @After
+    public void tearDown() {
         cleanUpConfigurations();
     }
 

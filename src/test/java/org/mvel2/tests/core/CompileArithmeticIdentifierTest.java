@@ -3,6 +3,7 @@ package org.mvel2.tests.core;
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.PropertyAccessException;
+import org.mvel2.tests.BaseMvelTest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ import static org.junit.Assert.fail;
  * eagerly. Sibling forms with at most one literal multiplication before the
  * identifier compiled cleanly, exposing the asymmetric handling.
  */
-public class CompileArithmeticIdentifierTest {
+public class CompileArithmeticIdentifierTest extends BaseMvelTest {
 
     @Test
     public void compilesLiteralPlusTwoLiteralMulsThenIdentifier() {

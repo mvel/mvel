@@ -13,8 +13,15 @@ public class BaseMvelTestCase extends TestCase {
         super();
     }
 
+    // Clean up on both setUp and teatDown,
+    // so never affect/affected by other classes which don't extend the base test class
     @Override
     protected void setUp() throws Exception {
+        cleanUpConfigurations();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         cleanUpConfigurations();
     }
 }
