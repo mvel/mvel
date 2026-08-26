@@ -13,8 +13,8 @@ public class BaseMvelTestCase extends TestCase {
         super();
     }
 
-    // Clean up on both setUp and teatDown,
-    // so never affect/affected by other classes which don't extend the base test class
+    // Clean up on both setUp and tearDown,
+    // so tests extending this base class don't leak configuration changes to other tests
     @Override
     protected void setUp() throws Exception {
         super.setUp();

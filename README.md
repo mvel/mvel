@@ -14,4 +14,4 @@ mvn clean install
 ```
 
 ## Test case development
-- Test cases have to extend `BaseMvelTest` or `BaseMvelTestCase` class in order to make sure to clean up the configuration
+- Test cases should extend `BaseMvelTest` (JUnit 4) or `BaseMvelTestCase` (JUnit 3) to ensure global MVEL configuration is reset between tests.

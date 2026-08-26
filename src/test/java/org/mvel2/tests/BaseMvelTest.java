@@ -10,8 +10,8 @@ import org.mvel2.optimizers.OptimizerFactory;
  */
 public class BaseMvelTest {
 
-    // Clean up on both setUp and teatDown,
-    // so never affect/affected by other classes which don't extend the base test class
+    // Clean up on both setUp and tearDown,
+    // so tests extending this base class don't leak configuration changes to other tests
     @Before
     public void setUp() {
         cleanUpConfigurations();
