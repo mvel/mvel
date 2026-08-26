@@ -176,10 +176,6 @@
                     <childDelegation>true</childDelegation>
                     <systemProperties>
                         <property>
-                            <name>mvel.disable.jit</name>
-                            <value>true</value>
-                        </property>
-                        <property>
                             <name>file.encoding</name>
                             <value>UTF-8</value>
                         </property>
