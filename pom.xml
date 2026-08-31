@@ -227,7 +227,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>${maven-release-plugin.version}</version>
                 <configuration>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
+                    <tagNameFormat>mvel2-@{project.version}</tagNameFormat>
                     <preparationGoals>clean verify</preparationGoals>
                     <releaseProfiles>run-release</releaseProfiles>
                     <pushChanges>false</pushChanges>
@@ -307,7 +307,7 @@
         <repository>
             <id>jboss-releases-repository</id>
             <name>JBoss Releases Repository</name>
-            <url>https://repository.jboss.org/nexus/repository/testing/</url>
+            <url>https://repository.jboss.org/nexus/repository/mvel/</url>
         </repository>
         <snapshotRepository>
             <id>jboss-releases-repository</id>
