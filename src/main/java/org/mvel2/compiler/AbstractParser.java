@@ -1032,17 +1032,19 @@ public class AbstractParser implements Parser, Serializable {
                           case ')':
                             if (--brace < level) {
                               cursor++;
+                              int foldStart = trimRight(st + 1);
+                              int foldOffset = cursor - 1 - foldStart;
                               if (tokenContinues()) {
-                                lastNode = new Fold(expr, trimRight(st + 1),
-                                    cursor - st - 2, fields, pCtx);
+                                lastNode = new Fold(expr, foldStart,
+                                    foldOffset, fields, pCtx);
                                 if (expr[st = cursor] == '.') st++;
                                 captureToEOT();
                                 return lastNode = new Union(expr, st = trimRight(st),
                                     cursor - st, fields, lastNode, pCtx);
                               }
                               else {
-                                return lastNode = new Fold(expr, trimRight(st + 1),
-                                    cursor - st - 2, fields, pCtx);
+                                return lastNode = new Fold(expr, foldStart,
+                                    foldOffset, fields, pCtx);
                               }
                             }
                             break;
