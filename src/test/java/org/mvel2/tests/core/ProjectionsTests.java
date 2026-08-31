@@ -55,6 +55,69 @@ public class ProjectionsTests extends AbstractTest {
   public void testProjectionSupport6() {
     assertEquals(true, test("( name in things ) contains 'Bob'"));
   }
+
+  public void testProjectionStandaloneWithSpaces1() {
+    assertProjectionContainsBob("( name in things )");
+  }
+
+  public void testProjectionStandaloneWithSpaces2() {
+    assertProjectionContainsBob("(name in things)");
+  }
+
+  public void testProjectionStandaloneWithSpaces3() {
+    assertProjectionContainsBob("( name in things)");
+  }
+
+  public void testProjectionStandaloneWithSpaces4() {
+    assertProjectionContainsBob("(name in things )");
+  }
+
+  public void testProjectionStandaloneWithSpaces5() {
+    assertProjectionContainsBob("( name in things ) ");
+  }
+
+  public void testProjectionStandaloneWithSpaces6() {
+    assertProjectionContainsBob("( name in things )\n");
+  }
+
+  public void testProjectionMultipleSpaces() {
+    assertProjectionContainsBob("(  name  in  things  )");
+  }
+
+  public void testProjectionWithTabs() {
+    assertProjectionContainsBob("(\tname\tin\tthings\t)");
+  }
+
+  public void testProjectionIfWithTrailingSpace() {
+    Collection col = (Collection) test("( toUpperCase() in ['zero', 'zen', 'bar', 'foo'] if ($ == 'bar') )");
+    assertEquals(1, col.size());
+    assertEquals("BAR", col.iterator().next());
+  }
+
+  public void testProjectionCollectionNameStartingWithIn() {
+    Map vars = new HashMap();
+    vars.put("innings", Arrays.asList(new HashMap() {{ put("name", "First"); }},
+                                      new HashMap() {{ put("name", "Second"); }}));
+    Collection col = (Collection) MVEL.eval("( name in innings )", vars);
+    assertEquals(2, col.size());
+    assertTrue(col.contains("First"));
+  }
+
+  public void testProjectionCollectionNameStartingWithIf() {
+    Map vars = new HashMap();
+    vars.put("iffy_list", Arrays.asList("zero", "zen", "bar"));
+    Collection col = (Collection) MVEL.eval("( toUpperCase() in iffy_list if ($.startsWith('z')) )", vars);
+    assertEquals(2, col.size());
+    assertTrue(col.contains("ZERO"));
+    assertTrue(col.contains("ZEN"));
+  }
+
+  private void assertProjectionContainsBob(String expr) {
+    Collection col = (Collection) test(expr);
+    assertEquals(3, col.size());
+    assertTrue(col.contains("Bob"));
+  }
+
 //
 //  public void testNestedProjection() {
 //    Map vars = createTestVars();

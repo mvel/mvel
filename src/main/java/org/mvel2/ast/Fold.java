@@ -70,6 +70,8 @@ public class Fold extends ASTNode {
       }
     }
 
+    // The for loop's cursor++ can overshoot end when the inner while-skip advances cursor to end
+    if (cursor > end) cursor = end;
     while (isWhitespace(expr[cursor])) cursor--;
 
     expectType(pCtx, dataEx = (ExecutableStatement) subCompileExpression(expr, st, cursor - st, pCtx),
