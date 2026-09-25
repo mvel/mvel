@@ -144,7 +144,14 @@ public class Make {
       this.listInstance = listInstance;
     }
 
-    public Set<V> _(V value) {
+    /**
+     * Adds a value to this Set builder.
+     * Renamed from {@code _}: {@code _} is a reserved keyword since Java 9.
+     *
+     * @param value the value to add
+     * @return this builder
+     */
+    public Set<V> _add(V value) {
       listInstance.add(value);
       return this;
     }
