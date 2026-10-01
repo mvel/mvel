@@ -8,9 +8,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -47,16 +49,15 @@ final class LambdaRegistryStore {
         int nextLogical = requiredInt(props, KEY_NEXT_LOGICAL);
 
         // Catalog entries
-        Map<Integer, CatalogEntry> catalogByPhysicalId = new TreeMap<>();
+        final List<CatalogEntry> catalogEntries = new ArrayList<>();
+        final Set<Integer> catalogPhysicalIds = new HashSet<>();
         Map<Integer, Integer> catalogIndexByIndex = parseIndexed(props, "catalog.entry.");
         for (Integer index : catalogIndexByIndex.keySet()) {
             int physicalId = requiredInt(props, "catalog.entry." + index + ".physicalId");
             String methodSignature = requiredString(props, "catalog.entry." + index + ".methodSignature");
             String normalizedBody = requiredString(props, "catalog.entry." + index + ".normalizedBody");
-            if (catalogByPhysicalId.containsKey(physicalId)) {
-                throw new InvalidLambdaRegistryException("Duplicate catalog physicalId: " + physicalId);
-            }
-            catalogByPhysicalId.put(physicalId, new CatalogEntry(physicalId, methodSignature, normalizedBody));
+            catalogEntries.add(new CatalogEntry(physicalId, methodSignature, normalizedBody));
+            catalogPhysicalIds.add(physicalId);
         }
 
         // Artifacts
@@ -66,7 +67,7 @@ final class LambdaRegistryStore {
             int physicalId = requiredInt(props, "artifact." + index + ".physicalId");
             String fqn = requiredString(props, "artifact." + index + ".fqn");
             String classFile = requiredString(props, "artifact." + index + ".classFile");
-            if (!catalogByPhysicalId.containsKey(physicalId)) {
+            if (!catalogPhysicalIds.contains(physicalId)) {
                 throw new InvalidLambdaRegistryException(
                         "Artifact physicalId " + physicalId + " has no matching catalog entry");
             }
@@ -84,7 +85,7 @@ final class LambdaRegistryStore {
         }
 
         return new LambdaPersistenceSnapshot(
-                new CatalogSnapshot(nextPhysical, nextLogical, new ArrayList<>(catalogByPhysicalId.values())),
+                new CatalogSnapshot(nextPhysical, nextLogical, catalogEntries),
                 artifacts);
     }
 
