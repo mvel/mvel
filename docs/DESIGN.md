@@ -20,7 +20,7 @@ Architectural overview for MVEL3. Intended as a stable complement to
 MVEL source string
   → ANTLR4 Lexer/Parser (Mvel3Lexer.g4 / Mvel3Parser.g4, importing JavaLexer/JavaParser)
   → ANTLR4 parse tree
-  → Mvel3ToJavaParserVisitor (delegates to ~25 converter classes)
+  → Mvel3ToJavaParserVisitor (delegates to specialised converter classes)
   → JavaParser AST (including MVEL-specific nodes from javaparser-mvel fork)
   → VariableAnalyser (discovers used context variables and read properties)
   → MVELTranspiler (wraps in CompilationUnit with Evaluator<C,W,O> class)
@@ -77,7 +77,8 @@ depending on how variables are passed in:
 | NONE | no extraction | n/a |
 
 The `EvalPre` callback (injected by `MVELCompiler.transpile()`) generates
-the extraction/write-back statements before the rewriter runs.
+variable-extraction statements before the rewriter runs. Context
+write-back is handled by `MVELToJavaRewriter`.
 
 ### MVELToJavaRewriter: the semantic bridge
 
@@ -115,10 +116,10 @@ type system. It dispatches on AST node type and handles:
 
 `VariableAnalyser` records every `NameExpr`/`DrlNameExpr` visited.
 `MVELTranspiler` emits a `getReadProperties()` override on the
-generated class, returning a `String[]` of property names. Downstream
-consumers (Drools alpha-node masks) use this for property-reactive
-dirty tracking, so only rules whose read-set overlaps a modified
-property re-evaluate.
+generated class, returning a `String[]` of identifier names. These may
+include names that are not properties; downstream consumers filter
+them against the context type's settable properties before constructing
+Drools alpha-node masks for property-reactive dirty tracking.
 
 ### Public `ClassFilter` (issue #413)
 
@@ -164,10 +165,12 @@ startup cost across hundreds of expressions. Supports two modes:
 
 ### Class deduplication in ClassManager
 
-`ClassManager.define()` hashes the `eval` method bytecode (via ASM's
-`MethodByteCodeExtractor` + Murmur3) for each class. Two bytecode-
-identical evaluators share the same hidden-class definition, regardless
-of class name.
+`ClassManager.define()` hashes the extracted `eval` method bytecode
+(via ASM's `MethodByteCodeExtractor` + Murmur3) for each class. It skips
+definition when an equivalent entry already exists. Other methods,
+including `getReadProperties()`, are not part of this comparison, and
+a skipped class's FQN is not registered as an alias. Compiler-level
+deduplication therefore needs to retain the existing evaluator FQN.
 
 ## Lambda subsystem (content-addressed persistence)
 
@@ -208,7 +211,10 @@ logical ID. It then attempts three paths:
 3. **No match**: Allocate a new physical ID.
 
 The result is a `RegistrationResult(logicalId, physicalId, reused)`.
-The compiler skips bytecode generation when `reused=true`.
+Physical IDs are sequential catalog IDs, not content hashes. The
+compiler appends the physical ID to the generated evaluator class name.
+Catalog reuse alone does not skip compilation: a persisted artifact
+must also exist, or the source must already be pending in the same batch.
 
 ### Persistence
 
@@ -223,29 +229,95 @@ LambdaRuntime (singleton, composition root)
 
 - **`LambdaRuntime`**: Lazy singleton via double-checked locking. On
   first access, reads `RuntimeConfig` from system properties, constructs
-  all components, and rehydrates from disk if a registry file exists.
+  all components, and rehydrates from disk if persistence is enabled
+  and a registry file exists.
 - **`LambdaPersistenceManager`**: Maps physical IDs to `ArtifactRef`
   (FQN + classfile path). `attachArtifact()` triggers an immediate
   synchronous snapshot save.
-- **`LambdaRegistryStore`**: Serialises the full state
+- **`LambdaRegistryStore`**: Serialises a snapshot
   (`LambdaPersistenceSnapshot` = `CatalogSnapshot` + artifact map) to a
-  versioned Properties file (`lambda-registry.dat`). Validates
-  extensively on load: format version, duplicate physical IDs, orphan
-  artifact entries, invalid paths.
+  versioned Properties file (`lambda-registry.dat`). The snapshot
+  contains catalog keys, their physical IDs, the next physical/logical
+  ID counters, and artifact references; historical logical-to-physical
+  ID mappings are not saved. Validates on load: format version, required
+  keys, integer values, duplicate artifact physical IDs, orphan artifact
+  entries, and invalid paths. Multiple catalog keys may share a physical
+  ID after subtype-overload reuse; all are retained when loading.
 - **`LambdaArtifactStore`**: Dumb byte I/O — `exists()`, `readBytes()`,
   `deleteAll()`.
 - **`LambdaArtifactLoader`**: Idempotent loading — if the FQN is already
   in the `ClassManager`, returns the existing class; otherwise reads
   bytes and defines.
 
+Persistence stores evaluator bytecode and lookup information, not
+captured values, evaluator instances, or rule-session state. The
+compile-versus-load decision remains in `MVELCompiler` and
+`MVELBatchCompiler`: an attached artifact whose classfile exists is
+loaded; a missing artifact or classfile is compiled and persisted.
+Existing but unreadable or invalid classfiles cause a load error rather
+than automatic recompilation.
+
+### Registry format and lifecycle
+
+`lambda-registry.dat` is a Properties file with `format.version=2`:
+
+| Key | Content |
+|---|---|
+| `catalog.nextPhysicalId`, `catalog.nextLogicalId` | Next ID counters |
+| `catalog.entry.<n>.physicalId` | Catalog entry's physical ID |
+| `catalog.entry.<n>.methodSignature`, `.normalizedBody` | Normalised evaluator method |
+| `artifact.<n>.physicalId`, `.fqn`, `.classFile` | Physical ID, evaluator FQN, and classfile path |
+
+`KieMemoryCompiler.compileAndPersist()` writes classfiles under the
+output directory using the FQN's package path. Attaching each new
+artifact synchronously rewrites the complete registry snapshot, even
+after a batch compile. Paths are stored as supplied; relative paths
+remain relative to the runtime working directory. Registry validation
+does not check classfile existence; that is checked before reuse.
+
+`LambdaRuntime.reset()` clears in-memory state only.
+`resetAndRemoveAllPersistedFiles()` also removes the persistence-root
+contents and registry file. Runtime configuration is read on first
+singleton access and must not be changed afterwards.
+
+### DRLX metadata boundary
+
+DRLX pre-build consumes `MVELBatchCompiler.getArtifactRef()` and saves
+`drlx-lambda-metadata.properties` with `format.version=2`. Each
+`rule.<ruleName>.<counter>` entry has separate `expression`, `fqn`, and
+`classFile` keys. No physical ID crosses this persistence boundary.
+Multiple rule entries can refer to the same persisted evaluator.
+
+At runtime, DRLX compares each saved expression with the current
+expression and loads its `ArtifactRef` directly through
+`LambdaArtifactLoader`, without a catalog lookup. DRLX still consults
+`LambdaRuntime` configuration when constructing its compiler. Its
+custom pre-build output directory does not change the global MVEL
+registry-file setting.
+
+DRLX's default behavior for a missing entry, expression mismatch, or
+class-load failure is fail-fast; `drlx.compiler.metadataMismatch=fallback`
+returns that expression to the normal compiler path. Malformed metadata
+fails during file loading before this per-expression fallback applies.
+A separate optional `drlx-rule-ast.pb` cache stores the rule IR with a
+source SHA-256 hash. Neither artifact stores a completed KieBase;
+DRLX reconstructs it at runtime.
+
 ### Configuration (system properties)
 
 | Property | Default | Purpose |
 |---|---|---|
-| `mvel3.compiler.lambda.persistence` | `true` | Master on/off for persistence |
-| `mvel3.compiler.lambda.persistence.path` | `target/generated-classes/mvel` | Classfile output directory |
+| `mvel3.compiler.lambda.persistence` | `true` | Enables persistence in the single compiler and registry snapshots |
+| `mvel3.compiler.lambda.persistence.path` | `target/generated-classes/mvel` | Default classfile output directory |
 | `mvel3.compiler.lambda.registry.file` | `<path>/lambda-registry.dat` | Registry file location |
 | `mvel3.compiler.lambda.resetOnTestStartup` | `false` | Wipe all state on init (for tests) |
+
+`MVELBatchCompiler` selects its persistence mode through its constructor:
+a non-null output directory enables classfile persistence and the global
+catalog; no directory selects in-memory compilation with a batch-local
+catalog. Callers must choose the constructor consistently with their
+runtime configuration. DRLX's `noPersist()` facade requires
+`mvel3.compiler.lambda.persistence=false` and uses the local-catalog path.
 
 ## Security model
 
@@ -267,11 +339,12 @@ Tracked in `README.md` / `CLAUDE.md`. Notable gaps that affect design:
 |---|---|
 | `org.mvel3` | Public API: `MVEL`, `MVELBuilder`, `MVELCompiler`, `MVELBatchCompiler`, `Evaluator`, `ClassManager`, `ClassFilter`, `CompilerParameters` |
 | `org.mvel3.parser.antlr4` | ANTLR4 parser: `Antlr4MvelParser`, `Mvel3ToJavaParserVisitor` |
-| `org.mvel3.parser.antlr4.mveltojavaparser` | ~25 converter classes (one per grammar construct) |
+| `org.mvel3.parser.antlr4.mveltojavaparser` | Specialised converter classes for grammar constructs |
 | `org.mvel3.parser` | Parser interfaces, legacy JavaParser-based parser, DRL parser |
 | `org.mvel3.transpiler` | `MVELTranspiler`, `MVELToJavaRewriter`, `CoerceRewriter`, `OverloadRewriter`, `VariableAnalyser` |
 | `org.mvel3.transpiler.context` | `TranspilerContext`, `Declaration`, `DeclaredFunction`, `StaticMethod` |
 | `org.mvel3.javacompiler` | `KieMemoryCompiler`, `StoreClassLoader`, `JavaCompilerFactory` |
 | `org.mvel3.lambdaextractor` | `LambdaCatalog`, `LambdaRuntime`, `LambdaKey`, `LambdaArtifactStore`/`Loader`, `LambdaPersistenceManager`, `LambdaRegistryStore`, `VariableNameNormalizerVisitor` |
+| `org.mvel3.javalambda` | Java-source lambda extraction and deduplication with a local catalog, registry-source generation, and source rewriting; separate from evaluator classfile persistence |
 | `org.mvel3.util` | `TypeResolver`, `ClassTypeResolver`, `ClassUtils`, `MethodUtils` |
 | `org.mvel3.parser.ast.expr` (javaparser-mvel fork) | MVEL-specific AST nodes: `NullSafeFieldAccessExpr`, `CompactWithExpression`, `BigDecimalLiteralExpr`, `ModifyStatement`, `InlineCastExpr`, `TemporalLiteralExpr`, etc. |
