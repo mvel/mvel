@@ -86,6 +86,8 @@
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <javaparser.version>3.25.5-mvel3-SNAPSHOT</javaparser.version>
         <junit-jupiter.version>5.11.4</junit-jupiter.version>
+        <junit4.version>4.13.2</junit4.version>
+        <excludedGroups>mvel2-compatibility</excludedGroups>
         <assertj-core.version>3.27.7</assertj-core.version>
         <drools-compiler.version>10.1.0</drools-compiler.version>
         <slf4j.version>2.0.16</slf4j.version>
@@ -144,6 +146,7 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <runOrder>alphabetical</runOrder>
+                    <excludedGroups>${excludedGroups}</excludedGroups>
                     <childDelegation>true</childDelegation>
                     <systemProperties>
                         <property>
@@ -282,6 +285,14 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Preserve the assertions of the imported MVEL2 tests. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit4.version}</version>
             <scope>test</scope>
         </dependency>
 
