@@ -183,3 +183,93 @@ bad operand types for binary operator '*'
 
 Add the variable to a `ParserContext` with the concrete type, or cast the
 property access explicitly: `1 + 2 * (int) param.value`.
+
+---
+
+## Chained null-coalescing `or` operator (chor)
+
+> `@KnownCompatibility("chor-operator")`
+
+MVEL2 supports `or` as a chained null-coalescing / fallback operator (`a or b or c`, `a or 'fubar'`).
+MVEL3 does not support `or` keyword for coalescing. In MVEL3 / Java, use ternary operators or `Optional`.
+
+---
+
+## Regular expression matching operator (`~=`)
+
+> `@KnownCompatibility("regex-operator")`
+
+MVEL2 supports regex matching via `~=` / `=~` (`foo.bar.name ~= '[a-z].+'`).
+MVEL3 does not support the `~=` regex binary operator. Use Java `Pattern` or `String.matches(...)`.
+
+---
+
+## `empty` keyword / test
+
+> `@KnownCompatibility("empty-operator")`
+
+MVEL2 supports `empty` as a pseudo-literal/keyword to test for null, empty strings, collections, or arrays (`'' == empty`, `[] == empty`, `['a'] != empty`).
+MVEL3 does not treat `empty` as a keyword. Use standard methods such as `.isEmpty()` or null checks.
+
+---
+
+## `is` operator for type testing
+
+> `@KnownCompatibility("is-operator")`
+
+MVEL2 allows `is` as a synonym for `instanceof` (`c is java.lang.String`).
+MVEL3 requires standard Java `instanceof`.
+
+---
+
+## `contains` operator
+
+> `@KnownCompatibility("contains-operator")`
+
+MVEL2 provides an infix `contains` operator for strings and collections (`list contains 'Happy!'`, `sentence contains 'fox'`).
+MVEL3 does not support infix `contains`. Use Java method calls: `list.contains("Happy!")` or `sentence.contains("fox")`.
+
+---
+
+## Phonetic / similarity operators (`soundslike`, `strsim`)
+
+> `@KnownCompatibility("soundslike-operator")`, `@KnownCompatibility("strsim-operator")`
+
+MVEL2 includes built-in string phonetic matching (`soundslike` using Soundex) and Levenshtein similarity (`strsim`).
+MVEL3 omits these custom operators. Use custom helper methods or dedicated libraries.
+
+---
+
+## `this` reference in evaluation context
+
+> `@KnownCompatibility("this-reference")`
+
+In MVEL2, `this` refers to the root context object (e.g. `Base`).
+In MVEL3 Map evaluation context, expressions are compiled into evaluator classes where `this` refers to the generated evaluator instance itself.
+
+---
+
+## Date comparison with relational operators (`<`, `>`)
+
+> `@KnownCompatibility("date-comparison")`
+
+MVEL2 supports `<` and `>` directly on `java.util.Date` instances (`dt1 < dt2`).
+MVEL3 transpiles directly to Java bytecode, where relational operators `<` and `>` cannot be applied to `Date` objects. Use `dt1.before(dt2)` or `dt1.compareTo(dt2) < 0`.
+
+---
+
+## `convertable_to` operator
+
+> `@KnownCompatibility("convertable-to-operator")`
+
+MVEL2 supports `convertable_to` to check whether a value can be converted to a target type (`pi convertable_to Integer`).
+MVEL3 does not support this operator.
+
+---
+
+## `isdef` operator
+
+> `@KnownCompatibility("isdef-operator")`
+
+MVEL2 provides `isdef` to check if a variable or property is defined in scope (`isdef _v1`).
+MVEL3 resolves variable names statically at compile time and does not have an `isdef` operator.

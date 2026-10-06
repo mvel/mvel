@@ -9,6 +9,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+import org.mvel3.compat.mvel2.res.Base;
 import org.mvel3.compat.mvel2.res.DerivedClass;
 import org.mvel3.compat.mvel2.res.Foo;
 import org.mvel3.compat.mvel2.res.TestInterface;
@@ -20,6 +21,16 @@ public abstract class AbstractTest extends Assert {
 
   protected static Map createTestMap() {
     Map map = new HashMap();
+    Base base = new Base();
+    map.put("this", base);
+    map.put("fun", base.fun);
+    map.put("sentence", base.sentence);
+    map.put("list", base.list);
+    map.put("things", base.things);
+    map.put("funMap", base.funMap);
+    map.put("fooMap", base.fooMap);
+    map.put("data", base.data);
+
     map.put("foo", new Foo());
     map.put("a", null);
     map.put("b", null);
@@ -65,6 +76,10 @@ public abstract class AbstractTest extends Assert {
   protected Object test(final String expression) {
     // MVEL2's optimizer/thread/serialization matrix is not a MVEL3 execution mode.
     return Mvel3TestSupport.eval(expression, createTestMap());
+  }
+
+  protected Object _test(final String expression) {
+    return test(expression);
   }
 
   protected static Object testCompiledSimple(final String expression, final Map variables) {
