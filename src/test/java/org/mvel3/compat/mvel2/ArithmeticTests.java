@@ -3,6 +3,7 @@ package org.mvel3.compat.mvel2;
 import org.junit.Assert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mvel3.compat.mvel2.KnownCompatibility;
 import org.mvel3.compat.mvel2.Mvel3TestSupport;
 import org.mvel3.compat.mvel2.Mvel3TestSupport.CompiledExpression;
 import org.mvel3.compat.mvel2.Mvel3TestSupport.ExpressionCompiler;
@@ -39,17 +40,20 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath3() {
     assertEquals((10d * 5d) * 2d / 3d, test("(10 * 5) * 2 / 3"));
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath4() {
     double val = ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
     assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath4a() {
     String expression = "(100 % 90) * 20 - 15 / 16 + 80 + (50 * 21)";
     System.out.println("Expression: " + expression);
@@ -69,6 +73,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath6() {
     double val = (300 * 5 + 1) + 100 / 2 * 2;
     String expression = "(300 * five + 1) + (100 / 2 * 2)";
@@ -83,6 +88,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath7() {
     double val = ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
     assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
@@ -95,11 +101,13 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testPowerOf() {
     assertEquals(25, test("5 ** 2"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testSignOperator() {
     String expr = "int x = 15; -x";
     Map vars = new HashMap();
@@ -139,6 +147,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testMath18() {
     String ex = "a = 100d; b = 50d; c = 20d; d = 30d; e = 2d; (a * b) * c / d * e";
     System.out.println("Expression: " + ex);
@@ -149,6 +158,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testMath19() {
     String ex = "a = 100; b = 500; c = 200; d = 150; e = 500; f = 800; g = 400; a-b*c*d + e*f-g";
     System.out.println("Expression: " + ex);
@@ -156,6 +166,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testMath32() {
     String ex = "x = 20; y = 10; z = 5; x-y-z";
     System.out.println("Expression: " + ex);
@@ -163,6 +174,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testMath33() {
     String ex = "x = 20; y = 2; z = 2; x/y/z";
     System.out.println("Expression: " + ex);
@@ -186,6 +198,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath22() {
     String expression = "(100-50)*70-30*(20-9)**3";
     System.out.println("Expression: " + expression);
@@ -193,6 +206,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testMath22b() {
     String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
     System.out.println("Expression: " + expression);
@@ -200,6 +214,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath23() {
     String expression = "10 ** (3)*10**3";
     System.out.println("Expression: " + expression);
@@ -207,6 +222,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath24() {
     String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
     double val = 51d * 52d * 33d / 24d / 15d + 45d * 66d * 47d * 28d + 19d;
@@ -217,6 +233,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath25() {
     String expression = "51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80";
     double val = 51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80;
@@ -226,6 +243,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath26() {
     String expression = "5 + 3 * 8 * 2 ** 2";
     int val = (int) (5d + 3d * 8d * Math.pow(2, 2));
@@ -236,6 +254,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath27() {
     String expression = "50 + 30 * 80 * 20 ** 3 * 51";
     double val = 50 + 30 * 80 * Math.pow(20, 3) * 51;
@@ -246,6 +265,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath28() {
     String expression = "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
     double val = 50 + 30 + 80 + Math.pow(Math.pow(11, 2), 2) * 51;
@@ -255,6 +275,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath29() {
     String expression = "10 + 20 / 4 / 4";
     System.out.println("Expression: " + expression);
@@ -264,6 +285,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath30() {
     String expression = "40 / 20 + 10 + 60 / 21";
     System.out.println("Expression: " + expression);
@@ -279,6 +301,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath34() {
     String expression = "a+b-c*d*x/y-z+10";
 
@@ -297,6 +320,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("power-operator-type")
   public void testMath34_Interpreted() {
     String expression = "a+b-c*x/y-z";
 
@@ -376,6 +400,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath38() {
     String expression = "100 + 200 - 300 + 400 - 500 + 105 / 205 - 405 + 305 * 206";
     double res = 100d + 200d - 300d + 400d - 500d + 105d / 205d - 405d + 305d * 206d;
@@ -387,6 +412,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division")
   public void testMath39() {
     String expression = "147 + 60 / 167 % 448 + 36 * 23 / 166";
     double res = 147d + 60d / 167d % 448d + 36d * 23d / 166d;
@@ -476,24 +502,28 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperatorPrecedence() {
     String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1";
     assertEquals(true, test(ex));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperatorPrecedence2() {
     String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
     assertEquals(true, test(ex));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperatorPrecedence3() {
     String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
     assertEquals(false, test(ex));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperatorPrecedence4() {
     String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2";
     assertEquals(true, test(ex));
@@ -583,16 +613,19 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testShiftRightAssign() {
     assertEquals(5 >> 2, test("_zZz = 5; _zZz >>= 2"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testShiftLeftAssign() {
     assertEquals(10 << 2, test("_yYy = 10; _yYy <<= 2"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testUnsignedShiftRightAssign() {
     String exp = "_xXx = -5; _xXx >>>= 2";
     Serializable s = Mvel3TestSupport.compileExpression(exp);
@@ -644,6 +677,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testDeepAssignmentWithBlock() {
     String ex = "with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
         " else { foo.countTest = 0; return false; }";
@@ -657,61 +691,72 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperativeAssignMod() {
     int val = 5;
     assertEquals(val %= 2, test("int val = 5; val %= 2; val"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperativeAssignDiv() {
     int val = 10;
     assertEquals(val /= 2, test("int val = 10; val /= 2; val"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperativeAssignShift1() {
     int val = 5;
     assertEquals(val <<= 2, test("int val = 5; val <<= 2; val"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperativeAssignShift2() {
     int val = 5;
     assertEquals(val >>= 2, test("int val = 5; val >>= 2; val"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testOperativeAssignShift3() {
     int val = -5;
     assertEquals(val >>>= 2, test("int val = -5; val >>>= 2; val"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignPlus() {
     assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignPlus2() {
     assertEquals(10, test("xx0 = 5; xx0 =+ 4; xx0 + 1"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignDiv() {
     assertEquals(2.0, test("xx0 = 20; xx0 /= 10; xx0"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignMult() {
     assertEquals(36, test("xx0 = 6; xx0 *= 6; xx0"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignSub() {
     assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
   }
 
   @Test
+  @KnownCompatibility("block-syntax")
   public void testAssignSub2() {
     assertEquals(-95, test("xx0 = 5; xx0 =- 100"));
   }
@@ -1188,6 +1233,7 @@ public class ArithmeticTests extends AbstractTest {
   }
   
   @Test
+  @KnownCompatibility("block-syntax")
   public void testBigDecimalAssignmentIncrement() {
     String str = "s1=0B;s1+=1;s1+=1;s1";
     Serializable expr = Mvel3TestSupport.compileExpression(str);

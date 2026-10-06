@@ -18,6 +18,37 @@ genuine numeric-type difference between the two engines.
 
 ---
 
+## Integer division always returns `double` in MVEL2
+
+In MVEL2, dividing two integers returns `double` regardless of whether the
+result is whole:
+
+```
+// MVEL2
+20 / 4   → 5.0  (double)
+10 / 3   → 3.333...  (double)
+```
+
+This is a special case in `MathProcessor`: the integer branch uses
+`toDouble(val1) / toInteger(val2)` for division while keeping `+`, `-`, `*`,
+and `%` as integer operations.
+
+In MVEL3 (and Java), integer division truncates toward zero:
+
+```
+// MVEL3 / Java
+20 / 4   → 5    (int)
+10 / 3   → 3    (int)
+```
+
+The imported `ArithmeticTests` passes `double` expected values to assertions
+for division-containing expressions (e.g. `testMath29`: `expected:<11.25>`),
+so these fail against MVEL3's integer result. Adding a `double` literal
+(`20.0 / 4`) or an explicit cast (`(double) 20 / 4`) produces `double` in
+both engines.
+
+---
+
 ## Block syntax: variable declarations and trailing semicolons
 
 MVEL2 allows bare assignments (`a = 100`), omits `var`, and does not require a

@@ -28,6 +28,14 @@ Run all imported cases (a nonzero Maven exit is expected while differences remai
 mvn -DexcludedGroups= -Dtest=org.mvel3.compat.mvel2.ArithmeticTests test
 ```
 
+Run all imported cases, skipping tests whose failure reason is documented in
+`Compatibility.md` (annotated with `@KnownCompatibility`):
+
+```bash
+mvn -DexcludedGroups="mvel2-known-compatibility-difference" \
+    -Dtest=org.mvel3.compat.mvel2.ArithmeticTests test
+```
+
 Run one original case:
 
 ```bash
