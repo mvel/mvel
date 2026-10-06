@@ -666,7 +666,7 @@ class ArithmeticTest {
     assertThat(executeExpressionWithDefaultVariables("five << 1")).isEqualTo(5 << 1);
   }
 
-  @Disabled("DROOLS-6572 - Generates wrong code - unable to parse <<<")
+  @Disabled("Mvel3 doesn't support Unsigned Shift Left <<<")
   @Test
   void testUnsignedShiftLeft() {
     assertThat(executeExpressionWithDefaultVariables("-2 <<< 0")).isEqualTo(2);
@@ -834,7 +834,7 @@ class ArithmeticTest {
   }
 
   
-  @Disabled("DROOLS-6572 - Unable to parse : Confirm if single quotes are supported")
+  @Disabled("Mvel3 doesn't support single quotes string literals")
   @Test
   void testStringAppend() {
     String expression = "c + 'bar'";
