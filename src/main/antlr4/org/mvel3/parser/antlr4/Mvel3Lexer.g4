@@ -15,6 +15,7 @@ MODIFY    : 'modify';
 WITH      : 'with';
 
 // MVEL-specific operators
+POWER     : '**';
 HASH      : '#';
 EXCL_DOT  : '!.';
 
