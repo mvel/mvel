@@ -61,6 +61,7 @@ import org.mvel3.parser.antlr4.mveltojavaparser.expressions.ObjectCreationExpres
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.PostIncrementDecrementOperatorExpressionConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.SquareBracketExpressionConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.TernaryExpressionConverter;
+import org.mvel3.parser.antlr4.mveltojavaparser.expressions.PowerExpressionConverter;
 import org.mvel3.parser.antlr4.mveltojavaparser.expressions.UnaryOperatorExpressionConverter;
 
 import java.util.HashMap;
@@ -193,6 +194,11 @@ public class Mvel3ToJavaParserVisitor extends Mvel3ParserBaseVisitor<Node> {
     @Override
     public Node visitBinaryOperatorExpression(Mvel3Parser.BinaryOperatorExpressionContext ctx) {
         return BinaryOperatorExpressionConverter.convertBinaryOperatorExpression(ctx, this);
+    }
+
+    @Override
+    public Node visitPowerExpression(Mvel3Parser.PowerExpressionContext ctx) {
+        return PowerExpressionConverter.convertPowerExpression(ctx, this);
     }
 
     @Override

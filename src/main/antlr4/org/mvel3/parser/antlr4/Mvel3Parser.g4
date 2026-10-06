@@ -113,6 +113,9 @@ expression
     | NEW creator                                                   #ObjectCreationExpression
 
     // Level 12 to 1, Remaining operators
+    // Level 12.5, Power operator (MVEL extension, higher precedence than multiplicative)
+    // Right-associative to match mathematical convention: a**b**c = a**(b**c)
+    | <assoc=right> expression POWER expression               #PowerExpression
     // Level 12, Multiplicative operators
     | expression bop = ('*' | '/' | '%') expression           #BinaryOperatorExpression
     // Level 11, Additive operators
