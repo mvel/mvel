@@ -7,6 +7,8 @@ test suite in this package.
 
 ## Power operator (`**`)
 
+> `@KnownCompatibility("power-operator-type")`
+
 MVEL2's `**` calls `Math.pow` internally but **casts the result back to `int`**
 when both operands are integers (`5 ** 2` → `25`). MVEL3 translates `a ** b`
 to `Math.pow(a, b)` at parse time, so the result is always `double`
@@ -19,6 +21,8 @@ genuine numeric-type difference between the two engines.
 ---
 
 ## Integer division always returns `double` in MVEL2
+
+> `@KnownCompatibility("integer-division")`
 
 In MVEL2, dividing two integers returns `double` regardless of whether the
 result is whole:
@@ -51,6 +55,8 @@ both engines.
 
 ## Block syntax: variable declarations and trailing semicolons
 
+> `@KnownCompatibility("block-syntax")`
+
 MVEL2 allows bare assignments (`a = 100`), omits `var`, and does not require a
 trailing semicolon on the last expression in a multi-statement script:
 
@@ -82,6 +88,8 @@ throughout.
 
 ## String-to-number coercion
 
+> `@KnownCompatibility("string-coercion")`
+
 MVEL2 implicitly coerces `String` values to numbers when they appear in arithmetic
 expressions. If a variable holds `String "3.14"` and another holds `Integer 60`,
 MVEL2 evaluates `pi * hour` by parsing the string at runtime:
@@ -100,38 +108,23 @@ with `bad operand types for binary operator '*'`. Use an explicit inline type hi
 
 ## Unsigned left shift (`<<<`)
 
+> `@KnownCompatibility("unsigned-left-shift")`
+
 MVEL2 defines a `<<<` operator that performs an unsigned (rotating) left shift.
 Java and MVEL3 do not have a `<<<` operator.
 
 ```
 // MVEL2
--2 <<< 0   → 2   (bit-rotates the sign bit away)
+-2 <<< 0   → 2   (Math.abs(-2) << 0)
 ```
 
 MVEL3 has no equivalent and will fail to parse expressions that use `<<<`.
 
 ---
 
-## Output type coercion (`eval(expr, Type.class)`)
-
-MVEL2's `eval(expression, Type.class)` evaluates the expression and then coerces
-the result to the requested type at runtime (e.g. it will convert an `int` result
-to `Double`).
-
-MVEL3 compiles the expression to a Java method whose return type must be
-directly assignable to `Type`. An all-integer expression compiles to return `int`,
-which is incompatible with `Double` as a boxed type, so the compiler rejects it:
-
-```
-incompatible types: int cannot be converted to java.lang.Double
-```
-
-To produce a `double` result in MVEL3, use a `double` literal in the expression
-(e.g. `228d - ...`) or rely on the `integer-division` difference being absent.
-
----
-
 ## Single-quoted string literals
+
+> `@KnownCompatibility("single-quote-string")`
 
 MVEL2 accepts single-quoted literals of any length as `String` values:
 
@@ -147,6 +140,8 @@ exactly one character; anything longer is a parse error. Use double-quoted
 ---
 
 ## Missing auto-import for `java.math.*`
+
+> `@KnownCompatibility("missing-auto-import")`
 
 MVEL2 automatically imports `java.math.BigDecimal`, `java.math.BigInteger`,
 and other `java.math` types, so expressions can use them by simple name.
@@ -165,6 +160,8 @@ a `ParserContext` that includes the import.
 ---
 
 ## Dynamic property access on `Map` values
+
+> `@KnownCompatibility("dynamic-property-type")`
 
 MVEL2 resolves property access dynamically at runtime. When a variable holds a
 `Map<String, Object>`, `param.value` navigates to the `"value"` entry and uses

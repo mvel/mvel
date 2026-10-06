@@ -385,6 +385,32 @@ class ArithmeticTest {
   }
 
   @Test
+  void testOutputTypeDouble() {
+    // eval(intExpr, Double.class) — transpiler must insert (double) cast so javac can auto-box to Double
+    String expression = "228 - 338 % 375 - 103 + 260 + 412 * 177 + 121";
+    double expected = 228d - 338d % 375d - 103d + 260d + 412d * 177d + 121d;
+    Double result = MVEL.map(new Declaration[0])
+            .<Double>out(Double.class)
+            .expression(expression)
+            .imports(getImports())
+            .compile()
+            .eval(new java.util.LinkedHashMap<>());
+    assertThat(result).isEqualTo(expected);
+  }
+
+  @Test
+  void testOutputTypeLong() {
+    // eval(intExpr, Long.class) — (long) cast allows auto-boxing to Long
+    Long result = MVEL.map(new Declaration[0])
+            .<Long>out(Long.class)
+            .expression("10 + 5")
+            .imports(getImports())
+            .compile()
+            .eval(new java.util.LinkedHashMap<>());
+    assertThat(result).isEqualTo(15L);
+  }
+
+  @Test
   void testMath34() {
     String expression = "a+b-c*d*x/y-z+10";
     int result = 200 + 100 - 150 * 2 * 400 / 300 - 75 + 10;

@@ -35,11 +35,6 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2 has a {@code <<<} unsigned-left-shift operator (equivalent to a
  *       bitwise rotate); Java and MVEL3 do not have this operator.</dd>
  *
- *   <dt>{@code "output-type-coercion"}</dt>
- *   <dd>MVEL2's {@code eval(expr, Type.class)} coerces the result to the requested
- *       type at runtime; MVEL3 compiles the expression as-is and the generated Java
- *       code must be compatible with the requested return type.</dd>
- *
  *   <dt>{@code "single-quote-string"}</dt>
  *   <dd>MVEL2 accepts single-quoted multi-character literals as {@code String};
  *       MVEL3 treats them as {@code char} literals (Java semantics), so
@@ -65,9 +60,8 @@ public @interface KnownCompatibility {
      * Short identifier matching a section in {@code Compatibility.md}.
      * One of: {@code "power-operator-type"}, {@code "integer-division"},
      * {@code "block-syntax"}, {@code "string-coercion"},
-     * {@code "unsigned-left-shift"}, {@code "output-type-coercion"},
-     * {@code "single-quote-string"}, {@code "missing-auto-import"},
-     * {@code "dynamic-property-type"}.
+     * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
+     * {@code "missing-auto-import"}, {@code "dynamic-property-type"}.
      */
     String value();
 }

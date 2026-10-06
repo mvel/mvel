@@ -25,9 +25,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -112,7 +114,7 @@ public class MVELTranspiler {
                 ExpressionStmt exprStmt = new ExpressionStmt(expr);
                 blockStmt = new  BlockStmt(NodeList.nodeList(exprStmt));
             } else {
-                ReturnStmt returnStmt = new ReturnStmt(expr);
+                ReturnStmt returnStmt = new ReturnStmt(widenToNumericReturnType(expr, context.getEvaluatorInfo().outType()));
                 blockStmt = new  BlockStmt(NodeList.nodeList(returnStmt));
             }
         }
@@ -221,5 +223,26 @@ public class MVELTranspiler {
         body.append("};");
         m.setBody(new com.github.javaparser.ast.stmt.BlockStmt()
                 .addStatement(body.toString()));
+    }
+
+    /**
+     * When {@code outType} is a wider numeric wrapper type (e.g. {@code Double})
+     * wrap {@code expression} in a primitive cast so that javac can auto-box it:
+     * {@code (double) expr} → valid as {@code Double} return type.
+     */
+    private static Expression widenToNumericReturnType(Expression expression, org.mvel3.Type<?> outType) {
+        Class<?> clazz = outType.getClazz();
+        PrimitiveType.Primitive primitive = null;
+        if (clazz == Double.class) {
+            primitive = PrimitiveType.Primitive.DOUBLE;
+        } else if (clazz == Float.class) {
+            primitive = PrimitiveType.Primitive.FLOAT;
+        } else if (clazz == Long.class) {
+            primitive = PrimitiveType.Primitive.LONG;
+        }
+        if (primitive == null) {
+            return expression;
+        }
+        return new CastExpr(new PrimitiveType(primitive), expression);
     }
 }

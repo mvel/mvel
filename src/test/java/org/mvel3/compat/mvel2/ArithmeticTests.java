@@ -426,7 +426,6 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
-  @KnownCompatibility("output-type-coercion") // eval(expr, Double.class) — MVEL3 compiles integer expr as int, incompatible with Double return type
   public void testMath40() {
     String expression = "228 - 338 % 375 - 103 + 260 + 412 * 177 + 121";
     double res = 228d - 338d % 375d - 103d + 260d + 412d * 177d + 121d;
