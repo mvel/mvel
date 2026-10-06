@@ -17,7 +17,7 @@
  * 
  */
 
-package org.mvel3;
+package org.mvel3.compat.mvel3;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -31,6 +31,15 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mvel3.Address;
+import org.mvel3.Evaluator;
+import org.mvel3.Foo;
+import org.mvel3.MVEL;
+import org.mvel3.MiscTestClass;
+import org.mvel3.Order;
+import org.mvel3.Person;
+import org.mvel3.TestInterface;
+import org.mvel3.Type;
 import org.mvel3.transpiler.context.Declaration;
 
 import static java.lang.System.currentTimeMillis;
@@ -38,13 +47,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 /**
- * Porting of ArithmeticTests from MVEL project.
- * 
+ * Porting of ArithmeticTests from MVEL project adapted for MVEL3 syntax and features.
+ *
  * Disabled tests are failing for various causes
- * 
+ *
  */
 
-class ArithmeticTest {
+public class ArithmeticAdaptedTest {
 
   public static Set<String> getImports() {
 

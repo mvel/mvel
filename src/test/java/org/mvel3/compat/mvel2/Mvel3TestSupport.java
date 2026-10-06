@@ -1,15 +1,20 @@
 package org.mvel3.compat.mvel2;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mvel3.ContextType;
 import org.mvel3.Evaluator;
 import org.mvel3.MVEL;
+import org.mvel3.MVELBuilder;
 import org.mvel3.Type;
 import org.mvel3.compat.mvel2.res.TestInterface;
+import org.mvel3.transpiler.context.Declaration;
 
 /** Adapts only the evaluation calls used by the imported arithmetic tests. */
 public final class Mvel3TestSupport {
@@ -33,9 +38,16 @@ public final class Mvel3TestSupport {
         return ((CompiledExpression) expression).evaluate(variables);
     }
 
+    public static Object executeExpression(final Serializable expression, final Object root) {
+        if (root instanceof Map) {
+            return executeExpression(expression, (Map) root);
+        }
+        return ((CompiledExpression) expression).evaluate(root);
+    }
+
     public static Object executeExpression(final Serializable expression, final Object root, final Map variables) {
         if (root != null) {
-            throw new UnsupportedOperationException("The arithmetic adapter supports a Map context only");
+            return ((CompiledExpression) expression).evaluate(root, variables);
         }
         return executeExpression(expression, variables);
     }
@@ -46,6 +58,13 @@ public final class Mvel3TestSupport {
 
     public static Object eval(final String expression, final Map variables) {
         return compileExpression(expression).evaluate(variables);
+    }
+
+    public static Object eval(final String expression, final Object root) {
+        if (root instanceof Map) {
+            return eval(expression, (Map) root);
+        }
+        return compileExpression(expression).evaluate(root);
     }
 
     public static <T> T eval(final String expression, final Class<T> outputType) {
@@ -80,7 +99,7 @@ public final class Mvel3TestSupport {
         private final Class<?> outputType;
 
         // NOT thread-safe: each imported test owns its compiled expression.
-        private transient Evaluator<Map<String, Object>, Void, ?> evaluator;
+        private transient Evaluator evaluator;
 
         private CompiledExpression(final String expression, final TestCompilerContext context, final Class<?> outputType) {
             this.expression = expression;
@@ -112,7 +131,46 @@ public final class Mvel3TestSupport {
                     evaluator = mvel.compileMapExpression(expression, outputType, imports, types);
                 }
             }
-            return evaluator.eval(variables);
+            return ((Evaluator<Map<String, Object>, Void, ?>) evaluator).eval(variables);
+        }
+
+        private Object evaluate(final Object root) {
+            return evaluate(root, null);
+        }
+
+        private Object evaluate(final Object root, final Map<String, Object> variables) {
+            if (root == null) {
+                return evaluate(variables != null ? variables : new LinkedHashMap<>());
+            }
+            if (root instanceof Map) {
+                Map<String, Object> merged = new LinkedHashMap<>((Map<String, Object>) root);
+                if (variables != null) {
+                    merged.putAll(variables);
+                }
+                return evaluate(merged);
+            }
+            if (evaluator == null) {
+                List<Declaration<?>> decls = new ArrayList<>();
+                declaredTypes.forEach((name, type) -> decls.add(Declaration.of(name, type)));
+                if (variables != null) {
+                    variables.forEach((name, value) -> {
+                        Class<?> type = value == null ? Object.class : value.getClass();
+                        decls.add(Declaration.of(name, type));
+                    });
+                }
+                Declaration<?>[] declArray = decls.toArray(new Declaration[0]);
+                MVELBuilder.WithBuilder<?> withBuilder = new MVELBuilder.WithBuilder<>(
+                        ContextType.POJO, Declaration.of(MVELBuilder.CONTEXT_NAME, Type.type(root.getClass())), declArray);
+                MVELBuilder<?, ?, ?> builder;
+                if (expression.indexOf(';') > 0) {
+                    builder = withBuilder.out(outputType).block(expression);
+                } else {
+                    builder = withBuilder.out(outputType).expression(expression);
+                }
+                org.mvel3.CompilerParameters params = builder.imports(imports).build();
+                evaluator = new MVEL().compilePojoEvaluator(params);
+            }
+            return ((Evaluator<Object, Void, ?>) evaluator).eval(root);
         }
     }
 }
