@@ -25,6 +25,7 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 @Tag("mvel2-compatibility")
 public class ArithmeticTests extends AbstractTest {
   @Test
+  @KnownCompatibility("string-coercion") // pi is String "3.14" in createTestMap(); MVEL2 coerces implicitly
   public void testMath() {
     Map vars = createTestMap();
 
@@ -366,6 +367,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("integer-division") // integer b/x, b/z yield 0 and 0 in MVEL3; MVEL2 returns double fractions
   public void testMath36() {
     String expression = "b/x*z/a+x-b+x-b/z+y";
 
@@ -424,6 +426,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("output-type-coercion") // eval(expr, Double.class) — MVEL3 compiles integer expr as int, incompatible with Double return type
   public void testMath40() {
     String expression = "228 - 338 % 375 - 103 + 260 + 412 * 177 + 121";
     double res = 228d - 338d % 375d - 103d + 260d + 412d * 177d + 121d;
@@ -588,6 +591,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("unsigned-left-shift") // <<< is MVEL2-only; MVEL3/Java have no unsigned left shift
   public void testUnsignedShiftLeft() {
     assertEquals(2, test("-2 <<< 0"));
   }
@@ -767,6 +771,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("single-quote-string") // 'bar' is a valid String literal in MVEL2; MVEL3 follows Java char-literal semantics
   public void testStringAppend() {
     String ex = "c + 'bar'";
     Map vars = createTestMap();
@@ -1050,6 +1055,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("missing-auto-import") // BigDecimal inferred from variable type but java.math.BigDecimal is not auto-imported in MVEL3
   public void testJIRA210() {
     Map<String, Object> vars = new LinkedHashMap<String, Object>();
     vars.put("bal", new BigDecimal("999.99"));
@@ -1072,6 +1078,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("dynamic-property-type") // param.value is Object (Map<String,Object>); MVEL3 cannot multiply int * Object statically
   public void testMathDec30() {
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("value", 10);
@@ -1257,6 +1264,7 @@ public class ArithmeticTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("missing-auto-import") // BigDecimal variable triggers import of java.math.BigDecimal which MVEL3 doesn't auto-add
   public void testIssue321() {
       Map<String, Object> vars = new HashMap<>();
       vars.put("a", BigDecimal.valueOf(19.8));
