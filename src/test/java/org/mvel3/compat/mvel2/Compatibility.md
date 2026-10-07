@@ -299,6 +299,56 @@ MVEL3 equivalent.
 
 ---
 
+## Inline `import` statement in expressions
+
+> `@KnownCompatibility("inline-import")`
+
+MVEL2 allows an `import` statement as a standalone statement inside an
+expression script:
+
+```
+// MVEL2
+import org.mvel2.tests.core.res.Foo;
+[ 10, 20 ]
+```
+
+MVEL3 transpiles to Java source code.  `import` is only valid at the top level
+of a compilation unit, not inside a method body, so it is treated as an
+extraneous token and causes a parse error:
+
+```
+line 1:1 extraneous input 'import' expecting ...
+```
+
+Pass the type as an import via the API instead:
+```java
+Set<String> imports = new HashSet<>();
+imports.add(Foo.class.getCanonicalName());
+mvel.executeExpression(expression, imports, vars);
+```
+
+---
+
+## JavaParser null-node crash in transpiler
+
+> `@KnownCompatibility("javaparser-null-node")`
+
+Certain expression patterns cause the MVEL3 transpiler to crash with:
+
+```
+Cannot invoke "com.github.javaparser.HasParentNode.setParentNode(...)" because "current" is null
+```
+
+Known triggers:
+- An `if/else-if` chain preceded by `//` comments when the body contains a
+  single-quoted char literal (e.g. `System.out.println('Got here!')`).
+- A `foreach` loop body that contains `//` or `/* */` comments.
+
+These are transpiler defects rather than intentional design differences.
+There is no MVEL3 workaround; the affected tests are disabled.
+
+---
+
 ## Qualified class-name literals
 
 > `@KnownCompatibility("class-literal")`

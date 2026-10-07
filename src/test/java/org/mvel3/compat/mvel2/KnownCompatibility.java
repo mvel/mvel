@@ -60,6 +60,16 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2's {@code #} operator coerces both sides to {@code String} and
  *       concatenates them; in MVEL3 {@code #} begins a line comment, so the
  *       operator is silently truncated.  Use {@code "" + a + b} instead.</dd>
+ *
+ *   <dt>{@code "inline-import"}</dt>
+ *   <dd>MVEL2 accepts {@code import Foo;} as an inline expression statement;
+ *       MVEL3 rejects it (import is not valid inside a method body).
+ *       Pass the type via the API imports set instead.</dd>
+ *
+ *   <dt>{@code "javaparser-null-node"}</dt>
+ *   <dd>Certain patterns (foreach-with-comment, else-if-with-comment + char
+ *       literal) crash the MVEL3 transpiler with a JavaParser null-node NPE.
+ *       These are transpiler defects; no workaround exists.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -72,7 +82,8 @@ public @interface KnownCompatibility {
      * {@code "block-syntax"}, {@code "string-coercion"},
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
      * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
-     * {@code "class-literal"}, {@code "hash-concat-operator"}.
+     * {@code "class-literal"}, {@code "hash-concat-operator"},
+     * {@code "inline-import"}, {@code "javaparser-null-node"}.
      */
     String value();
 }
