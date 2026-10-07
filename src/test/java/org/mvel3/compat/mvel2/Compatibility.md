@@ -273,3 +273,29 @@ MVEL3 does not support this operator.
 
 MVEL2 provides `isdef` to check if a variable or property is defined in scope (`isdef _v1`).
 MVEL3 resolves variable names statically at compile time and does not have an `isdef` operator.
+
+---
+
+## Qualified class-name literals
+
+> `@KnownCompatibility("class-literal")`
+
+MVEL2 evaluates a bare qualified class name such as `java.lang.String` as a
+`Class` object at runtime by navigating through the package tree:
+
+```
+// MVEL2
+java.lang.String   → String.class
+```
+
+MVEL3 transpiles the expression to Java source code.  The transpiler treats
+`java.lang.String` as a field access chain (`java` → `lang` → `String`), which
+fails to compile because `java` is not a variable in scope:
+
+```
+cannot find symbol: class lang
+  location: package java
+```
+
+Use `String.class` (or any fully-qualified `.class` literal) in MVEL3
+expressions that need a `Class` object.

@@ -50,6 +50,11 @@ import java.lang.annotation.Target;
  *       runtime; MVEL3 resolves types statically and property access on an
  *       {@code Object}-typed map value yields {@code Object}, which cannot be
  *       used as an arithmetic operand.</dd>
+ *
+ *   <dt>{@code "class-literal"}</dt>
+ *   <dd>MVEL2 evaluates a bare qualified class name (e.g. {@code java.lang.String})
+ *       as a {@code Class} object; MVEL3 treats it as a field-access chain and
+ *       fails to compile.  Use {@code String.class} instead.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -61,7 +66,8 @@ public @interface KnownCompatibility {
      * One of: {@code "power-operator-type"}, {@code "integer-division"},
      * {@code "block-syntax"}, {@code "string-coercion"},
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
-     * {@code "missing-auto-import"}, {@code "dynamic-property-type"}.
+     * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
+     * {@code "class-literal"}.
      */
     String value();
 }
