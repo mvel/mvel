@@ -238,4 +238,33 @@ class ClassFilterTest {
                 "1 + 2", ClassFilter.SAFE_PRESET);
         assertThat(eval.eval(new HashMap<>())).isEqualTo(3);
     }
+
+    // 17. A blocked class named in a generic type argument is rejected
+    @Test
+    void typeArgumentOfBlockedClass_rejected() {
+        ClassFilter filter = ClassFilter.blocklist(Runtime.class);
+        assertThatExceptionOfType(ClassFilterException.class)
+                .isThrownBy(() -> compileBlock(
+                        "java.util.List<java.lang.Runtime> l = null; return l;", filter, Set.of()))
+                .satisfies(ex -> assertThat(ex.getMessage()).contains("java.lang.Runtime"));
+    }
+
+    // 18. Type arguments are checked at every nesting depth
+    @Test
+    void nestedTypeArgumentOfBlockedClass_rejected() {
+        ClassFilter filter = ClassFilter.blocklist(java.io.File.class);
+        assertThatExceptionOfType(ClassFilterException.class)
+                .isThrownBy(() -> compileBlock(
+                        "java.util.Map<java.lang.String, java.util.List<java.io.File>> m = null; return m;",
+                        filter, Set.of()))
+                .satisfies(ex -> assertThat(ex.getMessage()).contains("java.io.File"));
+    }
+
+    // 19. Package scope prefixes are still not treated as class references
+    @Test
+    void packageScopePrefix_notReported() {
+        ClassFilter filter = ClassFilter.blocklist(Runtime.class);
+        assertThatNoException().isThrownBy(() -> compileBlock(
+                "java.util.List<java.lang.String> l = null; return l;", filter, Set.of()));
+    }
 }
