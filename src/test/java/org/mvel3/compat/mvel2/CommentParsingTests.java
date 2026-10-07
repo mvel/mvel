@@ -81,12 +81,13 @@ public class CommentParsingTests extends AbstractTest {
     }
 
     // -------------------------------------------------------------------------
-    // else-if with comments + single-quote string — triggers a javaparser
-    // internal null-node error in the MVEL3 transpiler
+    // else-if with comments — root cause: 'Got here!' is a multi-char
+    // single-quoted literal. MVEL3 treats it as a char, which corrupts the
+    // JavaParser AST and produces a null-node NPE during transpilation.
     // -------------------------------------------------------------------------
 
     @Test
-    @KnownCompatibility("javaparser-null-node")
+    @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugPreCompiled() throws Exception {
         executeExpression(compileExpression("// This is never true\n" + "if (1==0) {\n"
             + "  // Never reached\n" + "}\n" + "// This is always true...\n" + "else if (1==1) {"
@@ -94,7 +95,7 @@ public class CommentParsingTests extends AbstractTest {
     }
 
     @Test
-    @KnownCompatibility("javaparser-null-node")
+    @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugEvaluated() throws Exception {
         eval("// This is never true\n" + "if (1==0) {\n" + "  // Never reached\n" + "}\n"
             + "// This is always true...\n" + "else if (1==1) {" + "  System.out.println('Got here!');" + "}\n");

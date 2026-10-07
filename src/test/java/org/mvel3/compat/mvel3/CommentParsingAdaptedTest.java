@@ -120,20 +120,26 @@ public class CommentParsingAdaptedTest {
     }
 
     // -------------------------------------------------------------------------
-    // javaparser-null-node: else-if + comment + single-quoted char crashes
-    // MVEL3 transpiler; no MVEL3-compatible equivalent available.
+    // single-quote-string: replace 'Got here!' with "Got here!" (double quotes)
     // -------------------------------------------------------------------------
 
     @Test
-    @Disabled("javaparser-null-node: else-if block with comment + char literal triggers NPE in MVEL3 transpiler")
     public void testElseIfCommentBugPreCompiled() {
-        // Original: System.out.println('Got here!') inside else-if after a comment
+        // single-quote-string: 'Got here!' → "Got here!"
+        // block-syntax: add explicit return to satisfy MVEL3 block return requirement
+        compile("// This is never true\n" + "if (1==0) {\n"
+            + "  // Never reached\n" + "  return null;\n" + "}\n"
+            + "// This is always true...\n" + "else if (1==1) {"
+            + "  System.out.println(\"Got here!\"); return null;" + "} else { return null; }\n");
     }
 
     @Test
-    @Disabled("javaparser-null-node: else-if block with comment + char literal triggers NPE in MVEL3 transpiler")
     public void testElseIfCommentBugEvaluated() {
-        // Original: same as above, via MVEL.eval()
+        // single-quote-string: 'Got here!' → "Got here!"
+        // block-syntax: add explicit return to satisfy MVEL3 block return requirement
+        compile("// This is never true\n" + "if (1==0) {\n" + "  // Never reached\n" + "  return null;\n" + "}\n"
+            + "// This is always true...\n" + "else if (1==1) {"
+            + "  System.out.println(\"Got here!\"); return null;" + "} else { return null; }\n");
     }
 
     // -------------------------------------------------------------------------
