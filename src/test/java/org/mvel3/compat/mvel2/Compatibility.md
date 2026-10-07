@@ -276,6 +276,29 @@ MVEL3 resolves variable names statically at compile time and does not have an `i
 
 ---
 
+## Hash string-coercion concat operator (`#`)
+
+> `@KnownCompatibility("hash-concat-operator")`
+
+MVEL2 provides a `#` binary operator that coerces both operands to `String` and
+concatenates them:
+
+```
+// MVEL2
+0 # 1      → "01"
+0 # "bar"  → "0bar"
+```
+
+In MVEL3, `#` begins a line comment (following Java's `//` convention for
+single-character comment markers).  The transpiler silently discards everything
+after `#`, so `a = b # c` compiles as `a = b`, producing `null` in the result
+map rather than the concatenated string.
+
+Use `"" + a + b` or explicit `String.valueOf(a) + String.valueOf(b)` as the
+MVEL3 equivalent.
+
+---
+
 ## Qualified class-name literals
 
 > `@KnownCompatibility("class-literal")`

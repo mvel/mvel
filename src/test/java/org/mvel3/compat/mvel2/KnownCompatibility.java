@@ -55,6 +55,11 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2 evaluates a bare qualified class name (e.g. {@code java.lang.String})
  *       as a {@code Class} object; MVEL3 treats it as a field-access chain and
  *       fails to compile.  Use {@code String.class} instead.</dd>
+ *
+ *   <dt>{@code "hash-concat-operator"}</dt>
+ *   <dd>MVEL2's {@code #} operator coerces both sides to {@code String} and
+ *       concatenates them; in MVEL3 {@code #} begins a line comment, so the
+ *       operator is silently truncated.  Use {@code "" + a + b} instead.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -67,7 +72,7 @@ public @interface KnownCompatibility {
      * {@code "block-syntax"}, {@code "string-coercion"},
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
      * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
-     * {@code "class-literal"}.
+     * {@code "class-literal"}, {@code "hash-concat-operator"}.
      */
     String value();
 }
