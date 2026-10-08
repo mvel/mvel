@@ -67,8 +67,9 @@ import java.lang.annotation.Target;
  *       Pass the type via the API imports set instead.</dd>
  *
  *   <dt>{@code "javaparser-null-node"}</dt>
- *   <dd>Certain patterns (foreach-with-comment, else-if-with-comment + char
- *       literal) crash the MVEL3 transpiler with a JavaParser null-node NPE.
+ *   <dd>Certain patterns crash the MVEL3 transpiler with a JavaParser null-node
+ *       NPE ({@code "A reference was unexpectedly null"}).  Known trigger:
+ *       {@code foreach} transpilation fails even without a comment in the body.
  *       These are transpiler defects; no workaround exists.</dd>
  * </dl>
  */

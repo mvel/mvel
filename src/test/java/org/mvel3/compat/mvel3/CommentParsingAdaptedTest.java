@@ -102,19 +102,19 @@ public class CommentParsingAdaptedTest {
     }
 
     @Test
-    @Disabled("javaparser-null-node: foreach with comment triggers NPE in MVEL3 transpiler")
+    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
     public void testForEachQuoteCommentBug() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The ' character causes issues\n" + "}");
     }
 
     @Test
-    @Disabled("javaparser-null-node: foreach with comment triggers NPE in MVEL3 transpiler")
+    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
     public void testForEachDblQuoteCommentBug() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The \" character causes issues\n" + "}");
     }
 
     @Test
-    @Disabled("javaparser-null-node: foreach with comment triggers NPE in MVEL3 transpiler")
+    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
     public void testForEachCommentOK() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The quote & double quote characters cause issues\n" + "}");
     }

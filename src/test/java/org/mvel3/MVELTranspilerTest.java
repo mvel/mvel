@@ -1981,4 +1981,39 @@ class MVELTranspilerTest implements TranspilerTest {
              "");
     }
 
+    // -------------------------------------------------------------------------
+    // foreach — regression tests for javaparser null-node NPE
+    // foreach transpilation itself fails with "A reference was unexpectedly null"
+    // regardless of whether a comment is present in the body.
+    // -------------------------------------------------------------------------
+
+    @Test @Disabled("foreach-null-node: foreach transpilation triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    void testForeachWithoutComment() {
+        // foreach without any comment already fails — the bug is in foreach itself
+        test("foreach ( item : 10 ) {\n" +
+             "}",
+             "for (var item : 10) {\n" +
+             "}");
+    }
+
+    @Test @Disabled("foreach-null-node: foreach transpilation triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    void testForeachWithLineComment() {
+        test("foreach ( item : 10 ) {\n" +
+             "  // a comment\n" +
+             "}",
+             "for (var item : 10) {\n" +
+             "  // a comment\n" +
+             "}");
+    }
+
+    @Test @Disabled("foreach-null-node: foreach transpilation triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    void testForeachWithQuoteInLineComment() {
+        test("foreach ( item : 10 ) {\n" +
+             "  // The ' character causes issues\n" +
+             "}",
+             "for (var item : 10) {\n" +
+             "  // The ' character causes issues\n" +
+             "}");
+    }
+
 }
