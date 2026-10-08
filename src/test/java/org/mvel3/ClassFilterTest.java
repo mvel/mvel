@@ -56,12 +56,18 @@ class ClassFilterTest {
     }
 
     private Evaluator<Map<String, Object>, Void, Object> compileBlock(String block, ClassFilter filter, Set<String> imports) {
+        return compileBlock(block, filter, imports, Set.of());
+    }
+
+    private Evaluator<Map<String, Object>, Void, Object> compileBlock(String block, ClassFilter filter,
+                                                                      Set<String> imports, Set<String> staticImports) {
         MVELBuilder<Map<String, Object>, Void, Object> b = MVEL.<Object>map()
                 .<Object>out(Object.class)
                 .block(block)
                 .classManager(new ClassManager())
                 .classLoader(ClassLoader.getSystemClassLoader())
-                .imports(imports);
+                .imports(imports)
+                .staticImports(staticImports);
         if (filter != null) {
             b.classFilter(filter);
         }
@@ -266,5 +272,32 @@ class ClassFilterTest {
         ClassFilter filter = ClassFilter.blocklist(Runtime.class);
         assertThatNoException().isThrownBy(() -> compileBlock(
                 "java.util.List<java.lang.String> l = null; return l;", filter, Set.of()));
+    }
+
+    // 20. A static star import of a blocked class is rejected. Its members
+    // are readable unqualified, so no node in the body names the class.
+    @Test
+    void staticStarImportOfBlockedClass_rejected() {
+        ClassFilter filter = ClassFilter.blocklist(java.io.File.class);
+        assertThatExceptionOfType(ClassFilterException.class)
+                .isThrownBy(() -> compileBlock("return separator;", filter, Set.of(), Set.of("java.io.File.*")))
+                .satisfies(ex -> assertThat(ex.getMessage()).contains("java.io.File"));
+    }
+
+    // 21. Same for a class caught by a package prefix filter
+    @Test
+    void staticStarImportOfBlockedPackage_rejected() {
+        ClassFilter filter = ClassFilter.blocklistPackage("java.lang.reflect.");
+        assertThatExceptionOfType(ClassFilterException.class)
+                .isThrownBy(() -> compileBlock("return 1;", filter, Set.of(), Set.of("java.lang.reflect.Array.*")))
+                .satisfies(ex -> assertThat(ex.getMessage()).contains("java.lang.reflect.Array"));
+    }
+
+    // 22. A static star import of a permitted class still compiles
+    @Test
+    void staticStarImportOfAllowedClass_accepted() {
+        ClassFilter filter = ClassFilter.blocklist(java.io.File.class);
+        assertThatNoException().isThrownBy(() ->
+                compileBlock("return emptyList();", filter, Set.of(), Set.of("java.util.Collections.*")));
     }
 }
