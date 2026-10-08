@@ -110,11 +110,12 @@ public final class ClassFilterValidator {
     private static void walkUserCode(Node root, ClassFilter filter, ClassLoader classLoader,
                                       List<ClassFilterException.Violation> violations, Set<String> seen) {
         root.findAll(ClassOrInterfaceType.class).forEach(t -> {
-            // A ClassOrInterfaceType whose parent is also a ClassOrInterfaceType
-            // is the *scope prefix* of an outer type (e.g. `java.lang` inside
+            // Skip the *scope prefix* of an outer type (e.g. `java.lang` inside
             // `java.lang.Runtime`). It's a package path fragment, not a real
             // type reference — the outer type will be checked on its own.
-            if (t.getParentNode().filter(p -> p instanceof ClassOrInterfaceType).isPresent()) {
+            // Generic type arguments hang off a ClassOrInterfaceType parent as
+            // well, but those are genuine class references and are checked.
+            if (isScopePrefix(t)) {
                 return;
             }
             checkClassName(resolveTypeName(t), t, filter, classLoader, violations, seen);
@@ -143,6 +144,19 @@ public final class ClassFilterValidator {
 
         root.findAll(FieldAccessExpr.class).forEach(fa ->
                 checkClassName(resolveFieldDeclaringType(fa), fa, filter, classLoader, violations, seen));
+    }
+
+    /**
+     * True when {@code t} is the scope of its enclosing type, i.e. the
+     * {@code java.lang} in {@code java.lang.Runtime}.
+     */
+    private static boolean isScopePrefix(ClassOrInterfaceType t) {
+        return t.getParentNode()
+                .filter(ClassOrInterfaceType.class::isInstance)
+                .map(ClassOrInterfaceType.class::cast)
+                .flatMap(ClassOrInterfaceType::getScope)
+                .filter(scope -> scope == t)
+                .isPresent();
     }
 
     // ----- resolution helpers ------------------------------------------------
