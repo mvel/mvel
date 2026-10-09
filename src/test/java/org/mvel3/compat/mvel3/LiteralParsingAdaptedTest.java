@@ -94,10 +94,10 @@ public class LiteralParsingAdaptedTest {
   }
 
   @Test
-  @Disabled("single-quote-string: '\\777' is invalid in MVEL3; octal > 377 (\377) is illegal in Java char/String literals")
   public void testOctalEscapes3() {
-    // MVEL2 accepted '\777' as a valid octal escape producing a 2-char string.
-    // Java (and MVEL3) disallow octal escapes above \377.
+    // Java parses \777 as the octal escape \77 followed by '7', producing "?7".
+    // MVEL3: use a double-quoted string literal, preserving the MVEL2 expected value.
+    assertEquals("\777", eval("\"\\777\""));
   }
 
   @Test

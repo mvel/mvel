@@ -33,9 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <ul>
  *   <li><b>block-syntax</b>: expressions with {@code ;} use {@code var} declarations
  *       and explicit {@code return}.</li>
- *   <li><b>javaparser-null-node</b>: the two {@code testElseIfCommentBug*} tests trigger
- *       a null-node crash in the MVEL3 transpiler when a single-quoted char literal
- *       appears inside an else-if block with preceding comments; disabled.</li>
+ *   <li><b>single-quote-string</b>: the two {@code testElseIfCommentBug*} tests use
+ *       double-quoted strings and explicit returns; both are enabled.</li>
+ *   <li><b>foreach-syntax</b>: the three {@code testForEach*} tests are disabled
+ *       because MVEL3 does not yet support MVEL2's {@code foreach} syntax.</li>
  *   <li><b>inline-import</b>: MVEL3 does not accept {@code import} as an inline
  *       expression statement; pass the import via the API instead.</li>
  * </ul>
@@ -97,19 +98,19 @@ public class CommentParsingAdaptedTest {
     }
 
     @Test
-    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    @Disabled("foreach-syntax: MVEL3 does not yet support MVEL2's foreach statement")
     public void testForEachQuoteCommentBug() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The ' character causes issues\n" + "}");
     }
 
     @Test
-    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    @Disabled("foreach-syntax: MVEL3 does not yet support MVEL2's foreach statement")
     public void testForEachDblQuoteCommentBug() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The \" character causes issues\n" + "}");
     }
 
     @Test
-    @Disabled("foreach-null-node: foreach transpilation itself triggers null-node NPE in MVEL3 transpiler - MVEL3 bug")
+    @Disabled("foreach-syntax: MVEL3 does not yet support MVEL2's foreach statement")
     public void testForEachCommentOK() throws Exception {
         compile("foreach ( item : 10 ) {\n" + "  // The quote & double quote characters cause issues\n" + "}");
     }

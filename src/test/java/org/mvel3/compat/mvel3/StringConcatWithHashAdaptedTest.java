@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Porting of StringConcatWithHashTest from MVEL2 adapted for MVEL3.
  *
  * <p>MVEL2 provides a {@code #} binary operator that coerces both operands to
- * {@code String} and concatenates them. In MVEL3 {@code #} begins a line
- * comment (Java semantics), so the {@code #} operator is unavailable.
+ * {@code String} and concatenates them. MVEL3 uses {@code #} for inline casts
+ * such as {@code value#int#} and does not support this concatenation syntax.
  *
  * <p>The original test is disabled. A replacement test demonstrates the MVEL3
  * idiom for the same operation: use {@code "" + a + b} or
@@ -45,11 +45,11 @@ public class StringConcatWithHashAdaptedTest {
 
     // -------------------------------------------------------------------------
     // hash-concat-operator: MVEL2's # string-coercion concat operator is not
-    // available in MVEL3 — # starts a line comment.
+    // available in MVEL3 — # is used for inline casts.
     // -------------------------------------------------------------------------
 
     @Test
-    @Disabled("hash-concat-operator: '#' is a line-comment in MVEL3; no equivalent infix coercing-concat operator exists")
+    @Disabled("hash-concat-operator: MVEL3 uses '#' for inline casts and does not support MVEL2's coercing-concat operator")
     public void testConcatWithHash() {
         // Original MVEL2 expressions:
         //   props['res'] = props['number1'] # props['number2']  → "01"

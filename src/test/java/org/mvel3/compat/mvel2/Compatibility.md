@@ -289,10 +289,9 @@ concatenates them:
 0 # "bar"  → "0bar"
 ```
 
-In MVEL3, `#` begins a line comment (following Java's `//` convention for
-single-character comment markers).  The transpiler silently discards everything
-after `#`, so `a = b # c` compiles as `a = b`, producing `null` in the result
-map rather than the concatenated string.
+MVEL3 uses `#` for inline casts, such as `value#int#`. It does not support
+MVEL2's `a # b` string-coercion concatenation syntax. The lexer emits a `HASH`
+token for `#`; line comments begin with `//`.
 
 Use `"" + a + b` or explicit `String.valueOf(a) + String.valueOf(b)` as the
 MVEL3 equivalent.

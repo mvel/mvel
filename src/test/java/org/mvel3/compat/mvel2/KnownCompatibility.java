@@ -58,8 +58,9 @@ import java.lang.annotation.Target;
  *
  *   <dt>{@code "hash-concat-operator"}</dt>
  *   <dd>MVEL2's {@code #} operator coerces both sides to {@code String} and
- *       concatenates them; in MVEL3 {@code #} begins a line comment, so the
- *       operator is silently truncated.  Use {@code "" + a + b} instead.</dd>
+ *       concatenates them; MVEL3 uses {@code #} for inline casts such as
+ *       {@code value#int#} and does not support this concatenation syntax.
+ *       Use {@code "" + a + b} instead.</dd>
  *
  *   <dt>{@code "inline-import"}</dt>
  *   <dd>MVEL2 accepts {@code import Foo;} as an inline expression statement;

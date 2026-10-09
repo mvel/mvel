@@ -45,8 +45,9 @@ public class LiteralParsingTests extends AbstractTest {
   }
 
   @Test
-  @KnownCompatibility("single-quote-string")
+  @KnownCompatibility("regex-operator")
   public void testLiteralUnionWithComparison() {
+    // Single-quoted strings also differ; adapting the quotes still leaves the unsupported ~= operator.
     assertEquals(Boolean.TRUE,
         executeExpression(compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
   }
