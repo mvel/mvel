@@ -240,15 +240,16 @@ public final class ClassFilterValidator {
 
     private static void checkImport(ImportDeclaration imp, ClassFilter filter, ClassLoader cl,
                                      List<ClassFilterException.Violation> violations, Set<String> seen) {
-        if (imp.isAsterisk()) {
-            // Star imports have no single class to check here. Their uses are
-            // caught via type / method-call / field-access walks below.
+        if (imp.isAsterisk() && !imp.isStatic()) {
+            // A package star import has no single class to check here. Its uses
+            // are caught via type / method-call / field-access walks below.
             return;
         }
         String name = imp.getNameAsString();
-        // Static imports reference a member; the declaring class is the part
-        // before the last dot.
-        if (imp.isStatic()) {
+        // A single-member static import names a member, so the declaring class
+        // is the part before the last dot. A static star import already names
+        // the declaring class itself.
+        if (imp.isStatic() && !imp.isAsterisk()) {
             int dot = name.lastIndexOf('.');
             if (dot > 0) {
                 name = name.substring(0, dot);
