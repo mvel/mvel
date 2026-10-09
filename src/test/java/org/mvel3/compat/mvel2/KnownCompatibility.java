@@ -50,6 +50,28 @@ import java.lang.annotation.Target;
  *       runtime; MVEL3 resolves types statically and property access on an
  *       {@code Object}-typed map value yields {@code Object}, which cannot be
  *       used as an arithmetic operand.</dd>
+ *
+ *   <dt>{@code "class-literal"}</dt>
+ *   <dd>MVEL2 evaluates a bare qualified class name (e.g. {@code java.lang.String})
+ *       as a {@code Class} object; MVEL3 treats it as a field-access chain and
+ *       fails to compile.  Use {@code String.class} instead.</dd>
+ *
+ *   <dt>{@code "hash-concat-operator"}</dt>
+ *   <dd>MVEL2's {@code #} operator coerces both sides to {@code String} and
+ *       concatenates them; MVEL3 uses {@code #} for inline casts such as
+ *       {@code value#int#} and does not support this concatenation syntax.
+ *       Use {@code "" + a + b} instead.</dd>
+ *
+ *   <dt>{@code "inline-import"}</dt>
+ *   <dd>MVEL2 accepts {@code import Foo;} as an inline expression statement;
+ *       MVEL3 rejects it (import is not valid inside a method body).
+ *       Pass the type via the API imports set instead.</dd>
+ *
+ *   <dt>{@code "foreach-syntax"}</dt>
+ *   <dd>MVEL3 does not yet support MVEL2's {@code foreach} statement syntax.
+ *       The lexer defines the keyword, but the parser has no corresponding
+ *       statement rule. The current null-node failure also occurs without
+ *       comments in the body.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -61,7 +83,9 @@ public @interface KnownCompatibility {
      * One of: {@code "power-operator-type"}, {@code "integer-division"},
      * {@code "block-syntax"}, {@code "string-coercion"},
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
-     * {@code "missing-auto-import"}, {@code "dynamic-property-type"}.
+     * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
+     * {@code "class-literal"}, {@code "hash-concat-operator"},
+     * {@code "inline-import"}, {@code "foreach-syntax"}.
      */
     String value();
 }

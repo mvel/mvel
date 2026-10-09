@@ -273,3 +273,102 @@ MVEL3 does not support this operator.
 
 MVEL2 provides `isdef` to check if a variable or property is defined in scope (`isdef _v1`).
 MVEL3 resolves variable names statically at compile time and does not have an `isdef` operator.
+
+---
+
+## Hash string-coercion concat operator (`#`)
+
+> `@KnownCompatibility("hash-concat-operator")`
+
+MVEL2 provides a `#` binary operator that coerces both operands to `String` and
+concatenates them:
+
+```
+// MVEL2
+0 # 1      → "01"
+0 # "bar"  → "0bar"
+```
+
+MVEL3 uses `#` for inline casts, such as `value#int#`. It does not support
+MVEL2's `a # b` string-coercion concatenation syntax. The lexer emits a `HASH`
+token for `#`; line comments begin with `//`.
+
+Use `"" + a + b` or explicit `String.valueOf(a) + String.valueOf(b)` as the
+MVEL3 equivalent.
+
+---
+
+## Inline `import` statement in expressions
+
+> `@KnownCompatibility("inline-import")`
+
+MVEL2 allows an `import` statement as a standalone statement inside an
+expression script:
+
+```
+// MVEL2
+import org.mvel2.tests.core.res.Foo;
+[ 10, 20 ]
+```
+
+MVEL3 transpiles to Java source code.  `import` is only valid at the top level
+of a compilation unit, not inside a method body, so it is treated as an
+extraneous token and causes a parse error:
+
+```
+line 1:1 extraneous input 'import' expecting ...
+```
+
+Pass the type as an import via the API instead:
+```java
+Set<String> imports = new HashSet<>();
+imports.add(Foo.class.getCanonicalName());
+mvel.executeExpression(expression, imports, vars);
+```
+
+---
+
+## MVEL2 `foreach` statement syntax
+
+> `@KnownCompatibility("foreach-syntax")`
+
+MVEL2 accepts statements such as `foreach (item : 10) { ... }`. MVEL3 does not
+yet support this syntax. The lexer defines a `FOREACH` token, but the parser's
+statement rule accepts Java-style `for` and has no `foreach` alternative.
+
+These inputs currently fail during AST conversion with a null-node error:
+
+```
+A reference was unexpectedly null.
+```
+
+The failure occurs even with an empty loop body. Comments and quotes in comments
+are not the cause. The imported tests retain the original syntax and remain
+executable diagnostics; the corresponding adapted tests are disabled while
+`foreach` support is missing.
+
+---
+
+## Qualified class-name literals
+
+> `@KnownCompatibility("class-literal")`
+
+MVEL2 evaluates a bare qualified class name such as `java.lang.String` as a
+`Class` object at runtime by navigating through the package tree:
+
+```
+// MVEL2
+java.lang.String   → String.class
+```
+
+MVEL3 transpiles the expression to Java source code.  The transpiler treats
+`java.lang.String` as a field access chain (`java` → `lang` → `String`), which
+fails to compile because `java` is not a variable in scope:
+
+```
+cannot find symbol: class lang
+  location: package java
+```
+
+Use `String.class` (or any fully-qualified `.class` literal) in MVEL3
+expressions that need a `Class` object.
