@@ -16,11 +16,14 @@ package org.mvel3.compat.mvel2;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mvel3.MVEL;
 import org.mvel3.compat.mvel2.res.KnowledgeHelperFixer;
 import org.mvel3.compat.mvel2.res.Foo;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mvel3.compat.mvel2.Mvel3TestSupport.compileExpression;
 import static org.mvel3.compat.mvel2.Mvel3TestSupport.eval;
@@ -42,56 +45,67 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 public class CommentParsingTests extends AbstractTest {
 
     // -------------------------------------------------------------------------
-    // Comment parsing — compileExpression-only smoke tests (no value assertion)
+    // Comment parsing — eager block compilation (no evaluation or value assertion)
     // -------------------------------------------------------------------------
 
+    private static void compileBlock(final String expression) {
+        new MVEL().compileMapBlock(expression, Object.class, Set.of(), Map.of());
+    }
+
     @Test
+    @KnownCompatibility("block-syntax")
     public void testOKQuoteComment() throws Exception {
-        compileExpression("// ' this is OK!");
-        compileExpression("// ' this is OK!\n");
-        compileExpression("// ' this is OK!\nif(1==1) {};");
+        compileBlock("// ' this is OK!");
+        compileBlock("// ' this is OK!\n");
+        compileBlock("// ' this is OK!\nif(1==1) {};");
     }
 
     @Test
+    @KnownCompatibility("block-syntax")
     public void testOKDblQuoteComment() throws Exception {
-        compileExpression("// \" this is OK!");
-        compileExpression("// \" this is OK!\n");
-        compileExpression("// \" this is OK!\nif(1==1) {};");
+        compileBlock("// \" this is OK!");
+        compileBlock("// \" this is OK!\n");
+        compileBlock("// \" this is OK!\nif(1==1) {};");
     }
 
     @Test
+    @KnownCompatibility("block-syntax")
     public void testIfComment() throws Exception {
-        compileExpression("if(1 == 1) {\n" + "  // Quote & Double-quote seem to break this expression\n" + "}");
+        compileBlock("if(1 == 1) {\n" + "  // Quote & Double-quote seem to break this expression\n" + "}");
     }
 
     @Test
+    @KnownCompatibility("block-syntax")
     public void testIfQuoteCommentBug() throws Exception {
-        compileExpression("if(1 == 1) {\n" + "  // ' seems to break this expression\n" + "}");
+        compileBlock("if(1 == 1) {\n" + "  // ' seems to break this expression\n" + "}");
     }
 
     @Test
+    @KnownCompatibility("block-syntax")
     public void testIfDblQuoteCommentBug() throws Exception {
-        compileExpression("if(1 == 1) {\n" + "  // ' seems to break this expression\n" + "}");
+        compileBlock("if(1 == 1) {\n" + "  // ' seems to break this expression\n" + "}");
     }
 
     // -------------------------------------------------------------------------
-    // foreach — compileExpression (lazy compile) passes; the null-node crash
-    // only manifests when the block is actually evaluated. These pass here.
+    // foreach — MVEL3 does not yet support MVEL2's foreach syntax
     // -------------------------------------------------------------------------
 
     @Test
+    @KnownCompatibility("foreach-syntax")
     public void testForEachQuoteCommentBug() throws Exception {
-        compileExpression("foreach ( item : 10 ) {\n" + "  // The ' character causes issues\n" + "}");
+        compileBlock("foreach ( item : 10 ) {\n" + "  // The ' character causes issues\n" + "}");
     }
 
     @Test
+    @KnownCompatibility("foreach-syntax")
     public void testForEachDblQuoteCommentBug() throws Exception {
-        compileExpression("foreach ( item : 10 ) {\n" + "  // The \" character causes issues\n" + "}");
+        compileBlock("foreach ( item : 10 ) {\n" + "  // The \" character causes issues\n" + "}");
     }
 
     @Test
+    @KnownCompatibility("foreach-syntax")
     public void testForEachCommentOK() throws Exception {
-        compileExpression("foreach ( item : 10 ) {\n" + "  // The quote & double quote characters cause issues\n" + "}");
+        compileBlock("foreach ( item : 10 ) {\n" + "  // The quote & double quote characters cause issues\n" + "}");
     }
 
     // -------------------------------------------------------------------------

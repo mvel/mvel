@@ -66,11 +66,11 @@ import java.lang.annotation.Target;
  *       MVEL3 rejects it (import is not valid inside a method body).
  *       Pass the type via the API imports set instead.</dd>
  *
- *   <dt>{@code "javaparser-null-node"}</dt>
- *   <dd>Certain patterns crash the MVEL3 transpiler with a JavaParser null-node
- *       NPE ({@code "A reference was unexpectedly null"}).  Known trigger:
- *       {@code foreach} transpilation fails even without a comment in the body.
- *       These are transpiler defects; no workaround exists.</dd>
+ *   <dt>{@code "foreach-syntax"}</dt>
+ *   <dd>MVEL3 does not yet support MVEL2's {@code foreach} statement syntax.
+ *       The lexer defines the keyword, but the parser has no corresponding
+ *       statement rule. The current null-node failure also occurs without
+ *       comments in the body.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -84,7 +84,7 @@ public @interface KnownCompatibility {
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
      * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
      * {@code "class-literal"}, {@code "hash-concat-operator"},
-     * {@code "inline-import"}, {@code "javaparser-null-node"}.
+     * {@code "inline-import"}, {@code "foreach-syntax"}.
      */
     String value();
 }

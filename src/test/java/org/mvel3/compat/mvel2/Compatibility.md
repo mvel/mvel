@@ -329,23 +329,24 @@ mvel.executeExpression(expression, imports, vars);
 
 ---
 
-## JavaParser null-node crash in transpiler
+## MVEL2 `foreach` statement syntax
 
-> `@KnownCompatibility("javaparser-null-node")`
+> `@KnownCompatibility("foreach-syntax")`
 
-Certain expression patterns cause the MVEL3 transpiler to crash with:
+MVEL2 accepts statements such as `foreach (item : 10) { ... }`. MVEL3 does not
+yet support this syntax. The lexer defines a `FOREACH` token, but the parser's
+statement rule accepts Java-style `for` and has no `foreach` alternative.
+
+These inputs currently fail during AST conversion with a null-node error:
 
 ```
-Cannot invoke "com.github.javaparser.HasParentNode.setParentNode(...)" because "current" is null
+A reference was unexpectedly null.
 ```
 
-Known triggers:
-- An `if/else-if` chain preceded by `//` comments when the body contains a
-  single-quoted char literal (e.g. `System.out.println('Got here!')`).
-- A `foreach` loop body that contains `//` or `/* */` comments.
-
-These are transpiler defects rather than intentional design differences.
-There is no MVEL3 workaround; the affected tests are disabled.
+The failure occurs even with an empty loop body. Comments and quotes in comments
+are not the cause. The imported tests retain the original syntax and remain
+executable diagnostics; the corresponding adapted tests are disabled while
+`foreach` support is missing.
 
 ---
 
