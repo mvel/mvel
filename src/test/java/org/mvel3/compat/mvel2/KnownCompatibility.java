@@ -72,6 +72,30 @@ import java.lang.annotation.Target;
  *       The lexer defines the keyword, but the parser has no corresponding
  *       statement rule. The current null-node failure also occurs without
  *       comments in the body.</dd>
+ *   <dt>{@code "javaparser-null-node"}</dt>
+ *   <dd>Certain patterns crash the MVEL3 transpiler with a JavaParser null-node
+ *       NPE ({@code "A reference was unexpectedly null"}).  Known trigger:
+ *       {@code foreach} transpilation fails even without a comment in the body.
+ *       These are transpiler defects; no workaround exists.</dd>
+ *
+ *   <dt>{@code "void-method-expression"}</dt>
+ *   <dd>MVEL2 accepts a {@code void} method call as an expression whose value is
+ *       ignored; MVEL3 compiles a single expression as an {@code Object}-typed
+ *       return value, so {@code void} is rejected.  Use a block statement
+ *       ({@code call(); return null;}).</dd>
+ *
+ *   <dt>{@code "compound-assign-void-setter"}</dt>
+ *   <dd>A compound assignment on a property ({@code holder.intPrimitive += 10},
+ *       {@code holder.bigDecimal += 10}) is transpiled to a {@code void} setter
+ *       call, so it cannot be returned as the expression value (MVEL2 returns the
+ *       new value).  {@code BigDecimal} targets additionally need an explicit
+ *       {@code java.math.BigDecimal} import.  Write the assignment as a statement
+ *       and {@code return} the property afterwards.</dd>
+ *
+ *   <dt>{@code "inner-class-binary-name"}</dt>
+ *   <dd>{@code "new " + Outer.Inner.class.getName()} yields the {@code $}-separated
+ *       binary name, which MVEL3 cannot resolve.  Import the class through the
+ *       API imports set and use its simple name.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -85,7 +109,10 @@ public @interface KnownCompatibility {
      * {@code "unsigned-left-shift"}, {@code "single-quote-string"},
      * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
      * {@code "class-literal"}, {@code "hash-concat-operator"},
-     * {@code "inline-import"}, {@code "foreach-syntax"}.
+     * {@code "foreach-syntax"}.
+     * {@code "inline-import"}, {@code "javaparser-null-node"},
+     * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
+     * {@code "compound-assign-void-setter"}.
      */
     String value();
 }

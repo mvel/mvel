@@ -372,3 +372,68 @@ cannot find symbol: class lang
 
 Use `String.class` (or any fully-qualified `.class` literal) in MVEL3
 expressions that need a `Class` object.
+
+---
+
+## Void method call as an expression
+
+> `@KnownCompatibility("void-method-expression")`
+
+MVEL2 evaluates `testee.add('a')` and ignores the (void) result.  MVEL3 wraps a
+single expression as the `Object`-typed return value, so the generated code does
+not compile:
+
+```
+incompatible types: void cannot be converted to java.lang.Object
+```
+
+Use a block with an explicit return (the block form requires a `return`):
+
+```java
+testee.add("a"); return null;
+```
+
+---
+
+## Nested class referenced by binary name
+
+> `@KnownCompatibility("inner-class-binary-name")`
+
+`"new " + Outer.Inner.class.getName()` produces `Outer$Inner`.  MVEL2 resolves
+that name reflectively; MVEL3 emits it into Java source, where it fails:
+
+```
+cannot find symbol
+  symbol:   class VarargTests$MyVarargTestee
+```
+
+Add the class to the API imports set (`getCanonicalName()`) and use the simple
+name in the expression.
+
+---
+
+## Compound assignment on a property used as an expression value
+
+> `@KnownCompatibility("compound-assign-void-setter")`
+
+MVEL2 returns the new value of `holder.intPrimitive += 10`.  MVEL3 rewrites the
+property compound assignment into a setter call, which is `void`:
+
+```
+// generated
+return holder.setIntPrimitive(holder.getIntPrimitive() + 10);
+// incompatible types: void cannot be converted to java.lang.Object
+```
+
+For `BigDecimal` properties the generated code also uses `BigDecimal.valueOf(..)`
+by simple name, which fails with `cannot find symbol` unless
+`java.math.BigDecimal` is in the imports (see `missing-auto-import`).
+
+Workaround: write the assignment as a statement and read the property back,
+and add the import when needed:
+
+```java
+holder.intPrimitive += 10; return holder.intPrimitive;
+```
+
+Local-variable compound assignment (`simpleInteger += 10`) is unaffected.
