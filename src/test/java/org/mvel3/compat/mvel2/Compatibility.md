@@ -437,3 +437,25 @@ holder.intPrimitive += 10; return holder.intPrimitive;
 ```
 
 Local-variable compound assignment (`simpleInteger += 10`) is unaffected.
+
+---
+
+## Null comparison on BigInteger / BigDecimal (`==`, `!=`)
+
+> `@KnownCompatibility("big-number-null-comparison")`
+
+In MVEL2, `==` and `!=` on `BigInteger` and `BigDecimal` handles `null` variables gracefully (e.g., `bigDecimalValue == new BigDecimal("0")` returns `false` when `bigDecimalValue` is `null`).
+
+In MVEL3, equality comparisons on `BigInteger` and `BigDecimal` are transpiled to `.compareTo(...) == 0`. When the variable is `null`, invoking `.compareTo()` results in a `NullPointerException`.
+
+Workaround in MVEL3: Use `java.util.Objects.equals(a, b)` or null checks before comparison.
+
+---
+
+## Null with relational operators (`<`, `>`, `<=`, `>=`)
+
+> `@KnownCompatibility("null-relational-comparison")`
+
+In MVEL2, comparing `null` with relational operators (`<`, `>`, `<=`, `>=`) against numbers/characters always evaluates to `false` (e.g. `null > 0` → `false`, `0 > null` → `false`).
+
+In MVEL3/Java, relational operators trigger unboxing or `.compareTo()` on the operand, throwing a `NullPointerException` when an operand is `null`.

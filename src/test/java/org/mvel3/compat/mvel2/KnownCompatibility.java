@@ -96,6 +96,17 @@ import java.lang.annotation.Target;
  *   <dd>{@code "new " + Outer.Inner.class.getName()} yields the {@code $}-separated
  *       binary name, which MVEL3 cannot resolve.  Import the class through the
  *       API imports set and use its simple name.</dd>
+ *
+ *   <dt>{@code "big-number-null-comparison"}</dt>
+ *   <dd>In MVEL2, {@code ==} / {@code !=} with {@code BigDecimal}/{@code BigInteger}
+ *       and {@code null} evaluates safely without NPE. In MVEL3, comparison is
+ *       transpiled to {@code .compareTo(...) == 0} without null checks, causing
+ *       {@code NullPointerException} when either operand is null.</dd>
+ *
+ *   <dt>{@code "null-relational-comparison"}</dt>
+ *   <dd>In MVEL2, relational comparisons ({@code <}, {@code >}, {@code <=}, {@code >=})
+ *       with {@code null} safely evaluate to false. In MVEL3, unboxing null wrapper
+ *       types or calling {@code .compareTo} on null causes {@code NullPointerException}.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
