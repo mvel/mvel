@@ -124,6 +124,11 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2's {@code compileSetExpression} / {@code executeSetExpression} (assign a
  *       value to a property path with type coercion) have no MVEL3 equivalent.  Use a
  *       normal assignment statement in a block with the value passed as an input.</dd>
+ *
+ *   <dt>{@code "projection-operator"}</dt>
+ *   <dd>MVEL2 collection projection {@code (name in things)} and
+ *       {@code (toUpperCase() in list if ($ == 'bar'))} is not supported by MVEL3
+ *       (parse error at {@code in}).  Use an explicit {@code for} loop.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -141,7 +146,8 @@ public @interface KnownCompatibility {
      * {@code "inline-import"}, {@code "javaparser-null-node"},
      * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
      * {@code "compound-assign-void-setter"}, {@code "property-assign-void-setter"},
-     * {@code "input-variable-redeclaration"}, {@code "set-expression-api"}.
+     * {@code "input-variable-redeclaration"}, {@code "set-expression-api"},
+     * {@code "projection-operator"}.
      */
     String value();
 }

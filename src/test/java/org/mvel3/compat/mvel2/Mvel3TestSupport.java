@@ -76,6 +76,10 @@ public final class Mvel3TestSupport {
         return compileExpression(expression).evaluate(variables);
     }
 
+    public static Object eval(final String expression, final Object root, final Map variables) {
+        return compileExpression(expression).evaluate(root, variables);
+    }
+
     public static Object eval(final String expression, final Object root) {
         if (root instanceof Map) {
             return eval(expression, (Map) root);

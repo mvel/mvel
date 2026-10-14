@@ -524,3 +524,34 @@ foo.bar.intarray[0] = value; return null;
 
 With a map holding `foo` and `value`, MVEL3 also coerces the `String` `"12"` to `Integer`.
 
+
+---
+
+## Collection projection (`(name in things)`)
+
+> `@KnownCompatibility("projection-operator")`
+
+MVEL2 projects a property or method over a collection, optionally filtering with `if`
+(`$` is the current element):
+
+```
+(name in things)
+(toUpperCase() in ['bar', 'foo'] if ($ == 'bar'))
+```
+
+MVEL3 has no projection syntax; the parser stops at `in`:
+
+```
+Parse error: Parse errors: line 1:6 no viable alternative at input '(name in'
+```
+
+Workaround: write an explicit `for` loop. The collection input must be cast to a typed
+collection, because a loop variable over a raw `List` input is unresolved, and
+`res.contains(..)` on a local variable currently fails ("Unsupported member reference"),
+so `indexOf(..) >= 0` is used instead:
+
+```java
+var res = new ArrayList<String>();
+for (Thing t : (List<Thing>) things) { res.add(t.getName()); }
+return res.indexOf("Bob") >= 0;
+```
