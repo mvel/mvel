@@ -169,6 +169,11 @@ import java.lang.annotation.Target;
  *       ({@code with} is a keyword recognised by the lexer but the block body
  *       fails to parse with "extraneous input '}' expecting ';'").
  *       Use plain property assignments or setter calls instead.</dd>
+ *
+ *   <dt>{@code "until-statement"}</dt>
+ *   <dd>MVEL2's {@code until (cond) { .. }} loop and {@code do { .. } until (cond)} are not part of the
+ *       MVEL3 grammar ({@code until (cond) {} fails with "missing ';' at '{'"; the {@code do..until} form
+ *       crashes the parser with an NPE on {@code parExpression}).  Use {@code while (!(cond))}.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -190,7 +195,8 @@ public @interface KnownCompatibility {
      * {@code "projection-operator"}, {@code "inline-array-literal"},
      * {@code "list-concat-operator"}, {@code "trailing-comma-list"},
      * {@code "nested-inline-collection"}, {@code "reserved-method-name"},
-     * {@code "function-declaration"}, {@code "with-block-syntax"}.
+     * {@code "function-declaration"}, {@code "with-block-syntax"},
+     * {@code "until-statement"}.
      */
     String value();
 }

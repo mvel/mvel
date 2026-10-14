@@ -697,6 +697,18 @@ Workarounds: call a static method of a class passed in the imports
 
 ---
 
+## `until` loop
+
+> `@KnownCompatibility("until-statement")`
+
+MVEL2 has `until (cond) { .. }` and `do { .. } until (cond)`, which loop while the condition is false.
+MVEL3 has the `while` / `do .. while` statements only. `until (i == 6) { .. }` fails with
+`missing ';' at '{'` (it is read as a method call); `do { .. } until (cond)` crashes the parser with
+`Cannot invoke ...ParExpressionContext.expression() because ...parExpression() is null`.
+Use `while (!(cond))`.
+
+---
+
 ## `with` block and inline-with syntax
 
 > `@KnownCompatibility("with-block-syntax")`
