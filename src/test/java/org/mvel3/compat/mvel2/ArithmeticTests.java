@@ -770,6 +770,8 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals("footrue", test("\"foo\" + true"));
   }
 
+  // Category not isolated: observed error is "Unsolved symbol in r" (a single-quoted multi-char literal read as a
+  // char). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string") // 'bar' is a valid String literal in MVEL2; MVEL3 follows Java char-literal semantics
   public void testStringAppend() {

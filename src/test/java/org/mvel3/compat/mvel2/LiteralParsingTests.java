@@ -31,6 +31,8 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 @Tag("mvel2-compatibility")
 public class LiteralParsingTests extends AbstractTest {
 
+  // Category not isolated: observed error is "cannot find symbol" for `java.lang.String` used as a value (class-literal).
+  // Whether MVEL3 supports any bare qualified class name as a Class value was not tested.
   @Test
   @KnownCompatibility("class-literal")
   public void testClassLiteral() {
@@ -58,6 +60,9 @@ public class LiteralParsingTests extends AbstractTest {
         eval("0x0A"));
   }
 
+  // Category not isolated: the single-quoted literal is read as a char (`\`). A double-quoted octal escape such as
+  // "\344" evaluates correctly in MVEL3 (probe), so single-quote-string is the likely cause. For `\777` (not a
+  // valid Java octal escape; the double-quoted form returned a different value) an unsupported escape was not ruled out.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testOctalEscapes() {
@@ -65,6 +70,9 @@ public class LiteralParsingTests extends AbstractTest {
         eval("'\\344'"));
   }
 
+  // Category not isolated: the single-quoted literal is read as a char (`\`). A double-quoted octal escape such as
+  // "\344" evaluates correctly in MVEL3 (probe), so single-quote-string is the likely cause. For `\777` (not a
+  // valid Java octal escape; the double-quoted form returned a different value) an unsupported escape was not ruled out.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testOctalEscapes2() {
@@ -72,6 +80,9 @@ public class LiteralParsingTests extends AbstractTest {
         eval("'\\7'"));
   }
 
+  // Category not isolated: the single-quoted literal is read as a char (`\`). A double-quoted octal escape such as
+  // "\344" evaluates correctly in MVEL3 (probe), so single-quote-string is the likely cause. For `\777` (not a
+  // valid Java octal escape; the double-quoted form returned a different value) an unsupported escape was not ruled out.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testOctalEscapes3() {
@@ -79,6 +90,8 @@ public class LiteralParsingTests extends AbstractTest {
         eval("'\\777'"));
   }
 
+  // Category not isolated: observed error is a parse error at `:` in `'\uFFFF::'`. A double-quoted "\uFFFF::" evaluates
+  // correctly in MVEL3 (probe), so the single-quoted multi-char literal (single-quote-string) is the likely cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testUniHex1() {

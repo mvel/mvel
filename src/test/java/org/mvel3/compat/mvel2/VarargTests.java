@@ -64,6 +64,9 @@ public class VarargTests extends AbstractTest {
     Assert.assertEquals("singleArgMethoda", testee.toString());
   }
 
+  // Category not isolated: observed error is "void cannot be converted to Object" (void-method-expression). With the
+  // single-quoted `'a', 'b'` arguments converted to double quotes (experiment) the error became a parse error, so
+  // single-quote-string is an additional cause.
   @Test
   @KnownCompatibility("void-method-expression")
   public void testVarargMethod() {
@@ -89,6 +92,9 @@ public class VarargTests extends AbstractTest {
       Assert.assertEquals("singleArgCtora", result.toString());
   }
 
+  // Category not isolated: observed error is "cannot find symbol: class VarargTests$MyVarargTestee"
+  // (inner-class-binary-name). With single-quoted arguments converted to double quotes (experiment) the error became
+  // a parse error, so single-quote-string is an additional cause.
   @Test
   @KnownCompatibility("inner-class-binary-name")
   public void testVarargCtor() {

@@ -30,6 +30,9 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 @Tag("mvel2-compatibility")
 public class TrailingBlanksTests extends AbstractTest {
 
+    // Category not isolated: observed error is a parse error at `else`. With single-quoted literals converted to double
+    // quotes (experiment) the error became "not a statement" (a bare string expression inside an if block), so
+    // block-syntax is also a cause; single-quote-string is not the only one.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testWithTrailingNewLine() {
@@ -38,6 +41,9 @@ public class TrailingBlanksTests extends AbstractTest {
         assertEquals("ok", result);
     }
 
+    // Category not isolated: observed error is a parse error at `else`. With single-quoted literals converted to double
+    // quotes (experiment) the error became "not a statement" (a bare string expression inside an if block), so
+    // block-syntax is also a cause; single-quote-string is not the only one.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testWithTrailingBlank() {
@@ -46,6 +52,9 @@ public class TrailingBlanksTests extends AbstractTest {
         assertEquals("ok", result);
     }
 
+    // Category not isolated: observed error is a parse error at `else`. With single-quoted literals converted to double
+    // quotes (experiment) the error became "not a statement" (a bare string expression inside an if block), so
+    // block-syntax is also a cause; single-quote-string is not the only one.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testWithoutTrailingBlank() {

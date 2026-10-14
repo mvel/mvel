@@ -51,6 +51,8 @@ public class PrimitiveTypesTest extends AbstractTest {
         }
     }
 
+    // Category not isolated: observed error is "Unsolved symbol in floatValue" with `this` registered as an input
+    // (this-reference). Whether property names resolve against a POJO root in MVEL3 at all was not tested here.
     @Test
     @KnownCompatibility("this-reference")
     public void testFloatPrimitive() {
@@ -60,6 +62,8 @@ public class PrimitiveTypesTest extends AbstractTest {
         assertTrue(result);
     }
 
+    // Category not isolated: observed error is "Unsolved symbol in floatObjectValue" with `this` registered as an input
+    // (this-reference). Whether property names resolve against a POJO root in MVEL3 at all was not tested here.
     @Test
     @KnownCompatibility("this-reference")
     public void testFloat() {

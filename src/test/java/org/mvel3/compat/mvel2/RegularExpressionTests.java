@@ -20,6 +20,9 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 @Tag("mvel2-compatibility")
 public class RegularExpressionTests extends AbstractTest {
 
+    // Category not isolated: observed error is a parse error near `llooUpperCase(`. With the literals converted to double
+    // quotes (experiment) the result was the uppercased string (`~=` not evaluated), which supports regex-operator,
+    // so the single-quoted literals (single-quote-string) contribute to the original parse error.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExpOK() throws Exception {
@@ -33,6 +36,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression(compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'")));
     }
 
+    // Category not isolated: same as testRegExpOK. The parse error comes from the single-quoted literals; the remaining
+    // failure (the uppercased string returned instead of a boolean) comes from `~=` (regex-operator).
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExpPreCompiledBug() throws Exception {
@@ -43,6 +48,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression((java.io.Serializable) ser));
     }
 
+    // Category not isolated: the observed result is `false`, not the regex result. `~=` (regex-operator) is the suspected
+    // cause; the single-quoted literals were not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExpOrBug() throws Exception {
@@ -59,6 +66,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression(compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
     }
 
+    // Category not isolated: the observed result is the left operand (`foobie`), so `~=` is not evaluated as an operator
+    // (regex-operator). The single-quoted pattern literal was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExSurroundedByBrackets() {
@@ -68,6 +77,8 @@ public class RegularExpressionTests extends AbstractTest {
         assertEquals(Boolean.TRUE, eval("x ~= ('f.*')", map));
     }
 
+    // Category not isolated: observed error is a null-node failure. `~=` (regex-operator) is the suspected cause; the
+    // single-quoted literals were not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testMVEL231() {
@@ -81,6 +92,8 @@ public class RegularExpressionTests extends AbstractTest {
                 test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
     }
 
+    // Category not isolated: the observed ClassCastException (String to Boolean) means `~=` is not evaluated as an
+    // operator (regex-operator); the single-quoted pattern literal was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExOR() {
@@ -91,6 +104,8 @@ public class RegularExpressionTests extends AbstractTest {
                 map));
     }
 
+    // Category not isolated: observed error is "Unsolved symbol" from a single-quoted literal. With the literals converted
+    // (experiment) it became a ClassCastException (String to Boolean), which supports regex-operator.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExOR2() {
@@ -103,6 +118,9 @@ public class RegularExpressionTests extends AbstractTest {
                 new java.util.Date()));
     }
 
+    // Category not isolated: observed error is a null-node failure. With single-quoted literals converted (experiment) it
+    // became a parse error at `~=`, which supports regex-operator; the `$test` / `$ex` assignments (block-syntax)
+    // were not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExMatch() {
