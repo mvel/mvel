@@ -162,6 +162,13 @@ import java.lang.annotation.Target;
  *       {@code def f(x) x} and anonymous functions {@code function (a,b) { .. }} are not part of
  *       the MVEL3 grammar (parse error at the opening parenthesis).  Use a static method of an
  *       imported class, or inline the logic.</dd>
+ *
+ *   <dt>{@code "with-block-syntax"}</dt>
+ *   <dd>MVEL2's {@code with (obj) { p = v, q = w }} block and its inline form
+ *       {@code obj.{ p = v, q = w }} are not part of the MVEL3 grammar
+ *       ({@code with} is a keyword recognised by the lexer but the block body
+ *       fails to parse with "extraneous input '}' expecting ';'").
+ *       Use plain property assignments or setter calls instead.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -183,7 +190,7 @@ public @interface KnownCompatibility {
      * {@code "projection-operator"}, {@code "inline-array-literal"},
      * {@code "list-concat-operator"}, {@code "trailing-comma-list"},
      * {@code "nested-inline-collection"}, {@code "reserved-method-name"},
-     * {@code "function-declaration"}.
+     * {@code "function-declaration"}, {@code "with-block-syntax"}.
      */
     String value();
 }

@@ -694,3 +694,60 @@ Other shapes were observed (no further investigation):
 
 Workarounds: call a static method of a class passed in the imports
 (`Funcs.add(7, 3)`), declare local variables, or inline the logic.
+
+---
+
+## `with` block and inline-with syntax
+
+> `@KnownCompatibility("with-block-syntax")`
+
+MVEL2 supports a `with` block for bulk property assignment with comma-separated entries:
+
+```
+with (foo) { aValue = 'One', bValue = 'Two' }
+```
+
+and an inline form applied to a receiver expression:
+
+```
+foo.{ name = 'poopy', aValue = 'bar' }
+```
+
+### What MVEL3 does
+
+- **Comma-separated block** (`with (foo) { aValue = 'One', bValue = 'Two' }`) — parse error:
+  ```
+  mismatched input ',' expecting ...
+  ```
+- **Inline form** (`foo.{ ... }`) — compiles silently but acts as a no-op; property
+  assignments inside `{...}` are not applied to the receiver (observed failure:
+  `expected:<[poopy]> but was:<[dog]>`).
+
+### Semicolon form works in MVEL3
+
+A `with` block **does** work in MVEL3 if every statement (including the last one)
+ends with a semicolon:
+
+```
+with (foo) { aValue = "One"; bValue = "Two"; }
+```
+
+Verified to work: multi-property assignment, compound assignment (`+=`, `*=`),
+method calls (`setName(..)`), and sequential `with` blocks on the same object.
+
+Limitations of the semicolon form:
+
+- **Outer-variable capture** — writing `with (foo) { aValue = (y = "One"); }` to
+  capture a result in an outer variable `y` fails: MVEL3 resolves `y` as a property
+  of `foo` rather than a declared variable.
+- **Nested inside another expression** — e.g. `[ 'foo': (with (new Foo()) { ... }) ]`
+  or `(Foo) with (foo) { ... }` gives a parse error at `(`.
+- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a no-op;
+  use `Foo f = new Foo(); with (f) { setName("bar"); }` instead.
+- **Implied-this leading-dot form** — `.{ data = 'foo' }` (evaluated against a root
+  object) is not supported.
+
+### For MVEL2 compatibility tests
+
+The MVEL2 tests use the comma form, so they still fail with `with-block-syntax`.
+The adapted tests (`WithAdaptedTest`) use the semicolon form where possible.
