@@ -459,3 +459,40 @@ Workaround in MVEL3: Use `java.util.Objects.equals(a, b)` or null checks before 
 In MVEL2, comparing `null` with relational operators (`<`, `>`, `<=`, `>=`) against numbers/characters always evaluates to `false` (e.g. `null > 0` → `false`, `0 > null` → `false`).
 
 In MVEL3/Java, relational operators trigger unboxing or `.compareTo()` on the operand, throwing a `NullPointerException` when an operand is `null`.
+
+---
+
+## Property assignment used as an expression value
+
+> `@KnownCompatibility("property-assign-void-setter")`
+
+MVEL2 returns the assigned value of `foo.bar.age = 21`.  MVEL3 rewrites the
+property assignment into a setter call, which is `void`:
+
+```
+// generated
+return foo.getBar().setAge(21);
+// incompatible types: void cannot be converted to java.lang.Object
+```
+
+Workaround: write the assignment as a statement and return afterwards:
+
+```java
+foo.bar.age = 21; return null;
+```
+
+---
+
+## Redeclaring a variable that is already an input
+
+> `@KnownCompatibility("input-variable-redeclaration")`
+
+MVEL2 allows `java.math.BigDecimal a = ...` even when the variable map already
+contains `a` (here `a` and `b` are `null` entries of `createTestMap()`).  MVEL3
+declares every map entry as a local variable, so the redeclaration fails:
+
+```
+variable a is already defined in method eval(java.util.Map)
+```
+
+Workaround: use variable names that are not in the input map.

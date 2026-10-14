@@ -92,6 +92,18 @@ import java.lang.annotation.Target;
  *       {@code java.math.BigDecimal} import.  Write the assignment as a statement
  *       and {@code return} the property afterwards.</dd>
  *
+ *   <dt>{@code "property-assign-void-setter"}</dt>
+ *   <dd>A plain property assignment ({@code foo.bar.age = 21}) is transpiled to a
+ *       {@code void} setter call, so it cannot be the value of an expression (MVEL2
+ *       returns the assigned value).  Write it as a statement followed by
+ *       {@code return}.</dd>
+ *
+ *   <dt>{@code "input-variable-redeclaration"}</dt>
+ *   <dd>MVEL2 lets an expression declare a local variable whose name matches an
+ *       entry of the variable map ({@code a}, {@code b}, {@code c}); MVEL3 turns every
+ *       map entry into a method-local declaration, so redeclaring it fails with
+ *       {@code variable a is already defined}.</dd>
+ *
  *   <dt>{@code "inner-class-binary-name"}</dt>
  *   <dd>{@code "new " + Outer.Inner.class.getName()} yields the {@code $}-separated
  *       binary name, which MVEL3 cannot resolve.  Import the class through the
@@ -123,7 +135,8 @@ public @interface KnownCompatibility {
      * {@code "foreach-syntax"}.
      * {@code "inline-import"}, {@code "javaparser-null-node"},
      * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
-     * {@code "compound-assign-void-setter"}.
+     * {@code "compound-assign-void-setter"}, {@code "property-assign-void-setter"},
+     * {@code "input-variable-redeclaration"}.
      */
     String value();
 }
