@@ -660,3 +660,37 @@ A possible production fix is to allow `CONTAINS` / `MATCHES` after `.` (e.g. in 
 
 No test in `compat.mvel2` is annotated with this category yet. Tests annotated `contains-operator`
 or `regex-operator`-style categories were not re-tested for this cause.
+
+---
+
+## Function declarations (`def`, `function`, anonymous functions)
+
+> `@KnownCompatibility("function-declaration")`
+
+MVEL2 lets an expression declare functions and call them later:
+
+```
+def fooFunction(x) x; fooFunction('foo')
+function testFunction(x, y) { return x + y; }; testFunction(7, 3);
+a = function { 'foobar' }; a();
+```
+
+The MVEL3 grammar has no `def` / `function` keyword. The declaration is read as a method call and
+the parser fails at the opening parenthesis or at the `{`:
+
+```
+no viable alternative at input 'def fooFunction('
+no viable alternative at input 'function testFunction('
+```
+
+Other shapes were observed (no further investigation):
+
+- `a = function { "foobar" }; a();` → `A string was unexpectedly empty` (double-quoted) /
+  parse-tree-is-null (single-quoted).
+- A Java-style method declaration inside the expression (`int f(int x) { return x; }`) →
+  `Cannot invoke "HasParentNode.setParentNode(Node)" because "current" is null`.
+- A Java lambda (`Function<Integer,Integer> f = x -> x + 1; return f.apply(1);`) compiled but failed
+  at run time with `NoClassDefFoundError: org/mvel3/GeneratorEvaluator___N/0x...`.
+
+Workarounds: call a static method of a class passed in the imports
+(`Funcs.add(7, 3)`), declare local variables, or inline the logic.

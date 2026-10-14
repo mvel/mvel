@@ -156,6 +156,12 @@ import java.lang.annotation.Target;
  *       does not accept, so a method call such as {@code list.contains("x")} or
  *       {@code s.matches("..")} fails with "Unsupported member reference" on any receiver.
  *       Use {@code indexOf(..) >= 0}, {@code containsKey}, {@code containsAll}, etc.</dd>
+ *
+ *   <dt>{@code "function-declaration"}</dt>
+ *   <dd>MVEL2 function declarations {@code def f(x) { .. }}, {@code function f(x) { .. }},
+ *       {@code def f(x) x} and anonymous functions {@code function (a,b) { .. }} are not part of
+ *       the MVEL3 grammar (parse error at the opening parenthesis).  Use a static method of an
+ *       imported class, or inline the logic.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -176,7 +182,8 @@ public @interface KnownCompatibility {
      * {@code "input-variable-redeclaration"}, {@code "set-expression-api"},
      * {@code "projection-operator"}, {@code "inline-array-literal"},
      * {@code "list-concat-operator"}, {@code "trailing-comma-list"},
-     * {@code "nested-inline-collection"}, {@code "reserved-method-name"}.
+     * {@code "nested-inline-collection"}, {@code "reserved-method-name"},
+     * {@code "function-declaration"}.
      */
     String value();
 }
