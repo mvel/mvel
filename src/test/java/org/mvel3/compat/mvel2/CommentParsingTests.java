@@ -114,6 +114,9 @@ public class CommentParsingTests extends AbstractTest {
     // JavaParser AST and produces a null-node NPE during transpilation.
     // -------------------------------------------------------------------------
 
+    // Category not isolated: same as testElseIfCommentBugEvaluated. Observed error is a JavaParser null-node failure;
+    // with `'Got here!'` converted to double quotes (experiment) it became "missing return statement" (block-syntax).
+    // The null-node failure (javaparser-null-node) was not isolated.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugPreCompiled() throws Exception {
@@ -122,6 +125,10 @@ public class CommentParsingTests extends AbstractTest {
             + "  System.out.println('Got here!');" + "}\n"));
     }
 
+    // Category not isolated: observed error is a JavaParser null-node failure. With the single-quoted `'Got here!'`
+    // converted to double quotes (experiment) the error changed to "missing return statement", so block-syntax
+    // (no `return` in an Object-returning block) is also a cause. The null-node failure itself (javaparser-null-node)
+    // was not isolated.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugEvaluated() throws Exception {
@@ -185,6 +192,9 @@ public class CommentParsingTests extends AbstractTest {
             test("/* This is a test of\r\n" + "MVEL's support for\r\n" + "multi-line comments\r\n" + "*/\r\n 15 + 15"));
     }
 
+    // Category not isolated: observed error is "bad operand types for binary operator '+'" (Object + Object).
+    // The undeclared `a = 10; b = 20;` assignments are the suspected block-syntax cause, but the `// set b to '20'`
+    // comment and the CRLF line endings were not tested separately.
     @Test
     @KnownCompatibility("block-syntax")
     public void testComments4() {

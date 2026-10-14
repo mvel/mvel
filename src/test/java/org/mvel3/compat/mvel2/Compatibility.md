@@ -372,3 +372,394 @@ cannot find symbol: class lang
 
 Use `String.class` (or any fully-qualified `.class` literal) in MVEL3
 expressions that need a `Class` object.
+
+---
+
+## Void method call as an expression
+
+> `@KnownCompatibility("void-method-expression")`
+
+MVEL2 evaluates `testee.add('a')` and ignores the (void) result.  MVEL3 wraps a
+single expression as the `Object`-typed return value, so the generated code does
+not compile:
+
+```
+incompatible types: void cannot be converted to java.lang.Object
+```
+
+Use a block with an explicit return (the block form requires a `return`):
+
+```java
+testee.add("a"); return null;
+```
+
+---
+
+## Nested class referenced by binary name
+
+> `@KnownCompatibility("inner-class-binary-name")`
+
+`"new " + Outer.Inner.class.getName()` produces `Outer$Inner`.  MVEL2 resolves
+that name reflectively; MVEL3 emits it into Java source, where it fails:
+
+```
+cannot find symbol
+  symbol:   class VarargTests$MyVarargTestee
+```
+
+Add the class to the API imports set (`getCanonicalName()`) and use the simple
+name in the expression.
+
+---
+
+## Compound assignment on a property used as an expression value
+
+> `@KnownCompatibility("compound-assign-void-setter")`
+
+MVEL2 returns the new value of `holder.intPrimitive += 10`.  MVEL3 rewrites the
+property compound assignment into a setter call, which is `void`:
+
+```
+// generated
+return holder.setIntPrimitive(holder.getIntPrimitive() + 10);
+// incompatible types: void cannot be converted to java.lang.Object
+```
+
+For `BigDecimal` properties the generated code also uses `BigDecimal.valueOf(..)`
+by simple name, which fails with `cannot find symbol` unless
+`java.math.BigDecimal` is in the imports (see `missing-auto-import`).
+
+Workaround: write the assignment as a statement and read the property back,
+and add the import when needed:
+
+```java
+holder.intPrimitive += 10; return holder.intPrimitive;
+```
+
+Local-variable compound assignment (`simpleInteger += 10`) is unaffected.
+
+---
+
+## Null comparison on BigInteger / BigDecimal (`==`, `!=`)
+
+> `@KnownCompatibility("big-number-null-comparison")`
+
+In MVEL2, `==` and `!=` on `BigInteger` and `BigDecimal` handles `null` variables gracefully (e.g., `bigDecimalValue == new BigDecimal("0")` returns `false` when `bigDecimalValue` is `null`).
+
+In MVEL3, equality comparisons on `BigInteger` and `BigDecimal` are transpiled to `.compareTo(...) == 0`. When the variable is `null`, invoking `.compareTo()` results in a `NullPointerException`.
+
+Workaround in MVEL3: Use `java.util.Objects.equals(a, b)` or null checks before comparison.
+
+---
+
+## Null with relational operators (`<`, `>`, `<=`, `>=`)
+
+> `@KnownCompatibility("null-relational-comparison")`
+
+In MVEL2, comparing `null` with relational operators (`<`, `>`, `<=`, `>=`) against numbers/characters always evaluates to `false` (e.g. `null > 0` → `false`, `0 > null` → `false`).
+
+In MVEL3/Java, relational operators trigger unboxing or `.compareTo()` on the operand, throwing a `NullPointerException` when an operand is `null`.
+
+---
+
+## Property assignment used as an expression value
+
+> `@KnownCompatibility("property-assign-void-setter")`
+
+MVEL2 returns the assigned value of `foo.bar.age = 21`.  MVEL3 rewrites the
+property assignment into a setter call, which is `void`:
+
+```
+// generated
+return foo.getBar().setAge(21);
+// incompatible types: void cannot be converted to java.lang.Object
+```
+
+Workaround: write the assignment as a statement and return afterwards:
+
+```java
+foo.bar.age = 21; return null;
+```
+
+---
+
+## Redeclaring a variable that is already an input
+
+> `@KnownCompatibility("input-variable-redeclaration")`
+
+MVEL2 allows `java.math.BigDecimal a = ...` even when the variable map already
+contains `a` (here `a` and `b` are `null` entries of `createTestMap()`).  MVEL3
+declares every map entry as a local variable, so the redeclaration fails:
+
+```
+variable a is already defined in method eval(java.util.Map)
+```
+
+Workaround: use variable names that are not in the input map.
+
+---
+
+## Set expressions (`compileSetExpression` / `executeSetExpression`)
+
+> `@KnownCompatibility("set-expression-api")`
+
+MVEL2 can compile a property path such as `bar.intarray[0]` as a *set expression* and
+later assign a value to it, coercing the value to the target type (`"12"` becomes
+`Integer` 12):
+
+```java
+Serializable s = compileSetExpression("bar.intarray[0]", ctx);
+executeSetExpression(s, foo, "12");
+```
+
+MVEL3 has no such API.  The test adapter emulates it by compiling
+`bar.intarray[0] = setValue` against a POJO root, which currently fails with an NPE
+inside JavaParser.
+
+Workaround: write a normal assignment in a block and pass the value as an input:
+
+```java
+foo.bar.intarray[0] = value; return null;
+```
+
+With a map holding `foo` and `value`, MVEL3 also coerces the `String` `"12"` to `Integer`.
+
+
+---
+
+## Collection projection (`(name in things)`)
+
+> `@KnownCompatibility("projection-operator")`
+
+MVEL2 projects a property or method over a collection, optionally filtering with `if`
+(`$` is the current element):
+
+```
+(name in things)
+(toUpperCase() in ['bar', 'foo'] if ($ == 'bar'))
+```
+
+MVEL3 has no projection syntax; the parser stops at `in`:
+
+```
+Parse error: Parse errors: line 1:6 no viable alternative at input '(name in'
+```
+
+Workaround: write an explicit `for` loop. The collection input must be cast to a typed
+collection, because a loop variable over a raw `List` input is unresolved, and
+`res.contains(..)` on a local variable currently fails ("Unsupported member reference"),
+so `indexOf(..) >= 0` is used instead:
+
+```java
+var res = new ArrayList<String>();
+for (Thing t : (List<Thing>) things) { res.add(t.getName()); }
+return res.indexOf("Bob") >= 0;
+```
+
+---
+
+## Inline array literal (`{1,2,3}`)
+
+> `@KnownCompatibility("inline-array-literal")`
+
+MVEL2 creates an array from `{1,2,3}`, `{}` and `{{1,2},{3}}`. MVEL3 follows Java and
+has no bare-brace array literal; the parser stops at `{`:
+
+```
+Parse error: Parse errors: line 1:0 mismatched input '{' ...
+```
+
+Workaround: use Java array syntax: `new int[] {1,2,3}`, `new Object[0]`,
+`new int[][] {{1,2},{3}}`. List `[..]` and map `[k : v]` literals are supported.
+
+---
+
+## List concatenation (`list + list`, `list + element`)
+
+> `@KnownCompatibility("list-concat-operator")`
+
+MVEL2 returns a new list for `[1,2,3] + [4,5,6]` and `[1,2,3] + 4`. MVEL3 generates a Java `+`
+on `List` operands:
+
+```
+bad operand types for binary operator '+'
+```
+
+Workaround: `List<Integer> l = new ArrayList<>([1,2,3]); l.addAll([4,5,6]); return l;`
+
+---
+
+## Trailing comma in a list literal
+
+> `@KnownCompatibility("trailing-comma-list")`
+
+MVEL2 accepts `[2, 3, 4, ]` (3 elements). MVEL3 fails with
+`A reference was unexpectedly null`. Remove the trailing comma.
+
+---
+
+## Nested inline collections
+
+> `@KnownCompatibility("nested-inline-collection")`
+
+MVEL2 accepts a list or map literal inside another list or map literal:
+
+```
+["k" : [1, 2]]
+[[1, 2], [3]]
+```
+
+MVEL3 generates invalid Java for the inner literal and javac rejects it:
+
+```
+illegal start of expression
+```
+
+Workaround: declare the inner collection first and reference it by name:
+
+```java
+List<Integer> a = [1, 2];
+var m = ["k" : a];
+```
+
+A `Map` whose value is a `List` literal can also fail inside JavaParser type solving
+(`Equivalent types are: ...`); build such a map with `put(..)`.
+
+No test in `compat.mvel2` is annotated with this category yet: the seven affected tests in
+`InlineCollectionsTests` fail first for another reason (`single-quote-string`; for
+`testSubListInMap` also `block-syntax`) and carry a `Category not isolated:` comment.
+
+---
+
+## Reserved method names (`contains`, `matches`)
+
+> `@KnownCompatibility("reserved-method-name")`
+
+> **IMPORTANT: to be addressed with priority.** `contains` is a very common `java.util` method name,
+> so many MVEL2 expressions are affected.
+
+A method call named `contains` or `matches` fails on any receiver (input variable, local variable,
+`String`, `List.of(..)`):
+
+```
+Unsupported member reference: <expr>.contains
+```
+
+Cause (from reading the grammar, not changed or fixed here): `Mvel3Lexer.g4` defines the tokens
+`CONTAINS : 'contains'` and `MATCHES : 'matches'` (operators). The `identifier` rule in `JavaParser.g4`
+does not include them, so `expression '.' (identifier | methodCall | ...)` does not match and
+`MemberReferenceExpressionConverter.convertMemberReferenceExpression` throws
+`IllegalArgumentException("Unsupported member reference: ...")`.
+
+Observation (cause not investigated): in expression mode (no `return`), `l.contains("Y")` returned
+the receiver `[X, Y]` instead of a boolean.
+
+Workarounds: `indexOf(..) >= 0`, `containsKey`, `containsAll`, `isEmpty`.
+
+A possible production fix is to allow `CONTAINS` / `MATCHES` after `.` (e.g. in `identifier`).
+
+No test in `compat.mvel2` is annotated with this category yet. Tests annotated `contains-operator`
+or `regex-operator`-style categories were not re-tested for this cause.
+
+---
+
+## Function declarations (`def`, `function`, anonymous functions)
+
+> `@KnownCompatibility("function-declaration")`
+
+MVEL2 lets an expression declare functions and call them later:
+
+```
+def fooFunction(x) x; fooFunction('foo')
+function testFunction(x, y) { return x + y; }; testFunction(7, 3);
+a = function { 'foobar' }; a();
+```
+
+The MVEL3 grammar has no `def` / `function` keyword. The declaration is read as a method call and
+the parser fails at the opening parenthesis or at the `{`:
+
+```
+no viable alternative at input 'def fooFunction('
+no viable alternative at input 'function testFunction('
+```
+
+Other shapes were observed (no further investigation):
+
+- `a = function { "foobar" }; a();` → `A string was unexpectedly empty` (double-quoted) /
+  parse-tree-is-null (single-quoted).
+- A Java-style method declaration inside the expression (`int f(int x) { return x; }`) →
+  `Cannot invoke "HasParentNode.setParentNode(Node)" because "current" is null`.
+- A Java lambda (`Function<Integer,Integer> f = x -> x + 1; return f.apply(1);`) compiled but failed
+  at run time with `NoClassDefFoundError: org/mvel3/GeneratorEvaluator___N/0x...`.
+
+Workarounds: call a static method of a class passed in the imports
+(`Funcs.add(7, 3)`), declare local variables, or inline the logic.
+
+---
+
+## `until` loop
+
+> `@KnownCompatibility("until-statement")`
+
+MVEL2 has `until (cond) { .. }` and `do { .. } until (cond)`, which loop while the condition is false.
+MVEL3 has the `while` / `do .. while` statements only. `until (i == 6) { .. }` fails with
+`missing ';' at '{'` (it is read as a method call); `do { .. } until (cond)` crashes the parser with
+`Cannot invoke ...ParExpressionContext.expression() because ...parExpression() is null`.
+Use `while (!(cond))`.
+
+---
+
+## `with` block and inline-with syntax
+
+> `@KnownCompatibility("with-block-syntax")`
+
+MVEL2 supports a `with` block for bulk property assignment with comma-separated entries:
+
+```
+with (foo) { aValue = 'One', bValue = 'Two' }
+```
+
+and an inline form applied to a receiver expression:
+
+```
+foo.{ name = 'poopy', aValue = 'bar' }
+```
+
+### What MVEL3 does
+
+- **Comma-separated block** (`with (foo) { aValue = 'One', bValue = 'Two' }`) — parse error:
+  ```
+  mismatched input ',' expecting ...
+  ```
+- **Inline form** (`foo.{ ... }`) — compiles silently but acts as a no-op; property
+  assignments inside `{...}` are not applied to the receiver (observed failure:
+  `expected:<[poopy]> but was:<[dog]>`).
+
+### Semicolon form works in MVEL3
+
+A `with` block **does** work in MVEL3 if every statement (including the last one)
+ends with a semicolon:
+
+```
+with (foo) { aValue = "One"; bValue = "Two"; }
+```
+
+Verified to work: multi-property assignment, compound assignment (`+=`, `*=`),
+method calls (`setName(..)`), and sequential `with` blocks on the same object.
+
+Limitations of the semicolon form:
+
+- **Outer-variable capture** — writing `with (foo) { aValue = (y = "One"); }` to
+  capture a result in an outer variable `y` fails: MVEL3 resolves `y` as a property
+  of `foo` rather than a declared variable.
+- **Nested inside another expression** — e.g. `[ 'foo': (with (new Foo()) { ... }) ]`
+  or `(Foo) with (foo) { ... }` gives a parse error at `(`.
+- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a no-op;
+  use `Foo f = new Foo(); with (f) { setName("bar"); }` instead.
+- **Implied-this leading-dot form** — `.{ data = 'foo' }` (evaluated against a root
+  object) is not supported.
+
+### For MVEL2 compatibility tests
+
+The MVEL2 tests use the comma form, so they still fail with `with-block-syntax`.
+The adapted tests (`WithAdaptedTest`) use the semicolon form where possible.

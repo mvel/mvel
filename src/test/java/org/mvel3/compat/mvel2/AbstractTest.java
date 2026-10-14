@@ -87,6 +87,11 @@ public abstract class AbstractTest extends Assert {
     return Mvel3TestSupport.executeExpression(compiled, variables);
   }
 
+  protected static Object testCompiledSimple(final String expression, final Object root, final Map variables) {
+    final Serializable compiled = Mvel3TestSupport.compileExpression(expression);
+    return Mvel3TestSupport.executeExpression(compiled, root, variables);
+  }
+
   public static class MiscTestClass {
     int exec = 0;
 

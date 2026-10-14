@@ -142,6 +142,36 @@ five tests and keeps the unsupported `foreach` cases disabled.
 Keep the shared adapter lazy: other tests supply undeclared variables only at
 execution time and infer their types from the runtime values.
 
+## Annotating uncertain `@KnownCompatibility` categories
+
+`@KnownCompatibility` must name the cause that was actually observed. When it is
+not certain that the chosen category is the exact cause, or the only cause, of a
+failure, keep the best-fitting category and add a source comment directly above
+the `@Test` method. The comment must:
+
+- start with `Category not isolated:`;
+- state the observed error (message or exception type);
+- list the other suspected causes by category name (or by description, if no
+  category exists) and say which of them were not tested separately.
+
+Typical cases are an expression that combines several unsupported constructs
+(for example `block-syntax` plus `single-quote-string`), or a failure that stops
+at the first parse error and hides later ones. Do not write a suspected cause as
+a fact: use "suspected", "not verified" or "not tested separately".
+
+Remove the comment once the cause has been confirmed, for example by running the
+expression with one construct changed at a time, and correct the category if
+needed. The `compat.mvel3` adapted test passing after several simultaneous
+changes does not isolate the cause.
+
+```java
+// Category not isolated: fails with "A reference was unexpectedly null". The expression combines
+// single-quoted strings and undeclared assignments; which one is the trigger was not verified.
+@Test
+@KnownCompatibility("single-quote-string")
+public void testExample() { ... }
+```
+
 ## Initial verification
 
 On 2026-10-05, with JDK 17.0.19 and Maven 3.9.16, on MVEL3 commit
