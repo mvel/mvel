@@ -555,3 +555,108 @@ var res = new ArrayList<String>();
 for (Thing t : (List<Thing>) things) { res.add(t.getName()); }
 return res.indexOf("Bob") >= 0;
 ```
+
+---
+
+## Inline array literal (`{1,2,3}`)
+
+> `@KnownCompatibility("inline-array-literal")`
+
+MVEL2 creates an array from `{1,2,3}`, `{}` and `{{1,2},{3}}`. MVEL3 follows Java and
+has no bare-brace array literal; the parser stops at `{`:
+
+```
+Parse error: Parse errors: line 1:0 mismatched input '{' ...
+```
+
+Workaround: use Java array syntax: `new int[] {1,2,3}`, `new Object[0]`,
+`new int[][] {{1,2},{3}}`. List `[..]` and map `[k : v]` literals are supported.
+
+---
+
+## List concatenation (`list + list`, `list + element`)
+
+> `@KnownCompatibility("list-concat-operator")`
+
+MVEL2 returns a new list for `[1,2,3] + [4,5,6]` and `[1,2,3] + 4`. MVEL3 generates a Java `+`
+on `List` operands:
+
+```
+bad operand types for binary operator '+'
+```
+
+Workaround: `List<Integer> l = new ArrayList<>([1,2,3]); l.addAll([4,5,6]); return l;`
+
+---
+
+## Trailing comma in a list literal
+
+> `@KnownCompatibility("trailing-comma-list")`
+
+MVEL2 accepts `[2, 3, 4, ]` (3 elements). MVEL3 fails with
+`A reference was unexpectedly null`. Remove the trailing comma.
+
+---
+
+## Nested inline collections
+
+> `@KnownCompatibility("nested-inline-collection")`
+
+MVEL2 accepts a list or map literal inside another list or map literal:
+
+```
+["k" : [1, 2]]
+[[1, 2], [3]]
+```
+
+MVEL3 generates invalid Java for the inner literal and javac rejects it:
+
+```
+illegal start of expression
+```
+
+Workaround: declare the inner collection first and reference it by name:
+
+```java
+List<Integer> a = [1, 2];
+var m = ["k" : a];
+```
+
+A `Map` whose value is a `List` literal can also fail inside JavaParser type solving
+(`Equivalent types are: ...`); build such a map with `put(..)`.
+
+No test in `compat.mvel2` is annotated with this category yet: the seven affected tests in
+`InlineCollectionsTests` fail first for another reason (`single-quote-string`; for
+`testSubListInMap` also `block-syntax`) and carry a `Category not isolated:` comment.
+
+---
+
+## Reserved method names (`contains`, `matches`)
+
+> `@KnownCompatibility("reserved-method-name")`
+
+> **IMPORTANT: to be addressed with priority.** `contains` is a very common `java.util` method name,
+> so many MVEL2 expressions are affected.
+
+A method call named `contains` or `matches` fails on any receiver (input variable, local variable,
+`String`, `List.of(..)`):
+
+```
+Unsupported member reference: <expr>.contains
+```
+
+Cause (from reading the grammar, not changed or fixed here): `Mvel3Lexer.g4` defines the tokens
+`CONTAINS : 'contains'` and `MATCHES : 'matches'` (operators). The `identifier` rule in `JavaParser.g4`
+does not include them, so `expression '.' (identifier | methodCall | ...)` does not match and
+`MemberReferenceExpressionConverter.convertMemberReferenceExpression` throws
+`IllegalArgumentException("Unsupported member reference: ...")`.
+
+Observation (cause not investigated): in expression mode (no `return`), `l.contains("Y")` returned
+the receiver `[X, Y]` instead of a boolean.
+
+Workarounds: `indexOf(..) >= 0`, `containsKey`, `containsAll`, `isEmpty`.
+
+A possible production fix is to allow `CONTAINS` / `MATCHES` after `.` (e.g. in `identifier`).
+
+No test in `compat.mvel2` is annotated with this category yet. Tests annotated `contains-operator`
+or `regex-operator`-style categories were not re-tested for this cause.

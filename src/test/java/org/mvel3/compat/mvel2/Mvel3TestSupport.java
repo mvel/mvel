@@ -65,7 +65,12 @@ public final class Mvel3TestSupport {
         if (root != null) {
             return ((CompiledExpression) expression).evaluate(root, variables);
         }
-        return executeExpression(expression, variables);
+        return executeExpression(expression, variables != null ? variables : new LinkedHashMap<>());
+    }
+
+    public static Object executeExpression(final Serializable expression, final Object root, final Map variables,
+                                           final Class<?> outputType) {
+        return executeExpression(expression, root, variables);
     }
 
     public static Object eval(final String expression) {

@@ -129,6 +129,33 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2 collection projection {@code (name in things)} and
  *       {@code (toUpperCase() in list if ($ == 'bar'))} is not supported by MVEL3
  *       (parse error at {@code in}).  Use an explicit {@code for} loop.</dd>
+ *
+ *   <dt>{@code "inline-array-literal"}</dt>
+ *   <dd>MVEL2's inline array literal {@code {1,2,3}} / {@code {{1,2},{3}}} is not supported by
+ *       MVEL3 (parse error at {@code {}).  Use Java array syntax such as
+ *       {@code new int[] {1,2,3}}.</dd>
+ *
+ *   <dt>{@code "list-concat-operator"}</dt>
+ *   <dd>{@code [1,2,3] + [4,5,6]} and {@code [1,2,3] + 4} concatenate lists in MVEL2; MVEL3
+ *       generates a Java {@code +} on two {@code List} operands, which does not compile.
+ *       Use {@code addAll} / {@code add}.</dd>
+ *
+ *   <dt>{@code "trailing-comma-list"}</dt>
+ *   <dd>MVEL2 ignores a trailing comma in {@code [2, 3, 4, ]}; MVEL3 fails with "A reference was
+ *       unexpectedly null".  Remove the trailing comma.</dd>
+ *
+ *   <dt>{@code "nested-inline-collection"}</dt>
+ *   <dd>A list or map literal nested inside another list or map literal
+ *       ({@code ["k" : [1,2]]}, {@code [[1,2],[3]]}) generates invalid Java, which javac rejects
+ *       with "illegal start of expression" (MVEL2 accepts it).  Declare the inner collection
+ *       first and reference it by name.</dd>
+ *
+ *   <dt>{@code "reserved-method-name"}</dt>
+ *   <dd><b>IMPORTANT: to be addressed with priority.</b> {@code contains} and {@code matches}
+ *       are lexer keywords ({@code CONTAINS}, {@code MATCHES}) that the {@code identifier} rule
+ *       does not accept, so a method call such as {@code list.contains("x")} or
+ *       {@code s.matches("..")} fails with "Unsupported member reference" on any receiver.
+ *       Use {@code indexOf(..) >= 0}, {@code containsKey}, {@code containsAll}, etc.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -147,7 +174,9 @@ public @interface KnownCompatibility {
      * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
      * {@code "compound-assign-void-setter"}, {@code "property-assign-void-setter"},
      * {@code "input-variable-redeclaration"}, {@code "set-expression-api"},
-     * {@code "projection-operator"}.
+     * {@code "projection-operator"}, {@code "inline-array-literal"},
+     * {@code "list-concat-operator"}, {@code "trailing-comma-list"},
+     * {@code "nested-inline-collection"}, {@code "reserved-method-name"}.
      */
     String value();
 }
