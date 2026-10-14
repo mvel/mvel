@@ -30,6 +30,22 @@ public final class Mvel3TestSupport {
         return new CompiledExpression(expression, context, Object.class);
     }
 
+    /**
+     * MVEL3 has no set-expression API. The adapter compiles {@code <expression> = setValue}
+     * against a POJO root; the value is passed unchanged (no MVEL2-style type coercion).
+     */
+    public static CompiledExpression compileSetExpression(final String expression, final TestCompilerContext context) {
+        return new CompiledExpression(expression + " = " + SET_VALUE_NAME, context, Object.class);
+    }
+
+    public static void executeSetExpression(final Serializable expression, final Object root, final Object value) {
+        final Map<String, Object> variables = new LinkedHashMap<>();
+        variables.put(SET_VALUE_NAME, value);
+        ((CompiledExpression) expression).evaluate(root, variables);
+    }
+
+    private static final String SET_VALUE_NAME = "setValue";
+
     public static Object executeExpression(final Serializable expression) {
         return executeExpression(expression, new LinkedHashMap<>());
     }

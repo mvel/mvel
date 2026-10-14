@@ -119,6 +119,11 @@ import java.lang.annotation.Target;
  *   <dd>In MVEL2, relational comparisons ({@code <}, {@code >}, {@code <=}, {@code >=})
  *       with {@code null} safely evaluate to false. In MVEL3, unboxing null wrapper
  *       types or calling {@code .compareTo} on null causes {@code NullPointerException}.</dd>
+ *
+ *   <dt>{@code "set-expression-api"}</dt>
+ *   <dd>MVEL2's {@code compileSetExpression} / {@code executeSetExpression} (assign a
+ *       value to a property path with type coercion) have no MVEL3 equivalent.  Use a
+ *       normal assignment statement in a block with the value passed as an input.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -136,7 +141,7 @@ public @interface KnownCompatibility {
      * {@code "inline-import"}, {@code "javaparser-null-node"},
      * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
      * {@code "compound-assign-void-setter"}, {@code "property-assign-void-setter"},
-     * {@code "input-variable-redeclaration"}.
+     * {@code "input-variable-redeclaration"}, {@code "set-expression-api"}.
      */
     String value();
 }

@@ -496,3 +496,31 @@ variable a is already defined in method eval(java.util.Map)
 ```
 
 Workaround: use variable names that are not in the input map.
+
+---
+
+## Set expressions (`compileSetExpression` / `executeSetExpression`)
+
+> `@KnownCompatibility("set-expression-api")`
+
+MVEL2 can compile a property path such as `bar.intarray[0]` as a *set expression* and
+later assign a value to it, coercing the value to the target type (`"12"` becomes
+`Integer` 12):
+
+```java
+Serializable s = compileSetExpression("bar.intarray[0]", ctx);
+executeSetExpression(s, foo, "12");
+```
+
+MVEL3 has no such API.  The test adapter emulates it by compiling
+`bar.intarray[0] = setValue` against a POJO root, which currently fails with an NPE
+inside JavaParser.
+
+Workaround: write a normal assignment in a block and pass the value as an input:
+
+```java
+foo.bar.intarray[0] = value; return null;
+```
+
+With a map holding `foo` and `value`, MVEL3 also coerces the `String` `"12"` to `Integer`.
+
