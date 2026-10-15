@@ -799,9 +799,10 @@ mp.test". Use `mp.put("test", "bar")`.
 
 > `@KnownCompatibility("null-safe-operator")`
 
-In MVEL2 the result is `null` when `a.map` is `null`. MVEL3 compiles `a.?map["foo"]`
-(and `a?.map["foo"]`) but the result is the object `a` itself instead of `null`.
-Plain `a.map["foo"]` on a null map throws an NPE as in MVEL2.
+In MVEL2 the result is `null` when `a.map` is `null`, and the member value otherwise. MVEL3 compiles
+`a.?map["foo"]` (and `a?.map["foo"]`, `foo.?bar.baz`, `foo.?bar.convert(x)`) but the result is the
+object on the left of `.?` (`a`, `foo`), whether the member is null or not. Plain `a.map["foo"]` on a
+null map throws an NPE as in MVEL2. Write an explicit null check: `a.map != null ? a.map.get("foo") : null`.
 
 ---
 

@@ -191,8 +191,9 @@ import java.lang.annotation.Target;
  *
  *   <dt>{@code "null-safe-operator"}</dt>
  *   <dd>The MVEL2 null-safe access {@code a.?map['foo']} yields {@code null} when {@code map} is
- *       null; MVEL3 evaluates the same expression to the root object itself (verified with
- *       {@code A226}), also with double quotes.</dd>
+ *       null; MVEL3 compiles it but returns the object on the left of {@code .?}
+ *       ({@code a} for {@code a.?map['foo']}, {@code foo} for {@code foo.?bar.baz}), whether or not the
+ *       member is null and also with double quotes. Write an explicit null check.</dd>
  *
  *   <dt>{@code "static-input-type"}</dt>
  *   <dd>MVEL2 re-resolves property access on every execution, so one compiled expression can be run
