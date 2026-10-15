@@ -763,3 +763,62 @@ Limitations of the semicolon form:
 
 The MVEL2 tests use the comma form, so they still fail with `with-block-syntax`.
 The adapted tests (`WithAdaptedTest`) use the semicolon form where possible.
+
+---
+
+## `array.size()` on Java arrays
+
+> `@KnownCompatibility("array-size-method")`
+
+MVEL2 treats `stringArray.size()` / `intArray.size()` as a "magic" size accessor on arrays.
+In MVEL3 the array keeps its Java type, so javac reports "cannot find symbol: method size()".
+Use `array.length`.
+
+---
+
+## Index access on a `String`
+
+> `@KnownCompatibility("string-index-access")`
+
+MVEL2 returns the `char` at that position for `str[1]`. MVEL3 transpiles an index on a non-array
+to `.get(1)`, which `String` does not have ("cannot find symbol: method get(int)"). Use `str.charAt(1)`.
+
+---
+
+## Map entry assignment through property syntax
+
+> `@KnownCompatibility("map-property-assignment")`
+
+`mp.test = "bar"` where `mp` is a `Map` assigns the entry `test` in MVEL2. MVEL3 looks for a field or
+setter on the map type and fails with "The node has neither a public field or a getter method for :
+mp.test". Use `mp.put("test", "bar")`.
+
+---
+
+## Null-safe access `a.?map['foo']`
+
+> `@KnownCompatibility("null-safe-operator")`
+
+In MVEL2 the result is `null` when `a.map` is `null`. MVEL3 compiles `a.?map["foo"]`
+(and `a?.map["foo"]`) but the result is the object `a` itself instead of `null`.
+Plain `a.map["foo"]` on a null map throws an NPE as in MVEL2.
+
+---
+
+## Compiled expression reused with a different input type
+
+> `@KnownCompatibility("static-input-type")`
+
+MVEL2 (reflective optimizer) re-resolves the accessor when the runtime type changes. MVEL3 generates code
+for the input type given at compile time. The adapter compiles on first evaluation with the runtime
+type of the first input, so a later input of another type raises `ClassCastException`.
+
+---
+
+## Error type and message for inaccessible methods
+
+> `@KnownCompatibility("exception-type-mismatch")`
+
+`service.hello()` on a `private` method throws `PropertyAccessException` with "Error: unable to resolve
+method" in MVEL2. MVEL3 fails while compiling the generated Java ("hello() has private access"),
+wrapped in `KieMemoryCompilerException`.

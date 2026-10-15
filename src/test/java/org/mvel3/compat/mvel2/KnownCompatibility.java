@@ -174,6 +174,35 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2's {@code until (cond) { .. }} loop and {@code do { .. } until (cond)} are not part of the
  *       MVEL3 grammar ({@code until (cond) {} fails with "missing ';' at '{'"; the {@code do..until} form
  *       crashes the parser with an NPE on {@code parExpression}).  Use {@code while (!(cond))}.</dd>
+ *
+ *   <dt>{@code "array-size-method"}</dt>
+ *   <dd>MVEL2 treats {@code array.size()} as a "magic" size accessor; Java arrays have no
+ *       {@code size()} method, so MVEL3 fails with "cannot find symbol: method size()".
+ *       Use {@code array.length}.</dd>
+ *
+ *   <dt>{@code "string-index-access"}</dt>
+ *   <dd>MVEL2 allows {@code str[1]} on a {@code String} (returns a {@code char}); MVEL3 generates
+ *       {@code str.get(1)}, which does not exist on {@code String}. Use {@code str.charAt(1)}.</dd>
+ *
+ *   <dt>{@code "map-property-assignment"}</dt>
+ *   <dd>MVEL2 assigns a {@code Map} entry through property syntax ({@code mp.test = "bar"}); MVEL3
+ *       fails with "The node has neither a public field or a getter method for : mp.test".
+ *       Use {@code mp.put("test", "bar")}.</dd>
+ *
+ *   <dt>{@code "null-safe-operator"}</dt>
+ *   <dd>The MVEL2 null-safe access {@code a.?map['foo']} yields {@code null} when {@code map} is
+ *       null; MVEL3 evaluates the same expression to the root object itself (verified with
+ *       {@code A226}), also with double quotes.</dd>
+ *
+ *   <dt>{@code "static-input-type"}</dt>
+ *   <dd>MVEL2 re-resolves property access on every execution, so one compiled expression can be run
+ *       with inputs of different runtime types ({@code String[]} then {@code List}). MVEL3 binds the
+ *       generated code to the input type used at compile time.</dd>
+ *
+ *   <dt>{@code "exception-type-mismatch"}</dt>
+ *   <dd>An expression that MVEL2 rejects at runtime with {@code PropertyAccessException} ("Error:
+ *       unable to resolve method") is rejected by MVEL3 at javac time
+ *       ({@code KieMemoryCompilerException}, e.g. "hello() has private access"), with a different message.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -196,7 +225,10 @@ public @interface KnownCompatibility {
      * {@code "list-concat-operator"}, {@code "trailing-comma-list"},
      * {@code "nested-inline-collection"}, {@code "reserved-method-name"},
      * {@code "function-declaration"}, {@code "with-block-syntax"},
-     * {@code "until-statement"}.
+     * {@code "until-statement"}, {@code "array-size-method"},
+     * {@code "string-index-access"}, {@code "map-property-assignment"},
+     * {@code "null-safe-operator"}, {@code "static-input-type"},
+     * {@code "exception-type-mismatch"}.
      */
     String value();
 }
