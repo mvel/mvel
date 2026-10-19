@@ -7,7 +7,11 @@ import org.junit.jupiter.api.Test;
 
 public class I18nTest extends AbstractTest {
 
+  // On Windows, KieMemoryCompiler passes the generated source to javac with the platform default
+  // encoding; non-ASCII identifiers (人, 名称, フラグ) are replaced with '?' and javac fails with
+  // "illegal start of expression". Passes on Linux (UTF-8 default). MVEL3 bug.
   @Test
+  @KnownCompatibility("windows-encoding")
   public void testI18nProperties() {
     I18nPerson p = new I18nPerson();
     p.set名称("杜甫");

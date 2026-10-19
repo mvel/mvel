@@ -837,3 +837,22 @@ type of the first input, so a later input of another type raises `ClassCastExcep
 `service.hello()` on a `private` method throws `PropertyAccessException` with "Error: unable to resolve
 method" in MVEL2. MVEL3 fails while compiling the generated Java ("hello() has private access"),
 wrapped in `KieMemoryCompilerException`.
+
+---
+
+## Non-ASCII identifiers on Windows
+
+> `@KnownCompatibility("windows-encoding")`
+
+On Windows, `KieMemoryCompiler` passes the generated Java source to `javac` using the JVM's
+platform default encoding (e.g. `Windows-1252`). Non-ASCII characters in variable names,
+property names, and string literals (漢字, Japanese kana, etc.) are replaced with `?` before
+the source reaches the compiler, causing `KieMemoryCompilerException` with "illegal start of
+expression".
+
+The same expression compiles and runs correctly on Linux, where the default encoding is UTF-8.
+
+This is a **MVEL3 bug**, not a MVEL2/MVEL3 design difference. `KieMemoryCompiler` should pass
+sources to `javac` with an explicit `StandardCharsets.UTF_8` option. The `I18nTest` test passes
+on Linux and fails on Windows; the failure is recorded here so the Windows CI failure is visible
+rather than silently skipped.

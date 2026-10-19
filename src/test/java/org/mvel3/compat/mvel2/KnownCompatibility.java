@@ -204,6 +204,14 @@ import java.lang.annotation.Target;
  *   <dd>An expression that MVEL2 rejects at runtime with {@code PropertyAccessException} ("Error:
  *       unable to resolve method") is rejected by MVEL3 at javac time
  *       ({@code KieMemoryCompilerException}, e.g. "hello() has private access"), with a different message.</dd>
+ *
+ *   <dt>{@code "windows-encoding"}</dt>
+ *   <dd>On Windows, {@code KieMemoryCompiler} passes the generated Java source to {@code javac} using
+ *       the platform default encoding (e.g. {@code Windows-1252}).  Non-ASCII characters in identifiers
+ *       or string literals (漢字, Japanese kana, etc.) are replaced with {@code ?} before compilation,
+ *       causing {@code KieMemoryCompilerException} ("illegal start of expression").
+ *       The same expression compiles and runs correctly on Linux (UTF-8 default).
+ *       This is a MVEL3 bug, not a MVEL2/MVEL3 design difference.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -229,7 +237,7 @@ public @interface KnownCompatibility {
      * {@code "until-statement"}, {@code "array-size-method"},
      * {@code "string-index-access"}, {@code "map-property-assignment"},
      * {@code "null-safe-operator"}, {@code "static-input-type"},
-     * {@code "exception-type-mismatch"}.
+     * {@code "exception-type-mismatch"}, {@code "windows-encoding"}.
      */
     String value();
 }
