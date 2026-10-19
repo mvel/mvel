@@ -3,8 +3,10 @@ package org.mvel3.compat.mvel2;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("mvel2-compatibility")
 public class I18nTest extends AbstractTest {
 
   // On Windows, KieMemoryCompiler passes the generated source to javac with the platform default
