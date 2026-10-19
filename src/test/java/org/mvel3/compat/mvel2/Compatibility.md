@@ -349,6 +349,20 @@ executable diagnostics; the corresponding adapted tests are disabled while
 
 ---
 
+## JavaParser null-node transpiler crashes
+
+> `@KnownCompatibility("javaparser-null-node")`
+
+Certain malformed or unsupported syntax constructs (such as invalid binary expressions in fuzz strings or `foreach` loops) cause the MVEL3 transpiler to construct an incomplete AST or pass null into JavaParser node setters (e.g. `BinaryExpr.setLeft`), resulting in:
+
+```
+java.lang.AssertionError: A reference was unexpectedly null.
+```
+
+Because JavaParser throws `java.lang.AssertionError` (an `Error` rather than an `Exception`), these failures bypass normal `catch (Exception e)` exception handlers in negative tests. These are transpiler / AST visitor defects with no user-level workaround.
+
+---
+
 ## Qualified class-name literals
 
 > `@KnownCompatibility("class-literal")`
