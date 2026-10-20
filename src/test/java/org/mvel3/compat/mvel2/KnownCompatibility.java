@@ -243,6 +243,27 @@ import java.lang.annotation.Target;
  *   <dd>MVEL3 declares an input with the runtime class of the value; when that class is not public
  *       ({@code Collections.singleton(..)}, {@code unmodifiableCollection(..)}) javac rejects the generated code.
  *       Declare the input with a public type such as {@code Collection}.</dd>
+ *
+ *   <dt>{@code "runtime-type-method-resolution"}</dt>
+ *   <dd>MVEL2 finds a method on the runtime class of a value ({@code System.out.myPrintln(..)} where
+ *       {@code System.out} is a subclass of {@code PrintStream}; {@code m.getStatus()} where {@code m} is declared
+ *       {@code Object}); MVEL3 uses the declared type and reports "cannot find symbol" / "cannot be resolved".
+ *       Cast or declare the precise type.</dd>
+ *
+ *   <dt>{@code "naked-static-method-call"}</dt>
+ *   <dd>A static method called without parentheses ({@code System.currentTimeMillis}, MVEL2 option
+ *       {@code COMPILER_OPT_ALLOW_NAKED_METH_CALL}) is not resolved by MVEL3 ("Unsolved symbol: currentTimeMillis").
+ *       Write {@code System.currentTimeMillis()}. A naked instance call ({@code foo.happy}) works.</dd>
+ *
+ *   <dt>{@code "raw-collection-element-type"}</dt>
+ *   <dd>An input declared as a raw {@code List} has {@code Object} elements, so {@code for (String s : strings)} fails
+ *       with "Object cannot be converted to String". Give the generics ({@code Type.type(List.class, "<String>")}) or
+ *       loop over {@code Object} and cast.</dd>
+ *
+ *   <dt>{@code "static-import-method-call"}</dt>
+ *   <dd>A method imported with a static import ({@code static pkg.Cls.*} or {@code static pkg.Cls.m}) and called by
+ *       simple name with arguments fails with "No method candidates were found for method call"; a call without
+ *       arguments works. Call it through the class ({@code Cls.m(..)}).</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -272,7 +293,9 @@ public @interface KnownCompatibility {
      * {@code "undeclared-input-variable"}, {@code "class-alias"},
      * {@code "external-jar-classloader"}, {@code "static-member-unqualified"},
      * {@code "set-index-access"}, {@code "list-to-array-coercion"},
-     * {@code "non-public-input-type"}.
+     * {@code "non-public-input-type"}, {@code "runtime-type-method-resolution"},
+     * {@code "naked-static-method-call"}, {@code "raw-collection-element-type"},
+     * {@code "static-import-method-call"}.
      */
     String value();
 }

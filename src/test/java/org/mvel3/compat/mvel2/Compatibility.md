@@ -938,3 +938,49 @@ The type of a root or variable is taken from the runtime class of the value. For
 `Collections.unmodifiableCollection(..)` this is a non-public JDK class, and javac rejects the generated code
 (`Collections.SingletonSet has private access`, `UnmodifiableCollection is not public`). Workaround: declare the
 input with a public type (`Collection`) and call the method on the named input (`c.size()`).
+
+---
+
+## Method lookup on the runtime class
+
+> `@KnownCompatibility("runtime-type-method-resolution")`
+
+MVEL2 resolves a method on the runtime class of the value. MVEL3 compiles against the declared type:
+
+- `System.out.myPrintln("x")` where `System.out` is a `PrintStream` subclass:
+  `cannot find symbol: method myPrintln(String)  location: variable out of type java.io.PrintStream`.
+- `m.getStatus()` where `m` is declared as `Object`:
+  `Method 'getStatus' cannot be resolved in context m.getStatus()`.
+
+Workaround: cast to the precise type, or declare the input with it.
+
+---
+
+## Static method called without parentheses
+
+> `@KnownCompatibility("naked-static-method-call")`
+
+With `MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL`, MVEL2 accepts `tm = System.currentTimeMillis`. MVEL3 fails with
+`Unsolved symbol : currentTimeMillis` (also for a declared variable). A naked *instance* call such as `foo.happy` and
+`list.size` works. Workaround: `System.currentTimeMillis()`.
+
+---
+
+## Element type of a raw collection input
+
+> `@KnownCompatibility("raw-collection-element-type")`
+
+An input declared as `List` (the raw class) has `Object` elements in MVEL3, so `for (String s : strings) { .. }` fails with
+`incompatible types: java.lang.Object cannot be converted to java.lang.String`. Workarounds: declare the generics
+(`Type.type(List.class, "<String>")`), or loop over `Object` and cast. With `Type.type(List.class, "<String>")` the loop works.
+
+---
+
+## Static-imported method called with arguments
+
+> `@KnownCompatibility("static-import-method-call")`
+
+After `static pkg.StaticMethods.*` (or `static pkg.StaticMethods.getList`), `getList(String.class)` fails with
+`No method candidates were found for method call 'getList'`; the same happens for `static java.lang.Math.*` and `abs(1)`.
+A static-imported method without arguments (`getString()`) works. Workaround: call through the class,
+`StaticMethods.getList(String.class)`.
