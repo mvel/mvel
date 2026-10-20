@@ -9,12 +9,14 @@ import java.util.Set;
 public final class TestCompilerContext {
     private final Map<String, Class<?>> inputs = new LinkedHashMap<>();
     private final Set<Class<?>> imports = new LinkedHashSet<>();
+    private final Set<String> packageImports = new LinkedHashSet<>();
 
     public TestCompilerContext() {
     }
 
     public TestCompilerContext(final TestCompilerContext configuration) {
         imports.addAll(configuration.imports);
+        packageImports.addAll(configuration.packageImports);
     }
 
     public static TestCompilerContext create() {
@@ -34,11 +36,20 @@ public final class TestCompilerContext {
         imports.add(type);
     }
 
+    /** Adds an on-demand import ({@code pkg.*}), the MVEL3 counterpart of MVEL2's {@code addPackageImport}. */
+    public void addPackageImport(final String packageName) {
+        packageImports.add(packageName);
+    }
+
     Map<String, Class<?>> getInputs() {
         return inputs;
     }
 
     Set<Class<?>> getImports() {
         return imports;
+    }
+
+    Set<String> getPackageImports() {
+        return packageImports;
     }
 }

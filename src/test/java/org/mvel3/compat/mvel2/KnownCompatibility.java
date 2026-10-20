@@ -212,6 +212,24 @@ import java.lang.annotation.Target;
  *       causing {@code KieMemoryCompilerException} ("illegal start of expression").
  *       The same expression compiles and runs correctly on Linux (UTF-8 default).
  *       This is a MVEL3 bug, not a MVEL2/MVEL3 design difference.</dd>
+ *
+ *   <dt>{@code "undeclared-input-variable"}</dt>
+ *   <dd>MVEL2 compiles {@code bar.add("hello")} without knowing {@code bar}; MVEL3 needs the type of every
+ *       variable before compilation and fails with "Unsolved symbol in bar". Declare the input.</dd>
+ *
+ *   <dt>{@code "class-alias"}</dt>
+ *   <dd>MVEL2 allows {@code Foo244 = String; new Foo244('foobar')} (a variable holding a class used as a
+ *       type); MVEL3 has no class aliasing. Import the class or use it directly.</dd>
+ *
+ *   <dt>{@code "external-jar-classloader"}</dt>
+ *   <dd>A class loaded from a jar through a separate {@code URLClassLoader} is not found by the MVEL3
+ *       compiler when the jar has no directory entries ("package ... does not exist"); when it is found,
+ *       {@code EventRequest.Status.ACTIVE} is read as the {@code status} property instead of the nested enum.</dd>
+ *
+ *   <dt>{@code "static-member-unqualified"}</dt>
+ *   <dd>MVEL2 {@code addPackageImport("...res.Status")} makes the static members of {@code Status}
+ *       ({@code START}) usable without qualification; MVEL3 fails with "cannot find symbol: variable START".
+ *       Write {@code Status.START}.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -237,7 +255,9 @@ public @interface KnownCompatibility {
      * {@code "until-statement"}, {@code "array-size-method"},
      * {@code "string-index-access"}, {@code "map-property-assignment"},
      * {@code "null-safe-operator"}, {@code "static-input-type"},
-     * {@code "exception-type-mismatch"}, {@code "windows-encoding"}.
+     * {@code "exception-type-mismatch"}, {@code "windows-encoding"},
+     * {@code "undeclared-input-variable"}, {@code "class-alias"},
+     * {@code "external-jar-classloader"}, {@code "static-member-unqualified"}.
      */
     String value();
 }

@@ -856,3 +856,50 @@ This is a **MVEL3 bug**, not a MVEL2/MVEL3 design difference. `KieMemoryCompiler
 sources to `javac` with an explicit `StandardCharsets.UTF_8` option. The `I18nTest` test passes
 on Linux and fails on Windows; the failure is recorded here so the Windows CI failure is visible
 rather than silently skipped.
+
+---
+
+## Undeclared input variable at compile time
+
+> `@KnownCompatibility("undeclared-input-variable")`
+
+MVEL2 compiles `bar.add("hello")` without knowing what `bar` is (it resolves it at run time). MVEL3
+generates Java source, so every variable must be declared with a type before compilation; an undeclared
+one fails with `UnsolvedSymbolException: Unsolved symbol in bar`. Declare the input
+(`TestCompilerContext.addInput` / the `types` map).
+
+---
+
+## Class aliasing (`Foo244 = String; new Foo244('foobar')`)
+
+> `@KnownCompatibility("class-alias")`
+
+MVEL2 lets a variable hold a `Class` and then use it after `new`. MVEL3 translates to Java, where `new`
+needs a type name, so the construct has no equivalent; the assignment `Foo244 = String;` itself fails to
+resolve `Foo244`. Import the class or use `String` directly.
+
+---
+
+## Classes from a separate jar class loader
+
+> `@KnownCompatibility("external-jar-classloader")`
+
+`CoreImportsTests#testNestedEnumFromJar` imports `org.drools.examples.eventing.EventRequest` from
+`eventing-example.jar` through a `URLClassLoader`. With the MVEL3 compile call that takes a class loader:
+
+- the original jar (no directory entries) is not seen by the compiler:
+  `package org.drools.examples.eventing does not exist`;
+- a repacked jar with directory entries is found, but `EventRequest.Status.ACTIVE` is compiled as the
+  instance property `status` of the `EventRequest` class and fails with
+  `non-static method getStatus() cannot be referenced from a static context` (the nested enum `Status`
+  and the property `status` clash). A nested enum without a same-named property (`Triangle.Foo.OBTUSE`) works.
+
+---
+
+## Static members through a package import
+
+> `@KnownCompatibility("static-member-unqualified")`
+
+MVEL2 makes the constants of an imported class usable by simple name (`new Status( START )` after
+`addPackageImport("...res.Status")`). MVEL3 reports `cannot find symbol: variable START`; write
+`Status.START`. A static import through the API (`static org...Status.*`) was observed to work.

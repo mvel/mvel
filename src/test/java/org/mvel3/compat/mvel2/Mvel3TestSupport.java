@@ -131,6 +131,7 @@ public final class Mvel3TestSupport {
             this.outputType = outputType;
             context.getInputs().forEach((name, type) -> declaredTypes.put(name, Type.type(type)));
             context.getImports().forEach(type -> imports.add(type.getCanonicalName()));
+            context.getPackageImports().forEach(packageName -> imports.add(packageName + ".*"));
         }
 
         private Object evaluate(final Map<String, Object> variables) {
