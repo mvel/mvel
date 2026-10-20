@@ -180,6 +180,9 @@ public final class Mvel3TestSupport {
                 declaredTypes.forEach((name, type) -> decls.add(Declaration.of(name, type)));
                 if (variables != null) {
                     variables.forEach((name, value) -> {
+                        if (declaredTypes.containsKey(name)) {
+                            return; // already declared: the declared type wins
+                        }
                         Class<?> type = value == null ? Object.class : value.getClass();
                         decls.add(Declaration.of(name, type));
                     });

@@ -230,6 +230,19 @@ import java.lang.annotation.Target;
  *   <dd>MVEL2 {@code addPackageImport("...res.Status")} makes the static members of {@code Status}
  *       ({@code START}) usable without qualification; MVEL3 fails with "cannot find symbol: variable START".
  *       Write {@code Status.START}.</dd>
+ *
+ *   <dt>{@code "set-index-access"}</dt>
+ *   <dd>MVEL2 reads {@code pojo.dates[0]} on a {@code Set}; MVEL3 turns {@code [0]} into {@code .get(0)}, which a
+ *       {@code Set} does not have ("cannot find symbol: method get(int)"). Use {@code iterator().next()}.</dd>
+ *
+ *   <dt>{@code "list-to-array-coercion"}</dt>
+ *   <dd>MVEL2 coerces a {@code List} to an array when it is assigned to an array property; MVEL3 fails with
+ *       "ArrayList cannot be converted to char[]". Convert the list explicitly.</dd>
+ *
+ *   <dt>{@code "non-public-input-type"}</dt>
+ *   <dd>MVEL3 declares an input with the runtime class of the value; when that class is not public
+ *       ({@code Collections.singleton(..)}, {@code unmodifiableCollection(..)}) javac rejects the generated code.
+ *       Declare the input with a public type such as {@code Collection}.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -257,7 +270,9 @@ public @interface KnownCompatibility {
      * {@code "null-safe-operator"}, {@code "static-input-type"},
      * {@code "exception-type-mismatch"}, {@code "windows-encoding"},
      * {@code "undeclared-input-variable"}, {@code "class-alias"},
-     * {@code "external-jar-classloader"}, {@code "static-member-unqualified"}.
+     * {@code "external-jar-classloader"}, {@code "static-member-unqualified"},
+     * {@code "set-index-access"}, {@code "list-to-array-coercion"},
+     * {@code "non-public-input-type"}.
      */
     String value();
 }

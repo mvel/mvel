@@ -903,3 +903,38 @@ resolve `Foo244`. Import the class or use `String` directly.
 MVEL2 makes the constants of an imported class usable by simple name (`new Status( START )` after
 `addPackageImport("...res.Status")`). MVEL3 reports `cannot find symbol: variable START`; write
 `Status.START`. A static import through the API (`static org...Status.*`) was observed to work.
+
+---
+
+## Index access on a `Set`
+
+> `@KnownCompatibility("set-index-access")`
+
+MVEL2 reads `pojo.dates[0]` on a `Set<Date>`. MVEL3 rewrites `[0]` to `.get(0)`, which `Set` does not have:
+
+```
+cannot find symbol: method get(int)  location: interface java.util.Set<java.util.Date>
+```
+
+Workaround: `pojo.dates.iterator().next()`. Index access on a `List` (`pojo.list[0]`) works.
+
+---
+
+## List to array coercion
+
+> `@KnownCompatibility("list-to-array-coercion")`
+
+MVEL2 coerces a `List` (also a list of lists) to `char[]` / `char[][]` when it is bound to an array property. MVEL3 assigns it as written and javac reports
+`incompatible types: java.util.ArrayList cannot be converted to char[]`. Workaround: convert explicitly,
+e.g. `foo.charArray = value.toString().toCharArray()` or build the array in the expression.
+
+---
+
+## Non-public runtime class as the input type
+
+> `@KnownCompatibility("non-public-input-type")`
+
+The type of a root or variable is taken from the runtime class of the value. For `Collections.singleton(..)` and
+`Collections.unmodifiableCollection(..)` this is a non-public JDK class, and javac rejects the generated code
+(`Collections.SingletonSet has private access`, `UnmodifiableCollection is not public`). Workaround: declare the
+input with a public type (`Collection`) and call the method on the named input (`c.size()`).
