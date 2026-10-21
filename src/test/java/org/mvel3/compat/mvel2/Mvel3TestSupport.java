@@ -77,6 +77,11 @@ public final class Mvel3TestSupport {
         return executeExpression(expression, root, variables);
     }
 
+    public static Object executeExpression(final Serializable expression, final Map variables,
+                                           final Class<?> outputType) {
+        return executeExpression(expression, variables);
+    }
+
     public static Object eval(final String expression) {
         return eval(expression, new LinkedHashMap<>());
     }
@@ -99,6 +104,14 @@ public final class Mvel3TestSupport {
     public static <T> T eval(final String expression, final Class<T> outputType) {
         return outputType.cast(new CompiledExpression(expression, new TestCompilerContext(), outputType)
                 .evaluate(new LinkedHashMap<>()));
+    }
+
+    public static Boolean evalToBoolean(final String expression, final Object root) {
+        return (Boolean) eval(expression, root);
+    }
+
+    public static Boolean evalToBoolean(final String expression, final Object root, final Map variables) {
+        return (Boolean) eval(expression, root, variables);
     }
 
     public static final class ExpressionCompiler {

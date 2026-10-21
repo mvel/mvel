@@ -264,6 +264,10 @@ import java.lang.annotation.Target;
  *   <dd>A method imported with a static import ({@code static pkg.Cls.*} or {@code static pkg.Cls.m}) and called by
  *       simple name with arguments fails with "No method candidates were found for method call"; a call without
  *       arguments works. Call it through the class ({@code Cls.m(..)}).</dd>
+ *
+ *   <dt>{@code "post-increment-expression"}</dt>
+ *   <dd>MVEL3 transpiles post-increment in expressions (e.g. {@code hour++ < 61}) as pre-increment
+ *       ({@code ++hour}), returning the incremented value instead of the pre-increment value.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -295,7 +299,7 @@ public @interface KnownCompatibility {
      * {@code "set-index-access"}, {@code "list-to-array-coercion"},
      * {@code "non-public-input-type"}, {@code "runtime-type-method-resolution"},
      * {@code "naked-static-method-call"}, {@code "raw-collection-element-type"},
-     * {@code "static-import-method-call"}.
+     * {@code "static-import-method-call"}, {@code "post-increment-expression"}.
      */
     String value();
 }
