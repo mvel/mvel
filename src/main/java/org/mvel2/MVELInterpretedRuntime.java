@@ -101,6 +101,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
          * onto the stack.
          */
         if (stk.isEmpty()) {
+          if (tk.isOperator(END_OF_STMT)) {
+            continue;
+          }
           if ((tk.fields & ASTNode.STACKLANG) != 0) {
             stk.push(tk.getReducedValue(stk, ctx, variableFactory));
             Object o = stk.peek();
