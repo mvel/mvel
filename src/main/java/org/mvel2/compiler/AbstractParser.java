@@ -805,7 +805,9 @@ public class AbstractParser implements Parser, Serializable {
                         ADD, fields, pCtx);
                   }
                 }
-                else if (lookAhead() == '-') {
+                // "=-" directly followed by a digit is an assignment of a negative number literal
+                // (e.g. "x=-9"), not the "=-" compound subtraction operator (e.g. "x =- 9")
+                else if (lookAhead() == '-' && !(cursor + 2 < end && isDigit(expr[cursor + 2]))) {
                   name = new String(expr, st, trimLeft(cursor) - st);
 
                   st = cursor += 2;

@@ -625,6 +625,21 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals(-95, test("xx0 = 5; xx0 =- 100"));
   }
 
+  public void testAssignNegativeLiteral() {
+    assertEquals(-9, test("xx0 = 5; xx0=-9; xx0"));
+  }
+
+  public void testAssignNegativeLiteralToMapEntry() {
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("PARAM", new HashMap<String, Object>());
+
+    Serializable s = compileExpression("PARAM['a']=-9; return PARAM;");
+    assertEquals(-9, ((Map) executeExpression(s, vars)).get("a"));
+
+    vars.put("PARAM", new HashMap<String, Object>());
+    assertEquals(-9, ((Map) MVEL.eval("PARAM['a']=-9; return PARAM;", vars)).get("a"));
+  }
+
   public void testBooleanStrAppend() {
     assertEquals("footrue", test("\"foo\" + true"));
   }
