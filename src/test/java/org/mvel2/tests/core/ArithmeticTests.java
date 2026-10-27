@@ -605,10 +605,6 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
   }
 
-  public void testAssignPlus2() {
-    assertEquals(10, test("xx0 = 5; xx0 =+ 4; xx0 + 1"));
-  }
-
   public void testAssignDiv() {
     assertEquals(2.0, test("xx0 = 20; xx0 /= 10; xx0"));
   }
@@ -621,8 +617,38 @@ public class ArithmeticTests extends AbstractTest {
     assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
   }
 
-  public void testAssignSub2() {
-    assertEquals(-95, test("xx0 = 5; xx0 =- 100"));
+  public void testAssignNegativeLiteral() {
+    assertEquals(-9, test("xx0 = 5; xx0=-9; xx0"));
+    assertEquals(-9, test("xx0 = 5; xx0 = -9; xx0"));
+    assertEquals(-9, test("xx0 = 5; xx0 =- 9; xx0"));
+    assertEquals(-9, test("xx0 = 5; xx0= -9; xx0"));
+    assertEquals(-100, test("xx0 = 5; xx0 =- 100"));
+  }
+
+  public void testAssignNegativeVariable() {
+    assertEquals(-9, test("xx0 = 5; y = 9; xx0=-y; xx0"));
+    assertEquals(-9, test("xx0 = 5; y = 9; xx0 = -y; xx0"));
+    assertEquals(-9, test("xx0 = 5; y = 9; xx0 =- y; xx0"));
+    assertEquals(-9, test("xx0 = 5; y = 9; xx0= -y; xx0"));
+  }
+
+  public void testAssignNegativeToMapEntry() {
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("PARAM", new HashMap<String, Object>());
+    vars.put("y", 9);
+
+    Serializable s = compileExpression("PARAM['a']=-9; return PARAM;");
+    assertEquals(-9, ((Map) executeExpression(s, vars)).get("a"));
+
+    vars.put("PARAM", new HashMap<String, Object>());
+    assertEquals(-9, ((Map) MVEL.eval("PARAM['a']=-9; return PARAM;", vars)).get("a"));
+
+    vars.put("PARAM", new HashMap<String, Object>());
+    s = compileExpression("PARAM['a']=-y; return PARAM;");
+    assertEquals(-9, ((Map) executeExpression(s, vars)).get("a"));
+
+    vars.put("PARAM", new HashMap<String, Object>());
+    assertEquals(-9, ((Map) MVEL.eval("PARAM['a']=-y; return PARAM;", vars)).get("a"));
   }
 
   public void testBooleanStrAppend() {
