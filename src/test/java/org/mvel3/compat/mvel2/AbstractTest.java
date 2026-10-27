@@ -126,6 +126,57 @@ public abstract class AbstractTest extends Assert {
     }
   }
 
+  public static class Message {
+    public static final int HELLO = 0;
+    public static final int GOODBYE = 1;
+
+    private List items = new ArrayList();
+
+    private String message;
+
+    private int status;
+
+    public String getMessage() {
+      return this.message;
+    }
+
+    public void setMessage(String message) {
+      this.message = message;
+    }
+
+    public int getStatus() {
+      return this.status;
+    }
+
+    public void setStatus(int status) {
+      this.status = status;
+    }
+
+    public void addItem(Item item) {
+      this.items.add(item);
+    }
+
+    public List getItems() {
+      return items;
+    }
+  }
+
+  public static class Item {
+    private String name;
+
+    public Item(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+  }
+
   public static void assertNumEquals(Object obj, Object obj2) {
     assertNumEquals(obj, obj2, true);
   }

@@ -34,6 +34,10 @@ public final class Mvel3TestSupport {
      * MVEL3 has no set-expression API. The adapter compiles {@code <expression> = setValue}
      * against a POJO root; the value is passed unchanged (no MVEL2-style type coercion).
      */
+    public static CompiledExpression compileSetExpression(final String expression) {
+        return compileSetExpression(expression, new TestCompilerContext());
+    }
+
     public static CompiledExpression compileSetExpression(final String expression, final TestCompilerContext context) {
         return new CompiledExpression(expression + " = " + SET_VALUE_NAME, context, Object.class);
     }
@@ -73,6 +77,11 @@ public final class Mvel3TestSupport {
         return executeExpression(expression, root, variables);
     }
 
+    public static Object executeExpression(final Serializable expression, final Map variables,
+                                           final Class<?> outputType) {
+        return executeExpression(expression, variables);
+    }
+
     public static Object eval(final String expression) {
         return eval(expression, new LinkedHashMap<>());
     }
@@ -95,6 +104,14 @@ public final class Mvel3TestSupport {
     public static <T> T eval(final String expression, final Class<T> outputType) {
         return outputType.cast(new CompiledExpression(expression, new TestCompilerContext(), outputType)
                 .evaluate(new LinkedHashMap<>()));
+    }
+
+    public static Boolean evalToBoolean(final String expression, final Object root) {
+        return (Boolean) eval(expression, root);
+    }
+
+    public static Boolean evalToBoolean(final String expression, final Object root, final Map variables) {
+        return (Boolean) eval(expression, root, variables);
     }
 
     public static final class ExpressionCompiler {
@@ -131,6 +148,7 @@ public final class Mvel3TestSupport {
             this.outputType = outputType;
             context.getInputs().forEach((name, type) -> declaredTypes.put(name, Type.type(type)));
             context.getImports().forEach(type -> imports.add(type.getCanonicalName()));
+            context.getPackageImports().forEach(packageName -> imports.add(packageName + ".*"));
         }
 
         private Object evaluate(final Map<String, Object> variables) {
@@ -179,6 +197,9 @@ public final class Mvel3TestSupport {
                 declaredTypes.forEach((name, type) -> decls.add(Declaration.of(name, type)));
                 if (variables != null) {
                     variables.forEach((name, value) -> {
+                        if (declaredTypes.containsKey(name)) {
+                            return; // already declared: the declared type wins
+                        }
                         Class<?> type = value == null ? Object.class : value.getClass();
                         decls.add(Declaration.of(name, type));
                     });

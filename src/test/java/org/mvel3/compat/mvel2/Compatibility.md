@@ -856,3 +856,131 @@ This is a **MVEL3 bug**, not a MVEL2/MVEL3 design difference. `KieMemoryCompiler
 sources to `javac` with an explicit `StandardCharsets.UTF_8` option. The `I18nTest` test passes
 on Linux and fails on Windows; the failure is recorded here so the Windows CI failure is visible
 rather than silently skipped.
+
+---
+
+## Undeclared input variable at compile time
+
+> `@KnownCompatibility("undeclared-input-variable")`
+
+MVEL2 compiles `bar.add("hello")` without knowing what `bar` is (it resolves it at run time). MVEL3
+generates Java source, so every variable must be declared with a type before compilation; an undeclared
+one fails with `UnsolvedSymbolException: Unsolved symbol in bar`. Declare the input
+(`TestCompilerContext.addInput` / the `types` map).
+
+---
+
+## Class aliasing (`Foo244 = String; new Foo244('foobar')`)
+
+> `@KnownCompatibility("class-alias")`
+
+MVEL2 lets a variable hold a `Class` and then use it after `new`. MVEL3 translates to Java, where `new`
+needs a type name, so the construct has no equivalent; the assignment `Foo244 = String;` itself fails to
+resolve `Foo244`. Import the class or use `String` directly.
+
+---
+
+## Classes from a separate jar class loader
+
+> `@KnownCompatibility("external-jar-classloader")`
+
+`CoreImportsTests#testNestedEnumFromJar` imports `org.drools.examples.eventing.EventRequest` from
+`eventing-example.jar` through a `URLClassLoader`. With the MVEL3 compile call that takes a class loader:
+
+- the original jar (no directory entries) is not seen by the compiler:
+  `package org.drools.examples.eventing does not exist`;
+- a repacked jar with directory entries is found, but `EventRequest.Status.ACTIVE` is compiled as the
+  instance property `status` of the `EventRequest` class and fails with
+  `non-static method getStatus() cannot be referenced from a static context` (the nested enum `Status`
+  and the property `status` clash). A nested enum without a same-named property (`Triangle.Foo.OBTUSE`) works.
+
+---
+
+## Static members through a package import
+
+> `@KnownCompatibility("static-member-unqualified")`
+
+MVEL2 makes the constants of an imported class usable by simple name (`new Status( START )` after
+`addPackageImport("...res.Status")`). MVEL3 reports `cannot find symbol: variable START`; write
+`Status.START`. A static import through the API (`static org...Status.*`) was observed to work.
+
+---
+
+## Index access on a `Set`
+
+> `@KnownCompatibility("set-index-access")`
+
+MVEL2 reads `pojo.dates[0]` on a `Set<Date>`. MVEL3 rewrites `[0]` to `.get(0)`, which `Set` does not have:
+
+```
+cannot find symbol: method get(int)  location: interface java.util.Set<java.util.Date>
+```
+
+Workaround: `pojo.dates.iterator().next()`. Index access on a `List` (`pojo.list[0]`) works.
+
+---
+
+## List to array coercion
+
+> `@KnownCompatibility("list-to-array-coercion")`
+
+MVEL2 coerces a `List` (also a list of lists) to `char[]` / `char[][]` when it is bound to an array property. MVEL3 assigns it as written and javac reports
+`incompatible types: java.util.ArrayList cannot be converted to char[]`. Workaround: convert explicitly,
+e.g. `foo.charArray = value.toString().toCharArray()` or build the array in the expression.
+
+---
+
+## Non-public runtime class as the input type
+
+> `@KnownCompatibility("non-public-input-type")`
+
+The type of a root or variable is taken from the runtime class of the value. For `Collections.singleton(..)` and
+`Collections.unmodifiableCollection(..)` this is a non-public JDK class, and javac rejects the generated code
+(`Collections.SingletonSet has private access`, `UnmodifiableCollection is not public`). Workaround: declare the
+input with a public type (`Collection`) and call the method on the named input (`c.size()`).
+
+---
+
+## Method lookup on the runtime class
+
+> `@KnownCompatibility("runtime-type-method-resolution")`
+
+MVEL2 resolves a method on the runtime class of the value. MVEL3 compiles against the declared type:
+
+- `System.out.myPrintln("x")` where `System.out` is a `PrintStream` subclass:
+  `cannot find symbol: method myPrintln(String)  location: variable out of type java.io.PrintStream`.
+- `m.getStatus()` where `m` is declared as `Object`:
+  `Method 'getStatus' cannot be resolved in context m.getStatus()`.
+
+Workaround: cast to the precise type, or declare the input with it.
+
+---
+
+## Static method called without parentheses
+
+> `@KnownCompatibility("naked-static-method-call")`
+
+With `MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL`, MVEL2 accepts `tm = System.currentTimeMillis`. MVEL3 fails with
+`Unsolved symbol : currentTimeMillis` (also for a declared variable). A naked *instance* call such as `foo.happy` and
+`list.size` works. Workaround: `System.currentTimeMillis()`.
+
+---
+
+## Element type of a raw collection input
+
+> `@KnownCompatibility("raw-collection-element-type")`
+
+An input declared as `List` (the raw class) has `Object` elements in MVEL3, so `for (String s : strings) { .. }` fails with
+`incompatible types: java.lang.Object cannot be converted to java.lang.String`. Workarounds: declare the generics
+(`Type.type(List.class, "<String>")`), or loop over `Object` and cast. With `Type.type(List.class, "<String>")` the loop works.
+
+---
+
+## Static-imported method called with arguments
+
+> `@KnownCompatibility("static-import-method-call")`
+
+After `static pkg.StaticMethods.*` (or `static pkg.StaticMethods.getList`), `getList(String.class)` fails with
+`No method candidates were found for method call 'getList'`; the same happens for `static java.lang.Math.*` and `abs(1)`.
+A static-imported method without arguments (`getString()`) works. Workaround: call through the class,
+`StaticMethods.getList(String.class)`.
