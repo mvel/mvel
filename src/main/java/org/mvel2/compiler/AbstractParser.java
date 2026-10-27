@@ -785,46 +785,6 @@ public class AbstractParser implements Parser, Serializable {
                 break CaptureLoop;
 
               case '=':
-                if (lookAhead() == '+') {
-                  name = new String(expr, st, trimLeft(cursor) - st);
-
-                  st = cursor += 2;
-
-                  if (!isNextIdentifierOrLiteral()) {
-                    throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, st);
-                  }
-
-                  captureToEOS();
-
-                  if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                    return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
-                        ADD, idx, fields, pCtx);
-                  }
-                  else {
-                    return lastNode = new OperativeAssign(name, expr, st, cursor - st,
-                        ADD, fields, pCtx);
-                  }
-                }
-                else if (lookAhead() == '-') {
-                  name = new String(expr, st, trimLeft(cursor) - st);
-
-                  st = cursor += 2;
-
-                  if (!isNextIdentifierOrLiteral()) {
-                    throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, st);
-                  }
-
-                  captureToEOS();
-
-                  if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                    return lastNode = new IndexedOperativeAssign(expr, st, cursor - st,
-                        SUB, idx, fields, pCtx);
-                  }
-                  else {
-                    return lastNode = new OperativeAssign(name, expr, st, cursor - st,
-                        SUB, fields, pCtx);
-                  }
-                }
                 if (greedy && lookAhead() != '=') {
                   cursor++;
 
