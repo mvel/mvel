@@ -84,7 +84,7 @@
         <asm.version>9.7.1</asm.version>
         <antlr4.version>4.13.2</antlr4.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <javaparser.version>3.25.5-mvel3-SNAPSHOT</javaparser.version>
+        <javaparser.version>3.25.5-mvel3-2</javaparser.version>
         <junit-jupiter.version>5.11.4</junit-jupiter.version>
         <junit4.version>4.13.2</junit4.version>
         <excludedGroups>mvel2-compatibility</excludedGroups>
