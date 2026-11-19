@@ -48,6 +48,7 @@ public final class LambdaCatalog {
         if (candidates == null) return null;
         for (LambdaKey target : candidates) {
             if (!target.getNormalisedBody().equals(key.getNormalisedBody())) continue;
+            if (!target.getImports().equals(key.getImports())) continue;
             LambdaKey.MethodSignatureInfo targetInfo = target.getMethodSignatureInfo();
             LambdaKey.MethodSignatureInfo currentInfo = key.getMethodSignatureInfo();
             if (!targetInfo.returnType.equals(currentInfo.returnType)) continue;
@@ -88,7 +89,7 @@ public final class LambdaCatalog {
         this.nextLogicalId = snapshot.nextLogicalId();
         for (CatalogEntry entry : snapshot.entries()) {
             LambdaKey key = LambdaUtils.createLambdaKeyFromMethodDeclarationString(
-                    entry.methodSignature() + " " + entry.normalizedBody());
+                    entry.methodSignature() + " " + entry.normalizedBody(), entry.imports());
             physicalIdByKey.put(key, entry.physicalId());
             keysByHash.computeIfAbsent(key.hashCode(), h -> new ArrayList<>()).add(key);
         }
@@ -98,7 +99,8 @@ public final class LambdaCatalog {
     CatalogSnapshot toSnapshot() {
         List<CatalogEntry> entries = new ArrayList<>();
         for (Map.Entry<LambdaKey, Integer> e : physicalIdByKey.entrySet()) {
-            entries.add(new CatalogEntry(e.getValue(), e.getKey().getMethodSignature(), e.getKey().getNormalisedBody()));
+            entries.add(new CatalogEntry(e.getValue(), e.getKey().getMethodSignature(), e.getKey().getNormalisedBody(),
+                    e.getKey().getImports()));
         }
         entries.sort((a, b) -> Integer.compare(a.physicalId(), b.physicalId()));
         return new CatalogSnapshot(nextPhysicalId, nextLogicalId, entries);

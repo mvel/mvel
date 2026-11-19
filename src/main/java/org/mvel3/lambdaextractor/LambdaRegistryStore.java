@@ -19,11 +19,11 @@ import java.util.TreeMap;
  * Properties-based persistence for the lambda registry. Internal to LambdaRuntime;
  * compilers should not interact with this class directly.
  * <p>
- * Format: {@code format.version=2}. See the design doc for the schema.
+ * Format: {@code format.version=3}. See the design doc for the schema.
  */
 final class LambdaRegistryStore {
 
-    private static final String FORMAT_VERSION = "2";
+    private static final String FORMAT_VERSION = "3";
     private static final String KEY_VERSION = "format.version";
     private static final String KEY_NEXT_PHYSICAL = "catalog.nextPhysicalId";
     private static final String KEY_NEXT_LOGICAL = "catalog.nextLogicalId";
@@ -56,7 +56,8 @@ final class LambdaRegistryStore {
             int physicalId = requiredInt(props, "catalog.entry." + index + ".physicalId");
             String methodSignature = requiredString(props, "catalog.entry." + index + ".methodSignature");
             String normalizedBody = requiredString(props, "catalog.entry." + index + ".normalizedBody");
-            catalogEntries.add(new CatalogEntry(physicalId, methodSignature, normalizedBody));
+            String imports = requiredString(props, "catalog.entry." + index + ".imports");
+            catalogEntries.add(new CatalogEntry(physicalId, methodSignature, normalizedBody, imports));
             catalogPhysicalIds.add(physicalId);
         }
 
@@ -103,6 +104,7 @@ final class LambdaRegistryStore {
             props.setProperty("catalog.entry." + i + ".physicalId", Integer.toString(entry.physicalId()));
             props.setProperty("catalog.entry." + i + ".methodSignature", entry.methodSignature());
             props.setProperty("catalog.entry." + i + ".normalizedBody", entry.normalizedBody());
+            props.setProperty("catalog.entry." + i + ".imports", entry.imports());
             i++;
         }
         int j = 0;

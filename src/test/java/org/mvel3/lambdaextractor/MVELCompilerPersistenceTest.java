@@ -2,6 +2,7 @@ package org.mvel3.lambdaextractor;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
@@ -199,6 +200,25 @@ public class MVELCompilerPersistenceTest {
             restoreProp("mvel3.compiler.lambda.registry.file", prevReg);
             LambdaRuntime.resetSingletonForTests();
         }
+    }
+
+    @Test
+    void sameExpressionWithDifferentImports_resolvesEachImport() {
+        Object a = new MVEL().compileMapExpression("new Thing()", Object.class,
+                Set.of(A.Thing.class.getCanonicalName()), Map.of()).eval(Map.of());
+        Object b = new MVEL().compileMapExpression("new Thing()", Object.class,
+                Set.of(B.Thing.class.getCanonicalName()), Map.of()).eval(Map.of());
+
+        assertThat(a).isInstanceOf(A.Thing.class);
+        assertThat(b).isInstanceOf(B.Thing.class);
+    }
+
+    public static class A {
+        public static class Thing {}
+    }
+
+    public static class B {
+        public static class Thing {}
     }
 
     private static void restoreProp(String key, String prev) {
