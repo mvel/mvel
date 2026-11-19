@@ -249,7 +249,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
   }
 
-  // `innermap['test']` is read as a `char` literal index and the expression returns the whole map ({test=foo}); with double quotes
+  // `innermap['test']` fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"); with double quotes
   // it works.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -333,8 +333,8 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         user.getFirstName());
   }
 
-  // Category not isolated: fails with expected:<bar> but was:<{test=foo}>. The adapter emulates a set expression by compiling
-  // `innermap['test'] = setValue`; `['test']` is read as a `char` literal, so the assignment is a no-op (single-quote-string). The
+  // Category not isolated: fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"). The adapter emulates a set
+  // expression by compiling `innermap['test'] = setValue`; `'test'` is not a valid `char` literal (single-quote-string). The
   // set-expression-api difference also applies: `innermap["test"] = setValue` with double quotes works.
   @Test
   @KnownCompatibility("single-quote-string")

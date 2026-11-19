@@ -225,8 +225,8 @@ public class ArraysTests extends AbstractTest {
         Map.of("x", Type.type(String[].class)));
   }
 
-  // 'brie' is read as a char literal and the assignment silently stores null (no error); with "brie" the
-  // test passes.
+  // 'brie' is not a valid char literal; the expression fails with a parse error ("extraneous input '='
+  // expecting <EOF>"). With "brie" the test passes.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testMultiDimensionalArrayType() {

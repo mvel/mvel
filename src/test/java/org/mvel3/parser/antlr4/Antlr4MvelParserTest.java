@@ -236,4 +236,36 @@ class Antlr4MvelParserTest {
                 .hasMessageContaining("Parse errors:")
                 .hasMessageContaining("foreach");
     }
+
+    @Test
+    void testTrailingInputAfterExpressionIsRejected() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseExpression("x + 1 garbage here"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'garbage'");
+        assertThatThrownBy(() -> parser.parseExpression("1 2 3"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'2'");
+        assertThatThrownBy(() -> parser.parseExpression("x )"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("')'");
+    }
+
+    @Test
+    void testTrailingInputAfterBlockIsRejected() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseBlock("{ return 1; } return 2; }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'return'");
+    }
+
+    @Test
+    void testSingleTrailingSemicolonIsAllowed() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThat(parser.parseExpression("x + 1;").isSuccessful()).isTrue();
+        assertThat(parser.parseBlock("{ return 1; };").isSuccessful()).isTrue();
+        assertThatThrownBy(() -> parser.parseExpression("x + 1;;"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("';'");
+    }
 }

@@ -312,6 +312,7 @@ public class CoreRegressionTests extends AbstractTest {
   // ---------------------------------------------------------------------------
 
   @Test
+  @KnownCompatibility("word-logical-operator")
   public void testJIRA209() {
     Map<String, Object> vars = new LinkedHashMap<>();
     vars.put("bal", new BigDecimal("999.99"));
@@ -342,7 +343,7 @@ public class CoreRegressionTests extends AbstractTest {
   // ---------------------------------------------------------------------------
 
   // MVEL2: `this.?b.c` — null-safe chained access; null when b is null, "something" when set.
-  // MVEL3: null-safe operator `?.` returns the left-hand object; reclassified accordingly.
+  // MVEL3: the null-safe operator `.?` is not supported (parse error); reclassified accordingly.
   @Test
   @KnownCompatibility("null-safe-operator")
   public void testMVEL221() {

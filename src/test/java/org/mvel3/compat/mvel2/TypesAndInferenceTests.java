@@ -628,7 +628,7 @@ public class TypesAndInferenceTests extends AbstractTest {
     // The pCtx.getInputs() assertions are removed (MVEL2 analysis API).
   }
 
-  // Category not isolated: the result is the HashMap instead of a Boolean. The single-quoted 'KEY1' is read as a char,
+  // Category not isolated: fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"). The single-quoted 'KEY1' is not a valid char,
   // but the test also passes a Map as the root, which MVEL3 merges into the inputs. With double quotes and the same
   // root the expression returns true, so the single-quote literal is the visible cause.
   @Test
@@ -774,8 +774,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     // setProperty(foo, "name", 12) (MVEL.setProperty) has no MVEL3 equivalent and is removed.
   }
 
-  // Category not isolated: fails with an NPE because Map.get returns null while the setter is generated
-  // (Integer.intValue()). Whether the String to Integer coercion itself works was not isolated.
+  // Category not isolated: fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"); the single-quoted
+  // `'bleh'` index is not a valid char literal. Whether the String to Integer coercion itself works was not isolated.
   @Test
   @KnownCompatibility("set-expression-api")
   public void testSetCoercion2() {

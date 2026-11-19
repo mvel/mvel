@@ -77,7 +77,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals(true, test("testImpl.foo"));
   }
 
-  // Category not isolated: `funMap['foo']` silently returns the whole map (the `'foo'` index is read as a `char`). With double quotes the
+  // Category not isolated: `funMap['foo']` fails with a parse error at `[` (`'foo'` is not a valid `char` literal). With double quotes the
   // error becomes "cannot find symbol: method happy() ... Object" (verified), i.e. `dynamic-property-type` is a second cause.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -169,7 +169,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("foobarcar1", test("'foobar' + 'car' + 1"));
   }
 
-  // Category not isolated: `funMap['foo']` silently returns the whole map (the `'foo'` index is read as a `char`). With double quotes the
+  // Category not isolated: `funMap['foo']` fails with a parse error at `[` (`'foo'` is not a valid `char` literal). With double quotes the
   // error becomes "cannot find symbol: variable bar ... Object" (verified in testMapAccess2), i.e. `dynamic-property-type` is a second cause.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -207,6 +207,7 @@ public class PropertyAccessTests extends AbstractTest {
   }
 
   @Test
+  @KnownCompatibility("is-operator")
   public void testObjectInstantiation2() {
     test("new String() is String");
   }
@@ -378,6 +379,7 @@ public class PropertyAccessTests extends AbstractTest {
 
   // Has no assertion; passes when evaluation does not throw.
   @Test
+  @KnownCompatibility("null-safe-operator")
   public void testNullSafe() {
     Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
     Map<String, Float> tmp = new HashMap<String, Float>();
@@ -396,7 +398,7 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: `a.?map['foo']` evaluates to the `A226` instance itself instead of `null`. The same happens with double quotes
+  // Category not isolated: `a.?map['foo']` fails with a parse error at `.?`. The same happens with double quotes
   // (verified), so the single-quoted literal is not the cause.
   @Test
   @KnownCompatibility("null-safe-operator")
@@ -450,10 +452,9 @@ public class PropertyAccessTests extends AbstractTest {
     infiniteLoop();
   }
 
-  // Category not isolated: `a.map['foo']` throws no exception (silent result). With double quotes it throws an NPE as the test expects
-  // (verified).
+  // Passes for the wrong reason: the single-quoted `'foo'` makes `a.map['foo']` a parse error, while the test expects the NPE
+  // on the null map. With double quotes the NPE is thrown (verified).
   @Test
-  @KnownCompatibility("single-quote-string")
   public void testInfiniteLoop() {
     A226 a = new A226();
     Map m = Collections.singletonMap("a", a);
@@ -468,9 +469,8 @@ public class PropertyAccessTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: same as testInfiniteLoop.
+  // Passes for the wrong reason, as testInfiniteLoop.
   @Test
-  @KnownCompatibility("single-quote-string")
   public void testInfiniteLoopAO() {
     // MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING removed (MVEL2 only)
     testInfiniteLoop();
@@ -484,8 +484,8 @@ public class PropertyAccessTests extends AbstractTest {
     test("map=new java.util.Hashtable();map.foo='bar'");
   }
 
-  // Category not isolated: `this.?bar.name` with root `Foo`; the result is the generated evaluator instance, not `null`. Whether `.?` (see
-  // null-safe-operator) also contributes was not tested separately.
+  // Category not isolated: `this.?bar.name` with root `Foo` fails with a parse error at `.?` (null-safe-operator). `this` alone
+  // evaluates to the generated evaluator instance, not the root (this-reference).
   @Test
   @KnownCompatibility("this-reference")
   public void testNullSafeWithDynamicOptimizerMVEL305() {

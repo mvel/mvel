@@ -185,9 +185,8 @@ import java.lang.annotation.Target;
  *
  *   <dt>{@code "null-safe-operator"}</dt>
  *   <dd>The MVEL2 null-safe access {@code a.?map['foo']} yields {@code null} when {@code map} is
- *       null; MVEL3 compiles it but returns the object on the left of {@code .?}
- *       ({@code a} for {@code a.?map['foo']}, {@code foo} for {@code foo.?bar.baz}), whether or not the
- *       member is null and also with double quotes. Write an explicit null check.</dd>
+ *       null; MVEL3 does not support {@code .?} and fails with a parse error, also with double
+ *       quotes. Write an explicit null check.</dd>
  *
  *   <dt>{@code "static-input-type"}</dt>
  *   <dd>MVEL2 re-resolves property access on every execution, so one compiled expression can be run
@@ -262,6 +261,10 @@ import java.lang.annotation.Target;
  *   <dt>{@code "post-increment-expression"}</dt>
  *   <dd>MVEL3 transpiles post-increment in expressions (e.g. {@code hour++ < 61}) as pre-increment
  *       ({@code ++hour}), returning the incremented value instead of the pre-increment value.</dd>
+ *
+ *   <dt>{@code "word-logical-operator"}</dt>
+ *   <dd>MVEL2 accepts {@code and} / {@code or} between boolean operands ({@code bal > 200 or bal < 100});
+ *       MVEL3 fails with a parse error at the keyword. Use {@code &&} / {@code ||}.</dd>
  * </dl>
  */
 @Target(ElementType.METHOD)
@@ -293,7 +296,8 @@ public @interface KnownCompatibility {
      * {@code "set-index-access"}, {@code "list-to-array-coercion"},
      * {@code "non-public-input-type"}, {@code "runtime-type-method-resolution"},
      * {@code "naked-static-method-call"}, {@code "raw-collection-element-type"},
-     * {@code "static-import-method-call"}, {@code "post-increment-expression"}.
+     * {@code "static-import-method-call"}, {@code "post-increment-expression"},
+     * {@code "word-logical-operator"}.
      */
     String value();
 }

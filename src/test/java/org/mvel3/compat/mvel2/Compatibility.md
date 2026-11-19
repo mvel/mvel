@@ -195,6 +195,21 @@ MVEL3 does not support `or` keyword for coalescing. In MVEL3 / Java, use ternary
 
 ---
 
+## `and` / `or` as logical operators
+
+> `@KnownCompatibility("word-logical-operator")`
+
+MVEL2 accepts `and` / `or` between boolean operands (`bal > 200 or bal < 100`). MVEL3 has no such
+keywords; the expression fails with a parse error at the keyword:
+
+```
+extraneous input 'or' expecting <EOF>
+```
+
+Use `&&` / `||`.
+
+---
+
 ## Regular expression matching operator (`~=`)
 
 > `@KnownCompatibility("regex-operator")`
@@ -648,8 +663,8 @@ Cause (from reading the grammar, not changed or fixed here): `Mvel3Lexer.g4` def
 `CONTAINS : 'contains'` and `MATCHES : 'matches'` (operators). The `identifier` rule in `JavaParser.g4`
 does not include them, so `expression '.' (identifier | methodCall | ...)` does not match.
 
-Observation (cause not investigated): in expression mode (no `return`), `l.contains("Y")` returned
-the receiver `[X, Y]` instead of a boolean.
+In expression mode (no `return`), `l.contains("Y")` fails at the `.` instead
+(`extraneous input '.' expecting <EOF>`).
 
 Workarounds: `indexOf(..) >= 0`, `containsKey`, `containsAll`, `isEmpty`.
 
@@ -727,9 +742,10 @@ foo.{ name = 'poopy', aValue = 'bar' }
   ```
   mismatched input ',' expecting ...
   ```
-- **Inline form** (`foo.{ ... }`) — compiles silently but acts as a no-op; property
-  assignments inside `{...}` are not applied to the receiver (observed failure:
-  `expected:<[poopy]> but was:<[dog]>`).
+- **Inline form** (`foo.{ ... }`) — parse error at the `.`:
+  ```
+  extraneous input '.' expecting <EOF>
+  ```
 
 ### Semicolon form works in MVEL3
 
@@ -750,7 +766,7 @@ Limitations of the semicolon form:
   of `foo` rather than a declared variable.
 - **Nested inside another expression** — e.g. `[ 'foo': (with (new Foo()) { ... }) ]`
   or `(Foo) with (foo) { ... }` gives a parse error at `(`.
-- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a no-op;
+- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a parse error too;
   use `Foo f = new Foo(); with (f) { setName("bar"); }` instead.
 - **Implied-this leading-dot form** — `.{ data = 'foo' }` (evaluated against a root
   object) is not supported.
@@ -795,10 +811,11 @@ mp.test". Use `mp.put("test", "bar")`.
 
 > `@KnownCompatibility("null-safe-operator")`
 
-In MVEL2 the result is `null` when `a.map` is `null`, and the member value otherwise. MVEL3 compiles
-`a.?map["foo"]` (and `a?.map["foo"]`, `foo.?bar.baz`, `foo.?bar.convert(x)`) but the result is the
-object on the left of `.?` (`a`, `foo`), whether the member is null or not. Plain `a.map["foo"]` on a
-null map throws an NPE as in MVEL2. Write an explicit null check: `a.map != null ? a.map.get("foo") : null`.
+In MVEL2 the result is `null` when `a.map` is `null`, and the member value otherwise. MVEL3 does not
+support this syntax: `a.?map["foo"]` (and `a?.map["foo"]`, `foo.?bar.baz`, `foo.?bar.convert(x)`) fails
+with a parse error after the object on the left (`extraneous input '.' expecting <EOF>`). Plain
+`a.map["foo"]` on a null map throws an NPE as in MVEL2. Write an explicit null check:
+`a.map != null ? a.map.get("foo") : null`.
 
 ---
 

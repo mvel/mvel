@@ -32,8 +32,8 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 public class MvelCompileExpNullSafeTest {
 
 	// Category not isolated: fails with a parse error "missing ')' at '&&'" (verified). The projection `($ in list if ..)` alone also fails
-	// to parse (verified), but without the outer parentheses the expression compiles and silently returns `true` even for `.size() > 5`
-	// (verified), so the projection is not simply a parse error. The null-safe `.?` (see null-safe-operator) was not tested separately here.
+	// to parse (verified), and without the outer parentheses the expression fails with a parse error at `&&` (verified).
+	// The null-safe `.?` (see null-safe-operator) was not tested separately here.
 	@Test
 	@KnownCompatibility("projection-operator")
 	public void testMvelCompileNullSafeNullFirst() {

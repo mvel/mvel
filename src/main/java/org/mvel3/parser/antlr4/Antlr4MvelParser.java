@@ -58,6 +58,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.Provider;
@@ -148,6 +149,16 @@ public class Antlr4MvelParser implements MvelParser {
 
             ParseTree tree = start.parse(parser);
             logger.trace("Parse tree: {}", tree.toStringTree(parser));
+
+            // The expression and block rules have no EOF anchor, so ANTLR stops silently at the first unusable token
+            if (start == Antlr4ParseStart.EXPRESSION || start == Antlr4ParseStart.BLOCK) {
+                int index = tokens.LA(1) == Mvel3Parser.SEMI ? 2 : 1; // allow a single trailing ';'
+                Token next = tokens.LT(index);
+                if (next.getType() != Token.EOF) {
+                    errors.add(String.format("line %d:%d extraneous input '%s' expecting <EOF>",
+                                             next.getLine(), next.getCharPositionInLine(), next.getText()));
+                }
+            }
 
             // Reject before visiting: the visitor cannot handle the incomplete tree left by error recovery
             if (!errors.isEmpty()) {

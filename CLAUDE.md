@@ -88,7 +88,7 @@ Each generates a different evaluator template (see `src/main/resources/org/mvel3
 
 - Custom operators (`after`, `before`, `in`, `matches`) not yet supported
 - Power operator (`**`) not supported
-- Left shift operator (`<<<`) generates incorrect code
+- Unsigned left shift operator (`<<<`) is not supported (parse error)
 - Lambda extractor doesn't support generics and arrays
 - `HalfBinaryExpr` rewriting not implemented
 

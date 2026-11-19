@@ -1053,8 +1053,8 @@ public class CoreMethodResolutionTests extends AbstractTest {
     compileEagerly(text, new TestCompilerContext(), imports);
   }
 
-  // Category not isolated: fails with a parse error at `.{` (the inline form on `new Cheese()`; Compatibility.md describes a silent no-op for the inline
-  // form on other receivers). The undeclared variable `cheese` and the missing `return` (block-syntax) were not tested separately.
+  // Category not isolated: fails with a parse error at `.{` (the inline form on `new Cheese()`). The undeclared variable `cheese`
+  // and the missing `return` (block-syntax) were not tested separately.
   // `Cheese cheese = new Cheese(); with (cheese) { type = $c.type; } return cheese;` works.
   @Test
   @KnownCompatibility("with-block-syntax")

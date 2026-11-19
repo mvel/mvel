@@ -121,21 +121,21 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("populate(); barfoo == 'sarah'"));
   }
 
-  // Category not isolated: `'foobie'` is read as a `char` literal; the result is silently `true` (not an exception).
+  // Category not isolated: `'foobie'` is not a valid `char` literal; the expression fails with a parse error ("extraneous input '?' expecting <EOF>").
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTernary() {
     assertEquals("foobie", test("zero==0?'foobie':zero"));
   }
 
-  // Category not isolated: `'foobie'`/`'blimpie'` are read as `char` literals; the result is silently `false`. With double quotes it passes (verified).
+  // Category not isolated: `'foobie'`/`'blimpie'` are not valid `char` literals; the expression fails with a parse error. With double quotes it passes (verified).
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTernary2() {
     assertEquals("blimpie", test("zero==1?'foobie':'blimpie'"));
   }
 
-  // Category not isolated: the single-quoted operands are read as `char` literals; the result is silently `false`. With double quotes it passes (verified).
+  // Category not isolated: the single-quoted operands are not valid `char` literals; the expression fails with a parse error. With double quotes it passes (verified).
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTernary3() {
@@ -219,7 +219,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("Foo244", test("if (false) return 'Bar'; else return 'Foo244';"));
   }
 
-  // Category not isolated: `'<test>'` is read as a `char` literal; the result is silently `true`. With double quotes it passes (verified).
+  // Category not isolated: `'<test>'` is not a valid `char` literal; the expression fails with a parse error. With double quotes it passes (verified).
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTernary4() {
@@ -509,8 +509,8 @@ public class ControlFlowTests extends AbstractTest {
             objectMap));
   }
 
-  // Category not isolated: with double quotes the error is "Unsolved symbol in empty" (verified). With the original `''` the call silently returns "12345"
-  // for both inputs (single-quote-string); the observed assertion failure is on the second input.
+  // Category not isolated: with double quotes the error is "Unsolved symbol in empty" (verified). With the original `''` it fails with a parse error
+  // at `+` ("extraneous input '+' expecting <EOF>") (single-quote-string).
   @Test
   @KnownCompatibility("empty-operator")
   public void testSubEvaluation() {
