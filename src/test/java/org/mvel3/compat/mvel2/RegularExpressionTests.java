@@ -48,8 +48,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression((java.io.Serializable) ser));
     }
 
-    // Category not isolated: fails with a parse error at `||` ("extraneous input '||' expecting <EOF>"). The operand after `||`
-    // has `~=` (regex-operator, the suspected cause) and single-quoted literals, which were not tested separately.
+    // Category not isolated: fails with a lexer error on the single-quoted literals after `||`. That operand also has
+    // `~=` (regex-operator, the suspected cause), which was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExpOrBug() throws Exception {
@@ -104,7 +104,7 @@ public class RegularExpressionTests extends AbstractTest {
                 map));
     }
 
-    // Category not isolated: observed error is "Unsolved symbol" from a single-quoted literal. With the literals converted
+    // Category not isolated: observed error is a lexer error on the single-quoted literals. With the literals converted
     // (experiment) it became a ClassCastException (String to Boolean), which supports regex-operator.
     @Test
     @KnownCompatibility("regex-operator")

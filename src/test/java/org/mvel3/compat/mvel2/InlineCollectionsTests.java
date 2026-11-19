@@ -47,7 +47,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals(1, test("[\"apple\"].size()"));
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("current" is null) on `{'foo', 'bar'}`. The `{..}` array
+  // Category not isolated: fails with a parse error at the `{` of `{'foo', 'bar'}` and lexer errors on the strings. The `{..}` array
   // literal (inline-array-literal) is the suspected trigger; single-quoted strings (single-quote-string) were not tested separately.
   @Test
   @KnownCompatibility("inline-array-literal")
@@ -118,7 +118,7 @@ public class InlineCollectionsTests extends AbstractTest {
     test("['foo', 'bar', 'foobar', 'FOOBAR']");
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("current" is null) on `{'gonk', 'foo'}`. The `{..}` array literal
+  // Category not isolated: fails with a parse error at the `{` of `{'gonk', 'foo'}` and lexer errors on the strings. The `{..}` array literal
   // (inline-array-literal) is the suspected trigger; single-quote-string and `funMethod` being a method of the MVEL2 root object
   // (this-reference) were not tested separately.
   @Test
@@ -317,7 +317,7 @@ public class InlineCollectionsTests extends AbstractTest {
   }
 
   @SuppressWarnings({"UnnecessaryBoxing"})
-  // Category not isolated: the first parse error ("mismatched input '42'") comes from the single-quoted strings
+  // Category not isolated: the first errors are lexer errors on the single-quoted strings
   // (single-quote-string). The expression also nests list/map literals (nested-inline-collection): with only the single quotes
   // replaced by double quotes, javac rejects it ("illegal start of expression").
   @Test

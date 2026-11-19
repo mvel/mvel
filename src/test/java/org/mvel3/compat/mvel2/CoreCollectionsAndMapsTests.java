@@ -249,7 +249,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
   }
 
-  // `innermap['test']` fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"); with double quotes
+  // `innermap['test']` fails with a lexer error on `'test'` ("token recognition error"); with double quotes
   // it works.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -333,7 +333,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         user.getFirstName());
   }
 
-  // Category not isolated: fails with a parse error at `[` ("extraneous input '[' expecting <EOF>"). The adapter emulates a set
+  // Category not isolated: fails with a lexer error on `'test'` ("token recognition error"). The adapter emulates a set
   // expression by compiling `innermap['test'] = setValue`; `'test'` is not a valid `char` literal (single-quote-string). The
   // set-expression-api difference also applies: `innermap["test"] = setValue` with double quotes works.
   @Test

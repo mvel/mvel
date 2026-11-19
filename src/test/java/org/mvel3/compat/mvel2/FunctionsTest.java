@@ -99,7 +99,7 @@ public class FunctionsTest extends AbstractTest {
     assertEquals("foo", eval("def fooFunction(x) x; fooFunction('foo')", new HashMap()));
   }
 
-  // Category not isolated: fails with a parse error ("mismatched input ';' expecting '='"). The expression has an
+  // Category not isolated: fails with a lexer error on the single-quoted string. The expression has an
   // anonymous function and a single-quoted string (single-quote-string); with a double-quoted string the parse
   // error is at the string inside `function { .. }`. Which one triggers it was not verified further.
   @Test

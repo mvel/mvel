@@ -131,21 +131,23 @@ public class Antlr4MvelParser implements MvelParser {
             String input = ProviderUtils.readAll(provider);
             logger.trace("Parsing with input: {}", input);
             
-            // Create ANTLR4 lexer and parser
-            CharStream charStream = CharStreams.fromString(input);
-            Mvel3Lexer lexer = new Mvel3Lexer(charStream);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            Mvel3Parser parser = new Mvel3Parser(tokens);
-
-            // Add error handling
+            // Collect lexer and parser errors; the lexer otherwise drops unrecognized characters silently
             List<String> errors = new ArrayList<>();
-            parser.addErrorListener(new BaseErrorListener() {
+            BaseErrorListener errorListener = new BaseErrorListener() {
                 @Override
                 public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                         int line, int charPositionInLine, String msg, RecognitionException e) {
                     errors.add(String.format("line %d:%d %s", line, charPositionInLine, msg));
                 }
-            });
+            };
+
+            // Create ANTLR4 lexer and parser
+            CharStream charStream = CharStreams.fromString(input);
+            Mvel3Lexer lexer = new Mvel3Lexer(charStream);
+            lexer.addErrorListener(errorListener);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            Mvel3Parser parser = new Mvel3Parser(tokens);
+            parser.addErrorListener(errorListener);
 
             ParseTree tree = start.parse(parser);
             logger.trace("Parse tree: {}", tree.toStringTree(parser));

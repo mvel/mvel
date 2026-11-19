@@ -33,8 +33,8 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.eval;
 @Tag("mvel2-compatibility")
 public class StringConcatWithHashTest {
 
-    // Category not isolated: `props['res'] = props['number1'] # props['number2']` fails with a parse error at the first `[`
-    // ("extraneous input '[' expecting <EOF>"). The `#` operator (hash-concat-operator) is the suspected cause, but the Map
+    // Category not isolated: `props['res'] = props['number1'] # props['number2']` fails with lexer errors on the
+    // single-quoted keys. The `#` operator (hash-concat-operator) is the suspected cause, but the Map
     // index assignment `props['res'] = ...` and the single-quoted literals were not tested separately.
     @Test
     @KnownCompatibility("hash-concat-operator")

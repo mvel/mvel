@@ -50,14 +50,14 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("foo.bar.woof==false"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol in g". In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTextComparison() {
     assertEquals(true, test("foo.bar.name == 'dog'"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol in o". In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testNETextComparison() {
@@ -350,8 +350,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("this.funMap instanceof java.util.Map"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol : data" (this-reference). The single-quoted
-  // `'cat'` literal (single-quote-string) was not tested separately.
+  // Category not isolated: observed error is a lexer error on the single-quoted `'cat'` (single-quote-string). Before
+  // lexer errors were reported it failed with "Unsolved symbol : data" (this-reference).
   @Test
   @KnownCompatibility("this-reference")
   public void testThisReference5() {
@@ -370,7 +370,7 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("pi convertable_to Integer"));
   }
 
-  // Category not isolated: fails with a parse error after the single-quoted literal ("extraneous input '.1' expecting <EOF>"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: fails with a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testStringEquals() {
@@ -396,8 +396,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
   }
 
-  // Category not isolated: observed error is a parse error after the single-quoted literal ("extraneous input 'null'
-  // expecting <EOF>"). With the literal converted to double quotes (experiment) the error became
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error").
+  // With the literal converted to double quotes (experiment) the error became
   // "bad operand types for binary operator '>'" (String > null), so a relational comparison of a String with
   // null (see null-relational-comparison) is a second cause.
   @Test
@@ -421,8 +421,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("isdef _v1"));
   }
 
-  // Category not isolated: observed error is an internal NPE (`LambdaBodyContext.block()` is null) rather than a
-  // plain parse error at `isdef`. The `!( ... )` negation was not tested separately.
+  // Category not isolated: observed error is a parse error at the end of `!(isdef _v1)` ("mismatched input '<EOF>'
+  // expecting {')', '[', ','}"). The `!( ... )` negation was not tested separately.
   @Test
   @KnownCompatibility("isdef-operator")
   public void testIsDefOperator3() {

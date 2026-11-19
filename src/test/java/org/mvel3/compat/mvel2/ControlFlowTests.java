@@ -42,7 +42,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
   }
 
-  // Category not isolated: fails with a parse error on the single-quoted `'dog'` ("no viable alternative at input 'gfoo.bar.woof'"),
+  // Category not isolated: fails with a lexer error on the single-quoted `'dog'` ("token recognition error"),
   // but this was not tested with double quotes.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -50,7 +50,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol in ppyBar" (single-quote-string). With double quotes the error becomes
+  // Category not isolated: observed error is a lexer error on the single-quoted `'happyBar'` (single-quote-string). With double quotes the error becomes
   // "bad operand types ... String * Integer" because `pi` is a String (string-coercion); both were observed.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -121,7 +121,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("populate(); barfoo == 'sarah'"));
   }
 
-  // Category not isolated: `'foobie'` is not a valid `char` literal; the expression fails with a parse error ("extraneous input '?' expecting <EOF>").
+  // Category not isolated: `'foobie'` is not a valid `char` literal; the lexer rejects it ("token recognition error").
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTernary() {
@@ -248,7 +248,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(50, test("i=100;do{i--}until(i==50); i"));
   }
 
-  // Category not isolated: the first parse error is at the `;` after `''` (empty char literal). The expression also has an undeclared loop variable `i`, a missing `;` before `}`
+  // Category not isolated: the first error is the lexer error on `''` (empty char literal). The expression also has an undeclared loop variable `i`, a missing `;` before `}`
   // and no `return` (block-syntax); the first two were observed separately with double quotes.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -260,7 +260,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("012345", test(ex));
   }
 
-  // Category not isolated: the first parse error is at the `;` after `''` (empty char literal). The expression also has an undeclared `i`, a missing `;` before `}`
+  // Category not isolated: the first error is the lexer error on `''` (empty char literal). The expression also has an undeclared `i`, a missing `;` before `}`
   // and no `return` (block-syntax); not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -268,7 +268,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("012345", eval("String str='';for(i=0;i<6;i++){str+=i};str", new HashMap()));
   }
 
-  // Category not isolated: the first parse error is at the `;` after `''` (single-quote-string); the `until` loop itself fails with "missing ';' at '{'" (verified with
+  // Category not isolated: the first error is the lexer error on `''` (single-quote-string); the `until` loop itself fails with "missing ';' at '{'" (verified with
   // double quotes). The expression also has no trailing `return` (block-syntax).
   @Test
   @KnownCompatibility("until-statement")
@@ -276,7 +276,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("012345", test("String str = ''; int i = 0; until (i == 6) { str += i++; }; str"));
   }
 
-  // Category not isolated: the first parse error is at the `;` after `''`. The expression has no trailing `return` (block-syntax) and `ArrayList<Foo>`
+  // Category not isolated: the first error is the lexer error on `''`. The expression has no trailing `return` (block-syntax) and `ArrayList<Foo>`
   // input generics cannot be declared through TestCompilerContext, so `for (Foo f : l)` would see `Object`; neither was tested separately.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -509,8 +509,8 @@ public class ControlFlowTests extends AbstractTest {
             objectMap));
   }
 
-  // Category not isolated: with double quotes the error is "Unsolved symbol in empty" (verified). With the original `''` it fails with a parse error
-  // at `+` ("extraneous input '+' expecting <EOF>") (single-quote-string).
+  // Category not isolated: with double quotes the error is "Unsolved symbol in empty" (verified). With the original `''` it fails with a lexer error
+  // ("token recognition error") (single-quote-string).
   @Test
   @KnownCompatibility("empty-operator")
   public void testSubEvaluation() {

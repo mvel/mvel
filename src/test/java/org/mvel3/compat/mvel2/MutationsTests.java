@@ -24,7 +24,7 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
 @Tag("mvel2-compatibility")
 public class MutationsTests extends AbstractTest {
   // Category not isolated: the first expression `foo.bar.assignTest = 'crap'` has two suspected causes:
-  // single-quote-string ('crap' is parsed as a char literal; the error is "Unsolved symbol in ap") and
+  // single-quote-string ('crap' is rejected by the lexer: "token recognition error") and
   // property-assign-void-setter (a property assignment used as the expression value). Not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")

@@ -134,8 +134,13 @@ c + 'bar'   → "catbar"   ('bar' is a String)
 ```
 
 MVEL3 follows Java char-literal semantics. A single-quoted literal must be
-exactly one character; anything longer is a parse error. Use double-quoted
-`"bar"` instead.
+exactly one character; anything longer is rejected by the lexer:
+
+```
+token recognition error at: ''ba'
+```
+
+Use double-quoted `"bar"` instead.
 
 ---
 

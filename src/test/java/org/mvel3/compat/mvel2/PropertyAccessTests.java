@@ -77,7 +77,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals(true, test("testImpl.foo"));
   }
 
-  // Category not isolated: `funMap['foo']` fails with a parse error at `[` (`'foo'` is not a valid `char` literal). With double quotes the
+  // Category not isolated: `funMap['foo']` fails with a lexer error on `'foo'` (not a valid `char` literal). With double quotes the
   // error becomes "cannot find symbol: method happy() ... Object" (verified), i.e. `dynamic-property-type` is a second cause.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -128,8 +128,9 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("nulltest", test("appendTwoStrings(null, 'test')"));
   }
 
-  // Category not isolated: `equalityCheck(..)` is a method of the MVEL2 root object (`Base`); observed "No method candidates were found for
-  // method call 'equalityCheck'". The single-quoted `'cat'` (single-quote-string) is a second cause, not tested separately.
+  // Category not isolated: observed error is a lexer error on the single-quoted `'cat'` (single-quote-string). `equalityCheck(..)` is a
+  // method of the MVEL2 root object (`Base`); before lexer errors were reported it failed with "No method candidates were found for
+  // method call 'equalityCheck'".
   @Test
   @KnownCompatibility("this-reference")
   public void testMethodAccess6() {
@@ -169,7 +170,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("foobarcar1", test("'foobar' + 'car' + 1"));
   }
 
-  // Category not isolated: `funMap['foo']` fails with a parse error at `[` (`'foo'` is not a valid `char` literal). With double quotes the
+  // Category not isolated: `funMap['foo']` fails with a lexer error on `'foo'` (not a valid `char` literal). With double quotes the
   // error becomes "cannot find symbol: variable bar ... Object" (verified in testMapAccess2), i.e. `dynamic-property-type` is a second cause.
   @Test
   @KnownCompatibility("single-quote-string")

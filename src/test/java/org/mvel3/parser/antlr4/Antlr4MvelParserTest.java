@@ -268,4 +268,15 @@ class Antlr4MvelParserTest {
                 .hasMessageContaining("Parse errors:")
                 .hasMessageContaining("';'");
     }
+
+    @Test
+    void testLexerErrorIsReported() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseExpression("'abc'"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("token recognition error");
+        assertThatThrownBy(() -> parser.parseBlock("{ return c + 'bar'; }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("token recognition error");
+    }
 }

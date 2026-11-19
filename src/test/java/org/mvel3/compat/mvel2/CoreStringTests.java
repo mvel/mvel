@@ -94,7 +94,7 @@ public class CoreStringTests extends AbstractTest {
         test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
   }
 
-  // Category not isolated: `'foobar'` fails with a null-reference error; `a[4]` on a String becomes `.get(4)`
+  // Category not isolated: `'foobar'` fails with a lexer error; `a[4]` on a String becomes `.get(4)`
   // (string-index-access), `a` clashes with the `a` map input (input-variable-redeclaration) and the block
   // needs `return` (block-syntax). Not tested one at a time.
   @Test
@@ -243,7 +243,7 @@ public class CoreStringTests extends AbstractTest {
         test("'foobar'.toUpperCase();"));
   }
 
-  // Category not isolated: `'someString'` fails with a null-reference error; the last statement `a == b;` is
+  // Category not isolated: `'someString'` fails with a lexer error; the last statement `a == b;` is
   // "not a statement" without `return` (block-syntax). `return` with double quotes works.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -320,7 +320,7 @@ public class CoreStringTests extends AbstractTest {
             map));
   }
 
-  // Category not isolated: `'attribute'` fails with a null-reference error; `{ end = 'attribute'.length()}`
+  // Category not isolated: `'attribute'` fails with a lexer error; `{ end = 'attribute'.length()}`
   // without `;` and the final `substring(..)` without `return` (block-syntax) may also fail. With double
   // quotes, `;` and `return` it works.
   @Test
