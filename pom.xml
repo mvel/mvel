@@ -148,6 +148,8 @@
                     <runOrder>alphabetical</runOrder>
                     <excludedGroups>${excludedGroups}</excludedGroups>
                     <childDelegation>true</childDelegation>
+                    <!-- Some tests check javac messages, which follow the default locale -->
+                    <argLine>-Duser.language=en -Duser.country=US</argLine>
                     <systemProperties>
                         <property>
                             <name>file.encoding</name>
