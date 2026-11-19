@@ -185,7 +185,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("dog", test("funMap.foo.bar.name"));
   }
 
-  // Category not isolated: observed error is a JavaParser null-node failure from the single-quoted literals. With double quotes the error
+  // Category not isolated: observed error is a parse error on the single-quoted literals. With double quotes the error
   // becomes "unreported exception java.lang.ClassNotFoundException; must be caught or declared to be thrown" (verified): MVEL3 compiles to
   // Java, so the checked exception of `Class.forName` must be handled. That second difference has no category.
   @Test
@@ -316,8 +316,8 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals(1000, test("10 * 100"));
   }
 
-  // Category not isolated: observed error is "A reference was unexpectedly null" from the undeclared assignment `abc = 'foo'` (block-syntax)
-  // and the single-quoted literal. With `var abc = "foo"; return abc[1];` the error is "cannot find symbol: method get(int) ... String"
+  // Category not isolated: observed error is a parse error on the single-quoted literal in the undeclared assignment `abc = 'foo'`
+  // (block-syntax). With `var abc = "foo"; return abc[1];` the error is "cannot find symbol: method get(int) ... String"
   // (verified), so `abc[1]` is unsupported even after fixing those.
   @Test
   @KnownCompatibility("string-index-access")
@@ -361,7 +361,7 @@ public class PropertyAccessTests extends AbstractTest {
     assertEquals("dog", executeExpression(s, new Foo().getBar()));
   }
 
-  // Category not isolated: observed error is "A reference was unexpectedly null"; the expression also uses a single-quoted literal and a
+  // Category not isolated: observed error is a parse error on the single-quoted literal; the expression also has a
   // trailing `mp.test` without `return` (block-syntax). With double quotes and `return`, the error is "The node has neither a public field or
   // a getter method for : mp.test" (verified), so assigning to a `Map` key through dot notation is unsupported.
   @Test

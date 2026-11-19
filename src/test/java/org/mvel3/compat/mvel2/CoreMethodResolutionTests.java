@@ -1119,7 +1119,7 @@ public class CoreMethodResolutionTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on `'This is a test'`. The undeclared `a` and the missing `return`
+  // Category not isolated: fails with a parse error on `'This is a test'`. The undeclared `a` and the missing `return`
   // (block-syntax) were not tested on the original expression; with `int a = 0;`, double quotes and `return null;` it works.
   @Test
   @KnownCompatibility("single-quote-string")

@@ -151,17 +151,19 @@ public class CoreOperatorsTests extends AbstractTest {
             "else { return 'GoodbyeWorld' } "));
   }
 
-  // Category not isolated: assignment expression causes JavaParser null node NPE in transpiler.
+  // Category not isolated: fails with a parse error on the single-quoted `'someString'`. The undeclared
+  // assignments without `return` (block-syntax) were not tested separately.
   @Test
-  @KnownCompatibility("javaparser-null-node")
+  @KnownCompatibility("single-quote-string")
   public void testRandomExpression9() {
     assertEquals(false,
         test("_abc = 'someString'.hashCode(); _xyz = _abc + 1; _abc == _xyz"));
   }
 
-  // Category not isolated: nested assignment expression causes JavaParser null node NPE in transpiler.
+  // Category not isolated: fails with a parse error on the single-quoted `'someString'`. The undeclared
+  // assignments without `return` (block-syntax) were not tested separately.
   @Test
-  @KnownCompatibility("javaparser-null-node")
+  @KnownCompatibility("single-quote-string")
   public void testRandomExpression10() {
     assertEquals(false,
         test("(_abc = (_xyz = 'someString'.hashCode()) + 1); _abc == _xyz"));

@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       {@code List} input cannot be resolved.</li>
  *   <li><b>contains-operator</b>: the infix {@code contains} is replaced by
  *       {@code indexOf(..) >= 0}; {@code res.contains(..)} on a local variable fails with
- *       "Unsupported member reference".</li>
+ *       a parse error.</li>
  *   <li><b>single-quote-string</b>: string literals use double quotes.</li>
  *   <li><b>this-reference</b>: the {@code Base} root object is not used; {@code things} is passed
  *       as a variable.</li>

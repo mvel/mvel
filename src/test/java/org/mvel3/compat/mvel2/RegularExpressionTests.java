@@ -77,8 +77,8 @@ public class RegularExpressionTests extends AbstractTest {
         assertEquals(Boolean.TRUE, eval("x ~= ('f.*')", map));
     }
 
-    // Category not isolated: observed error is a null-node failure. `~=` (regex-operator) is the suspected cause; the
-    // single-quoted literals were not tested separately.
+    // Category not isolated: observed errors are parse errors at `&&` ("mismatched input '&&' expecting ';'") and at `~=`.
+    // `~=` (regex-operator) is the suspected cause; the error at `&&` was not investigated.
     @Test
     @KnownCompatibility("regex-operator")
     public void testMVEL231() {
@@ -118,7 +118,7 @@ public class RegularExpressionTests extends AbstractTest {
                 new java.util.Date()));
     }
 
-    // Category not isolated: observed error is a null-node failure. With single-quoted literals converted (experiment) it
+    // Category not isolated: observed error is a parse error on the single-quoted literals. With them converted (experiment) it
     // became a parse error at `~=`, which supports regex-operator; the `$test` / `$ex` assignments (block-syntax)
     // were not tested separately.
     @Test

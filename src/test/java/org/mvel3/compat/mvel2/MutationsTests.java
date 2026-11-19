@@ -51,7 +51,7 @@ public class MutationsTests extends AbstractTest {
     assertEquals(((Foo) map.get("foo")).getBar().getAge(), 21);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression combines
   // single-quoted strings, MVEL2 `{a,b,c}` list syntax (MVEL3 uses `[a, b, c]`), undeclared assignments,
   // no `return`, and redeclares the existing map inputs `a`, `b`, `c` (input-variable-redeclaration).
   // Which of these is the actual trigger was not verified.
@@ -61,7 +61,7 @@ public class MutationsTests extends AbstractTest {
     assertEquals("bar", test("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". Besides single-quote-string,
+  // Category not isolated: fails with a parse error on the single-quoted strings. Besides single-quote-string,
   // the expression has an undeclared assignment (block-syntax) and calls `populate()` on the MVEL2
   // root object (`this`, see this-reference). Which of these is the actual trigger was not verified.
   @Test
@@ -169,7 +169,7 @@ public class MutationsTests extends AbstractTest {
     assertEquals(new BigDecimal(20), testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
   }
 
-  // Category not isolated: fails with a JavaParser null-node NPE ("current" is null). The expression has
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression has
   // single-quoted strings, a raw `new java.util.HashMap()`, undeclared assignments, no `return`, and
   // `xx[prop]` indexing. The adapted test passes after changing several of these at once; the actual
   // trigger was not isolated.

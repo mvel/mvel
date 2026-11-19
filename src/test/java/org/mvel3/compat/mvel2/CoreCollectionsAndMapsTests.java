@@ -170,9 +170,9 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on the single-quoted strings. The same
+  // Category not isolated: fails with a parse error on the single-quoted strings. The same
   // expression has other causes that were not tested one by one: `foreach` (foreach-syntax; `foreach (item : set) {..}` alone fails
-  // with "A reference was unexpectedly null") and the undeclared variables `set` / `output` (block-syntax).
+  // with a parse error) and the undeclared variables `set` / `output` (block-syntax).
   @Test
   @KnownCompatibility("single-quote-string")
   public void testCreationOfSet() {
@@ -189,7 +189,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
 
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on the single-quoted strings. The undeclared
+  // Category not isolated: fails with a parse error on the single-quoted strings. The undeclared
   // variables `l` / `poo` and the trailing `poo.size();` without `return` (block-syntax) were not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -199,7 +199,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
             + "l.add('crap'); poo = new java.util.ArrayList(l); poo.size();"));
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on the single-quoted strings. Other likely
+  // Category not isolated: fails with a parse error on the single-quoted strings. Other likely
   // causes, not tested separately: undeclared variables `l` / `m` (block-syntax) and `m.foo[1]` on a raw HashMap, whose value is
   // `Object` (dynamic-property-type; `get(int)` is not found).
   @Test
@@ -222,7 +222,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         test("stk = new java.util.Stack();" + "stk.push(5);" + "stk.push(5);" + "stk.pop() + stk.pop();"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" on the single-quoted strings. The undeclared variable `map`
+  // Category not isolated: fails with a parse error on the single-quoted strings. The undeclared variable `map`
   // (block-syntax) was not tested separately; `map["test"] = "foo"` with double quotes parses.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -231,7 +231,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         test("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on the single-quoted strings. The undeclared
+  // Category not isolated: fails with a parse error on the single-quoted strings. The undeclared
   // variable `a` and the trailing `a[1]` without `return` (block-syntax) were not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -268,7 +268,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
             null));
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("HasParentNode.setParentNode") on the single-quoted strings. The undeclared
+  // Category not isolated: fails with a parse error on the single-quoted strings. The undeclared
   // variable `users` (block-syntax) is a second cause; `var users = ["darth" : new User(..)]; [users["darth"], ..]` works.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -301,7 +301,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
         user.getFirstName());
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" on the single-quoted strings. The undeclared variable
+  // Category not isolated: fails with a parse error on the single-quoted strings. The undeclared variable
   // `users` (block-syntax) is a second cause; `var users = [new User(..), ..]; [users[0], users[1]]` with double quotes works.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -461,7 +461,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
     assertTrue(result);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" on `'bar'`. The trailing `map[..];` without `return`
+  // Category not isolated: fails with a parse error on `'bar'`. The trailing `map[..];` without `return`
   // (block-syntax) was not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -480,7 +480,7 @@ public class CoreCollectionsAndMapsTests extends AbstractTest {
             map));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" on the single-quoted strings. The trailing `map['bar'];`
+  // Category not isolated: fails with a parse error on the single-quoted strings. The trailing `map['bar'];`
   // without `return` (block-syntax) was not tested separately.
   @Test
   @KnownCompatibility("single-quote-string")

@@ -42,8 +42,8 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null"; the single-quoted `'dog'` is the likely cause (testAnd with
-  // spaces fails with "Unsolved symbol in g"), but this was not tested with double quotes.
+  // Category not isolated: fails with a parse error on the single-quoted `'dog'` ("no viable alternative at input 'gfoo.bar.woof'"),
+  // but this was not tested with double quotes.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testAnd2() {
@@ -58,7 +58,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, test("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
   }
 
-  // Category not isolated: observed error is a JavaParser null-node failure. The expression also has a `String` operand of `&&` (non-boolean
+  // Category not isolated: observed error is a parse error on the single-quoted `'test'`. The expression also has a `String` operand of `&&` (non-boolean
   // operand, verified in testShortPathExpression2), a trailing `foo.register` without `return` (block-syntax), and MVEL2 passes a root object
   // (`new Base()`). Which one is the trigger was not verified.
   @Test
@@ -142,8 +142,8 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals("foobiebarbie", test("zero==1?'foobie':'foobie'+'barbie'"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression also has single-quoted strings; with double quotes
-  // the error becomes a parse error at `isdef` (verified), so isdef-operator is the remaining cause.
+  // Category not isolated: fails with parse errors at `isdef` and on the single-quoted strings; with double quotes
+  // only the parse error at `isdef` remains (verified), so isdef-operator is the remaining cause.
   @Test
   @KnownCompatibility("isdef-operator")
   public void testTernary5() {
@@ -241,7 +241,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(10, test("i = 0; do { i++ } while (i != 10); i"));
   }
 
-  // Category not isolated: `do { .. } until (cond)` fails in the parser (NPE on `parExpression`). The expression also uses undeclared `i` and no `return` (block-syntax); with `while (!(cond))` and declarations it passes (verified).
+  // Category not isolated: `do { .. } until (cond)` fails with a parse error at `until`. The expression also uses undeclared `i` and no `return` (block-syntax); with `while (!(cond))` and declarations it passes (verified).
   @Test
   @KnownCompatibility("until-statement")
   public void testDoLoop2() {
@@ -354,7 +354,7 @@ public class ControlFlowTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression also uses the `{5} contains ..` inline array and
+  // Category not isolated: fails with a parse error at `foreach`. The expression also uses the `{5} contains ..` inline array and
   // `contains` operator (inline-array-literal, contains-operator); which one is the trigger was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -369,7 +369,7 @@ public class ControlFlowTests extends AbstractTest {
         variableMap);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (the `foreach` syntax). The expression also has no trailing `return` (block-syntax).
+  // Category not isolated: fails with a parse error at `foreach`. The expression also has no trailing `return` (block-syntax).
   @Test
   @KnownCompatibility("foreach-syntax")
   public void testStaticallyTypedItemInForEach() {
@@ -378,7 +378,7 @@ public class ControlFlowTests extends AbstractTest {
             " { sbuf.append(i); }; sbuf.toString()"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression also uses the `{1,32769,32767} contains` inline array and
+  // Category not isolated: fails with a parse error at `foreach`. The expression also uses the `{1,32769,32767} contains` inline array and
   // `contains` operator (inline-array-literal, contains-operator); not tested separately.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -535,7 +535,7 @@ public class ControlFlowTests extends AbstractTest {
 
 
   // Category not isolated: a bare string as a statement is "not a statement" in Java (verified with double quotes). The original single-quoted literals
-  // (single-quote-string) fail earlier with "A reference was unexpectedly null".
+  // (single-quote-string) fail earlier with a parse error.
   @Test
   @KnownCompatibility("block-syntax")
   public void testCompactIfElse() {
@@ -571,7 +571,7 @@ public class ControlFlowTests extends AbstractTest {
     assertEquals(true, executeExpression(s, new HashMap()));
   }
 
-  // Category not isolated: the original single-quoted `'...'` fails earlier with "Unsupported member reference"; with double quotes the parse error is at `def test(` (verified).
+  // Category not isolated: fails with a parse error at `def test(`. The body also has a single-quoted `'...'` (single-quote-string).
   @Test
   @KnownCompatibility("function-declaration")
   public final void testFunctionCall() {
@@ -614,7 +614,7 @@ public class ControlFlowTests extends AbstractTest {
     assertNull("Return statement not being honored!", thrown);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The body also uses `empty`, `is`, list literals and `[i, x] + xs` list concatenation; not tested separately.
+  // Category not isolated: fails with a parse error at `def insert(`. The body also uses `empty`, `is`, list literals and `[i, x] + xs` list concatenation; not tested separately.
   @Test
   @KnownCompatibility("function-declaration")
   public void testDhanji1() {

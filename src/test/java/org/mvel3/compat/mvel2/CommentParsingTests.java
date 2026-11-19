@@ -110,13 +110,12 @@ public class CommentParsingTests extends AbstractTest {
 
     // -------------------------------------------------------------------------
     // else-if with comments — root cause: 'Got here!' is a multi-char
-    // single-quoted literal. MVEL3 treats it as a char, which corrupts the
-    // JavaParser AST and produces a null-node NPE during transpilation.
+    // single-quoted literal. MVEL3 treats it as a char, so the expression
+    // fails to parse.
     // -------------------------------------------------------------------------
 
-    // Category not isolated: same as testElseIfCommentBugEvaluated. Observed error is a JavaParser null-node failure;
+    // Category not isolated: same as testElseIfCommentBugEvaluated. Observed error is a parse error on `'Got here!'`;
     // with `'Got here!'` converted to double quotes (experiment) it became "missing return statement" (block-syntax).
-    // The null-node failure (javaparser-null-node) was not isolated.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugPreCompiled() throws Exception {
@@ -125,10 +124,9 @@ public class CommentParsingTests extends AbstractTest {
             + "  System.out.println('Got here!');" + "}\n"));
     }
 
-    // Category not isolated: observed error is a JavaParser null-node failure. With the single-quoted `'Got here!'`
+    // Category not isolated: observed error is a parse error on the single-quoted `'Got here!'`. With it
     // converted to double quotes (experiment) the error changed to "missing return statement", so block-syntax
-    // (no `return` in an Object-returning block) is also a cause. The null-node failure itself (javaparser-null-node)
-    // was not isolated.
+    // (no `return` in an Object-returning block) is also a cause.
     @Test
     @KnownCompatibility("single-quote-string")
     public void testElseIfCommentBugEvaluated() throws Exception {

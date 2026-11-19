@@ -179,7 +179,6 @@ public class FailureTests extends AbstractTest {
   }
 
   @Test
-  @KnownCompatibility("javaparser-null-node")
   public void testShouldFailCleanly() {
     try {
       eval("6:f-\t\n" +

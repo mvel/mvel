@@ -66,7 +66,7 @@ public class CoreStringTests extends AbstractTest {
     public void log(String text);
   }
 
-  // Category not isolated: `'1)your guess was:'` is read as a char literal (JavaParser null-node NPE); the void
+  // Category not isolated: `'1)your guess was:'` is read as a char literal (parse error); the void
   // call `System.out.println(..);` as the last statement also fails with "missing return statement"
   // (void-method-expression). Not tested with a double-quoted string and a trailing `return`.
   @Test

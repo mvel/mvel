@@ -714,7 +714,7 @@ public class TypesAndInferenceTests extends AbstractTest {
     assertTrue(false);
   }
 
-  // Category not isolated: observed error is a JavaParser null-node NPE from 'bar' (single-quote-string). With double
+  // Category not isolated: observed error is a parse error on 'bar' (single-quote-string). With double
   // quotes it fails with "cannot find symbol toUpperCase() on Object" because TestCompilerContext cannot declare
   // HashMap<String,String> (dynamic-property-type); a cast works.
   @Test

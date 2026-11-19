@@ -26,6 +26,7 @@ import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mvel3.parser.antlr4.ParserTestUtil.assertParsedExpressionRoundTrip;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpressionContext;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getTemporalLiteralContext;
@@ -226,5 +227,13 @@ class Antlr4MvelParserTest {
                 "{" + newLine() +
                 "    t{status = RECEIVED};" + newLine() +
                 "}");
+    }
+
+    @Test
+    void testSyntaxErrorIsReportedBeforeAstConversion() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseBlock("{ foreach (x : list) { } }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("foreach");
     }
 }

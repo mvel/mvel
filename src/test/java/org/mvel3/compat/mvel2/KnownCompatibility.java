@@ -70,13 +70,7 @@ import java.lang.annotation.Target;
  *   <dt>{@code "foreach-syntax"}</dt>
  *   <dd>MVEL3 does not yet support MVEL2's {@code foreach} statement syntax.
  *       The lexer defines the keyword, but the parser has no corresponding
- *       statement rule. The current null-node failure also occurs without
- *       comments in the body.</dd>
- *   <dt>{@code "javaparser-null-node"}</dt>
- *   <dd>Certain patterns crash the MVEL3 transpiler with a JavaParser null-node
- *       NPE ({@code "A reference was unexpectedly null"}).  Known trigger:
- *       {@code foreach} transpilation fails even without a comment in the body.
- *       These are transpiler defects; no workaround exists.</dd>
+ *       statement rule, so such input fails with a parse error.</dd>
  *
  *   <dt>{@code "void-method-expression"}</dt>
  *   <dd>MVEL2 accepts a {@code void} method call as an expression whose value is
@@ -141,8 +135,8 @@ import java.lang.annotation.Target;
  *       Use {@code addAll} / {@code add}.</dd>
  *
  *   <dt>{@code "trailing-comma-list"}</dt>
- *   <dd>MVEL2 ignores a trailing comma in {@code [2, 3, 4, ]}; MVEL3 fails with "A reference was
- *       unexpectedly null".  Remove the trailing comma.</dd>
+ *   <dd>MVEL2 ignores a trailing comma in {@code [2, 3, 4, ]}; MVEL3 fails with a parse error at the
+ *       closing {@code ]}.  Remove the trailing comma.</dd>
  *
  *   <dt>{@code "nested-inline-collection"}</dt>
  *   <dd>A list or map literal nested inside another list or map literal
@@ -154,7 +148,7 @@ import java.lang.annotation.Target;
  *   <dd><b>IMPORTANT: to be addressed with priority.</b> {@code contains} and {@code matches}
  *       are lexer keywords ({@code CONTAINS}, {@code MATCHES}) that the {@code identifier} rule
  *       does not accept, so a method call such as {@code list.contains("x")} or
- *       {@code s.matches("..")} fails with "Unsupported member reference" on any receiver.
+ *       {@code s.matches("..")} fails with a parse error on any receiver.
  *       Use {@code indexOf(..) >= 0}, {@code containsKey}, {@code containsAll}, etc.</dd>
  *
  *   <dt>{@code "function-declaration"}</dt>
@@ -173,7 +167,7 @@ import java.lang.annotation.Target;
  *   <dt>{@code "until-statement"}</dt>
  *   <dd>MVEL2's {@code until (cond) { .. }} loop and {@code do { .. } until (cond)} are not part of the
  *       MVEL3 grammar ({@code until (cond) {} fails with "missing ';' at '{'"; the {@code do..until} form
- *       crashes the parser with an NPE on {@code parExpression}).  Use {@code while (!(cond))}.</dd>
+ *       fails with "mismatched input 'until' expecting 'while'").  Use {@code while (!(cond))}.</dd>
  *
  *   <dt>{@code "array-size-method"}</dt>
  *   <dd>MVEL2 treats {@code array.size()} as a "magic" size accessor; Java arrays have no
@@ -282,7 +276,7 @@ public @interface KnownCompatibility {
      * {@code "missing-auto-import"}, {@code "dynamic-property-type"},
      * {@code "class-literal"}, {@code "hash-concat-operator"},
      * {@code "foreach-syntax"}.
-     * {@code "inline-import"}, {@code "javaparser-null-node"},
+     * {@code "inline-import"},
      * {@code "void-method-expression"}, {@code "inner-class-binary-name"},
      * {@code "compound-assign-void-setter"}, {@code "property-assign-void-setter"},
      * {@code "input-variable-redeclaration"}, {@code "set-expression-api"},

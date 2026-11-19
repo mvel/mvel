@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mvel3.Evaluator;
 import org.mvel3.MVEL;
@@ -119,7 +118,6 @@ public class FailureAdaptedTest {
     }
 
     @Test
-    @Disabled("javaparser-null-node: transpiling malformed fuzz input triggers an AssertionError in JavaParser")
     public void testShouldFailCleanly() {
         assertThatThrownBy(() -> run("6:f-\t\n" +
                 "r:wsGbL%X5&wb<C.8n(\n" +

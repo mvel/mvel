@@ -69,9 +69,8 @@ public class FunctionsTest extends AbstractTest {
         + "return heyFoo() + heyFoo();", new HashMap()));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (JavaParser AssignExpr), not a parse error.
-  // The expression has a function declaration, undeclared assignments (block-syntax) and single-quoted strings
-  // (single-quote-string); which one triggers it was not verified.
+  // Category not isolated: fails with a parse error at `function testFunction(`. The expression also has undeclared
+  // assignments (block-syntax) and single-quoted strings (single-quote-string); not tested separately.
   @Test
   @KnownCompatibility("function-declaration")
   public void testFunctionDefAndCall3() {
@@ -100,18 +99,17 @@ public class FunctionsTest extends AbstractTest {
     assertEquals("foo", eval("def fooFunction(x) x; fooFunction('foo')", new HashMap()));
   }
 
-  // Category not isolated: fails with a null parse tree. The expression has an anonymous function and a
-  // single-quoted string (single-quote-string); with a double-quoted string the error is
-  // "A string was unexpectedly empty". Which one triggers it was not verified further.
+  // Category not isolated: fails with a parse error ("mismatched input ';' expecting '='"). The expression has an
+  // anonymous function and a single-quoted string (single-quote-string); with a double-quoted string the parse
+  // error is at the string inside `function { .. }`. Which one triggers it was not verified further.
   @Test
   @KnownCompatibility("function-declaration")
   public void testAnonymousFunction() {
     assertEquals("foobar", test("a = function { 'foobar' }; a();"));
   }
 
-  // Category not isolated: fails with a JavaParser NPE ("current" is null). The expression has function
-  // declarations, a `foreach` statement (foreach-syntax / javaparser-null-node) and single-quoted strings
-  // (single-quote-string); which one triggers it was not verified.
+  // Category not isolated: fails with a parse error at `def foo(`. The expression also has a `foreach` statement
+  // (foreach-syntax) and single-quoted strings (single-quote-string); not tested separately.
   @Test
   @KnownCompatibility("function-declaration")
   public void testJIRA207() {

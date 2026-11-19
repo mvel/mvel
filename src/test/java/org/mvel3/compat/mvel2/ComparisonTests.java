@@ -141,8 +141,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("foo.bar.name ~= '[a-z].+'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The `~=` operator (regex-operator) is the suspected
-  // cause; the negation `!( ... )` and the single-quoted pattern were not tested separately.
+  // Category not isolated: observed error is a parse error at `~` ("no viable alternative at input '(foo.bar.name ~'"),
+  // which points to the `~=` operator (regex-operator); the single-quoted pattern was not tested separately.
   @Test
   @KnownCompatibility("regex-operator")
   public void testRegExNegate() {
@@ -267,8 +267,9 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("sentence contains 'mike'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The infix `contains` operator is the suspected
-  // cause; the single-quoted literal and the negation were not tested separately.
+  // Category not isolated: observed error is a parse error at `contains` ("no viable alternative at input
+  // '(sentence contains'"), which points to the infix `contains` operator; the single-quoted literal was not
+  // tested separately.
   @Test
   @KnownCompatibility("contains-operator")
   public void testContains5() {
@@ -321,8 +322,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(0.6666667f, test("c strsim 'kat'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The `soundslike` operator is the suspected cause;
-  // the undeclared assignments (block-syntax) and single-quoted literals were not tested separately.
+  // Category not isolated: observed errors are parse errors on the single-quoted literals and at `soundslike`. The
+  // `soundslike` operator is the suspected cause; the undeclared assignments (block-syntax) were not tested separately.
   @Test
   @KnownCompatibility("soundslike-operator")
   public void testSoundex4() {
@@ -405,7 +406,7 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("'stringValue' > null"));
   }
 
-  // Category not isolated: observed error is a null-node failure. In an experiment that converted single-quoted
+  // Category not isolated: observed error is a parse error at `'bar'` and `isdef`. In an experiment that converted single-quoted
   // literals to double quotes it became a parse error at `isdef`, which supports isdef-operator; the undeclared
   // assignment (block-syntax) was not tested separately.
   @Test

@@ -149,13 +149,14 @@ public class Antlr4MvelParser implements MvelParser {
             ParseTree tree = start.parse(parser);
             logger.trace("Parse tree: {}", tree.toStringTree(parser));
 
-            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
-            Node result = visitor.visit(tree);
-            logger.trace("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
-
+            // Reject before visiting: the visitor cannot handle the incomplete tree left by error recovery
             if (!errors.isEmpty()) {
                 throw new RuntimeException("Parse errors: " + String.join(", ", errors));
             }
+
+            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
+            Node result = visitor.visit(tree);
+            logger.trace("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
 
             return new ParseResult<>(result, Collections.emptyList(), new CommentsCollection());
 

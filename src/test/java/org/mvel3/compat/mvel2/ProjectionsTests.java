@@ -188,9 +188,8 @@ public class ProjectionsTests extends AbstractTest {
 //        MVEL.eval("familyMembers = (name in (familyMembers in users));", vars));
 //  }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The
-  // expression combines the projection syntax, a `def` function and a MVEL2 `foreach` statement; which one
-  // triggers the error was not verified.
+  // Category not isolated: fails with a parse error at `def concat(`. The expression combines the projection
+  // syntax, a `def` function and a MVEL2 `foreach` statement; which one triggers the error was not verified.
   @Test
   @KnownCompatibility("projection-operator")
   public void testConcatProjection() {

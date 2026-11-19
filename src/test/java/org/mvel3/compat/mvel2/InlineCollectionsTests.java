@@ -74,7 +74,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertTrue(((Object[]) test("{    }")).length == 0);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines the `{{..}}` array
+  // Category not isolated: fails with a parse error at `{`. The expression combines the `{{..}}` array
   // literal (inline-array-literal) with an undeclared assignment without `return` (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("inline-array-literal")
@@ -82,7 +82,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals(0, test("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines single-quoted strings with an
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression combines single-quoted strings with an
   // undeclared assignment without `return` (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -90,7 +90,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals("sarah", test("map = ['mike':'sarah','tom':'jacquelin']; map['mike']"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines single-quoted strings with an
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression combines single-quoted strings with an
   // undeclared assignment without `return` (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -98,7 +98,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals("sarah", test("map = ['mike' :'sarah'  ,'tom'  :'jacquelin'  ]; map['mike']"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines single-quoted strings with an
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression combines single-quoted strings with an
   // undeclared assignment without `return` (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -143,7 +143,7 @@ public class InlineCollectionsTests extends AbstractTest {
     executeExpression(compileExpression("['foo':'bar'] contains 'foo'"), null, (Map) null, Boolean.class);
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines single-quoted strings
+  // Category not isolated: fails with a parse error on the single-quoted strings. The expression combines single-quoted strings
   // (single-quote-string), an undeclared assignment without `return` (block-syntax) and a list literal nested in a map literal
   // (nested-inline-collection); which one triggers the observed error was not verified. With only the quotes changed to double
   // quotes it fails with a parse error "missing ';'" (block-syntax); with `var` and `return` added as well, javac rejects the
@@ -154,7 +154,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals("pear", test("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at the `{1,2,3}` array literal. The expression combines
   // `foreach`, the `{1,2,3}` array literal (inline-array-literal) and undeclared assignments (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -162,7 +162,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals(6, test("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at the `{1,2,3}` array literal. The expression combines
   // `foreach`, the `{1,2,3}` array literal (inline-array-literal) and undeclared assignments (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -170,7 +170,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals(true, test("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at the `{1,2,3}` array literal. The expression combines
   // `foreach`, the `{1,2,3}` array literal (inline-array-literal) and undeclared assignments (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -178,7 +178,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals(true, eval("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }", new HashMap()));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at the `{1,2,3,4}` array literal. The expression combines
   // `foreach`, the `{1,2,3,4}` array literal (inline-array-literal), single-quoted strings (single-quote-string) and undeclared
   // assignments (block-syntax); which one triggers it was not verified.
   @Test
@@ -212,7 +212,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertEquals("bar", m.get("foo"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression uses a projection with `if`
+  // Category not isolated: fails with a parse error at `in` ("no viable alternative at input '($ in'"). The expression uses a projection with `if`
   // (projection-operator), the `empty` keyword (empty-operator) and `$`; which one triggers it was not verified.
   @Test
   @KnownCompatibility("projection-operator")
@@ -220,7 +220,7 @@ public class InlineCollectionsTests extends AbstractTest {
     assertTrue((Boolean) eval("(($ in [2,4,8,16,32] if $ < 10) != empty)"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at `foreach`. The expression combines
   // `foreach`, the `{1,2,...}` array literal (inline-array-literal) and an undeclared assignment (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -229,7 +229,7 @@ public class InlineCollectionsTests extends AbstractTest {
         test("counterX = 0; foreach (item:{1,2,3,4,5,6,7,8,9,10}) { counterX++; }; return counterX + 1;"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at `foreach`. The expression combines
   // `foreach`, the `{1,1,...}` array literal (inline-array-literal) and an undeclared assignment (block-syntax); which one triggers it was not verified.
   @Test
   @KnownCompatibility("foreach-syntax")
@@ -251,7 +251,7 @@ public class InlineCollectionsTests extends AbstractTest {
     }
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null" (see javaparser-null-node). The expression combines
+  // Category not isolated: fails with a parse error at `foreach`. The expression combines
   // `foreach`, a large `{..}` array literal (inline-array-literal), the infix `contains` (contains-operator) and undeclared
   // assignments (block-syntax); which one triggers it was not verified.
   @Test
