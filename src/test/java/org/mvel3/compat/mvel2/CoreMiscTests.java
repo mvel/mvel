@@ -31,7 +31,7 @@ import static org.mvel3.compat.mvel2.Mvel3TestSupport.executeExpression;
  * {@code testIncrementAndAssignWithInputs}/{@code testTypeRegression}
  * ({@code ExpressionCompiler.getParserContextState});
  * {@code testBug4} ({@code MVEL.getProperty});
- * {@code testIndexer} ({@code foreach} — transpiler null-node bug);
+ * {@code testIndexer} ({@code foreach} syntax is not supported);
  * {@code testAddIntToMapWithMapSyntax}/{@code testUpdateIntInMapWithMapSyntax}
  * ({@code PropertyAccessor.set});
  * {@code testSetExpressions1}/{@code testSetExpressions2} ({@code compileSetExpression});
@@ -264,7 +264,7 @@ public class CoreMiscTests extends AbstractTest {
   // testNullSafe / testNullSafe2
   // ---------------------------------------------------------------------------
 
-  // null-safe-operator: `foo.?bar.name` — MVEL3 returns left-hand object, not `bar.name`.
+  // null-safe-operator: `foo.?bar.name` — MVEL3 fails with a parse error at `.?`.
   @Test
   @KnownCompatibility("null-safe-operator")
   public void testNullSafe() {
@@ -283,9 +283,9 @@ public class CoreMiscTests extends AbstractTest {
     assertEquals(true, eval(expression, map));
   }
 
-  // Category not isolated: `x = foo.bar.?name.length == null` — assigns result to local `x`
-  // which conflicts with block-syntax (no `var`), AND `x` is an existing map key (a=null in
-  // createTestMap). Even before null-safe evaluation, it fails with input-variable-redeclaration.
+  // Category not isolated: `x = foo.bar.?name.length == null` fails with a parse error at `.?` (null-safe-operator).
+  // It also assigns to `x` without `var` (block-syntax) while `x` is an existing map key (a=null in createTestMap);
+  // before trailing input was rejected it failed with "Unsolved symbol in x".
   @Test
   @KnownCompatibility("input-variable-redeclaration")
   public void testNullSafe2() {
@@ -359,11 +359,7 @@ public class CoreMiscTests extends AbstractTest {
   // testCompilerExceptionFormatting
   // ---------------------------------------------------------------------------
 
-  // Category not isolated: `\n2x * 3\n` — MVEL3 parses `2` as a literal expression and
-  // discards `x * 3`, so compilation succeeds without error (block-syntax tolerates trailing
-  // tokens that MVEL2's strict parser would reject).
   @Test
-  @KnownCompatibility("block-syntax")
   public void testCompilerExceptionFormatting() throws Exception {
     try {
       Object value = test("\n2x * 3\n");

@@ -66,10 +66,10 @@ class LambdaRuntimeTest {
         LambdaRuntime.resetSingletonForTests();
 
         try {
-            // Pre-write a valid v2 registry file.
+            // Pre-write a valid v3 registry file.
             LambdaRegistryStore store = new LambdaRegistryStore(tmp.resolve("lambda-registry.dat"));
             CatalogSnapshot catalog = new CatalogSnapshot(1, 1, List.of(
-                    new CatalogEntry(0, "public boolean eval(java.lang.Object o)", "{ return o != null; }")));
+                    new CatalogEntry(0, "public boolean eval(java.lang.Object o)", "{ return o != null; }", "")));
             Map<Integer, ArtifactRef> artifacts = Map.of(0, new ArtifactRef("org.example.Gen", tmp.resolve("Gen.class")));
             store.save(new LambdaPersistenceSnapshot(catalog, artifacts));
 

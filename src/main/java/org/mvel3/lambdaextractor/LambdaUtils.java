@@ -3,6 +3,7 @@ package org.mvel3.lambdaextractor;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -43,6 +44,21 @@ public class LambdaUtils {
      * Helper method to create a LambdaKey from a method declaration AST node
      */
     public static LambdaKey createLambdaKeyFromMethodDeclaration(MethodDeclaration methodDeclaration) {
+        String imports = methodDeclaration.findCompilationUnit().map(LambdaUtils::importsOf).orElse("");
+        return createLambdaKeyFromMethodDeclaration(methodDeclaration, imports);
+    }
+
+    /**
+     * Canonical form of the imports of a compilation unit, independent of their order
+     */
+    static String importsOf(CompilationUnit compilationUnit) {
+        return compilationUnit.getImports().stream()
+                .map(i -> (i.isStatic() ? "static " : "") + i.getNameAsString() + (i.isAsterisk() ? ".*" : ""))
+                .sorted()
+                .collect(Collectors.joining(";"));
+    }
+
+    private static LambdaKey createLambdaKeyFromMethodDeclaration(MethodDeclaration methodDeclaration, String imports) {
         MethodDeclaration normalizedMethodDeclaration = VariableNameNormalizerVisitor.normalize(methodDeclaration);
         String methodSignature = normalizedMethodDeclaration.getDeclarationAsString(true, true, true);
         BlockStmt normalizedBody = normalizedMethodDeclaration.getBody().orElseThrow(() -> new IllegalStateException("MethodDeclaration has no body"));
@@ -56,7 +72,7 @@ public class LambdaUtils {
                         methodDeclaration.getNameAsString(),
                         parameterTypes
                 );
-        return new LambdaKey(methodSignature, normalizedStr, methodSignatureInfo);
+        return new LambdaKey(methodSignature, normalizedStr, imports, methodSignatureInfo);
     }
 
     private static Class<?> resolveType(Type type) {
@@ -85,8 +101,16 @@ public class LambdaUtils {
      * Helper method to create a LambdaKey from a method declaration string
      */
     public static LambdaKey createLambdaKeyFromMethodDeclarationString(String methodDeclarationString) {
+        return createLambdaKeyFromMethodDeclarationString(methodDeclarationString, "");
+    }
+
+    /**
+     * Helper method to create a LambdaKey from a method declaration string and the canonical imports
+     * (see {@link #importsOf(CompilationUnit)}) of its compilation unit
+     */
+    public static LambdaKey createLambdaKeyFromMethodDeclarationString(String methodDeclarationString, String imports) {
         MethodDeclaration methodDeclaration = StaticJavaParser.parseMethodDeclaration(methodDeclarationString);
-        return createLambdaKeyFromMethodDeclaration(methodDeclaration);
+        return createLambdaKeyFromMethodDeclaration(methodDeclaration, imports);
     }
 
     /**

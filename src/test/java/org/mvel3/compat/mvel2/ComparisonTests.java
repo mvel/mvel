@@ -50,14 +50,14 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("foo.bar.woof==false"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol in g". In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testTextComparison() {
     assertEquals(true, test("foo.bar.name == 'dog'"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol in o". In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testNETextComparison() {
@@ -133,16 +133,16 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("s = false; t =! s; t"));
   }
 
-  // Category not isolated: the observed result is the left operand, not a boolean, so `~=` is not evaluated as an
-  // operator (regex-operator). The single-quoted pattern literal was not tested separately.
+  // Category not isolated: fails with a parse error at `~=` ("extraneous input '~' expecting <EOF>") (regex-operator).
+  // The single-quoted pattern literal was not tested separately.
   @Test
   @KnownCompatibility("regex-operator")
   public void testRegEx() {
     assertEquals(true, test("foo.bar.name ~= '[a-z].+'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The `~=` operator (regex-operator) is the suspected
-  // cause; the negation `!( ... )` and the single-quoted pattern were not tested separately.
+  // Category not isolated: observed error is a parse error at `~` ("no viable alternative at input '(foo.bar.name ~'"),
+  // which points to the `~=` operator (regex-operator); the single-quoted pattern was not tested separately.
   @Test
   @KnownCompatibility("regex-operator")
   public void testRegExNegate() {
@@ -155,8 +155,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("foo.bar.name ~= '[a-z].+' && foo.bar.name != null"));
   }
 
-  // Category not isolated: the observed result is the left operand, not a boolean, so `~=` is not evaluated as an
-  // operator (regex-operator). The single-quoted pattern literal was not tested separately.
+  // Category not isolated: fails with a parse error at `~=` ("extraneous input '~' expecting <EOF>") (regex-operator).
+  // The single-quoted pattern literal was not tested separately.
   @Test
   @KnownCompatibility("regex-operator")
   public void testRegEx3() {
@@ -239,8 +239,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("foo is org.mvel3.compat.mvel2.res.Foo"));
   }
 
-  // Category not isolated: the observed result is the left operand, not a boolean, so infix `contains` is not
-  // evaluated as an operator (contains-operator). The single-quoted literal was not tested separately.
+  // Category not isolated: fails with a parse error at `contains` ("extraneous input 'contains' expecting <EOF>")
+  // (contains-operator). The single-quoted literal was not tested separately.
   @Test
   @KnownCompatibility("contains-operator")
   public void testContains1() {
@@ -253,8 +253,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("list contains 'Foobie'"));
   }
 
-  // Category not isolated: the observed result is the left operand, not a boolean, so infix `contains` is not
-  // evaluated as an operator (contains-operator). The single-quoted literal was not tested separately.
+  // Category not isolated: fails with a parse error at `contains` ("extraneous input 'contains' expecting <EOF>")
+  // (contains-operator). The single-quoted literal was not tested separately.
   @Test
   @KnownCompatibility("contains-operator")
   public void testContains3() {
@@ -267,8 +267,9 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("sentence contains 'mike'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The infix `contains` operator is the suspected
-  // cause; the single-quoted literal and the negation were not tested separately.
+  // Category not isolated: observed error is a parse error at `contains` ("no viable alternative at input
+  // '(sentence contains'"), which points to the infix `contains` operator; the single-quoted literal was not
+  // tested separately.
   @Test
   @KnownCompatibility("contains-operator")
   public void testContains5() {
@@ -281,8 +282,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("bwahbwah = 'mikebrock'; testVar10 = 'mike'; bwahbwah contains testVar10"));
   }
 
-  // Category not isolated: the observed result is the left operand, not a boolean, so infix `contains` is not
-  // evaluated as an operator (contains-operator). The single-quoted literal was not tested separately.
+  // Category not isolated: fails with a parse error at `contains` ("extraneous input 'contains' expecting <EOF>")
+  // (contains-operator). The single-quoted literal was not tested separately.
   @Test
   @KnownCompatibility("contains-operator")
   public void testContains7() {
@@ -313,16 +314,16 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("(c soundslike 'kat')"));
   }
 
-  // Category not isolated: the observed result is `cat` (the left operand), not a similarity value, so `c strsim 'kat'`
-  // is not evaluated as an operator. The single-quoted `'kat'` literal was not tested separately.
+  // Category not isolated: `c strsim 'kat'` fails with a parse error at `strsim` ("extraneous input 'strsim' expecting
+  // <EOF>"). The single-quoted `'kat'` literal was not tested separately.
   @Test
   @KnownCompatibility("strsim-operator")
   public void testSimilarity1() {
     assertEquals(0.6666667f, test("c strsim 'kat'"));
   }
 
-  // Category not isolated: observed error is a null-node failure. The `soundslike` operator is the suspected cause;
-  // the undeclared assignments (block-syntax) and single-quoted literals were not tested separately.
+  // Category not isolated: observed errors are parse errors on the single-quoted literals and at `soundslike`. The
+  // `soundslike` operator is the suspected cause; the undeclared assignments (block-syntax) were not tested separately.
   @Test
   @KnownCompatibility("soundslike-operator")
   public void testSoundex4() {
@@ -335,8 +336,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("_type = 'fubar';_type soundslike \"foobar\""));
   }
 
-  // Category not isolated: the observed result is the evaluator instance (`this` is not the root object), which fits
-  // this-reference. The `is` operator (see is-operator) is also used in this expression and was not tested separately.
+  // Category not isolated: fails with a parse error at `is` (is-operator). `this` alone evaluates to the evaluator
+  // instance, not the root object (this-reference).
   @Test
   @KnownCompatibility("this-reference")
   public void testThisReference3() {
@@ -349,8 +350,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("this.funMap instanceof java.util.Map"));
   }
 
-  // Category not isolated: observed error is "Unsolved symbol : data" (this-reference). The single-quoted
-  // `'cat'` literal (single-quote-string) was not tested separately.
+  // Category not isolated: observed error is a lexer error on the single-quoted `'cat'` (single-quote-string). Before
+  // lexer errors were reported it failed with "Unsolved symbol : data" (this-reference).
   @Test
   @KnownCompatibility("this-reference")
   public void testThisReference5() {
@@ -369,7 +370,7 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(true, test("pi convertable_to Integer"));
   }
 
-  // Category not isolated: observed result is `false` instead of `true`. In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
+  // Category not isolated: fails with a lexer error on the single-quoted literal ("token recognition error"). In an experiment that converted single-quoted literals to double quotes this test passed, which supports single-quote-string as the only cause.
   @Test
   @KnownCompatibility("single-quote-string")
   public void testStringEquals() {
@@ -395,8 +396,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
   }
 
-  // Category not isolated: observed error is "cannot find symbol: variable ringValue" (single-quoted literal split
-  // as char + identifier). With the literal converted to double quotes (experiment) the error became
+  // Category not isolated: observed error is a lexer error on the single-quoted literal ("token recognition error").
+  // With the literal converted to double quotes (experiment) the error became
   // "bad operand types for binary operator '>'" (String > null), so a relational comparison of a String with
   // null (see null-relational-comparison) is a second cause.
   @Test
@@ -405,7 +406,7 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("'stringValue' > null"));
   }
 
-  // Category not isolated: observed error is a null-node failure. In an experiment that converted single-quoted
+  // Category not isolated: observed error is a parse error at `'bar'` and `isdef`. In an experiment that converted single-quoted
   // literals to double quotes it became a parse error at `isdef`, which supports isdef-operator; the undeclared
   // assignment (block-syntax) was not tested separately.
   @Test
@@ -420,8 +421,8 @@ public class ComparisonTests extends AbstractTest {
     assertEquals(false, test("isdef _v1"));
   }
 
-  // Category not isolated: observed error is an internal NPE (`LambdaBodyContext.block()` is null) rather than a
-  // plain parse error at `isdef`. The `!( ... )` negation was not tested separately.
+  // Category not isolated: observed error is a parse error at the end of `!(isdef _v1)` ("mismatched input '<EOF>'
+  // expecting {')', '[', ','}"). The `!( ... )` negation was not tested separately.
   @Test
   @KnownCompatibility("isdef-operator")
   public void testIsDefOperator3() {

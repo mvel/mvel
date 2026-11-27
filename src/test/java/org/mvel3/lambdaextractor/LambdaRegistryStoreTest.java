@@ -19,8 +19,9 @@ class LambdaRegistryStoreTest {
         Path file = tmp.resolve("lambda-registry.dat");
 
         CatalogSnapshot catalog = new CatalogSnapshot(2, 3, List.of(
-                new CatalogEntry(0, "public boolean eval(java.lang.Object obj)", "{ return obj != null; }"),
-                new CatalogEntry(1, "public boolean eval(java.lang.String s)", "{ return s.length() > 0; }")
+                new CatalogEntry(0, "public boolean eval(java.lang.Object obj)", "{ return obj != null; }", ""),
+                new CatalogEntry(1, "public boolean eval(java.lang.String s)", "{ return s.length() > 0; }",
+                        "java.util.List;static java.lang.Math.*")
         ));
         Map<Integer, ArtifactRef> artifacts = Map.of(
                 0, new ArtifactRef("org.mvel3.GenA", tmp.resolve("GenA.class")),
@@ -34,7 +35,7 @@ class LambdaRegistryStoreTest {
 
         assertThat(loaded.catalog().nextPhysicalId()).isEqualTo(2);
         assertThat(loaded.catalog().nextLogicalId()).isEqualTo(3);
-        assertThat(loaded.catalog().entries()).hasSize(2);
+        assertThat(loaded.catalog().entries()).containsExactlyInAnyOrderElementsOf(catalog.entries());
         assertThat(loaded.artifacts()).isEqualTo(artifacts);
     }
 
@@ -82,15 +83,27 @@ class LambdaRegistryStoreTest {
     }
 
     @Test
+    void registryStore_version2_throws(@TempDir Path tmp) throws IOException {
+        // format.version=2 has no imports in the catalog keys
+        Path file = tmp.resolve("lambda-registry.dat");
+        Files.writeString(file, "format.version=2\ncatalog.nextPhysicalId=0\ncatalog.nextLogicalId=0\n");
+
+        assertThatThrownBy(() -> new LambdaRegistryStore(file).load())
+                .isInstanceOf(InvalidLambdaRegistryException.class)
+                .hasMessageContaining("Unsupported");
+    }
+
+    @Test
     void M7a_registryStore_duplicateArtifactPhysicalId_throws(@TempDir Path tmp) throws IOException {
         final Path file = tmp.resolve("lambda-registry.dat");
         Files.writeString(file, """
-                format.version=2
+                format.version=3
                 catalog.nextPhysicalId=1
                 catalog.nextLogicalId=1
                 catalog.entry.0.physicalId=0
                 catalog.entry.0.methodSignature=public boolean eval(%s o)
                 catalog.entry.0.normalizedBody={ return o != null; }
+                catalog.entry.0.imports=
                 artifact.0.physicalId=0
                 artifact.0.fqn=org.mvel3.GenA
                 artifact.0.classFile=GenA.class
@@ -106,7 +119,7 @@ class LambdaRegistryStoreTest {
     @Test
     void M7b_registryStore_missingRequiredKey_throws(@TempDir Path tmp) throws IOException {
         Path file = tmp.resolve("lambda-registry.dat");
-        Files.writeString(file, "format.version=2\n");
+        Files.writeString(file, "format.version=3\n");
         assertThatThrownBy(() -> new LambdaRegistryStore(file).load())
                 .isInstanceOf(InvalidLambdaRegistryException.class)
                 .hasMessageContaining("Missing key");
@@ -120,12 +133,13 @@ class LambdaRegistryStoreTest {
         // so callers can handle malformed metadata uniformly.
         Path file = tmp.resolve("lambda-registry.dat");
         Files.writeString(file, String.join("\n",
-                "format.version=2",
+                "format.version=3",
                 "catalog.nextPhysicalId=1",
                 "catalog.nextLogicalId=1",
                 "catalog.entry.0.physicalId=0",
                 "catalog.entry.0.methodSignature=public boolean eval(java.lang.Object o)",
                 "catalog.entry.0.normalizedBody={ return o != null; }",
+                "catalog.entry.0.imports=",
                 "artifact.0.physicalId=0",
                 "artifact.0.fqn=org.mvel3.Gen",
                 "artifact.0.classFile=foo\\u0000bar.class",
@@ -139,12 +153,13 @@ class LambdaRegistryStoreTest {
     void M7c_registryStore_danglingArtifactReference_throws(@TempDir Path tmp) throws IOException {
         Path file = tmp.resolve("lambda-registry.dat");
         Files.writeString(file, String.join("\n",
-                "format.version=2",
+                "format.version=3",
                 "catalog.nextPhysicalId=1",
                 "catalog.nextLogicalId=1",
                 "catalog.entry.0.physicalId=0",
                 "catalog.entry.0.methodSignature=public boolean eval(java.lang.Object o)",
                 "catalog.entry.0.normalizedBody={ return o != null; }",
+                "catalog.entry.0.imports=",
                 "artifact.0.physicalId=99",     // no matching catalog entry
                 "artifact.0.fqn=org.mvel3.Gen",
                 "artifact.0.classFile=/tmp/Gen.class",

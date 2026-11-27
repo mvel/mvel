@@ -123,4 +123,31 @@ class LambdaCatalogTest {
         assertThat(r1.physicalId()).isNotEqualTo(r2.physicalId());
         assertThat(r2.reused()).isFalse();
     }
+
+    @Test
+    void dedup_differentImports_doesNotReuse() {
+        String method = "public java.lang.Object eval() { return new Thing(); }";
+        LambdaKey k1 = createLambdaKeyFromMethodDeclarationString(method, "org.example.a.Thing");
+        LambdaKey k2 = createLambdaKeyFromMethodDeclarationString(method, "org.example.b.Thing");
+
+        RegistrationResult r1 = catalog.register(k1);
+        RegistrationResult r2 = catalog.register(k2);
+
+        assertThat(r2.reused()).isFalse();
+        assertThat(r2.physicalId()).isNotEqualTo(r1.physicalId());
+    }
+
+    @Test
+    void dedup_subtypeOverload_differentImports_doesNotReuse() {
+        LambdaKey supertype = createLambdaKeyFromMethodDeclarationString(
+                "public boolean eval(java.lang.Object o) { return o != Thing.NONE; }", "org.example.a.Thing");
+        LambdaKey subtype = createLambdaKeyFromMethodDeclarationString(
+                "public boolean eval(java.lang.String o) { return o != Thing.NONE; }", "org.example.b.Thing");
+
+        RegistrationResult r1 = catalog.register(supertype);
+        RegistrationResult r2 = catalog.register(subtype);
+
+        assertThat(r2.reused()).isFalse();
+        assertThat(r2.physicalId()).isNotEqualTo(r1.physicalId());
+    }
 }

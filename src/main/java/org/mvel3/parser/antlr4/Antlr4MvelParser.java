@@ -58,6 +58,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.mvel3.parser.MvelParser;
 import org.mvel3.parser.Provider;
@@ -130,32 +131,45 @@ public class Antlr4MvelParser implements MvelParser {
             String input = ProviderUtils.readAll(provider);
             logger.trace("Parsing with input: {}", input);
             
-            // Create ANTLR4 lexer and parser
-            CharStream charStream = CharStreams.fromString(input);
-            Mvel3Lexer lexer = new Mvel3Lexer(charStream);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            Mvel3Parser parser = new Mvel3Parser(tokens);
-
-            // Add error handling
+            // Collect lexer and parser errors; the lexer otherwise drops unrecognized characters silently
             List<String> errors = new ArrayList<>();
-            parser.addErrorListener(new BaseErrorListener() {
+            BaseErrorListener errorListener = new BaseErrorListener() {
                 @Override
                 public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                         int line, int charPositionInLine, String msg, RecognitionException e) {
                     errors.add(String.format("line %d:%d %s", line, charPositionInLine, msg));
                 }
-            });
+            };
+
+            // Create ANTLR4 lexer and parser
+            CharStream charStream = CharStreams.fromString(input);
+            Mvel3Lexer lexer = new Mvel3Lexer(charStream);
+            lexer.addErrorListener(errorListener);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            Mvel3Parser parser = new Mvel3Parser(tokens);
+            parser.addErrorListener(errorListener);
 
             ParseTree tree = start.parse(parser);
             logger.trace("Parse tree: {}", tree.toStringTree(parser));
 
-            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
-            Node result = visitor.visit(tree);
-            logger.trace("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
+            // The expression and block rules have no EOF anchor, so ANTLR stops silently at the first unusable token
+            if (start == Antlr4ParseStart.EXPRESSION || start == Antlr4ParseStart.BLOCK) {
+                int index = tokens.LA(1) == Mvel3Parser.SEMI ? 2 : 1; // allow a single trailing ';'
+                Token next = tokens.LT(index);
+                if (next.getType() != Token.EOF) {
+                    errors.add(String.format("line %d:%d extraneous input '%s' expecting <EOF>",
+                                             next.getLine(), next.getCharPositionInLine(), next.getText()));
+                }
+            }
 
+            // Reject before visiting: the visitor cannot handle the incomplete tree left by error recovery
             if (!errors.isEmpty()) {
                 throw new RuntimeException("Parse errors: " + String.join(", ", errors));
             }
+
+            Mvel3ToJavaParserVisitor visitor = new Mvel3ToJavaParserVisitor();
+            Node result = visitor.visit(tree);
+            logger.trace("Visitor result type: {}, value: {}", result != null ? result.getClass().getSimpleName() : "null", result);
 
             return new ParseResult<>(result, Collections.emptyList(), new CommentsCollection());
 

@@ -182,7 +182,9 @@ purpose-specific classes:
 ### Content-addressed keying
 
 `LambdaKey` is the identity of a lambda expression. Equality is based
-on `(methodSignature, normalisedBody)`. The hash is Murmur3 of
+on `(methodSignature, normalisedBody, imports)`. `imports` is the sorted
+import list of the enclosing compilation unit: the same body can refer to
+different classes through different imports. The hash is Murmur3 of
 `normalisedBody` only — this is deliberate: it clusters keys by body
 content so `LambdaCatalog.findSubtypeOverloadReuse()` can efficiently
 find candidates with the same body but compatible parameter types.
@@ -205,7 +207,7 @@ logical ID. It then attempts three paths:
 1. **Exact match**: If the key is already registered, reuse its physical
    ID (`reused=true`).
 2. **Subtype-overload reuse**: If another key has the same normalised
-   body, same return type, same method name, same parameter count, and
+   body, same imports, same return type, same method name, same parameter count, and
    all parameter types are assignable (the new key's params are
    subtypes), reuse that physical ID.
 3. **No match**: Allocate a new physical ID.
@@ -259,13 +261,14 @@ than automatic recompilation.
 
 ### Registry format and lifecycle
 
-`lambda-registry.dat` is a Properties file with `format.version=2`:
+`lambda-registry.dat` is a Properties file with `format.version=3`:
 
 | Key | Content |
 |---|---|
 | `catalog.nextPhysicalId`, `catalog.nextLogicalId` | Next ID counters |
 | `catalog.entry.<n>.physicalId` | Catalog entry's physical ID |
 | `catalog.entry.<n>.methodSignature`, `.normalizedBody` | Normalised evaluator method |
+| `catalog.entry.<n>.imports` | Imports of the evaluator compilation unit |
 | `artifact.<n>.physicalId`, `.fqn`, `.classFile` | Physical ID, evaluator FQN, and classfile path |
 
 `KieMemoryCompiler.compileAndPersist()` writes classfiles under the

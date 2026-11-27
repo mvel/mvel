@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       is declared first and referenced by name, or built with {@code List.of(..)}.</li>
  *   <li><b>contains-operator</b>: the infix {@code contains} is replaced by {@code indexOf(..) >= 0}
  *       or {@code containsKey(..)}; {@code list.contains(..)} on a local variable fails with
- *       "Unsupported member reference".</li>
+ *       a parse error.</li>
  *   <li><b>list-concat-operator</b>: {@code list + list} / {@code list + element} do not compile;
  *       {@code addAll} / {@code add} are used.</li>
  *   <li><b>this-reference</b>: methods of the MVEL2 root object ({@code funMethod}, {@code sum})

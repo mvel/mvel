@@ -48,8 +48,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression((java.io.Serializable) ser));
     }
 
-    // Category not isolated: the observed result is `false`, not the regex result. `~=` (regex-operator) is the suspected
-    // cause; the single-quoted literals were not tested separately.
+    // Category not isolated: fails with a lexer error on the single-quoted literals after `||`. That operand also has
+    // `~=` (regex-operator, the suspected cause), which was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExpOrBug() throws Exception {
@@ -66,8 +66,8 @@ public class RegularExpressionTests extends AbstractTest {
                 executeExpression(compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')")));
     }
 
-    // Category not isolated: the observed result is the left operand (`foobie`), so `~=` is not evaluated as an operator
-    // (regex-operator). The single-quoted pattern literal was not tested separately.
+    // Category not isolated: fails with a parse error at `~=` ("extraneous input '~' expecting <EOF>") (regex-operator).
+    // The single-quoted pattern literal was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExSurroundedByBrackets() {
@@ -77,8 +77,8 @@ public class RegularExpressionTests extends AbstractTest {
         assertEquals(Boolean.TRUE, eval("x ~= ('f.*')", map));
     }
 
-    // Category not isolated: observed error is a null-node failure. `~=` (regex-operator) is the suspected cause; the
-    // single-quoted literals were not tested separately.
+    // Category not isolated: observed errors are parse errors at `&&` ("mismatched input '&&' expecting ';'") and at `~=`.
+    // `~=` (regex-operator) is the suspected cause; the error at `&&` was not investigated.
     @Test
     @KnownCompatibility("regex-operator")
     public void testMVEL231() {
@@ -92,8 +92,8 @@ public class RegularExpressionTests extends AbstractTest {
                 test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
     }
 
-    // Category not isolated: the observed ClassCastException (String to Boolean) means `~=` is not evaluated as an
-    // operator (regex-operator); the single-quoted pattern literal was not tested separately.
+    // Category not isolated: fails with a parse error at `~=` ("extraneous input '~' expecting <EOF>") (regex-operator);
+    // the single-quoted pattern literal was not tested separately.
     @Test
     @KnownCompatibility("regex-operator")
     public void testRegExOR() {
@@ -104,7 +104,7 @@ public class RegularExpressionTests extends AbstractTest {
                 map));
     }
 
-    // Category not isolated: observed error is "Unsolved symbol" from a single-quoted literal. With the literals converted
+    // Category not isolated: observed error is a lexer error on the single-quoted literals. With the literals converted
     // (experiment) it became a ClassCastException (String to Boolean), which supports regex-operator.
     @Test
     @KnownCompatibility("regex-operator")
@@ -118,7 +118,7 @@ public class RegularExpressionTests extends AbstractTest {
                 new java.util.Date()));
     }
 
-    // Category not isolated: observed error is a null-node failure. With single-quoted literals converted (experiment) it
+    // Category not isolated: observed error is a parse error on the single-quoted literals. With them converted (experiment) it
     // became a parse error at `~=`, which supports regex-operator; the `$test` / `$ex` assignments (block-syntax)
     // were not tested separately.
     @Test

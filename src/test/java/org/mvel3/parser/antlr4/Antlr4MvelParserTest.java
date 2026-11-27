@@ -26,6 +26,7 @@ import org.mvel3.parser.ast.expr.TemporalLiteralChunkExpr;
 import org.mvel3.parser.ast.expr.TemporalLiteralExpr;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mvel3.parser.antlr4.ParserTestUtil.assertParsedExpressionRoundTrip;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getBinaryOperatorExpressionContext;
 import static org.mvel3.parser.antlr4.ParserTestUtil.getTemporalLiteralContext;
@@ -226,5 +227,56 @@ class Antlr4MvelParserTest {
                 "{" + newLine() +
                 "    t{status = RECEIVED};" + newLine() +
                 "}");
+    }
+
+    @Test
+    void testSyntaxErrorIsReportedBeforeAstConversion() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseBlock("{ foreach (x : list) { } }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("foreach");
+    }
+
+    @Test
+    void testTrailingInputAfterExpressionIsRejected() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseExpression("x + 1 garbage here"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'garbage'");
+        assertThatThrownBy(() -> parser.parseExpression("1 2 3"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'2'");
+        assertThatThrownBy(() -> parser.parseExpression("x )"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("')'");
+    }
+
+    @Test
+    void testTrailingInputAfterBlockIsRejected() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseBlock("{ return 1; } return 2; }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("'return'");
+    }
+
+    @Test
+    void testSingleTrailingSemicolonIsAllowed() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThat(parser.parseExpression("x + 1;").isSuccessful()).isTrue();
+        assertThat(parser.parseBlock("{ return 1; };").isSuccessful()).isTrue();
+        assertThatThrownBy(() -> parser.parseExpression("x + 1;;"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("';'");
+    }
+
+    @Test
+    void testLexerErrorIsReported() {
+        Antlr4MvelParser parser = new Antlr4MvelParser();
+        assertThatThrownBy(() -> parser.parseExpression("'abc'"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("token recognition error");
+        assertThatThrownBy(() -> parser.parseBlock("{ return c + 'bar'; }"))
+                .hasMessageContaining("Parse errors:")
+                .hasMessageContaining("token recognition error");
     }
 }

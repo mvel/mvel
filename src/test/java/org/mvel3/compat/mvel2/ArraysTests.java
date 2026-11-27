@@ -42,7 +42,7 @@ public class ArraysTests extends AbstractTest {
     assertTrue((Boolean) test("xStr = new String[5]; xStr.size() == 5"));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines a
+  // Category not isolated: fails with a parse error on the single-quoted string. The expression combines a
   // single-quoted string and an undeclared assignment without `return` (block-syntax); both were seen to fail
   // separately, and which one triggers the first error was not verified.
   @Test
@@ -57,7 +57,7 @@ public class ArraysTests extends AbstractTest {
         test(exp));
   }
 
-  // Category not isolated: fails with "A reference was unexpectedly null". The expression combines a
+  // Category not isolated: fails with a parse error on the single-quoted string. The expression combines a
   // single-quoted string and an undeclared assignment without `return` (block-syntax); both were seen to fail
   // separately, and which one triggers the first error was not verified.
   @Test
@@ -225,7 +225,7 @@ public class ArraysTests extends AbstractTest {
         Map.of("x", Type.type(String[].class)));
   }
 
-  // 'brie' is read as a char literal and the assignment silently stores null (no error); with "brie" the
+  // 'brie' is not a valid char literal; the lexer rejects it ("token recognition error"). With "brie" the
   // test passes.
   @Test
   @KnownCompatibility("single-quote-string")

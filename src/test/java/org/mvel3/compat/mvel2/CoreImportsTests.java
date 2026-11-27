@@ -282,7 +282,7 @@ public class CoreImportsTests extends AbstractTest {
     compileEagerly("bar.add(\"hello\")", ctx);
   }
 
-  // Category not isolated: fails with a null-reference error that goes away with double quotes. With double quotes the
+  // Category not isolated: fails with a lexer error on the single-quoted strings. With double quotes the
   // trailing `map["conan"];` without `return` fails with "missing return statement" (block-syntax); with `return` it works.
   @Test
   @KnownCompatibility("single-quote-string")

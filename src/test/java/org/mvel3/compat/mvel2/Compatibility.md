@@ -134,8 +134,13 @@ c + 'bar'   → "catbar"   ('bar' is a String)
 ```
 
 MVEL3 follows Java char-literal semantics. A single-quoted literal must be
-exactly one character; anything longer is a parse error. Use double-quoted
-`"bar"` instead.
+exactly one character; anything longer is rejected by the lexer:
+
+```
+token recognition error at: ''ba'
+```
+
+Use double-quoted `"bar"` instead.
 
 ---
 
@@ -192,6 +197,21 @@ property access explicitly: `1 + 2 * (int) param.value`.
 
 MVEL2 supports `or` as a chained null-coalescing / fallback operator (`a or b or c`, `a or 'fubar'`).
 MVEL3 does not support `or` keyword for coalescing. In MVEL3 / Java, use ternary operators or `Optional`.
+
+---
+
+## `and` / `or` as logical operators
+
+> `@KnownCompatibility("word-logical-operator")`
+
+MVEL2 accepts `and` / `or` between boolean operands (`bal > 200 or bal < 100`). MVEL3 has no such
+keywords; the expression fails with a parse error at the keyword:
+
+```
+extraneous input 'or' expecting <EOF>
+```
+
+Use `&&` / `||`.
 
 ---
 
@@ -336,30 +356,15 @@ MVEL2 accepts statements such as `foreach (item : 10) { ... }`. MVEL3 does not
 yet support this syntax. The lexer defines a `FOREACH` token, but the parser's
 statement rule accepts Java-style `for` and has no `foreach` alternative.
 
-These inputs currently fail during AST conversion with a null-node error:
+These inputs fail with a parse error, typically:
 
 ```
-A reference was unexpectedly null.
+extraneous input 'foreach' expecting ...
 ```
 
-The failure occurs even with an empty loop body. Comments and quotes in comments
-are not the cause. The imported tests retain the original syntax and remain
+The imported tests retain the original syntax and remain
 executable diagnostics; the corresponding adapted tests are disabled while
 `foreach` support is missing.
-
----
-
-## JavaParser null-node transpiler crashes
-
-> `@KnownCompatibility("javaparser-null-node")`
-
-Certain malformed or unsupported syntax constructs (such as invalid binary expressions in fuzz strings or `foreach` loops) cause the MVEL3 transpiler to construct an incomplete AST or pass null into JavaParser node setters (e.g. `BinaryExpr.setLeft`), resulting in:
-
-```
-java.lang.AssertionError: A reference was unexpectedly null.
-```
-
-Because JavaParser throws `java.lang.AssertionError` (an `Error` rather than an `Exception`), these failures bypass normal `catch (Exception e)` exception handlers in negative tests. These are transpiler / AST visitor defects with no user-level workaround.
 
 ---
 
@@ -561,7 +566,7 @@ Parse error: Parse errors: line 1:6 no viable alternative at input '(name in'
 
 Workaround: write an explicit `for` loop. The collection input must be cast to a typed
 collection, because a loop variable over a raw `List` input is unresolved, and
-`res.contains(..)` on a local variable currently fails ("Unsupported member reference"),
+`res.contains(..)` on a local variable currently fails with a parse error (reserved-method-name),
 so `indexOf(..) >= 0` is used instead:
 
 ```java
@@ -607,8 +612,8 @@ Workaround: `List<Integer> l = new ArrayList<>([1,2,3]); l.addAll([4,5,6]); retu
 
 > `@KnownCompatibility("trailing-comma-list")`
 
-MVEL2 accepts `[2, 3, 4, ]` (3 elements). MVEL3 fails with
-`A reference was unexpectedly null`. Remove the trailing comma.
+MVEL2 accepts `[2, 3, 4, ]` (3 elements). MVEL3 fails with a parse error at the
+closing `]` (`mismatched input ']' expecting ...`). Remove the trailing comma.
 
 ---
 
@@ -653,20 +658,18 @@ No test in `compat.mvel2` is annotated with this category yet: the seven affecte
 > so many MVEL2 expressions are affected.
 
 A method call named `contains` or `matches` fails on any receiver (input variable, local variable,
-`String`, `List.of(..)`):
+`String`, `List.of(..)`) with a parse error:
 
 ```
-Unsupported member reference: <expr>.contains
+mismatched input 'contains' expecting ...
 ```
 
 Cause (from reading the grammar, not changed or fixed here): `Mvel3Lexer.g4` defines the tokens
 `CONTAINS : 'contains'` and `MATCHES : 'matches'` (operators). The `identifier` rule in `JavaParser.g4`
-does not include them, so `expression '.' (identifier | methodCall | ...)` does not match and
-`MemberReferenceExpressionConverter.convertMemberReferenceExpression` throws
-`IllegalArgumentException("Unsupported member reference: ...")`.
+does not include them, so `expression '.' (identifier | methodCall | ...)` does not match.
 
-Observation (cause not investigated): in expression mode (no `return`), `l.contains("Y")` returned
-the receiver `[X, Y]` instead of a boolean.
+In expression mode (no `return`), `l.contains("Y")` fails at the `.` instead
+(`extraneous input '.' expecting <EOF>`).
 
 Workarounds: `indexOf(..) >= 0`, `containsKey`, `containsAll`, `isEmpty`.
 
@@ -699,10 +702,9 @@ no viable alternative at input 'function testFunction('
 
 Other shapes were observed (no further investigation):
 
-- `a = function { "foobar" }; a();` → `A string was unexpectedly empty` (double-quoted) /
-  parse-tree-is-null (single-quoted).
+- `a = function { "foobar" }; a();` → `mismatched input '"foobar"' expecting ...`.
 - A Java-style method declaration inside the expression (`int f(int x) { return x; }`) →
-  `Cannot invoke "HasParentNode.setParentNode(Node)" because "current" is null`.
+  `no viable alternative at input 'int f('`.
 - A Java lambda (`Function<Integer,Integer> f = x -> x + 1; return f.apply(1);`) compiled but failed
   at run time with `NoClassDefFoundError: org/mvel3/GeneratorEvaluator___N/0x...`.
 
@@ -717,8 +719,8 @@ Workarounds: call a static method of a class passed in the imports
 
 MVEL2 has `until (cond) { .. }` and `do { .. } until (cond)`, which loop while the condition is false.
 MVEL3 has the `while` / `do .. while` statements only. `until (i == 6) { .. }` fails with
-`missing ';' at '{'` (it is read as a method call); `do { .. } until (cond)` crashes the parser with
-`Cannot invoke ...ParExpressionContext.expression() because ...parExpression() is null`.
+`missing ';' at '{'` (it is read as a method call); `do { .. } until (cond)` fails with
+`mismatched input 'until' expecting 'while'`.
 Use `while (!(cond))`.
 
 ---
@@ -745,9 +747,10 @@ foo.{ name = 'poopy', aValue = 'bar' }
   ```
   mismatched input ',' expecting ...
   ```
-- **Inline form** (`foo.{ ... }`) — compiles silently but acts as a no-op; property
-  assignments inside `{...}` are not applied to the receiver (observed failure:
-  `expected:<[poopy]> but was:<[dog]>`).
+- **Inline form** (`foo.{ ... }`) — parse error at the `.`:
+  ```
+  extraneous input '.' expecting <EOF>
+  ```
 
 ### Semicolon form works in MVEL3
 
@@ -768,7 +771,7 @@ Limitations of the semicolon form:
   of `foo` rather than a declared variable.
 - **Nested inside another expression** — e.g. `[ 'foo': (with (new Foo()) { ... }) ]`
   or `(Foo) with (foo) { ... }` gives a parse error at `(`.
-- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a no-op;
+- **Inline form on a new object** — `new Foo().{ name = 'bar' }` is a parse error too;
   use `Foo f = new Foo(); with (f) { setName("bar"); }` instead.
 - **Implied-this leading-dot form** — `.{ data = 'foo' }` (evaluated against a root
   object) is not supported.
@@ -813,10 +816,11 @@ mp.test". Use `mp.put("test", "bar")`.
 
 > `@KnownCompatibility("null-safe-operator")`
 
-In MVEL2 the result is `null` when `a.map` is `null`, and the member value otherwise. MVEL3 compiles
-`a.?map["foo"]` (and `a?.map["foo"]`, `foo.?bar.baz`, `foo.?bar.convert(x)`) but the result is the
-object on the left of `.?` (`a`, `foo`), whether the member is null or not. Plain `a.map["foo"]` on a
-null map throws an NPE as in MVEL2. Write an explicit null check: `a.map != null ? a.map.get("foo") : null`.
+In MVEL2 the result is `null` when `a.map` is `null`, and the member value otherwise. MVEL3 does not
+support this syntax: `a.?map["foo"]` (and `a?.map["foo"]`, `foo.?bar.baz`, `foo.?bar.convert(x)`) fails
+with a parse error after the object on the left (`extraneous input '.' expecting <EOF>`). Plain
+`a.map["foo"]` on a null map throws an NPE as in MVEL2. Write an explicit null check:
+`a.map != null ? a.map.get("foo") : null`.
 
 ---
 

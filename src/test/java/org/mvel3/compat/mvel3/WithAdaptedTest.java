@@ -110,7 +110,7 @@ public class WithAdaptedTest {
     }
 
     // Original: foo.{name='poopy', aValue='bar'}  — inline with, returns the receiver.
-    // The inline form `obj.{..}` is a no-op in MVEL3.
+    // The inline form `obj.{..}` is not supported in MVEL3 (parse error).
     @Test
     @Disabled(NOT_REPRESENTABLE)
     public void testInlineWith() {
@@ -139,7 +139,7 @@ public class WithAdaptedTest {
     @Test
     public void testInlineWith4() {
         // Original: new Foo().{ name = 'bar' }  — inline with on a new object.
-        // Inline with is a no-op; use the block form with a declared variable.
+        // Inline with is not supported; use the block form with a declared variable.
         assertThat(run("Foo f = new Foo(); with (f) { setName(\"bar\"); } return f.getName();"))
                 .isEqualTo("bar");
     }
@@ -270,7 +270,7 @@ public class WithAdaptedTest {
     }
 
     // Original: 'foo'.{ toString() }  — inline with on a String literal.
-    // The inline form is a no-op; not representable with block with.
+    // The inline form is not supported; not representable with block with.
     @Test
     @Disabled(NOT_REPRESENTABLE)
     public void testInlineWithWithLiteral() {

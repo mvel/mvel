@@ -80,8 +80,8 @@ public class LiteralParsingTests extends AbstractTest {
         eval("'\\7'"));
   }
 
-  // Category not isolated: the single-quoted literal is read as a char (`\`). A double-quoted octal escape such as
-  // "\344" evaluates correctly in MVEL3 (probe), so single-quote-string is the likely cause. For `\777` (not a
+  // Category not isolated: the single-quoted literal is rejected by the lexer ("token recognition error"). A double-quoted
+  // octal escape such as "\344" evaluates correctly in MVEL3 (probe), so single-quote-string is the likely cause. For `\777` (not a
   // valid Java octal escape; the double-quoted form returned a different value) an unsupported escape was not ruled out.
   @Test
   @KnownCompatibility("single-quote-string")
@@ -90,7 +90,7 @@ public class LiteralParsingTests extends AbstractTest {
         eval("'\\777'"));
   }
 
-  // Category not isolated: observed error is a parse error at `:` in `'\uFFFF::'`. A double-quoted "\uFFFF::" evaluates
+  // Category not isolated: observed error is a lexer error on `'\uFFFF::'`. A double-quoted "\uFFFF::" evaluates
   // correctly in MVEL3 (probe), so the single-quoted multi-char literal (single-quote-string) is the likely cause.
   @Test
   @KnownCompatibility("single-quote-string")

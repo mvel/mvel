@@ -107,8 +107,8 @@ public class WithTests extends AbstractTest {
     assertEquals("Goodbye", foo.bValue);
   }
 
-  // Category not isolated: the inline `with` form `foo.{name='poopy', aValue='bar'}` compiles but acts
-  // as a no-op; the assertions fail with expected:<[poopy]> but was:<[dog]>. The expression also uses
+  // Category not isolated: the inline `with` form `foo.{name='poopy', aValue='bar'}` fails with a parse error
+  // at `.{` ("extraneous input '.' expecting <EOF>"). The expression also uses
   // single-quoted strings (single-quote-string); whether removing them changes the outcome was not tested.
   @Test
   @KnownCompatibility("with-block-syntax")
@@ -119,8 +119,8 @@ public class WithTests extends AbstractTest {
     assertEquals("bar", f.aValue);
   }
 
-  // Category not isolated: the inline `with` form `foo.{name = 'poopy', ...}` compiles but acts as a
-  // no-op; the assertions fail with expected:<[poopy]> but was:<[dog]>. The expression also uses
+  // Category not isolated: the inline `with` form `foo.{name = 'poopy', ...}` fails with a parse
+  // error at `.{`. The expression also uses
   // single-quoted strings (single-quote-string); whether removing them changes the outcome was not tested.
   @Test
   @KnownCompatibility("with-block-syntax")
@@ -134,8 +134,8 @@ public class WithTests extends AbstractTest {
     assertEquals("foobie", f.getBar().getName());
   }
 
-  // Category not isolated: the inline `with` form `foo.{name = 'poopy', ...}` compiles but acts as a
-  // no-op; assertions fail with wrong values. The expression also uses single-quoted strings
+  // Category not isolated: the inline `with` form `foo.{name = 'poopy', ...}` fails with a parse
+  // error at `.{`. The expression also uses single-quoted strings
   // (single-quote-string); whether removing them changes the outcome was not tested.
   @Test
   @KnownCompatibility("with-block-syntax")
@@ -151,7 +151,7 @@ public class WithTests extends AbstractTest {
   }
 
   // Category not isolated: same as testInlineWith3 but without spaces around `=`. The inline `with` form
-  // compiles but acts as a no-op; assertions fail with wrong values. The expression also uses single-quoted
+  // fails with a parse error at `.{`. The expression also uses single-quoted
   // strings (single-quote-string); whether removing them changes the outcome was not tested.
   @Test
   @KnownCompatibility("with-block-syntax")
@@ -166,8 +166,8 @@ public class WithTests extends AbstractTest {
     assertEquals("doopy", f.register);
   }
 
-  // Category not isolated: the inline `with` form `new Foo().{ name = 'bar' }` compiles but acts as a
-  // no-op; the assertion fails with expected:<[bar]> but was:<[dog]>. The expression also uses
+  // Category not isolated: the inline `with` form `new Foo().{ name = 'bar' }` fails with a parse
+  // error at `.{`. The expression also uses
   // single-quoted strings (single-quote-string); whether removing them changes the outcome was not tested.
   // MVEL2 optimizer selection (ASM) has no MVEL3 equivalent.
   @Test
@@ -188,8 +188,8 @@ public class WithTests extends AbstractTest {
     assertEquals("bar", f.getName());
   }
 
-  // Category not isolated: the inline `with` form `foo.{name='poopy', aValue='bar'}` compiles but acts
-  // as a no-op; assertions fail with wrong values. The expression also uses single-quoted strings
+  // Category not isolated: the inline `with` form `foo.{name='poopy', aValue='bar'}` fails with a parse error
+  // at `.{`. The expression also uses single-quoted strings
   // (single-quote-string); whether removing them changes the outcome was not tested. MVEL2 strong-typing
   // and ASM optimizer have no MVEL3 equivalent.
   @Test

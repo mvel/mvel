@@ -6,19 +6,22 @@ public final class LambdaKey {
 
     private final String methodSignature;
     private final String normalisedBody;
+    // Imports of the enclosing compilation unit: simple type names in the body resolve through them
+    private final String imports;
 
     private MethodSignatureInfo methodSignatureInfo;
 
     private int hash; // murmur3 hash of normalisedBody
 
-    LambdaKey(String methodSignature, String normalisedBody) {
+    LambdaKey(String methodSignature, String normalisedBody, String imports) {
         this.methodSignature = methodSignature;
         this.normalisedBody = normalisedBody;
+        this.imports = imports;
         this.hash = LambdaUtils.calculateHash(normalisedBody);
     }
 
-    LambdaKey(String methodSignature, String normalisedBody, MethodSignatureInfo methodSignatureInfo) {
-        this(methodSignature, normalisedBody);
+    LambdaKey(String methodSignature, String normalisedBody, String imports, MethodSignatureInfo methodSignatureInfo) {
+        this(methodSignature, normalisedBody, imports);
         this.methodSignatureInfo = methodSignatureInfo;
     }
 
@@ -28,6 +31,10 @@ public final class LambdaKey {
 
     public String getNormalisedBody() {
         return normalisedBody;
+    }
+
+    public String getImports() {
+        return imports;
     }
 
     // maybe change to Optional
@@ -51,7 +58,8 @@ public final class LambdaKey {
             return false;
         }
         LambdaKey other = (LambdaKey) obj;
-        return normalisedBody.equals(other.normalisedBody) && methodSignature.equals(other.methodSignature);
+        return normalisedBody.equals(other.normalisedBody) && methodSignature.equals(other.methodSignature)
+                && imports.equals(other.imports);
     }
 
     // test only
